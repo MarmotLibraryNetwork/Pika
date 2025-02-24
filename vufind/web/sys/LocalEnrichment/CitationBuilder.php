@@ -55,12 +55,13 @@ class CitationBuilder {
 	}
 
 	public static function getCitationFormats(){
-		return array(
+		return [
 			//'AMA' => 'AMA',
 			'APA'               => 'APA',
 			'ChicagoHumanities' => 'Chicago/Turabian - Humanities',
 			'ChicagoAuthDate'   => 'Chicago/Turabian - Author Date',
-			'MLA'               => 'MLA');
+			'MLA'               => 'MLA'
+		];
 	}
 
 	/**
@@ -75,13 +76,13 @@ class CitationBuilder {
 	 */
 	public function getAPA(){
 		global $interface;
-		$apa = array(
+		$apa = [
 			'title'     => $this->getAPATitle(),
 			'authors'   => $this->getAPAAuthors(),
 			'publisher' => $this->getAPAPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
-		);
+		];
 		$interface->assign('apaDetails', $apa);
 		return 'Citation/apa.tpl';
 	}
@@ -98,14 +99,14 @@ class CitationBuilder {
 	 */
 	public function getMLA(){
 		global $interface;
-		$mla= array(
+		$mla = [
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getMLAAuthors(),
 			'publisher' => $this->getPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition(),
 			'format'    => $this->getMLAFormat()
-		);
+		];
 		$interface->assign('mlaDetails', $mla);
 		return 'Citation/mla.tpl';
 	}
@@ -151,13 +152,13 @@ class CitationBuilder {
 	 */
 	public function getAMA(){
 		global $interface;
-		$citeDetails = array(
+		$citeDetails = [
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getAMAAuthors(),
 			'publisher' => $this->getPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
-		);
+		];
 		$interface->assign('citeDetails', $citeDetails);
 		return 'Citation/ama.tpl';
 	}
@@ -174,13 +175,13 @@ class CitationBuilder {
 	 */
 	public function getChicagoHumanities(){
 		global $interface;
-		$citeDetails = array(
+		$citeDetails = [
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getChicagoAuthors(),
 			'publisher' => $this->getPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
-		);
+		];
 		$interface->assign('citeDetails', $citeDetails);
 		return 'Citation/chicago-humanities.tpl';
 	}
@@ -197,13 +198,13 @@ class CitationBuilder {
 	 */
 	public function getChicagoAuthDate(){
 		global $interface;
-		$citeDetails = array(
+		$citeDetails = [
 			'title'     => $this->getMLATitle(),
 			'authors'   => $this->getChicagoAuthors(),
 			'publisher' => $this->getPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
-		);
+		];
 		$interface->assign('citeDetails', $citeDetails);
 		return 'Citation/chicago-authdate.tpl';
 	}
@@ -219,7 +220,7 @@ class CitationBuilder {
 		$str = $this->stripPunctuation($str);
 
 		// Is it a standard suffix?
-		$suffixes = array('Jr', 'Sr');
+		$suffixes = ['Jr', 'Sr'];
 		if (in_array($str, $suffixes)){
 			return true;
 		}
@@ -345,11 +346,13 @@ class CitationBuilder {
 	 * @return  string                      Capitalized title.
 	 */
 	private function capitalizeTitle($str){
-		$exceptions = array('a', 'an', 'the', 'against', 'between', 'in', 'of',
-		                    'to', 'and', 'but', 'for', 'nor', 'or', 'so', 'yet', 'to');
+		$exceptions = [
+			'a', 'an', 'the', 'against', 'between', 'in', 'of',
+			'to', 'and', 'but', 'for', 'nor', 'or', 'so', 'yet', 'to'
+		];
 
 		$words        = explode(' ', $str);
-		$newwords     = array();
+		$newwords     = [];
 		$followsColon = false;
 		foreach ($words as $word){
 			// Capitalize words unless they are in the exception list...  but even
@@ -398,7 +401,7 @@ class CitationBuilder {
 			$i = 0;
 			foreach ($this->details['authors'] as $author){
 				$pattern = "/\s\d\d\d\d-(\d\d\d\d|.)[,.\s]$/";
-				$matches = array();
+				$matches = [];
 				if (preg_match($pattern, $author, $matches)){
 							$author = str_replace($matches[0], '', $author);
 				    }
@@ -555,7 +558,7 @@ class CitationBuilder {
 	 * @return  string
 	 */
 	private function getPublisher(){
-		$parts = array();
+		$parts = [];
 		if (isset($this->details['pubPlace']) && !empty($this->details['pubPlace'])){
 			$parts[] = $this->stripPunctuation($this->details['pubPlace']);
 		}
@@ -576,7 +579,7 @@ class CitationBuilder {
 	 * @return  string
 	 */
 	private function getAPAPublisher(){
-		$parts = array();
+		$parts = [];
 		if (isset($this->details['pubName']) && !empty($this->details['pubName'])){
 			$parts[] = $this->details['pubName'];
 		}
@@ -600,5 +603,3 @@ class CitationBuilder {
 		return false;
 	}
 }
-
-?>

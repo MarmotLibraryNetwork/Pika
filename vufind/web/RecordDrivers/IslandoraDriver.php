@@ -3285,19 +3285,18 @@ abstract class IslandoraDriver extends RecordInterface {
 	private function loadMusicInformation() {
 		global $interface;
 //		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$fedoraUtils = FedoraUtils::getInstance();
+		$fedoraUtils         = FedoraUtils::getInstance();
 		$hasMusicInformation = false;
-		$musicSection = $this->getModsValue('music', 'marmot');
+		$musicSection        = $this->getModsValue('music', 'marmot');
 		if ($musicSection){
+			$link               = null;
 			$musicGenreSections = $this->getModsValues('musicGenre', 'marmot', $musicSection);
-			$genres = [];
+			$genres             = [];
 			foreach ($musicGenreSections as $musicGenreSection){
-				$musicTerm = $this->getModsValue('musicGenreTerm', 'marmot', $musicGenreSection);
+				$musicTerm             = $this->getModsValue('musicGenreTerm', 'marmot', $musicGenreSection);
 				$relatedMusicGenreLCCN = $this->getModsValue('relatedMusicGenreLCCN', 'marmot', $musicGenreSection);
 				if ($relatedMusicGenreLCCN){
 					$link = "/Archive/Results?lookfor=$relatedMusicGenreLCCN";
-				}else{
-					$link = null;
 				}
 				if ($musicTerm){
 					$genres[] = [
@@ -3316,15 +3315,15 @@ abstract class IslandoraDriver extends RecordInterface {
 			$albumSections = $this->getModsValues('albumInfo', 'marmot', $musicSection);
 			$albums = [];
 			foreach ($albumSections as $albumSection){
-				$albumTitle = $this->getModsValue('albumTitle', 'marmot', $albumSection);
+				$albumTitle       = $this->getModsValue('albumTitle', 'marmot', $albumSection);
 				$albumTrackNumber = $this->getModsValue('albumTrackNumber', 'marmot', $albumSection);
 				$albumTotalTracks = $this->getModsValue('albumTotalTracks', 'marmot', $albumSection);
-				$trackDiscNumber = $this->getModsValue('trackDiscNumber', 'marmot', $albumSection);
-				$albumTotalDiscs = $this->getModsValue('albumTotalDiscs', 'marmot', $albumSection);
-				$recordLabelName = $this->getModsValue('recordLabelName', 'marmot', $albumSection);
-				$recordLabelPid = $this->getModsValue('recordLabelPid', 'marmot', $albumSection);
-				$validAlbum = false;
-				$album = [];
+				$trackDiscNumber  = $this->getModsValue('trackDiscNumber', 'marmot', $albumSection);
+				$albumTotalDiscs  = $this->getModsValue('albumTotalDiscs', 'marmot', $albumSection);
+				$recordLabelName  = $this->getModsValue('recordLabelName', 'marmot', $albumSection);
+				$recordLabelPid   = $this->getModsValue('recordLabelPid', 'marmot', $albumSection);
+				$validAlbum       = false;
+				$album            = [];
 				if ($albumTitle != ''){
 					$album['title'] = $albumTitle;
 					$validAlbum = true;
@@ -3344,22 +3343,22 @@ abstract class IslandoraDriver extends RecordInterface {
 					$validAlbum = true;
 				}
 				$validRecordLabel = false;
-				$recordLabel = '';
+				$recordLabel      = '';
 				if ($recordLabelPid){
 					$recordLabelObject = $fedoraUtils->getObject($recordLabelPid);
 					if ($recordLabelObject){
-						$placeDriver = RecordDriverFactory::initRecordDriver($recordLabelObject);
-						$recordLabel = "<a href='{$placeDriver->getRecordUrl()}'>{$recordLabelName}</a>";
+						$placeDriver      = RecordDriverFactory::initRecordDriver($recordLabelObject);
+						$recordLabel      = "<a href='{$placeDriver->getRecordUrl()}'>{$recordLabelName}</a>";
 						$validRecordLabel = true;
 					}
 				}
 				if (!$validRecordLabel && $recordLabelName != ''){
-					$recordLabel = $recordLabelName;
+					$recordLabel      = $recordLabelName;
 					$validRecordLabel = true;
 				}
 				if ($validRecordLabel){
 					$album['recordLabel'] = $recordLabel;
-					$validAlbum = true;
+					$validAlbum           = true;
 				}
 				if ($validAlbum){
 					$albums[] = $album;
