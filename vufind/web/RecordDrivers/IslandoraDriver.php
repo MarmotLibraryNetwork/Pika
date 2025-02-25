@@ -58,8 +58,8 @@ abstract class IslandoraDriver extends RecordInterface {
 		$this->logger = new Logger(__CLASS__);
 		if ($recordData instanceof AbstractFedoraObject){
 			$this->archiveObject = $recordData;
-			$this->pid = $this->archiveObject->id;
-			$this->title = $this->archiveObject->label;
+			$this->pid           = $this->archiveObject->id;
+			$this->title         = $this->archiveObject->label;
 		}elseif (is_array($recordData)){
 			// Solr Document Array
 			$this->pid             = $recordData['PID'];

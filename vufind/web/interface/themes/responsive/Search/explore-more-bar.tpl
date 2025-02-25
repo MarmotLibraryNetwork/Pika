@@ -4,7 +4,12 @@
 	{*<div class="label-left">*}
 	<div class="label-top">
 		<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt=""{* "Alternative text of images should not be repeated as text" *}>
-		<div id="exploreMoreBarLabel" class="exploreMoreBarLabel">{translate text='Explore More'}</div>
+		<span id="exploreMoreBarLabel" class="exploreMoreBarLabel">{translate text='Explore More'}</span>
+		{if ($activeSection == 'catalog')}
+			<span>&nbsp; in the Local Digital Archive</span>
+		{elseif ($activeSection == 'archive')}
+			<span>&nbsp; in the Local Library</span>
+		{/if}
 	</div>
 
 	<div class="exploreMoreContainer">

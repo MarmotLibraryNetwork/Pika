@@ -307,7 +307,7 @@ class AJAX extends AJAXHandler {
 
 		/** @var string $searchSource */
 //		$searchSource = isset($searchParams['searchSource']) ? $searchParams['searchSource'] : 'local';
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = $_REQUEST['searchSource'] ?? 'local';
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
@@ -353,10 +353,10 @@ class AJAX extends AJAXHandler {
 		global $interface;
 		$interface->assign('recordSet', $recordSet);
 		$records = $interface->fetch($displayTemplate);
-		$result  = array(
+		$result  = [
 			'success' => $success,
 			'records' => $records,
-		);
+		];
 		// let front end know if we have reached the end of the result set
 		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
 			$result['lastPage'] = true;
@@ -364,10 +364,18 @@ class AJAX extends AJAXHandler {
 		return $result;
 	}
 
+	private $validExploreMoreSections = [
+		'catalog',
+		'archive',
+		'ebsco',
+	];
 	function loadExploreMoreBar(){
 		global $interface;
 
 		$section    = $_REQUEST['section'];
+		if (!in_array($section, $this->validExploreMoreSections)){
+			$section = 'catalog'; // If not a valid section, default to catalog section
+		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		if (is_array($searchTerm)){
 			$searchTerm = reset($searchTerm);
@@ -379,14 +387,14 @@ class AJAX extends AJAXHandler {
 		$exploreMore        = new ExploreMore();
 		$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
 		if (count($exploreMoreOptions) == 0){
-			$result = array(
+			$result = [
 				'success' => false,
-			);
+			];
 		}else{
-			$result = array(
+			$result = [
 				'success'        => true,
-				'exploreMoreBar' => $interface->fetch("Search/explore-more-bar.tpl"),
-			);
+				'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),
+			];
 		}
 
 		return $result;

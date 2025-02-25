@@ -99,7 +99,7 @@ class SearchSources {
 		if ($enableCombinedResults && $showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = [
 				'name'        => $combinedResultsName,
-				'description' => "Combined results from multiple sources.",
+				'description' => 'Combined results from multiple sources.',
 				'catalogType' => 'combined'
 			];
 		}

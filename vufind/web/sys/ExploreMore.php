@@ -176,11 +176,11 @@ class ExploreMore {
 			$timer->logTime('Loaded related entities');
 		}
 
-		//Always load ebsco even if we are already in that section
-		$ebscoMatches = $this->loadEbscoOptions('', [], $searchTerm);
-		if (count($ebscoMatches) > 0){
-			$interface->assign('relatedArticles', $ebscoMatches);
-		}
+//		//Always load ebsco even if we are already in that section
+//		$ebscoMatches = $this->loadEbscoOptions('', [], $searchTerm);
+//		if (count($ebscoMatches) > 0){
+//			$interface->assign('relatedArticles', $ebscoMatches);
+//		}
 
 		//Load related content from the archive
 
@@ -382,7 +382,7 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
-		$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		//$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if ($islandoraActive){
 			if (!empty($configArray['Islandora']['solrUrl']) && !empty($searchTerm)) {
@@ -473,7 +473,7 @@ class ExploreMore {
 						$islandoraSearchObject->addFilter('RELS_EXT_hasModel_uri_s:info:fedora/islandora:personCModel');
 						if ($archiveObject != null){
 							$exploreMoreOptions[] = [
-								'label'       => "People (" . $numPeople . ")",
+								'label'       => 'People (' . $numPeople . ')',
 								'description' => "People related to {$islandoraSearchObject->getQuery()}",
 								'image'       => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'personCModel'),
 								'link'        => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=person',
@@ -492,7 +492,7 @@ class ExploreMore {
 						$islandoraSearchObject->addFilter('RELS_EXT_hasModel_uri_s:info:fedora/islandora:placeCModel');
 						if ($archiveObject != null){
 							$exploreMoreOptions[] = [
-								'label'       => "Places (" . $numPlaces . ")",
+								'label'       => 'Places (' . $numPlaces . ')',
 								'description' => "Places related to {$islandoraSearchObject->getQuery()}",
 								'image'       => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'placeCModel'),
 								'link'        => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=place',
@@ -511,7 +511,7 @@ class ExploreMore {
 						$islandoraSearchObject->addFilter('RELS_EXT_hasModel_uri_s:info:fedora/islandora:eventCModel');
 						if ($archiveObject != null){
 							$exploreMoreOptions[] = [
-								'label'       => "Events (" . $numEvents . ")",
+								'label'       => 'Events (' . $numEvents . ')',
 								'description' => "Events related to {$islandoraSearchObject->getQuery()}",
 								'image'       => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'eventCModel'),
 								'link'        => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=event',
@@ -533,7 +533,10 @@ class ExploreMore {
 			);
 		}*/
 
-		$interface->assign('exploreMoreOptions', $exploreMoreOptions);
+		$interface->assign([
+			'activeSection'      => $activeSection,
+			'exploreMoreOptions' => $exploreMoreOptions
+		]);
 
 		return $exploreMoreOptions;
 	}
@@ -554,10 +557,10 @@ class ExploreMore {
 				$searchObject->setDebugging(false, false);
 
 				//First look specifically for
-				$searchObject->setSearchTerms(array(
+				$searchObject->setSearchTerms(searchTerms: [
 						'lookfor' => $searchTerm,
 						'index' => 'IslandoraTitle'
-				));
+				]);
 				$searchObject->clearHiddenFilters();
 				$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 				//First search for people, places, and things
@@ -568,11 +571,11 @@ class ExploreMore {
 					$numProcessed = 0;
 					foreach ($response['response']['docs'] as $doc) {
 						$entityDriver = RecordDriverFactory::initRecordDriver($doc);
-						$exploreMoreOptions[] = array(
+						$exploreMoreOptions[] = [
 								'label' => $entityDriver->getTitle(),
 								'image' => $entityDriver->getBookcoverUrl('medium'),
 								'link' => $entityDriver->getRecordUrl(),
-						);
+						];
 						$numProcessed++;
 						if ($numProcessed >= 3) {
 							break;
@@ -743,14 +746,14 @@ class ExploreMore {
 			$numSubjectsAdded++;
 		}
 		$relatedSubjects = array_slice($relatedSubjects, 0, 8);
-		$timer->logTime("Loaded subjects");
+		$timer->logTime('Loaded subjects');
 
 		$exploreMore = new ExploreMore();
 
-		$exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		$timer->logTime("Loaded EBSCO options");
+		//$exploreMore->loadEbscoOptions('archive', [], implode(' or ', $relatedSubjects));
+		//$timer->logTime('Loaded EBSCO options');
 
-		$searchTerm = implode(" OR ", $relatedSubjects);
+		$searchTerm = implode(' OR ', $relatedSubjects);
 		$exploreMore->getRelatedArchiveObjects($searchTerm);
 		$timer->logTime("Loaded related archive objects");
 	}
@@ -762,7 +765,7 @@ class ExploreMore {
 	 */
 	public function getRelatedArchiveSubjects($archiveDriver){
 		$relatedObjects = $archiveDriver->getDirectlyRelatedArchiveObjects();
-		$relatedSubjects = array();
+		$relatedSubjects = [];
 
 		foreach ($relatedObjects['objects'] as $object){
 			/** @var IslandoraDriver $relatedObjectDriver */
