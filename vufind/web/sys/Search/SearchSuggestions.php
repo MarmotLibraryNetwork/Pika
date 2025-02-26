@@ -28,9 +28,16 @@ class SearchSuggestions {
 		'ISN',
 		'Author'
 	];
-
+    
+    public function __construct() {
+        $this->amReady = true;
+    }
 
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
+        // static function are outside $this scope. Need to create exclude for each 
+        // static function
+        $exclude_words = ['the'];
+        $searchTerm = str_ireplace($exclude_words, '', $searchTerm);
 		$suggestions = self::getSearchSuggestions($searchTerm);
 		if ($sortByNumSearches){
 			$array = [];
