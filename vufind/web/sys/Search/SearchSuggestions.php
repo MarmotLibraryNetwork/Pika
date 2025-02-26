@@ -22,17 +22,12 @@ require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 const SUGGESTION_LIMIT = 12;
 
 class SearchSuggestions {
-
-
+    
 	static array $disallowedSearchTypesForTermReplacement = [
 		'ISN',
 		'Author'
 	];
     
-    public function __construct() {
-        $this->amReady = true;
-    }
-
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
         // static function are outside $this scope. Need to create exclude for each 
         // static function
@@ -113,6 +108,8 @@ class SearchSuggestions {
 	 * @return array
 	 */
 	static function getSpellingSearches(string $searchTerm, bool $sortByNumSearches = true){
+        $exclude_words = ['the'];
+        $searchTerm = str_ireplace($exclude_words, '', $searchTerm);
 		//First check for things we don't want to load spelling suggestions for
 		if (SearchStatNew::isSearchPhraseToIgnore($searchTerm)){
 			return [];
