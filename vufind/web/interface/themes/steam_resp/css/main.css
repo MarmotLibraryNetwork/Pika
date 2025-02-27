@@ -10806,6 +10806,7 @@ a.btn.btn-sm.btn-default {
 #home-account-links .active .panel-heading {
   background: #f2f2f2;
 }
-#home-account-links .active .panel-title {
+#home-account-links .active .panel-title,
+#home-library-links .active .panel-title {
   color: #1A0B01;
 }
