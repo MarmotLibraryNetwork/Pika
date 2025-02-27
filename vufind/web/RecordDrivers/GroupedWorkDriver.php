@@ -1480,9 +1480,10 @@ class GroupedWorkDriver extends RecordInterface {
 			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
 				$relatedManifestations[$currentManifestation]['availableHere'] = true;
 			}
-			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
-				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
-			}
+			// Location Label field seems to be obsolete. pascal 2/26/2025
+//			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
+//				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
+//			}
 			if (isset($curRecord['availableOnline']) && $curRecord['availableOnline']){
 				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
 			}
@@ -2942,8 +2943,10 @@ class GroupedWorkDriver extends RecordInterface {
 			'numHolds'               => !$forCovers && $recordDriver != null ? $recordDriver->getNumHolds() : 0,
 //			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
 			'hasLocalItem'           => false,
+			'hasAHomePickupItem'     => false,
+			'homePickupLocations'    => [],
 //			'holdRatio'              => 0, // Only calculate as needed for sorting
-			'locationLabel'          => '',
+			//'locationLabel'          => '', // Location Label field seems to be obsolete. pascal 2/26/2025
 			'shelfLocation'          => '',
 			'bookable'               => false,
 			'holdable'               => false,
@@ -3002,12 +3005,12 @@ class GroupedWorkDriver extends RecordInterface {
 			$available        = $scopingDetails->available;
 			$holdable         = $scopingDetails->holdable;
 			$bookable         = $scopingDetails->bookable;
-			//$isHomePickUp     = $scopingDetails->isHomePickUpOnly;
+			$isHomePickUp     = $scopingDetails->isHomePickUpOnly;
 			$inLibraryUseOnly = $scopingDetails->inLibraryUseOnly;
 			$libraryOwned     = $scopingDetails->libraryOwned;
 			$holdablePTypes   = $scopingDetails->holdablePTypes;
 			$bookablePTypes   = $scopingDetails->bookablePTypes;
-			//$homePickUpPTypes = $scopingDetails->homePickUpPTypes;
+			$homePickUpPTypes = $scopingDetails->homePickUpPTypes;
 			$status           = $curItem->detailedStatus;
 
 			if (!$available && strtolower($status) == 'library use only'){
@@ -3031,6 +3034,18 @@ class GroupedWorkDriver extends RecordInterface {
 				$recordBookable = true;
 			}
 
+				if ($holdable && $isHomePickUp) {
+					if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
+						$relatedRecord['hasAHomePickupItem'] = true;
+						// Any home pickup item for the record should turn on this flag
+						//$relatedRecord['homePickupLocations'][] = $locationCode;
+						$relatedRecord['homePickupLocations'][] = [
+							'location'   => $shelfLocation,
+							'callnumber' => $callNumber,
+							'status'     => $status,
+						];
+					}
+				}
 			//$isHomePickUp = $this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp);
 
 			//Update the record with information from the item and from scoping.
@@ -3159,7 +3174,7 @@ class GroupedWorkDriver extends RecordInterface {
 //			if ((strlen($volumeRecordLabel) > 0) && !substr($callNumber, -strlen($volumeRecordLabel)) == $volumeRecordLabel){
 //				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
 //			}
-			//Add the item to the item summary
+			//Add the item to the item summary ($relatedRecord['itemSummary'])
 			$itemSummaryInfo = [
 				'description'        => $description,
 				'shelfLocation'      => $shelfLocation,
