@@ -6985,7 +6985,7 @@ body > .container {
   text-shadow: 1px 1px #fff;
 }
 .active .panel-heading {
-  background-color: #404D0E;
+  background-color: #677000;
 }
 .active .panel-title {
   color: #fff;
@@ -7104,7 +7104,7 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #404D0E !important;
+  border: 2px solid #255252 !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -8189,7 +8189,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #404D0E;
+  background-color: #255252;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8209,7 +8209,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #677000;
+  background-color: #347979;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8232,7 +8232,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #404D0E;
+  background-color: #255252;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8246,7 +8246,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #677000;
+  background-color: #347979;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -9787,7 +9787,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #404D0E;
+  border-top: 5px solid #255252;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9802,8 +9802,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #404D0E;
-  border-color: #404D0E;
+  background-color: #255252;
+  border-color: #255252;
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -10011,7 +10011,7 @@ a.browse-thumbnail-sorted.active {
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #2e370a;
+  background-color: #505700;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -10027,8 +10027,8 @@ a.browse-thumbnail-sorted.active {
 #explore-more-body .sectionHeader {
   text-transform: uppercase;
   font-weight: bold;
-  color: #A3A510;
-  border-bottom: 2px solid #404D0E;
+  color: #7A1600;
+  border-bottom: 2px solid #677000;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10070,12 +10070,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #404D0E;
+  border: solid 1px #677000;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #404D0E;
+  background-color: #677000;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10093,7 +10093,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #404D0E;
+  background-color: #677000;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10113,7 +10113,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #404D0E;
+  background-color: #677000;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10186,10 +10186,10 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #404D0E;
+  color: #677000;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #404D0E;
+  border: 1px solid #677000;
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectsLibraryScroller .jcarousel-control-prev,
@@ -10369,7 +10369,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #404D0E;
+  background-color: #255252;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10608,7 +10608,7 @@ a#headerMyAccountLink {
   text-shadow: none;
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #677000;
+  background: #7A1600;
 }
 .jcarousel-control-next,
 .jcarousel-control-prev {
@@ -10659,6 +10659,9 @@ a#headerMyAccountLink {
 .exploreMoreTitle:hover {
   text-decoration: underline;
 }
+.active > a:focus .panel-title {
+  text-shadow: none;
+}
 #explore-more-body .panel-body a {
   color: #333;
 }
@@ -10669,13 +10672,15 @@ a#headerMyAccountLink {
 #explore-more-body .jcarousel-control-prev,
 .exploreMoreBar .jcarousel-control-next,
 .exploreMoreBar .jcarousel-control-prev {
-  color: #400B00;
+  color: #7A1600;
   text-shadow: none;
 }
 .glyphicon-chevron-left:before {
+  color: #7A1600;
   content: "\e257";
 }
 .glyphicon-chevron-right:before {
+  color: #7A1600;
   content: "\e258";
 }
 @media (min-width: 701px) {
@@ -10686,11 +10691,11 @@ a#headerMyAccountLink {
 /*** Browse Boxes & Header ***/
 /* Drives the color for the Magnifying Glass and the name of the selected browse list */
 .selected-browse-label-search a {
-  color: #646510;
+  color: #7A1600;
 }
 /* Drives the color for the horizontal rule for the name of the selected browse list */
 #selected-browse-label {
-  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, #a8a96f 30%, #a8a96f 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, #7A1600 30%, #7A1600 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
   margin-bottom: 5px;
 }
 /*** Horizontal Search Box ***/
@@ -10779,37 +10784,6 @@ a.btn.btn-sm.btn-default {
 #advancedSearchLink {
   font-size: 95%;
 }
-#content-container::before {
-  content: "";
-  display: block;
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  max-height: 550px;
-  background-image: url(../images/bwml-welcome-books-simplify-min.svg);
-  background-size: auto 85%;
-  background-position: left bottom;
-  background-repeat: no-repeat;
-  z-index: -10;
-  opacity: 0.75;
-}
-#content-container::after {
-  content: "";
-  display: block;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  max-height: 350px;
-  background-image: url(../images/bwml-welcome-rocks-simplify-min.svg);
-  background-position: bottom right;
-  background-repeat: no-repeat;
-  background-size: 310px;
-  z-index: -10;
-}
 #footer-container {
   position: relative;
   padding-left: 0;
@@ -10828,4 +10802,10 @@ a.btn.btn-sm.btn-default {
   margin-bottom: 0;
   padding-bottom: 20px;
   padding-left: 40px;
+}
+#home-account-links .active .panel-heading {
+  background: #f2f2f2;
+}
+#home-account-links .active .panel-title {
+  color: #1A0B01;
 }
