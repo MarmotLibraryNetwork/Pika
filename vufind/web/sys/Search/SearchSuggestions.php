@@ -28,11 +28,10 @@ class SearchSuggestions {
 		'Author'
 	];
     
+    public static $disallowedSearchSuggestionWords = ['the']; 
+    
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
-        // static function are outside $this scope. Need to create exclude for each 
-        // static function
-        $exclude_words = ['the'];
-        $searchTerm = str_ireplace($exclude_words, '', $searchTerm);
+        $searchTerm = str_ireplace(self::$disallowedSearchSuggestionWords, '', $searchTerm);
 		$suggestions = self::getSearchSuggestions($searchTerm);
 		if ($sortByNumSearches){
 			$array = [];
@@ -108,8 +107,7 @@ class SearchSuggestions {
 	 * @return array
 	 */
 	static function getSpellingSearches(string $searchTerm, bool $sortByNumSearches = true){
-        $exclude_words = ['the'];
-        $searchTerm = str_ireplace($exclude_words, '', $searchTerm);
+        $searchTerm = str_ireplace(self::$disallowedSearchSuggestionWords, '', $searchTerm);
 		//First check for things we don't want to load spelling suggestions for
 		if (SearchStatNew::isSearchPhraseToIgnore($searchTerm)){
 			return [];
