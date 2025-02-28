@@ -1304,7 +1304,7 @@ class MarcRecord extends IndexRecord {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
 		$actions = [];
 		global $interface;
 		global $library;
@@ -1339,7 +1339,7 @@ class MarcRecord extends IndexRecord {
 						$actions[]         = [
 							'title'        => 'Hold ' . $volumeInfo->displayLabel,
 							'url'          => '',
-							'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId');",
+							'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId'" . ($isHomePickupRecord ? ', true' : '') . ");",
 							'requireLogin' => false,
 						];
 					}
@@ -1348,7 +1348,7 @@ class MarcRecord extends IndexRecord {
 				$actions[] = [
 					'title'        => 'Place Hold',
 					'url'          => '',
-					'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+					'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}'" . ($isHomePickupRecord ? ', true' : '') . ");",
 					'requireLogin' => false,
 				];
 			}

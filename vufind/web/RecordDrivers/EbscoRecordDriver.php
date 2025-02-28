@@ -335,7 +335,7 @@ class EbscoRecordDriver extends RecordInterface {
 		// TODO: Implement getItemActions() method.
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null) {
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null) {
 		// TODO: Implement getRecordActions() method.
 	}
 

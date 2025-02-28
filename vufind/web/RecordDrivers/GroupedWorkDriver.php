@@ -2692,7 +2692,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null){
 		return [];
 	}
 
@@ -2968,8 +2968,9 @@ class GroupedWorkDriver extends RecordInterface {
 		$libraryCallNumber    = null;
 		$relatedUrls          = [];
 
-		$recordHoldable = false;
-		$recordBookable = false;
+		$recordHoldable     = false;
+		$recordBookable     = false;
+		$recordIsHomePickUp = false;
 
 		$i                 = 0;
 		$allLibraryUseOnly = true;
@@ -3036,6 +3037,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 				if ($holdable && $isHomePickUp) {
 					if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
+						$recordIsHomePickUp                  = true;
 						$relatedRecord['hasAHomePickupItem'] = true;
 						// Any home pickup item for the record should turn on this flag
 						//$relatedRecord['homePickupLocations'][] = $locationCode;
@@ -3248,7 +3250,8 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory('Setup record items');
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : [];
+			$recordAvailable          = $relatedRecord['availableLocally'] || $relatedRecord['availableOnline'];
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $relatedUrls/*, $volumeData*/) : [];
 			$timer->logTime('Loaded actions');
 			$memoryWatcher->logMemory('Loaded actions');
 		}
