@@ -24,6 +24,32 @@
 				{/if}
 			</h1>
 
+
+
+
+
+{*
+			<div class="row">
+				<div class="col-sm-12">
+					<pre>
+						{$statusSummary|@json_encode:128 nofilter}
+
+*}
+{*
+the 128 is shorthand for pretty print;
+						the nofilter is flag for avoid escaping special characters, eg for javascript
+*}{*
+
+
+
+					</pre>
+				</div>
+			</div>
+*}
+
+
+
+
 			<div class="row">
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 					{if $disableCoverArt != 1}
@@ -37,7 +63,6 @@
 				</div>
 
 				<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
-
 					{if $error}{* TODO: Does this get used? *}
 						<div class="row">
 							<div class="alert alert-danger">
@@ -45,6 +70,8 @@
 							</div>
 						</div>
 					{/if}
+
+
 
 					<div class="row">
 						<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
