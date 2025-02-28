@@ -2254,8 +2254,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	}
 
 	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
-		$operation = "patrons/holds/" . $holdId;
-		$params    = ["pickupLocation" => $newPickupLocation];
+		$operation = 'patrons/holds/' . $holdId;
+		$params    = ['pickupLocation' => $newPickupLocation];
 
 		// delete holds cache
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
@@ -2283,6 +2283,58 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	}
 
 	/**
+	 * @param User $patron
+	 * @param \SourceAndId $sourceAndId
+	 * @return mixed
+	 */
+	function getHomePickupLocations($patron, $sourceAndId){
+		$operation = 'patrons/' . $patron->ilsUserId . '/holds/requests/form';
+		$baseId    = preg_replace('/\.?[bij]/', '', $sourceAndId->getRecordId());
+		$shortId   = substr($baseId, 0, strlen($baseId) - 1);
+		$params    = ['recordNumber' => $shortId];
+		$result    = $this->_doRequest($operation, $params);
+		if (!$result){
+			if ($this->apiLastError){
+				$message           = $this->_getPrettyError() || 'Error getting valid home pick up item locations from Sierra' ;
+				$this->logger->error($message, [$operation, $params]);
+				return false;
+			}
+		}
+
+		// Get the location codes to lookup in our location table
+		$locationCodes = [];
+		if (!empty($result->holdshelf->selected)){
+			$locationCodes[] = trim($result->holdshelf->selected->code);
+		}
+		if (!empty($result->holdshelf->locations)){
+			// The Home Pickup Locations
+			foreach ($result->holdshelf->locations as $locationOption){
+				$locationCodes[] = trim($locationOption->code); // Sierra pickup locations are padded with trailing spaces
+			}
+		}
+
+		$pickupLocations = [];
+		$location        = new Location();
+		$location->whereAddIn('code', $locationCodes, 'string');
+		if ($location->find()){
+			$pickupUsersArray[] = $patron->id;
+			foreach ($patron->getLinkedUsers() as $linkedUser){
+				//TODO: ptype calculations might need to be applied to linked users
+				$pickupUsersArray[] = $linkedUser->id;
+			}
+			$pickupUsers = implode(',', $pickupUsersArray);
+			while ($location->fetch()){
+				// Add to pickup location array
+				$location->pickupUsers = $pickupUsersArray;
+				$pickupLocations[] = clone $location;
+
+			}
+		}
+
+		return $pickupLocations;
+	}
+
+	/**
 	 * DELETE patrons/holds/{holdId}
 	 * @param $patron
 	 * @param $bibId
@@ -2290,7 +2342,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * @return array
 	 */
 	public function cancelHold($patron, $bibId, $holdId){
-		$operation = "patrons/holds/".$holdId;
+		$operation = 'patrons/holds/' . $holdId;
 
 		// delete holds cache
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
@@ -2533,8 +2585,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$patronReadingHistoryCacheKey = $this->cache->makePatronKey('history', $patron->id);
 		$this->cache->delete($patronReadingHistoryCacheKey);
 
-		$operation = 'patrons/'.$patronId.'/checkouts/history';
-		$r = $this->_doRequest($operation, [], 'DELETE');
+		$operation = 'patrons/' . $patronId . '/checkouts/history';
+		$r         = $this->_doRequest($operation, [], 'DELETE');
 
 		if(!$r) {
 			return false;
@@ -3255,10 +3307,11 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$this->apiLastError = false;
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
+		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
 		$headers = [
 			'Host'           => parse_url($this->apiUrl, PHP_URL_HOST),
 			'Authorization' => 'Bearer ' . $this->oAuthToken,
-			'User-Agent'     => 'Pika',
+			'User-Agent'     => $userAgent,
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
 		];
 
@@ -3538,9 +3591,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			// grab a user friendlier string for the fail message
 			$messageParts = explode(':', $this->apiLastError);
 			// just grab the last part of message
-			$offset = (count($messageParts) - 1);
+			$offset  = (count($messageParts) - 1);
 			$message = $messageParts[$offset];
-			$return = $message;
+			$return  = $message;
 		} else {
 			$return = false;
 		}

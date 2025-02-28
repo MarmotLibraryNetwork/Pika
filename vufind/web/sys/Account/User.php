@@ -1316,6 +1316,14 @@ class User extends DB_DataObject {
 	}
 
 	/**
+	 * @param SourceAndId $sourceAndId
+	 * @return array|false
+	 */
+	public function getHomePickupLocations($sourceAndId){
+		$homePickupLocations = $this->getCatalogDriver()->getHomePickupLocations($this, $sourceAndId);
+		return $homePickupLocations;
+	}
+	/**
 	 * Place Hold
 	 *
 	 * Place a hold for the current user within their ILS
