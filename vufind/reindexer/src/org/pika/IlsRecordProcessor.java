@@ -870,6 +870,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HomePickUpInformation  isHomePickUpUnscoped = isItemHomePickUpUnscoped();
 		String                 originalUrl          = itemInfo.geteContentUrl();
 		String                 primaryFormat        = recordInfo.getPrimaryFormat();
+		boolean oncePerRecord = false;
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
 			HoldabilityInformation isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
@@ -885,6 +886,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopingInfo.setBookable(isBookable.isBookable());
 				scopingInfo.setBookablePTypes(isBookable.getBookablePTypes());
 				if (isHomePickUp.isHomePickup()) {
+					if (fullReindex && !oncePerRecord) {
+						logger.error("Pascal: Bib {} has home pickup items", recordInfo.getRecordIdentifier());
+						oncePerRecord = true;
+					}
 					scopingInfo.setIsHomePickUpOnly();
 					scopingInfo.setHomePickUpPTypes(isHomePickUp.getHomePickUpPTypes());
 				}
