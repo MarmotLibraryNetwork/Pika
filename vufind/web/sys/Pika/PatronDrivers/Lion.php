@@ -159,8 +159,6 @@ class Lion extends Sierra {
 	}
 
 	public function importListsFromIls(\User $patron){
-		$this->classicListsRegex = '%<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox".*?<a.*?href="[^"]*?listNum=(\d+)".*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>%si';
 		return $this->importListsFromIlsOriginal($patron);
-
 	}
 }
