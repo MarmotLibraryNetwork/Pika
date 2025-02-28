@@ -137,6 +137,9 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 
 
 //// Digital Archive Adjustments ////
+.active > a:focus .panel-title{
+  text-shadow: none;
+}
 #explore-more-body {
   .panel-body {
     a {
@@ -144,7 +147,6 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
     }
   }
 }
-
 // Explore More overrides
 #explore-more-header {
   font-variant: none;
@@ -154,15 +156,17 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 
 #explore-more-body .jcarousel-control-next, #explore-more-body .jcarousel-control-prev,
 .exploreMoreBar .jcarousel-control-next, .exploreMoreBar  .jcarousel-control-prev {
-  color: @bwml-color-bloodstone;
+  color: @bwml-color-burgandy;
   text-shadow: none;
 }
 
 .glyphicon-chevron-left:before {
+  color: @bwml-color-burgandy;
   content:"\e257";
 }
 
 .glyphicon-chevron-right:before {
+  color: @bwml-color-burgandy;
   content:"\e258";
 }
 
@@ -181,12 +185,12 @@ a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
 
 /* Drives the color for the Magnifying Glass and the name of the selected browse list */
 .selected-browse-label-search a {
-  color: #646510;
+  color: @bwml-color-burgandy;
 }
 
 /* Drives the color for the horizontal rule for the name of the selected browse list */
 #selected-browse-label {
-  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, #a8a96f 30%, #a8a96f 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, @bwml-color-burgandy 30%, @bwml-color-burgandy 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
   margin-bottom: 5px;
 }
 
@@ -289,40 +293,6 @@ a.btn.btn-sm.btn-default {
 #keepFiltersSwitchLabel, #advancedSearchLink{
   font-size:95%;
 }
-#content-container{
-
-  &::before{
-    content: "";
-    display: block;
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 550px;
-    background-image: url(../images/bwml-welcome-books-simplify-min.svg);
-    background-size: auto 85%;
-    background-position: left bottom;
-    background-repeat: no-repeat;
-    z-index: -10;
-    opacity: .75;
-  }
-  &::after{
-    content: "";
-    display:block;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 350px;
-    background-image: url(../images/bwml-welcome-rocks-simplify-min.svg);
-    background-position: bottom right;
-    background-repeat: no-repeat;
-    background-size: 310px;
-    z-index: -10;
-  }
-}
 
 #footer-container{
   position: relative;
@@ -343,4 +313,12 @@ a.btn.btn-sm.btn-default {
   margin-bottom:0;
   padding-bottom:20px;
   padding-left: 40px;
+}
+
+#home-account-links .active .panel-heading, #home-library-links .active .panel-heading{
+  background: #f2f2f2;
+}
+
+#home-account-links .active .panel-title, #home-library-links .active .panel-title{
+  color: @bwml-color-black;
 }

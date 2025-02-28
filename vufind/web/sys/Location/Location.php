@@ -576,20 +576,20 @@ class Location extends DB_DataObject {
 	
 
 	/**
-	 * @param User $patronProfile
+	 * @param User $patron
 	 * @param int  $selectedBranchId
 	 * @param bool $isLinkedUser
 	 * @return Location[]
 	 */
-	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false){
-		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
+	function getPickupBranches($patron, $selectedBranchId = null, $isLinkedUser = false){
+		// Note: Some calls to this function will set $patron to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest
 		$homeLibraryInList      = false;
 		$alternateLibraryInList = false;
 
 		//Get the library for the patron's home branch.
-		if ($patronProfile){
-			$homeLibrary = $patronProfile->getHomeLibrary();
+		if ($patron){
+			$homeLibrary = $patron->getHomeLibrary();
 		}
 
 		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1){
@@ -627,30 +627,30 @@ class Location extends DB_DataObject {
 
 
 		// Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
-		if ($patronProfile){
-			$this->pickupUsers[] = $patronProfile->id;
+		if ($patron){
+			$this->pickupUsers[] = $patron->id;
 		}
 
 		//Load the locations and sort them based on the user profile information as well as their physical location.
 		$physicalLocation = $this->getPhysicalLocation();
 		$locationList     = [];
 		while ($this->fetch()){
-			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)){
+			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patron) && $patron->homeLocationId == $this->locationId)){
 				// Value 0 is valid for patrons of that branch only
 				$this->selected = !empty($selectedBranchId) && $this->locationId == $selectedBranchId ? 'selected' : '';
 				// Each location is prepended with a number to keep precedence for given locations when sorted by ksort below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $this->locationId){
 					//If the user is in a branch, those holdings come first.
 					$locationList['1' . $this->displayName] = clone $this;
-				}elseif (!empty($patronProfile) && $this->locationId == $patronProfile->homeLocationId){
+				}elseif (!empty($patron) && $this->locationId == $patron->homeLocationId){
 					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
 					$locationList['21' . $this->displayName] = clone $this;
 					$homeLibraryInList                       = true;
-				}elseif (isset($patronProfile->myLocation1Id) && $this->locationId == $patronProfile->myLocation1Id){
+				}elseif (isset($patron->myLocation1Id) && $this->locationId == $patron->myLocation1Id){
 					//Next come nearby locations for the user
 					$locationList['3' . $this->displayName] = clone $this;
 					$alternateLibraryInList                 = true;
-				}elseif (isset($patronProfile->myLocation2Id) && $this->locationId == $patronProfile->myLocation2Id){
+				}elseif (isset($patron->myLocation2Id) && $this->locationId == $patron->myLocation2Id){
 					//Next come nearby locations for the user
 					$locationList['4' . $this->displayName] = clone $this;
 				}elseif (isset($homeLibrary) && $this->libraryId == $homeLibrary->libraryId){
@@ -663,19 +663,20 @@ class Location extends DB_DataObject {
 			}
 		}
 		ksort($locationList);
+		//TODO: should this be done just before the return to include locations from below
 
 		//MDN 8/14/2015 always add the home location #PK-81
 		// unless the option to pickup at the home location is specifically disabled #PK-1250
 		//if (count($locationList) == 0 && (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1)){
-		if (!empty($patronProfile) && $patronProfile->homeLocationId != 0){
+		if (!empty($patron) && $patron->homeLocationId != 0){
 			/** @var Location $homeLocation */
 			$homeLocation             = new Location();
-			$homeLocation->locationId = $patronProfile->homeLocationId;
+			$homeLocation->locationId = $patron->homeLocationId;
 			if ($homeLocation->find(true)){
 				if ($homeLocation->validHoldPickupBranch != 2){
 					//We didn't find any locations.  This for schools where we want holds available, but don't want the branch to be a
 					//pickup location anywhere else.
-					$homeLocation->pickupUsers[] = $patronProfile->id; // Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
+					$homeLocation->pickupUsers[] = $patron->id; // Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
 					$existingLocation            = false;
 					foreach ($locationList as $location){
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId){
@@ -691,7 +692,7 @@ class Location extends DB_DataObject {
 						if (!$isLinkedUser){
 							$homeLocation->selected                         = true;
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
-							$homeLibraryInList                               = true;
+							$homeLibraryInList                              = true;
 						}else{
 							$locationList['22' . $homeLocation->displayName] = clone $homeLocation;
 						}

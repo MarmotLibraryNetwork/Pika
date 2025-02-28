@@ -1,6 +1,6 @@
 Pika.Record = (function(){
 	return {
-		showPlaceHold: function(module, id){
+		showPlaceHold: function(module, id, hasHomePickupItems){
 			Pika.Account.ajaxLogin(function (){
 				var source,
 						volume = null;
@@ -14,9 +14,16 @@ Pika.Record = (function(){
 				}else{
 					source = 'ils';
 				}
+				if (hasHomePickupItems === undefined){
+					hasHomePickupItems = false;
+				}
+
 				var url = "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume != null){
 					url += "&volume=" + volume;
+				}
+				if (hasHomePickupItems){
+					url += "&hasHomePickupItems=1"
 				}
 				//Pika.showMessage('Loading...', 'Loading, please wait.');
 				$.getJSON(url, function(data){
