@@ -191,8 +191,8 @@ trait SierraPatronListOperations {
 			CURLOPT_COOKIESESSION     => false,
 			CURLOPT_HEADER            => false,
 			CURLOPT_AUTOREFERER       => true,
-            CURLOPT_SSL_VERIFYPEER => false, // REMOVE
-            CURLOPT_SSL_VERIFYHOST => false, // REMOVE
+            //CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+            //CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 		];
 		$c->setOpts($curlOpts);
 
