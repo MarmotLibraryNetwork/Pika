@@ -44,7 +44,8 @@ class Lion extends Sierra {
 	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 		$this->logger->info('Using Pika\PatronDrivers\Lion.');
-	}
+        $this->classicListsRegex = '/href="[^"]*listNum=(\d+)">([^<]+)<\/a>.*?<td width="50%" class="patFuncDetails">(.*?)<\/td>/s';
+    }
 
 	public function selfRegister($extraSelfRegParams = false){
 		$extraSelfRegParams = [
