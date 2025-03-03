@@ -315,10 +315,35 @@ a.btn.btn-sm.btn-default {
   padding-left: 40px;
 }
 
-#home-account-links .active .panel-heading, #home-library-links .active .panel-heading{
-  background: #f2f2f2;
+.panel-heading, .sidebar-links.accordion .active .panel-heading{
+  border-color: #fef4ed;
+  background-color: @bwml-color-tan;
 }
 
-#home-account-links .active .panel-title, #home-library-links .active .panel-title{
+#home-account-links .panel-title, #home-library-links .panel-title{
   color: @bwml-color-black;
+  text-shadow: none;
+}
+
+.breadcrumbs{
+  background-color: #ffffff;
+}
+
+#content-container .breadcrumbs{
+  background: @bwml-color-tan;
+  .breadcrumb{
+    background-color: transparent;
+  }
+}
+#sidebar-content{
+  background-color: #ffffff;
+  margin-top:-5px;
+}
+
+.sidebar-links .panel-body{
+  border: 2px solid @bwml-color-tan;
+}
+
+.facetTitle{
+  background-color: @bwml-color-tan;
 }

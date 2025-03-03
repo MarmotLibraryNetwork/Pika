@@ -10803,11 +10803,32 @@ a.btn.btn-sm.btn-default {
   padding-bottom: 20px;
   padding-left: 40px;
 }
-#home-account-links .active .panel-heading,
-#home-library-links .active .panel-heading {
-  background: #f2f2f2;
+.panel-heading,
+.sidebar-links.accordion .active .panel-heading {
+  border-color: #fef4ed;
+  background-color: #F5F4ED;
 }
-#home-account-links .active .panel-title,
-#home-library-links .active .panel-title {
+#home-account-links .panel-title,
+#home-library-links .panel-title {
   color: #1A0B01;
+  text-shadow: none;
+}
+.breadcrumbs {
+  background-color: #ffffff;
+}
+#content-container .breadcrumbs {
+  background: #F5F4ED;
+}
+#content-container .breadcrumbs .breadcrumb {
+  background-color: transparent;
+}
+#sidebar-content {
+  background-color: #ffffff;
+  margin-top: -5px;
+}
+.sidebar-links .panel-body {
+  border: 2px solid #F5F4ED;
+}
+.facetTitle {
+  background-color: #F5F4ED;
 }
