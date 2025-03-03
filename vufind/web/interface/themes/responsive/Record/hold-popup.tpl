@@ -27,6 +27,11 @@
 			{strip}
 	</p>
 
+	{if $hasHomePickupItems}
+		<p class="alert alert-warning">
+			This title includes Home Pickup items. <strong>Holds on Home Pickup items can only be picked up at the library location that owns them.</strong> The pickup options below will reflect that.
+		</p>
+	{/if}
 	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
 		<input type="hidden" name="id" id="id" value="{$id}">
 		<input type="hidden" name="recordSource" id="recordSource" value="{$recordSource}">

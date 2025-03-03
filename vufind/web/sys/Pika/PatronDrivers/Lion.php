@@ -44,7 +44,8 @@ class Lion extends Sierra {
 	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 		$this->logger->info('Using Pika\PatronDrivers\Lion.');
-	}
+        $this->classicListsRegex = '/href="[^"]*listNum=(\d+)">([^<]+)<\/a>.*?<td width="50%" class="patFuncDetails">(.*?)<\/td>/s';
+    }
 
 	public function selfRegister($extraSelfRegParams = false){
 		$extraSelfRegParams = [
@@ -158,8 +159,6 @@ class Lion extends Sierra {
 	}
 
 	public function importListsFromIls(\User $patron){
-		$this->classicListsRegex = '%<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox".*?<a.*?href="[^"]*?listNum=(\d+)".*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>%si';
 		return $this->importListsFromIlsOriginal($patron);
-
 	}
 }

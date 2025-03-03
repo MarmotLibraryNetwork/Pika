@@ -965,7 +965,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null){
 		return [];
 	}
 

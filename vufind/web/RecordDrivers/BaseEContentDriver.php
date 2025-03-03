@@ -40,7 +40,7 @@ abstract class BaseEContentDriver extends MarcRecord {
 		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
 		return $this->createActionsFromUrls($relatedUrls);
 	}
 

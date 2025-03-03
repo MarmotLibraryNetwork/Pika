@@ -10,9 +10,9 @@
 			{/if}
 		{else}
 			{if $showItsHere && $isOpac}
-				<div class="related-manifestation-shelf-status available">It's Here</div>
+				<div class="related-manifestation-shelf-status available">It's Here {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{else}
-				<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
+				<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{/if}
 		{/if}
 	{elseif $statusInformation.availableLocally}
@@ -21,10 +21,10 @@
 		{elseif $statusInformation.allLibraryUseOnly}
 			<div class="related-manifestation-shelf-status available">{translate text='On Shelf (library use only)'}</div>
 		{elseif $scopeType == 'Location'}
-			<div class="related-manifestation-shelf-status availableOther">Available at another branch</div>
+			<div class="related-manifestation-shelf-status availableOther">Available at another branch {include file='GroupedWork/homePickupbutton.tpl'}</div>
 		{else}
 {*			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>*}
-			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if}</div>
+			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
 			like "Shelving"; or "Recently Returned" for Clearview *}
 			{*TODO:  Need a condition when all the holdable copies are checked out and the remaining copies are library use only*}
@@ -44,10 +44,10 @@
 			{/if}
 		{/if}
 	{elseif $statusInformation.available && $statusInformation.hasLocalItem}
-		<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'}</div>
+		<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 	{elseif $statusInformation.available}
 		{if $isGlobalScope}
-			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
+			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 		{else}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'}</div>
 		{/if}
@@ -57,7 +57,7 @@
 		</div>
 	{else}
 		<div class="related-manifestation-shelf-status checked_out">
-			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
+			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
 	{/if}
 	{if ($statusInformation.numHolds > 0 || $statusInformation.onOrderCopies > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
@@ -82,6 +82,29 @@
 						Copies on order
 					{/if}
 				{/if}
+			{/if}
+
+		</div>
+	{/if}
+	{if $statusInformation.hasAHomePickupItem}
+		{* Triggered by button(s) from homePickupbutton.tpl *}
+		<div id="homePickupPopup_{$statusInformation.id|escapeCSS}" style="display: none;">
+			<p class="alert alert-info">You can place holds on the following items, but <strong>they must be picked up at the library location that owns the item.</strong></p>
+			{if !empty($statusInformation.homePickupLocations)}
+				<table class="table table-striped table-bordered">
+					<tr>
+						<th>Location</th>
+						<th>Call number</th>
+						<th>Status</th>
+					</tr>
+					{foreach from=$statusInformation.homePickupLocations item=item}
+						<tr>
+							<td>{$item.location}</td>
+							<td>{$item.callnumber}</td>
+							<td>{$item.status}</td>
+						</tr>
+					{/foreach}
+				</table>
 			{/if}
 
 		</div>

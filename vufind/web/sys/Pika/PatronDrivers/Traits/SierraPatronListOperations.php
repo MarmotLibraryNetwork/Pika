@@ -175,7 +175,8 @@ trait SierraPatronListOperations {
 			'Connection'      => 'keep-alive',
 			'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
 			'Accept-Language' => 'en-us,en;q=0.5',
-			'User-Agent'      => 'Pika'
+			'User-Agent'      => 'Pika',
+            
 		];
 		$c->setHeaders($headers);
 
@@ -190,6 +191,8 @@ trait SierraPatronListOperations {
 			CURLOPT_COOKIESESSION     => false,
 			CURLOPT_HEADER            => false,
 			CURLOPT_AUTOREFERER       => true,
+            //CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+            //CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 		];
 		$c->setOpts($curlOpts);
 
@@ -206,7 +209,8 @@ trait SierraPatronListOperations {
 		$r        = $c->post($loginUrl, $postData);
 
 		if ($c->isError()){
-			$c->close();
+            $this->logger->error('Error logging in to classic OPAC for list export.', ['error'=>$c->errorMessage, 'username'=> $patron->cat_username, 'barcode'=> $patron->barcode]);
+            $c->close();
 			return false;
 		}
 

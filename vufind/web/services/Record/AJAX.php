@@ -57,8 +57,9 @@ class Record_AJAX extends AJAXHandler {
 		if (UserAccount::isLoggedIn()){
 			global $interface;
 			require_once ROOT_DIR . '/services/SourceAndId.php';
-			$sourceAndId  = new SourceAndId($_REQUEST['id']);
-			$recordSource = $_REQUEST['recordSource'];
+			$sourceAndId        = new SourceAndId($_REQUEST['id']);
+			$recordSource       = $_REQUEST['recordSource'];
+			$hasHomePickupItems = $_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true';
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
 				$interface->assign('volume', $_REQUEST['volume']);
@@ -67,9 +68,17 @@ class Record_AJAX extends AJAXHandler {
 			//Get information to show a warning if the user does not have sufficient holds
 			$this->getMaxHoldsWarnings($user);
 
-			//Check to see if the user has linked users that we can place holds for as well
-			//If there are linked users, we will add pickup locations for them as well
-			$locations                      = $user->getValidPickupBranches($recordSource);
+			if ($hasHomePickupItems){
+				$interface->assign('hasHomePickupItems', true);
+				$locations = $user->getHomePickupLocations($sourceAndId);
+			}
+			else{
+				//if (!$hasHomePickupItems || empty($locations)){
+				//Check to see if the user has linked users that we can place holds for as well
+				//If there are linked users, we will add pickup locations for them as well
+				$locations = $user->getValidPickupBranches($recordSource);
+			}
+
 			$multipleAccountPickupLocations = false;
 			$linkedUsers                    = $user->getLinkedUsers();
 			if (count($linkedUsers) >= 1){
@@ -82,6 +91,7 @@ class Record_AJAX extends AJAXHandler {
 					}
 				}
 			}
+
 
 			$interface->assign('pickupLocations', $locations);
 			$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
@@ -131,7 +141,7 @@ class Record_AJAX extends AJAXHandler {
 				$results = [
 					'title'        => 'Unable to place hold',
 					'modalBody'    => '<p>Sorry, no copies of this title are available to your account.</p>',
-					'modalButtons' => "",
+					'modalButtons' => '',
 				];
 			}else{
 				$results = [

@@ -72,7 +72,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		return $actions;
 	}
 
-	function getRecordActions($recordAvailable = null, $recordHoldable = null, $recordBookable = null, $relatedUrls = null, $volumeData = null){
+	function getRecordActions($isAvailable = null, $isHoldable = null, $isBookable = null, $isHomePickupRecord = null, $relatedUrls = null, $volumeData = null){
 		return $this->getActions();
 	}
 
