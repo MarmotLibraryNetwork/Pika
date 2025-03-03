@@ -3249,7 +3249,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 			$opts = [
 				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_HEADER         => false
+				CURLOPT_HEADER         => false,
+                CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+                CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 			];
 
 			// If there's an exception here, let it play out
@@ -3323,6 +3325,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$opts = [
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HEADER         => false,
+            CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+            CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 		];
 
 		// instantiate the Curl object and set the base url
@@ -3600,17 +3604,16 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		return $return;
 	}
 
-	protected function getCheckDigit($recordId){
-		$baseId      = preg_replace('/\.?[bij]/', '', $recordId);
+	protected function getCheckDigit($baseId){
+		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
 		$sumOfDigits = 0;
-		for ($i = 0;$i < strlen($baseId);$i++){
-			$curDigit    = substr($baseId, $i, 1);
-			$multiplier  = (strlen($baseId) + 1) - $i;
-			$sumOfDigits += $multiplier * $curDigit;
+		for ($i = 0; $i < strlen($baseId); $i++){
+			$curDigit = substr($baseId, $i, 1);
+			$sumOfDigits += ((strlen($baseId) + 1) - $i) * $curDigit;
 		}
 		$modValue = $sumOfDigits % 11;
 		if ($modValue == 10){
-			return 'x';
+			return "x";
 		}else{
 			return $modValue;
 		}

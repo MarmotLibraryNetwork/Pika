@@ -1,0 +1,39 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+.header-login-button-mixin(@header-buttons-background-color);
+
+#header-logo {
+  //padding-top: 0;
+  height: @header-logo-height;
+  max-height:@header-logo-max-height;
+}
+
+// Override button corner rounding
+.btn-sm, .btn-xs, .btn, .btn-lg,
+.btn-group-vertical > .btn:last-child:not(:first-child),
+.header-button,
+.panel-group .panel, .panel, .panel-heading, .panel-footer
+{
+  border-radius: 0;
+}
+
+
+// Browse Category customizations based on AnyThink
+#anythink-browse-label(@browse-label-text-color);
+
+.browse-category(@selectedCategoryColor);
+
+#anythink-browse-category-picker(@browseCarouselControlColor, @selectedCategoryColor, @content-bg);
+
+#anythink-selected-browse-label(@browse-label-text-color);
+
+
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+.verticalAlignThumbnailArt();

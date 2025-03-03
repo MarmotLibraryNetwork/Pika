@@ -133,10 +133,13 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
 
 		//global $instanceName;
-/*		if (stripos($instanceName, 'localhost') !== false){
+		//if (stripos($instanceName, 'local') !== false){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); //
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);     //
-		}*/
+		//}
+        
+        
 		if ($params != null){
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
@@ -197,8 +200,8 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
 		if (!empty($loginUserResponse->sessionToken)) {
 			//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
-			$horizonRoaUserID                            = $loginUserResponse->patronKey;
-			$sessionToken                                = $loginUserResponse->sessionToken;
+			$horizonRoaUserID = $loginUserResponse->patronKey;
+			$sessionToken = $loginUserResponse->sessionToken;
 
 			$session = [true, $sessionToken, $horizonRoaUserID];
 			global $configArray;
