@@ -79,7 +79,7 @@ class CitationBuilder {
 		$apa = [
 			'title'     => $this->getAPATitle(),
 			'authors'   => $this->getAPAAuthors(),
-			'publisher' => $this->getAPAPublisher(),
+			'publisher' => $this->getPublisher(),
 			'year'      => $this->getYear(),
 			'edition'   => $this->getEdition()
 		];
@@ -119,8 +119,10 @@ class CitationBuilder {
 					return 'CD';
 				}elseif ($format == 'DVD' || $format == 'Blu-ray'){
 					return 'DVD';
-				}elseif ($format == 'Book' || $format == 'Large Print' || $format == 'Serial' || $format == 'Musical Score' || $format == 'Journal' || $format == 'Manuscript' || $format == 'Newspaper'){
-					return 'Print';
+				}elseif ($format == 'Book' || $format == 'Large Print' ||  $format == 'Musical Score' || $format == 'Manuscript'){
+					return 'Manuscript';
+				}elseif ($format == 'Serial' || $format == 'Journal' || $format == 'Newspaper'){
+					return 'Periodical';
 				}elseif ($format == 'Internet Link' || $format == 'eBook' || $format == 'eBook' || $format == 'EPUB EBook' || $format == 'Kindle Book' || $format == 'Kindle' || $format == 'Plucker' || $format == 'Adobe PDF eBook' || $format == 'overdrive' || $format == 'Adobe PDF'){
 					return 'Web';
 				}
@@ -130,8 +132,10 @@ class CitationBuilder {
 				return 'CD';
 			}elseif ($formats == 'DVD' || $formats == 'Blu-ray'){
 				return 'DVD';
-			}elseif ($formats == 'Book' || $formats == 'Large Print' || $formats == 'Serial' || $formats == 'Musical Score' || $formats == 'Journal' || $formats == 'Manuscript' || $formats == 'Newspaper'){
-				return 'Print';
+			}elseif ($formats == 'Book' || $formats == 'Large Print' || $formats == 'Musical Score' || $formats == 'Manuscript'){
+				return 'Manuscript';
+			}elseif ($formats == 'Serial' || $formats == 'Journal' || $formats == 'Newspaper'){
+				return 'Periodical';
 			}elseif ($formats == 'Internet Link' || $formats == 'eBook' || $formats == 'eBook' || $formats == 'EPUB EBook' || $formats == 'Kindle Book' || $formats == 'Kindle' || $formats == 'Plucker' || $formats == 'Adobe PDF eBook' || $formats == 'overdrive' || $formats == 'Adobe PDF'){
 				return 'Web';
 			}
@@ -400,11 +404,7 @@ class CitationBuilder {
 		if (isset($this->details['authors']) && is_array($this->details['authors'])){
 			$i = 0;
 			foreach ($this->details['authors'] as $author){
-				$pattern = "/\s\d\d\d\d-(\d\d\d\d|.)[,.\s]$/";
-				$matches = [];
-				if (preg_match($pattern, $author, $matches)){
-							$author = str_replace($matches[0], '', $author);
-				    }
+				$author = $this->stripDateRangeFromAuthor($author);
 				$author = $this->abbreviateName($author);
 				if (($i + 1 == count($this->details['authors'])) && ($i > 0)){ // Last
 					$authorStr .= ', & ' . $this->stripPunctuation($author) . '.';
@@ -518,7 +518,7 @@ class CitationBuilder {
 	}
 
 	/**
-	 * Get an array of authors for an APA citation.
+	 * Get an array of authors for an MLA citation.
 	 *
 	 * @access  private
 	 * @return  array
@@ -532,6 +532,7 @@ class CitationBuilder {
 				$authorStr = $this->cleanNameDates($author) . ', et al';
 			}else{
 				foreach ($this->details['authors'] as $author){
+					$author = $this->stripDateRangeFromAuthor($author);
 					if (($i + 1 == count($this->details['authors'])) && ($i > 0)){
 						// Last
 						$authorStr .= ' and ' .
@@ -552,33 +553,12 @@ class CitationBuilder {
 
 	/**
 	 * Get publisher information (place: name) for inclusion in a citation.
-	 * For MLA functionality.
+	 * Shared by APA and MLA functionality.
 	 *
 	 * @access  private
 	 * @return  string
 	 */
 	private function getPublisher(){
-		$parts = [];
-		if (isset($this->details['pubPlace']) && !empty($this->details['pubPlace'])){
-			$parts[] = $this->stripPunctuation($this->details['pubPlace']);
-		}
-		if (isset($this->details['pubName']) && !empty($this->details['pubName'])){
-			$parts[] = $this->details['pubName'];
-		}
-		if (empty($parts)){
-			return false;
-		}
-		return $this->stripPunctuation(implode(', ', $parts));
-	}
-
-	/**
-	 * Get publisher information (place: name) for inclusion in a citation.
-	 * For APA functionality.
-	 *
-	 * @access  private
-	 * @return  string
-	 */
-	private function getAPAPublisher(){
 		$parts = [];
 		if (isset($this->details['pubName']) && !empty($this->details['pubName'])){
 			$parts[] = $this->details['pubName'];
@@ -601,5 +581,19 @@ class CitationBuilder {
 			return preg_replace('/[^0-9]/', '', $this->details['pubDate']);
 		}
 		return false;
+	}
+	 /**
+	 * @param $author the unstripped author
+	 * @return string the author name with no dates attached
+	 */
+	private function stripDateRangeFromAuthor($author){
+		$pattern = "/\s\d\d\d\d-(\d\d\d\d|.)[,.\s]$/";
+		$matches = [];
+		if (preg_match($pattern, $author, $matches)){
+			$author = str_replace($matches[0], '', $author);
+		}else{
+			$author = $author;
+		}
+		return $author;
 	}
 }
