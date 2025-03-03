@@ -10851,3 +10851,7 @@ a.btn.btn-sm.btn-default {
   padding: 7px 0;
   font-weight: normal;
 }
+#more-browse-results {
+  background-color: #EBE9DF;
+  color: #1A0B01;
+}
