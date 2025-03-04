@@ -35,7 +35,8 @@
 		</div>
 		<div class="row">
 			<div class="col-tn-12">
-				<div class="alert alert-warning">Use the login you use for the circulation system, not the login for the online catalog.</div>
+				<br>
+				<p class="alert alert-warning">Use the login you use for the circulation system, not the login for the online catalog.</p>
 			</div>
 		</div>
 		<div class="row">
