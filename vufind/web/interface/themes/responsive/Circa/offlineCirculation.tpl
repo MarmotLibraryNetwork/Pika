@@ -22,15 +22,20 @@
 				<div><label for="login">{$ILSname} Username</label>:</div>
 				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" aria-required="true" onchange="clearOfflineCircResults();"> </div>
 			</div>
-			<div class="col-xs-3">
-				<div><label for="password1">{$ILSname} Password</label>:</div>
-				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" aria-required="true" onchange="clearOfflineCircResults();"></div>
-			</div>
-			<div class="col-xs-4">
-				<label for="showPwd" class="checkbox">
-					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">
-					Show {$ILSname} Password
-				</label>
+{*			<div class="col-xs-3">*}
+{*				<div><label for="password1">{$ILSname} Password</label>:</div>*}
+{*				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" aria-required="true" onchange="clearOfflineCircResults();"></div>*}
+{*			</div>*}
+{*			<div class="col-xs-4">*}
+{*				<label for="showPwd" class="checkbox">*}
+{*					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">*}
+{*					Show {$ILSname} Password*}
+{*				</label>*}
+{*			</div>*}
+		</div>
+		<div class="row">
+			<div class="col-tn-12">
+				<div class="alert alert-warning">Use the login you use for the circulation system, not the login for the online catalog.</div>
 			</div>
 		</div>
 		<div class="row">
