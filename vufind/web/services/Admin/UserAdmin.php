@@ -126,10 +126,31 @@ class Admin_UserAdmin extends Admin_Admin {
 						$interface->assign('duplicateError', 'Invalid user Id');
 					}
 				}
+			}elseif ($_REQUEST['userAction'] == 'showReadingHistoryActions'){
+				if (UserAccount::userHasRole('userAdmin')){
+					$barcode = trim($_REQUEST['barcode']);
+					$interface->assign('readingHistoryBarcode', $barcode);
+					if (ctype_alnum($barcode)){
+						$patron          = new User();
+						$patron->barcode = $barcode;
+						if ($patron->find(true)){
+							if ($historyActions = $patron->getReadingHistoryActions()){
+								$interface->assign('readingHistorySuccess', true);
+								$interface->assign('readingHistoryActions', $historyActions);
+							}else{
+								$interface->assign('readingHistoryError', true);
+							}
+						}
+					}
+				}
+
 			}else{
 				$interface->assign('error', 'Invalid user action.');
 			}
 		}
+
+		$readingHistoryLogStartDate = new Variable('reading_history_action_log_start');
+		$interface->assign('readingHistoryLogStartDate', $readingHistoryLogStartDate->value);
 
 		$this->display('userAdmin.tpl', 'User Admin');
 	}

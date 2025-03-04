@@ -61,13 +61,13 @@ class DBMaintenance extends Admin_Admin {
 					foreach ($sqlStatements as $sql){
 						if (method_exists($this, $sql)){
 							$updateOk           = $this->$sql($update);
-							$update['status'][] = $updateOk ? 'Update succeeded' : 'Update failed';
+							$update['status'][] = $updateOk ? 'Method Update succeeded' : 'Method Update failed';
 							if (empty($update['continueOnError']) && !$updateOk){
 								break;
 							}
 						}elseif (function_exists($sql)){
 							$updateOk           = $sql($update);
-							$update['status'][] = $updateOk ? 'Update succeeded' : 'Update failed';
+							$update['status'][] = $updateOk ? 'Function Update succeeded' : 'Function Update failed';
 							if (empty($update['continueOnError']) && !$updateOk){
 								break;
 							}
