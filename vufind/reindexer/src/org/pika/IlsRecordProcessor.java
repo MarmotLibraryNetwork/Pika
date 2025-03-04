@@ -887,7 +887,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopingInfo.setBookablePTypes(isBookable.getBookablePTypes());
 				if (isHomePickUp.isHomePickup()) {
 					if (fullReindex && !oncePerRecord) {
-						logger.error("Pascal: Bib {} has home pickup items", recordInfo.getRecordIdentifier());
+						logger.info("Bib {} has home pickup items", recordInfo.getRecordIdentifier());
 						oncePerRecord = true;
 					}
 					scopingInfo.setIsHomePickUpOnly();
