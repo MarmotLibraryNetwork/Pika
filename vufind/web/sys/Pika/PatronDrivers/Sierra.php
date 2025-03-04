@@ -2184,7 +2184,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$params['neededBy'] = $neededBy;
 		}
 
-		$operation = "patrons/{$patronId}/holds/requests";
+		$operation = "patrons/$patronId/holds/requests";
 
 		$r = $this->_doRequest($operation, $params, "POST");
 
@@ -2295,7 +2295,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$result    = $this->_doRequest($operation, $params);
 		if (!$result){
 			if ($this->apiLastError){
-				$message           = $this->_getPrettyError() || 'Error getting valid home pick up item locations from Sierra' ;
+				$message = $this->_getPrettyError() || 'Error getting valid home pick up item locations from Sierra';
 				$this->logger->error($message, [$operation, $params]);
 				return false;
 			}
@@ -2303,6 +2303,11 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		// Get the location codes to lookup in our location table
 		$locationCodes = [];
+		if(empty($result->holdshelf)){
+			$this->logger->error('Did not get a holdshelf response from the holds requests form call. Check sierra version is 6.3 or greater');
+			return false;
+		}
+
 		if (!empty($result->holdshelf->selected)){
 			$locationCodes[] = trim($result->holdshelf->selected->code);
 		}
@@ -2319,15 +2324,14 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		if ($location->find()){
 			$pickupUsersArray[] = $patron->id;
 			foreach ($patron->getLinkedUsers() as $linkedUser){
-				//TODO: ptype calculations might need to be applied to linked users
+				//TODO: pType calculations might need to be applied to linked users
 				$pickupUsersArray[] = $linkedUser->id;
 			}
-			$pickupUsers = implode(',', $pickupUsersArray);
+			//$pickupUsers = implode(',', $pickupUsersArray);
 			while ($location->fetch()){
 				// Add to pickup location array
 				$location->pickupUsers = $pickupUsersArray;
-				$pickupLocations[] = clone $location;
-
+				$pickupLocations[]     = clone $location;
 			}
 		}
 
@@ -2482,9 +2486,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		if ($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2){
 			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
-			$params    = ["readingHistoryActivation" => true];
-			$r         = $this->_doRequest($operation, $params, "POST");
-			if ($r === ""){
+			$params    = ['readingHistoryActivation' => true];
+			$r         = $this->_doRequest($operation, $params, 'POST');
+			if ($r === ''){
 				// $r can be false and will wrongly match $r == ""
 				$success = true;
 			}
@@ -2503,7 +2507,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * Opt out the patron from Reading History within the ILS.
 	 *
 	 * @param  User $patron
-	 * @return bool Whether or not the opt-out action was successful
+	 * @return bool Whether the opt-out action was successful
 	 */
 	public function optOutReadingHistory($patron){
 		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
@@ -2514,9 +2518,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		if ($apiInfo['VersionMajor'] >= 6 && $apiInfo['VersionMinor'] >= 2){
 			$operation = 'patrons/' . $patron->ilsUserId . '/checkouts/history/activationStatus';
-			$params    = ["readingHistoryActivation" => false];
-			$r         = $this->_doRequest($operation, $params, "POST");
-			if ($r == ""){
+			$params    = ['readingHistoryActivation' => false];
+			$r         = $this->_doRequest($operation, $params, 'POST');
+			if ($r == ''){
 				$success = true;
 			}
 		}else{
@@ -2552,7 +2556,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$index = trim($parts[0]);
 			$index = str_replace(' ', '', $index);
 
-			if ($index == "Version"){
+			if ($index == 'Version'){
 				$indexParts = explode('.', $parts[1]);
 				if (count($indexParts) >= 2){
 					$info['VersionMajor'] = (int)$indexParts[0];
@@ -3604,16 +3608,17 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		return $return;
 	}
 
-	protected function getCheckDigit($baseId){
-		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
+	protected function getCheckDigit($recordId){
+		$baseId      = preg_replace('/\.?[bij]/', '', $recordId);
 		$sumOfDigits = 0;
 		for ($i = 0; $i < strlen($baseId); $i++){
 			$curDigit = substr($baseId, $i, 1);
-			$sumOfDigits += ((strlen($baseId) + 1) - $i) * $curDigit;
+			$multiplier  = (strlen($baseId) + 1) - $i;
+			$sumOfDigits += $multiplier * $curDigit;
 		}
 		$modValue = $sumOfDigits % 11;
 		if ($modValue == 10){
-			return "x";
+			return 'x';
 		}else{
 			return $modValue;
 		}

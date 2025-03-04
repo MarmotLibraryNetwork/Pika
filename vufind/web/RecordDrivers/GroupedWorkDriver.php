@@ -3035,20 +3035,21 @@ class GroupedWorkDriver extends RecordInterface {
 				$recordBookable = true;
 			}
 
-				if ($holdable && $isHomePickUp) {
-					if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
-						$recordIsHomePickUp                  = true;
-						$relatedRecord['hasAHomePickupItem'] = true;
-						// Any home pickup item for the record should turn on this flag
-						//$relatedRecord['homePickupLocations'][] = $locationCode;
-						$relatedRecord['homePickupLocations'][] = [
-							'location'   => $shelfLocation,
-							'callnumber' => $callNumber,
-							'status'     => $status,
-						];
-					}
+
+			global $configArray;
+			if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
+				if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
+					$recordIsHomePickUp                  = true;
+					$relatedRecord['hasAHomePickupItem'] = true;
+					// Any home pickup item for the record should turn on this flag
+					//$relatedRecord['homePickupLocations'][] = $locationCode;
+					$relatedRecord['homePickupLocations'][] = [
+						'location'   => $shelfLocation,
+						'callnumber' => $callNumber,
+						'status'     => $status,
+					];
 				}
-			//$isHomePickUp = $this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp);
+			}
 
 			//Update the record with information from the item and from scoping.
 			if ($isEcontent){

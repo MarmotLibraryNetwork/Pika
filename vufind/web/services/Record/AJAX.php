@@ -24,7 +24,7 @@ class Record_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected array $methodsThatRespondWithJSONUnstructured = array(
+	protected array $methodsThatRespondWithJSONUnstructured = [
 	 'getPlaceHoldForm',
 	 'getPlaceHoldEditionsForm',
 	 'getBookMaterialForm',
@@ -33,19 +33,19 @@ class Record_AJAX extends AJAXHandler {
 	 'reloadCover',
 	 'forceReExtract',
 	 'getCheckInGrid',
-	);
+	];
 
-	protected array $methodsThatRespondWithHTML = array(
+	protected array $methodsThatRespondWithHTML = [
 	 'getBookingCalendar',
-	);
+	];
 
-	protected array $methodsThatRespondWithXML = array(
+	protected array $methodsThatRespondWithXML = [
 	 'IsLoggedIn',
-	);
+	];
 
-	protected array $methodsThatRespondThemselves = array(
+	protected array $methodsThatRespondThemselves = [
 	 'downloadMarc',
-	);
+	];
 
 	function IsLoggedIn(){
 		return "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
@@ -72,8 +72,10 @@ class Record_AJAX extends AJAXHandler {
 				$interface->assign('hasHomePickupItems', true);
 				$locations = $user->getHomePickupLocations($sourceAndId);
 			}
-			else{
-				//if (!$hasHomePickupItems || empty($locations)){
+			if (!$hasHomePickupItems || $locations === false){
+				// $locations === false is for the case when there was an error reaching out to
+				// Sierra for home pick up locations.
+
 				//Check to see if the user has linked users that we can place holds for as well
 				//If there are linked users, we will add pickup locations for them as well
 				$locations = $user->getValidPickupBranches($recordSource);
