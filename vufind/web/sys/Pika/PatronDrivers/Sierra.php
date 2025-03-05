@@ -2015,7 +2015,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			}
 			if (isset($hold->canFreeze)){
 				// Sierra holds now have a canFreeze flag
-				$freezeable = true;
+				$freezeable = (boolean)$hold->canFreeze;
 			}else{
 				// for sierra, holds can't be frozen if patron is next in line
 				if (isset($hold->priorityQueueLength)){
