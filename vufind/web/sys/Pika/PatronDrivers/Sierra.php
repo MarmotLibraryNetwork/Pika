@@ -1854,7 +1854,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$operation = "patrons/$patronId/holds";
 		if ((integer)$this->configArray['Catalog']['api_version'] > 4){
 			$params = [
-				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate,canFreeze',
 				'limit'  => 1000,
 				'expand' => 'record'
 			];
@@ -2013,17 +2013,22 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$freezeable   = false;
 					$updatePickup = false;
 			}
-			// for sierra, holds can't be frozen if patron is next in line
-			if(isset($hold->priorityQueueLength)) {
-				if(isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)) {
-					$freezeable = false;
-				// if the patron is the only person on wait list hold can't be frozen
-				} elseif(isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)) {
-					$freezeable = false;
-				// if there is no priority set but queueLength = 1
-				} elseif(!isset($hold->priority) && $hold->priorityQueueLength == 1) {
-					$freezeable = false;
-				} 
+			if (isset($hold->canFreeze)){
+				// Sierra holds now have a canFreeze flag
+				$freezeable = true;
+			}else{
+				// for sierra, holds can't be frozen if patron is next in line
+				if (isset($hold->priorityQueueLength)){
+					if (isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)){
+						$freezeable = false;
+						// if the patron is the only person on wait list hold can't be frozen
+					}elseif (isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)){
+						$freezeable = false;
+						// if there is no priority set but queueLength = 1
+					}elseif (!isset($hold->priority) && $hold->priorityQueueLength == 1){
+						$freezeable = false;
+					}
+				}
 			}
 			$h['status']    = $status;
 			$h['freezeable']= $freezeable;
@@ -2036,7 +2041,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			if (!empty($hold->pickupLocation)){
 				$pickupBranch = new Location();
 				$where        = "code = '{$hold->pickupLocation->code}'";
-				$pickupBranch->whereAdd($where);
+				$pickupBranch->whereAdd($where); //TODO: simplify
 				if ($pickupBranch->find(1)){
 					$h['currentPickupId']   = $pickupBranch->locationId;
 					$h['currentPickupName'] = $pickupBranch->displayName;
@@ -2047,7 +2052,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$h['location']          = $hold->pickupLocation->name;
 				}
 			} else{
-				//This shouldn't happen but we have had examples where it did
+				//This shouldn't happen, but we have had examples where it did
 				$this->logger->error("Patron with barcode {$patron->getBarcode()} has a hold with out a pickup location ");
 				$h['currentPickupId']   = false;
 				$h['currentPickupName'] = false;
