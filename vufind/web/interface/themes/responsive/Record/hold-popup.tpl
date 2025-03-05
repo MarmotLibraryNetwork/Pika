@@ -39,6 +39,9 @@
 		{if $volume}
 			<input type="hidden" name="volume" id="volume" value="{$volume}">
 		{/if}
+		{if hasHomePickupItems}
+			<input type="hidden" name="hasHomePickupItems" id="hasHomePickupItems" value=1>
+		{/if}
 		<fieldset>
 
 			{* Responsive theme enforces that the user is always logged in before getting here*}

@@ -2356,7 +2356,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @inheritDoc
      */
-    public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
+    public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false)
     {
 		// Determine if item-level hold is needed
 	    $sourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $recordId);

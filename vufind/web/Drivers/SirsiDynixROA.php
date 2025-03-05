@@ -1038,7 +1038,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null){
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false){
 		//For Sirsi ROA we don't really know if a record needs a copy or title level hold.  We determined that we would check
 		// the marc record and if the call numbers in the record vary we will place a copy level hold
 		$result        = [];

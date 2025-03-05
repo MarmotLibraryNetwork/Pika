@@ -1336,7 +1336,7 @@ class User extends DB_DataObject {
 	 *                                    message - the message to display
 	 * @access  public
 	 */
-	function placeHold($recordId, $pickupBranch, $cancelDate = null){
+	function placeHold($recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false){
 		global $offlineMode;
 		global $configArray;
 		$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;

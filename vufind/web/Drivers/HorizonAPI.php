@@ -360,7 +360,7 @@ abstract class HorizonAPI extends Horizon{
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false) {
 		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch);
 		return $result;
 	}

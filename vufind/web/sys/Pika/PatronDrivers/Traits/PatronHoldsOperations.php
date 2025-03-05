@@ -61,7 +61,7 @@ trait PatronHoldsOperations {
 	 *                                  title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public abstract function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null);
+	public abstract function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false);
 
 	/**
 	 * Place an Item-level Hold
