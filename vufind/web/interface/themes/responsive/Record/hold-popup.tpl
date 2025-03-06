@@ -39,7 +39,7 @@
 		{if $volume}
 			<input type="hidden" name="volume" id="volume" value="{$volume}">
 		{/if}
-		{if hasHomePickupItems}
+		{if $hasHomePickupItems}
 			<input type="hidden" name="hasHomePickupItems" id="hasHomePickupItems" value=1>
 		{/if}
 		<fieldset>
