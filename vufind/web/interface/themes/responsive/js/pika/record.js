@@ -137,6 +137,7 @@ Pika.Record = (function(){
 					,selectedItem = $('#selectedItem')
 					,module = $('#module').val()
 					,volume = $('#volume')
+					,hasHomePickupItems = $('#hasHomePickupItems')
 					,params = {
 						'method': 'placeHold'
 						,campus: $('#campus').val()
@@ -154,6 +155,9 @@ Pika.Record = (function(){
 			}
 			if (volume.length > 0){
 				params['volume'] = volume.val();
+			}
+			if (hasHomePickupItems.length > 0){
+				params['hasHomePickupItems'] = 1;
 			}
 			if (params['campus'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");

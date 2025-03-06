@@ -261,7 +261,7 @@ class Record_AJAX extends AJAXHandler {
 				$cancelDate           = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
 				$patron               = null;
 				$doingStaffPlacedHold = !empty($_REQUEST['patronBarcode']);
-				$isHomePickupHold     = !empty($_REQUEST['hasHomePickupItems']) && $_REQUEST['hasHomePickupItems'] == '1';
+				$isHomePickupHold     = !empty($_REQUEST['hasHomePickupItems']) && ($_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true');
 
 				if (!$doingStaffPlacedHold){
 					if (!empty($_REQUEST['selectedUser'])){
