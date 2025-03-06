@@ -1407,6 +1407,8 @@ public class FormatDetermination {
 							result.add("Playaway");
 						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
 							result.add("AdultLiteracyBook");
+						} else if (subfieldData.contains("yoto card") || subfieldData.contains("yoto story card")) {
+							result.add("Yoto");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic and graphic books")  // OverDrive Marc
 						) {
