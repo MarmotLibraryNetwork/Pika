@@ -1357,7 +1357,7 @@ class User extends DB_DataObject {
 				$cancelDate = $this->getHoldNotNeededAfterDate();
 			}
 
-			$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
+			$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate, $hasHomePickupItems);
 			$this->updateAltLocationForHold($pickupBranch);
 			if ($result['success']){
 				$this->clearCache();
@@ -1478,7 +1478,7 @@ class User extends DB_DataObject {
 	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function staffPlacedHold($patronBarcode, $recordId, $pickupBranch, $cancelDate = null, $itemId = null, $volumeId = null) {
+	function staffPlacedHold($patronBarcode, $recordId, $pickupBranch, $cancelDate = null, $itemId = null, $volumeId = null, $hasHomePickupItems = false) {
 		if ($this->isStaff()){
 			$tempPatronObject          = new User();
 			$tempPatronObject->barcode = $patronBarcode;
@@ -1515,7 +1515,7 @@ class User extends DB_DataObject {
 			} elseif (!empty($volumeId)){
 				return $this->getCatalogDriver()->placeVolumeHold($tempPatronObject, $recordId, $volumeId, $pickupBranch, $cancelDate);
 			} else{
-				return $this->getCatalogDriver()->placeHold($tempPatronObject, $recordId, $pickupBranch, $cancelDate);
+				return $this->getCatalogDriver()->placeHold($tempPatronObject, $recordId, $pickupBranch, $cancelDate, $hasHomePickupItems);
 			}
 		} else {
 			return [
