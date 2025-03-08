@@ -120,6 +120,29 @@ function getIndexingUpdates(): array{
 			]
 		],
 
+		'2025.02.0_add_yoto_formats' => [
+			'release'         => '2025.02.0',
+			'title'           => 'Add Yoto Formats',
+			'description'     => 'Add Yoto Story & Yoto Music Formats to translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'YotoStory', 'Yoto Story Card')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'YotoStory', 'Audio Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'YotoStory', '4')",
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'YotoMusic', 'Yoto Music Card')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'YotoMusic', 'Music')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'YotoMusic', '4')",
+			],
+		],
+
 	];
 }
 

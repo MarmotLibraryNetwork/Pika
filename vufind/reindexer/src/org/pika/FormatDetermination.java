@@ -1229,6 +1229,12 @@ public class FormatDetermination {
 							result.add("DVD");
 						} else if (sysDetailsValue.contains("vertical file")) {
 							result.add("VerticalFile");
+						} else if (sysDetailsValue.contains("for use in yoto player")){
+							if (typeOfRecordLeaderChar != null && typeOfRecordLeaderChar.equals('j')){
+								result.add("YotoMusic");
+							} else {
+								result.add("YotoStory");
+							}
 						}
 					}
 				}
@@ -1408,7 +1414,7 @@ public class FormatDetermination {
 						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
 							result.add("AdultLiteracyBook");
 						} else if (subfieldData.contains("yoto card") || subfieldData.contains("yoto story card")) {
-							result.add("Yoto");
+							result.add("YotoStory");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic and graphic books")  // OverDrive Marc
 						) {
