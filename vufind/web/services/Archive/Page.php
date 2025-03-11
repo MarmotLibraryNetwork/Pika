@@ -90,9 +90,9 @@ class Archive_Page extends Archive_Object{
 
 			/** @var CollectionDriver $collection */
 			$anonymousMasterDownload = true;
-			$verifiedMasterDownload = true;
-			$anonymousLcDownload = true;
-			$verifiedLcDownload = true;
+			$verifiedMasterDownload  = true;
+			$anonymousLcDownload     = true;
+			$verifiedLcDownload      = true;
 
 			/** @var BookDriver $parentDriver */
 			$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);

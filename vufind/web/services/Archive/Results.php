@@ -24,7 +24,6 @@ class Archive_Results extends Union_Results {
 
 	function launch(){
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
@@ -147,9 +146,11 @@ class Archive_Results extends Union_Results {
 				$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 				// Process Paging
 				$link = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
-						'fileName'   => $link,
-						'perPage'    => $summary['perPage']);
+				$options = [
+					'totalItems' => $summary['resultTotal'],
+					'fileName'   => $link,
+					'perPage'    => $summary['perPage']
+				];
 				$pager = new VuFindPager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
