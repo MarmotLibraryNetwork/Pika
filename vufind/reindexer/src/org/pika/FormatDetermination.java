@@ -846,6 +846,9 @@ public class FormatDetermination {
 		if (printFormats.contains("GraphicNovel") && printFormats.contains("DVD")){
 			printFormats.remove("GraphicNovel");
 		}
+		if (printFormats.contains("MusicRecording") && printFormats.contains("YotoMusic")){
+			printFormats.remove("MusicRecording");
+		}
 
 		// Book Things
 		if (printFormats.contains("Book")){
@@ -1231,6 +1234,7 @@ public class FormatDetermination {
 							result.add("VerticalFile");
 						} else if (sysDetailsValue.contains("for use in yoto player")){
 							if (typeOfRecordLeaderChar != null && typeOfRecordLeaderChar.equals('j')){
+								result.remove("MusicRecording");
 								result.add("YotoMusic");
 							} else {
 								result.add("YotoStory");
