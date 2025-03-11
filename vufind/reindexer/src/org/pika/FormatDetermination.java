@@ -721,6 +721,19 @@ public class FormatDetermination {
 			printFormats.add("GoReader");
 			return;
 		}
+		if (printFormats.contains("YotoStory")){
+			if (printFormats.contains("YotoMusic")){
+				// If we have both Yoto formats, assume music is better.
+				printFormats.clear();
+				printFormats.add("YotoMusic");
+				return;
+			}
+			// This should filter out PhysicalObject, YotoStory
+			// Note: General need to be careful with Yoto Player records that should have determination of Physical Object
+			printFormats.clear();
+			printFormats.add("YotoStory");
+			return;
+		}
 
 		// Video Things
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
