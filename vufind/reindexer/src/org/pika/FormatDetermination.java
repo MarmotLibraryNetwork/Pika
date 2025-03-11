@@ -770,6 +770,9 @@ public class FormatDetermination {
 		if (printFormats.contains("Blu-ray") && printFormats.contains("4KUltraBlu-Ray")){
 			printFormats.remove("Blu-ray");
 		}
+		if (printFormats.contains("GraphicNovel") && printFormats.contains("DVD")){
+			printFormats.remove("GraphicNovel");
+		}
 
 		// Sound Things
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
@@ -841,9 +844,6 @@ public class FormatDetermination {
 			printFormats.remove("DVD");
 		}
 		if (printFormats.contains("GraphicNovel") && printFormats.contains("SoundDisc")){
-			printFormats.remove("GraphicNovel");
-		}
-		if (printFormats.contains("GraphicNovel") && printFormats.contains("DVD")){
 			printFormats.remove("GraphicNovel");
 		}
 		if (printFormats.contains("MusicRecording") && printFormats.contains("YotoMusic")){
