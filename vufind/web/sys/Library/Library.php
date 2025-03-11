@@ -1078,7 +1078,7 @@ class Library extends DB_DataObject {
 			'NewspaperAuthenticationSection' => [
 				'property'   => 'NewspaperAuthenticationSection', 'type' => 'section', 'label' => 'Newspaper Authentication', 'hideInLists' => true,
 				// TODO: Add documentation link.
-				//'helpLink'   => '',
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/cp/dAUR1fce',
 				'properties' => [
 					'nytimes' => ['property' => 'nytimesUrl', 'type' => 'text', 'label' => 'NY Times Subscription URL (MyAccount/NYTimes)',        'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
 					'wsj'     => ['property' => 'wsjUrl',     'type' => 'text', 'label' => 'Wall Street Journal Subscription URL (MyAccount/WSJ)', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
