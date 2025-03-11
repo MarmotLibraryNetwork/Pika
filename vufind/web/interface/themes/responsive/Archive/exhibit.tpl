@@ -41,7 +41,6 @@
 	<div class="clear-both"></div>
 
 	{if $showWidgetView}
-	{assign var='i' value=0}
 		<div id="related-exhibit-images" class="exploreMoreBar row">
 			<div class="label-top">
 				<div class="exploreMoreBarLabel">{translate text='Categories'}</div>
@@ -54,8 +53,8 @@
 
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
-							{foreach from=$relatedImages item=image}
-								<li id="exploreMore{$i}" class="explore-more-option">
+							{foreach from=$relatedImages item=image name=loop}
+								<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
 									<figure class="thumbnail" title="{$image.title|escape}">
 										<div class="explore-more-image">
 											<a href='{$image.link}'>
@@ -67,7 +66,6 @@
 										</figcaption>
 									</figure>
 								</li>
-									{assign var='i' value=$i++}
 							{/foreach}
 						</ul>
 					</div>
