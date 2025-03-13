@@ -2164,6 +2164,9 @@ class MarcRecord extends IndexRecord {
 		$catalogDriver  = $this->getCatalogDriver();
 		if ($catalogDriver->checkFunction('getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
+            if (!is_array($issueSummaries)){
+                return [];
+            }
 			if (count($issueSummaries)){
 				//Insert copies into the information about the periodicals
 				$copies = $this->getCopies();
