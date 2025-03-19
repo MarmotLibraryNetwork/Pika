@@ -33,31 +33,32 @@
 				</a>
 			</div>
 
-				{** barcode image **}
-				{if $showPatronBarcodeImage}
-					{*Codabar only displays numbers, –, $, :, /, +, ., and A, B, C, D as start/stop characters *}
-					<h2 id="barcodeTitle" class="h4">Scannable Library Card Barcode</h2>
-					<div style="text-align: center; min-height: 200px;">
-						<svg role="img" id="barcode" style="margin: 0 auto;max-width: 100%" aria-labelledby="barcodeTitle"></svg>
-						{literal}
-						<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
-						<script>
-							try {
+			{** barcode image **}
+			{if $showPatronBarcodeImage}
+				{* CODE 39 only displays numbers, uppercase letters and some special characters (-, ., $, /, +, %, and space). *}
+				<h2 id="barcodeTitle" class="h4">Scannable Library Card Barcode</h2>
+				<div style="text-align: center; min-height: 200px;">
+					<svg role="img" id="barcode" style="margin: 0 auto;max-width: 100%" aria-labelledby="barcodeTitle"></svg>
+					{literal}
+					<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
+					<script>
+						try {
 							JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
-								format: "codabar",
+								format: "CODE39",
+								/*mod43: true, // check digit option for CODE39 */
 								lineColor: "#000000",
 								width: 2,
 								height: 200,
 								displayValue: false
 							});
-							} catch (e){
-								console.log(e, 'Hiding barcode and parent divs.');
-								$("#barcodeTitle,#barcodeTitle+div").hide();
-							}
-						</script>
-						{/literal}
-					</div>
-        {/if}
+						} catch (e){
+							console.log(e, 'Hiding barcode and parent divs.');
+							$("#barcodeTitle,#barcodeTitle+div").hide();
+						}
+					</script>
+					{/literal}
+				</div>
+			{/if}
 			<hr>
 		</div>
 	</div>
