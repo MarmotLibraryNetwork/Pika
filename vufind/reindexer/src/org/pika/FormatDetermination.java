@@ -1099,8 +1099,8 @@ public class FormatDetermination {
 						result.add("BoardBook");
 					} else if (editionData.contains("illustrated ed")){
 						result.add("IllustratedEdition");
-//			  } else if (find4KUltraBluRayPhrases(editionData)) {
-//					result.add("4KUltraBlu-Ray");
+			  } else if (find4KUltraBluRayPhrases(editionData)) {
+					result.add("4KUltraBlu-Ray");
 						// not sure if this is a good idea yet. see D-2432
 					} else {
 						String gameFormat = getGameFormatFromValue(editionData);
@@ -1840,7 +1840,8 @@ public class FormatDetermination {
 						subject.contains("4k ultra high-definition blu-ray") ||
 						subject.contains("4k ultra high-definition bluray") ||
 						subject.contains("4k ultra high definition blu-ray") ||
-						subject.contains("4k ultra high definition bluray")
+						subject.contains("4k ultra high definition bluray") ||
+						subject.contains("4k ultra hd")
 				;
 	}
 
