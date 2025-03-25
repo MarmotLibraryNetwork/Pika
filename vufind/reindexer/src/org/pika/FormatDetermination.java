@@ -1102,6 +1102,7 @@ public class FormatDetermination {
 			  } else if (find4KUltraBluRayPhrases(editionData)) {
 					result.add("4KUltraBlu-Ray");
 						// not sure if this is a good idea yet. see D-2432
+						// enabled with D-5071
 					} else {
 						String gameFormat = getGameFormatFromValue(editionData);
 						if (gameFormat != null) {
