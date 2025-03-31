@@ -35,7 +35,10 @@
 
 				{** barcode image **}
 				{if $showPatronBarcodeImage}
-					{*Codabar only displays numbers, –, $, :, /, +, ., and A, B, C, D as start/stop characters *}
+					{*
+					Codabar only displays numbers, –, $, :, /, +, ., and A, B, C, D as start/stop characters
+					https://github.com/lindell/JsBarcode/wiki/
+					 *}
 					<h2 id="barcodeTitle" class="h4">Scannable Library Card Barcode</h2>
 					<div style="text-align: center; min-height: 200px;">
 						<svg role="img" id="barcode" style="margin: 0 auto;max-width: 100%" aria-labelledby="barcodeTitle"></svg>
@@ -48,7 +51,7 @@
 								lineColor: "#000000",
 								width: 2,
 								height: 200,
-								displayValue: false
+								displayValue: {/literal}{if !empty($displayBarcodeValue)}true{else}false{/if}{literal},
 							});
 							} catch (e){
 								console.log(e, 'Hiding barcode and parent divs.');

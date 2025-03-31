@@ -48,7 +48,7 @@
 									lineColor: "#000000",
 									width: 2,
 									height: 200,
-									displayValue: false
+									displayValue: {/literal}{if !empty($displayBarcodeValue)}true{else}false{/if}{literal},
 								});
 							</script>
 							{/literal}

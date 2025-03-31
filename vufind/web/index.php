@@ -440,6 +440,11 @@ function loadUserData(){
 		$interface->assign('hasLinkedUsers', $hasLinkedUsers);
 		$interface->assign('pType', UserAccount::getUserPType());
 		$interface->assign('homeLibrary', $user->getHomeLibrarySystemName());
+		if (!empty($user->getHomeLibrary()->showPatronBarcodeImage)){
+			// Display the barcode value beneath the mobile barcode display only if barcode/pin scheme in use.
+			// and not if the name/barcode scheme is used.
+			$interface->assign('displayBarcodeValue', !empty($user->getAccountProfile()->usingPins()));
+		}
 
 		// Set up any masquerading
 		$interface->assign('canMasquerade', UserAccount::getActiveUserObj()->canMasquerade());
