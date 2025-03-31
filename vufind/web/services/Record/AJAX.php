@@ -59,7 +59,7 @@ class Record_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/services/SourceAndId.php';
 			$sourceAndId        = new SourceAndId($_REQUEST['id']);
 			$recordSource       = $_REQUEST['recordSource'];
-			$hasHomePickupItems = $_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true';
+			$hasHomePickupItems = !empty($_REQUEST['hasHomePickupItems']) && ($_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true');
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
 				$interface->assign('volume', $_REQUEST['volume']);
