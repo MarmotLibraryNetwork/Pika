@@ -513,14 +513,13 @@ abstract class MarcRecordProcessor {
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
-			String leader = record.getLeader().toString();
-
+			String       leader         = record.getLeader().toString();
 			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
-			ControlField ohOhSixField = (ControlField) record.getVariableField("006");
+			ControlField ohOhSixField   = (ControlField) record.getVariableField("006");
 
 			// check the Leader at position 6 to determine the type of field
 			char recordType = Character.toUpperCase(leader.charAt(6));
-			char bibLevel = Character.toUpperCase(leader.charAt(7));
+			char bibLevel   = Character.toUpperCase(leader.charAt(7));
 			// Figure out what material type the record is
 			if ((recordType == 'A' || recordType == 'T')
 					&& (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M') /* Books */
@@ -567,14 +566,13 @@ abstract class MarcRecordProcessor {
 		//First get the literary Forms from the 008.  These need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
 		try {
-			String leader = record.getLeader().toString();
-
+			String       leader         = record.getLeader().toString();
 			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
-			ControlField ohOhSixField = (ControlField) record.getVariableField("006");
+			ControlField ohOhSixField   = (ControlField) record.getVariableField("006");
 
 			// check the Leader at position 6 to determine the type of field
 			char recordType = Character.toUpperCase(leader.charAt(6));
-			char bibLevel = Character.toUpperCase(leader.charAt(7));
+			char bibLevel   = Character.toUpperCase(leader.charAt(7));
 			// Figure out what material type the record is
 			if (((recordType == 'A' || recordType == 'T') && (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M')) /* Books */
 					) {
@@ -602,16 +600,16 @@ abstract class MarcRecordProcessor {
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}
-		if (literaryForms.size() > 1){
-			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record " + identifier);
-		}
+//		if (literaryForms.size() > 1){
+//			//Uh oh, we have a problem
+//			logger.warn("Received multiple literary forms for a single marc record " + identifier);
+//		}
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
 
 		//Now get literary forms from the subjects, these don't need translation
 		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
-		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
+		HashMap<String, Integer> literaryFormsFull      = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
 		// MARC 650v
@@ -668,15 +666,16 @@ abstract class MarcRecordProcessor {
 				addToMapWithCount(literaryFormsWithCount, "Fiction");
 				addToMapWithCount(literaryFormsFull, "Poetry");
 			}else if (subjectForm.equalsIgnoreCase("Humor")
-					|| subjectForm.equalsIgnoreCase("Juvenile Humor")
 					|| subjectForm.equalsIgnoreCase("Comedy")
 					|| subjectForm.equalsIgnoreCase("Wit and humor")
 					|| subjectForm.equalsIgnoreCase("Satire")
 					|| subjectForm.equalsIgnoreCase("Humor, Juvenile")
+					|| subjectForm.equalsIgnoreCase("Juvenile Humor")
 					|| subjectForm.equalsIgnoreCase("Humour")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
-				addToMapWithCount(literaryFormsFull, "Fiction");
+				//addToMapWithCount(literaryFormsWithCount, "Fiction");
+				//addToMapWithCount(literaryFormsFull, "Fiction");
+				// Humor subjects are ambiguous enough that they can apply to both fiction and non-fiction
 				addToMapWithCount(literaryFormsFull, "Humor, Satires, etc.");
 			}else if (subjectForm.equalsIgnoreCase("Correspondence")
 					){
