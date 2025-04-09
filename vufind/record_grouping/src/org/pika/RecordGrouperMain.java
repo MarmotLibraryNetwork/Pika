@@ -1017,7 +1017,7 @@ public class RecordGrouperMain {
 					}
 					for (File marcFile : marcFiles) {
 						if (curProfile.groupUnchangedFiles) {
-							logger.warn("groupUnchangedFiles is on for profile " + curProfile.sourceName + ". This setting should be turned off once the profile has been correctly set up.");
+							logger.warn("groupUnchangedFiles is on for profile {}. This setting should be turned off once the profile has been correctly set up.", curProfile.sourceName);
 						}
 						if (checkMinFileSize && marcFile.length() < curProfile.minMarcFileSize) {
 							processProfile = false;
