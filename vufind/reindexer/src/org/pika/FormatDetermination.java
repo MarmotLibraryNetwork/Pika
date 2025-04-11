@@ -253,6 +253,7 @@ public class FormatDetermination {
 						case "dvd":
 						case "videodisc":
 						case "dvdblu-raycombo":
+						case "blu-ray4kcombo":
 						case "playawayview":
 							econtentItem.setFormat("eVideo");
 							econtentItem.setFormatCategory("Movies");
