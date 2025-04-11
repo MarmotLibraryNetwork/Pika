@@ -143,6 +143,24 @@ function getIndexingUpdates(): array{
 			],
 		],
 
+		'2025.02.0_add_4k_blu_ray_combo' => [
+			'release'         => '2025.02.0',
+			'title'           => 'Add Blu-Ray 4K Ultra HD Blu-Ray Combo Pack Format',
+			'description'     => 'Add Blu-Ray 4K Ultra HD Blu-Ray Combo Combo to translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'Blu-ray4KCombo', 'movie')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'Blu-ray4KCombo', 'Blu-Ray 4K Ultra HD Blu-Ray Combo Pack')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'Blu-ray4KCombo', 'Movies')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'Blu-ray4KCombo', '12')"
+			],
+		],
+
 	];
 }
 
