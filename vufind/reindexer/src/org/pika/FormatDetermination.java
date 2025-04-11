@@ -736,6 +736,12 @@ public class FormatDetermination {
 		}
 
 		// Video Things
+		if (printFormats.contains("Blu-ray4KCombo")){
+			printFormats.clear();
+			printFormats.add("Blu-ray4KCombo");
+			return;
+			// Check this before DVD/Blu-ray Combo checking because this combo can be confused for the other combo
+		}
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
 				printFormats.clear();
@@ -745,11 +751,6 @@ public class FormatDetermination {
 			// possible DVD with CD
 			//300  |a 1 videodisc (60 min.) : |b sd., col. ; |c 4 3/4 in. + 1 compact disc (4 3/4 in.) (51 min.)
 			printFormats.remove("CompactDisc");
-		}
-		if (printFormats.contains("Blu-ray4KCombo")){
-			printFormats.clear();
-			printFormats.add("Blu-ray4KCombo");
-			return;
 		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
