@@ -264,8 +264,40 @@ class HooplaProcessor extends MarcRecordProcessor {
 		if (format != null) {
 			format = format.replace(" hoopla", "");
 		} else {
-			logger.warn("No format found in 099a for Hoopla record " + identifier);
-			//TODO: We can fall back to the Hoopla Extract 'kind' now.
+			String temp = MarcUtil.getFirstFieldVal(record, "490a");
+			if (temp != null && temp.equalsIgnoreCase("bingepass")) {
+				format = "BingePass";
+			} else {
+				String kind = hooplaExtractInfo.getKind();
+				if (kind != null && !kind.isEmpty()){
+					logger.debug("No format found in 099a for Hoopla record {}, resorting to API field: kind", identifier);
+					switch (kind){
+						case "BINGEPASS" :
+							format = "BingePass";
+							break;
+						case "COMIC" :
+							format = "eComic";
+							break;
+						case "MUSIC" :
+							format = "eMusic";
+							break;
+						case "TELEVISION" :
+							format = "eVideo";
+							break;
+						case "MOVIE" :
+							format = "eVideo";
+							break;
+						case "AUDIOBOOK" :
+							format = "eAudiobook";
+							break;
+						default :
+							logger.warn("Unhandled Hoopla Kind {}, setting format as eBook", kind);
+						case "EBOOK" :
+							format = "eBook";
+							break;
+					}
+				}
+			}
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
