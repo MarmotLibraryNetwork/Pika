@@ -491,7 +491,7 @@ abstract class Archive_Object extends Action {
 			// pass page and record index info
 			$pikaLogger->debug("Setting exhibit navigation for exhibit {$_SESSION['ExhibitContext']} from search id {$_SESSION['exhibitSearchId']}");
 		}else{
-			$pikaLogger->debug("Exhibit search id was not provided");
+			$pikaLogger->debug('Exhibit search id was not provided');
 		}
 	}
 
