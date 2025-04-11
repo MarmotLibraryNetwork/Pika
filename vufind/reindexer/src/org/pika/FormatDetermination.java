@@ -742,11 +742,14 @@ public class FormatDetermination {
 				printFormats.add("DVDBlu-rayCombo");
 				return;
 			}
-			if (printFormats.contains("CompactDisc")){
-				printFormats.remove("CompactDisc");
-				// possible DVD with CD
-				//300  |a 1 videodisc (60 min.) : |b sd., col. ; |c 4 3/4 in. + 1 compact disc (4 3/4 in.) (51 min.)
-			}
+			// possible DVD with CD
+			//300  |a 1 videodisc (60 min.) : |b sd., col. ; |c 4 3/4 in. + 1 compact disc (4 3/4 in.) (51 min.)
+			printFormats.remove("CompactDisc");
+		}
+		if (printFormats.contains("Blu-ray4KCombo")){
+			printFormats.clear();
+			printFormats.add("Blu-ray4KCombo");
+			return;
 		}
 		if (printFormats.contains("Video")){
 			if (printFormats.contains("DVD")
@@ -1089,18 +1092,19 @@ public class FormatDetermination {
 					String editionData = edition.getSubfield('a').getData().trim().toLowerCase();
 					if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
-//					} else if (editionData.contains("young reader")) {
-//						result.add("Young Reader");
 					} else if (editionData.equals("go reader") || editionData.matches(".*[^a-z]go reader.*")) {
 						result.add("GoReader");
 					}	 else if (editionData.contains("wonderbook")) {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if (editionData.contains("illustrated ed")){
+					} else if (editionData.contains("illustrated ed")) {
 						result.add("IllustratedEdition");
-			  } else if (find4KUltraBluRayPhrases(editionData)) {
-					result.add("4KUltraBlu-Ray");
+					} else if (editionData.contains("4k ultra hd + blu-ray") || editionData.contains("blu-ray + 4k ultra hd") || editionData.contains("4k ultra hd/blu-ray combo")){
+						result.add("Blu-ray4KCombo");
+						// TODO: return immediately?, since this is definitely format if we get here
+				  } else if (find4KUltraBluRayPhrases(editionData)) {
+						result.add("4KUltraBlu-Ray");
 						// not sure if this is a good idea yet. see D-2432
 						// enabled with D-5071
 					} else {
