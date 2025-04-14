@@ -145,8 +145,8 @@ function getIndexingUpdates(): array{
 
 		'2025.02.0_add_4k_blu_ray_combo' => [
 			'release'         => '2025.02.0',
-			'title'           => 'Add Blu-Ray 4K Ultra HD Blu-Ray Combo Pack Format',
-			'description'     => 'Add Blu-Ray 4K Ultra HD Blu-Ray Combo Combo to translation maps',
+			'title'           => 'Add Blu-Ray/4K Ultra HD Blu-Ray Combo Pack Format',
+			'description'     => 'Add Blu-Ray/4K Ultra HD Blu-Ray Combo Combo to translation maps',
 			'continueOnError' => true,
 			'sql'             => [
 				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
