@@ -954,7 +954,8 @@ class Location extends DB_DataObject {
 		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
 			$ip = $_COOKIE['test_ip'];
 		}else{
-			$ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_FORWARDED'] ??
+			$ip = $_SERVER['HTTP_CF_CONNECTING_IP'] // Cloudflare Proxy parameter
+				?? $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_FORWARDED'] ??
 				$_SERVER['HTTP_FORWARDED_FOR'] ?? $_SERVER['HTTP_FORWARDED'] ?? $_SERVER['HTTP_FORWARDED'] ??
 				$_SERVER['REMOTE_HOST'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
 		}
