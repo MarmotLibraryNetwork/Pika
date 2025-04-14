@@ -109,7 +109,10 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 					}
 			}
 		} else {
-			logger.warn("Hoopla record {} has no 099 for grouping category", identifier);
+			String temp = MarcUtil.getFirstFieldVal(marcRecord, "490a");
+			if (temp == null || !temp.equalsIgnoreCase("bingepass")) {
+				logger.warn("Hoopla record {} has no 099 or 490a (Bingepass) for grouping category", identifier);
+			}
 		}
 
 		workForTitle.setGroupingCategory(groupingCategory, identifier);
