@@ -153,7 +153,7 @@ function getIndexingUpdates(): array{
 					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
 					'Blu-ray4KCombo', 'movie')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
-					'Blu-ray4KCombo', 'Blu-Ray 4K Ultra HD Blu-Ray Combo Pack')
+					'Blu-ray4KCombo', 'Blu-Ray/4K Ultra HD Blu-Ray Combo Pack')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
 					'Blu-ray4KCombo', 'Movies')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
