@@ -264,38 +264,35 @@ class HooplaProcessor extends MarcRecordProcessor {
 		if (format != null) {
 			format = format.replace(" hoopla", "");
 		} else {
-			String temp = MarcUtil.getFirstFieldVal(record, "490a");
-			if (temp != null && temp.equalsIgnoreCase("bingepass")) {
-				format = "BingePass";
-			} else {
-				String kind = hooplaExtractInfo.getKind();
-				if (kind != null && !kind.isEmpty()){
-					logger.debug("No format found in 099a for Hoopla record {}, resorting to API field: kind", identifier);
-					switch (kind){
-						case "BINGEPASS" :
-							format = "BingePass";
-							break;
-						case "COMIC" :
-							format = "eComic";
-							break;
-						case "MUSIC" :
-							format = "eMusic";
-							break;
-						case "TELEVISION" :
-							format = "eVideo";
-							break;
-						case "MOVIE" :
-							format = "eVideo";
-							break;
-						case "AUDIOBOOK" :
-							format = "eAudiobook";
-							break;
-						default :
-							logger.warn("Unhandled Hoopla Kind {}, setting format as eBook", kind);
-						case "EBOOK" :
-							format = "eBook";
-							break;
-					}
+			// Since there are some records with multiple 490a fields and BingePass can be the second one,
+			// skip straight to using the Hoopla extract kind
+			String kind = hooplaExtractInfo.getKind();
+			if (kind != null && !kind.isEmpty()){
+				logger.debug("No format found in 099a for Hoopla record {}, resorting to API field: kind", identifier);
+				switch (kind){
+					case "BINGEPASS" :
+						format = "BingePass";
+						break;
+					case "COMIC" :
+						format = "eComic";
+						break;
+					case "MUSIC" :
+						format = "eMusic";
+						break;
+					case "TELEVISION" :
+						format = "eVideo";
+						break;
+					case "MOVIE" :
+						format = "eVideo";
+						break;
+					case "AUDIOBOOK" :
+						format = "eAudiobook";
+						break;
+					default :
+						logger.warn("Unhandled Hoopla Kind {}, setting format as eBook", kind);
+					case "EBOOK" :
+						format = "eBook";
+						break;
 				}
 			}
 		}

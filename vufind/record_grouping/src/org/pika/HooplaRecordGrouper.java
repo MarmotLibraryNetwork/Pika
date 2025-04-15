@@ -109,9 +109,20 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 					}
 			}
 		} else {
-			String temp = MarcUtil.getFirstFieldVal(marcRecord, "490a");
-			if (temp == null || !temp.equalsIgnoreCase("bingepass")) {
-				logger.warn("Hoopla record {} has no 099 or 490a (Bingepass) for grouping category", identifier);
+			boolean isBingePass = false;
+			List<DataField> seriesStatements = getDataFields(marcRecord, "490a");
+			if (seriesStatements != null && !seriesStatements.isEmpty()) {
+				for (DataField cur490a : seriesStatements){
+					String field = cur490a.getSubfieldsAsString("a");
+					if (field.equalsIgnoreCase("bingepass")){
+						isBingePass = true;
+						// Use default groupingCategory of book for now
+						break;
+					}
+				}
+			}
+			if (!isBingePass) {
+				logger.warn("Hoopla record {} has no 099 or 490a (BingePass) for grouping category", identifier);
 			}
 		}
 
