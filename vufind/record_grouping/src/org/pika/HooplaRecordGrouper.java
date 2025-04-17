@@ -110,10 +110,10 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 			}
 		} else {
 			boolean isBingePass = false;
-			List<DataField> seriesStatements = getDataFields(marcRecord, "490a");
+			List<DataField> seriesStatements = marcRecord.getDataFields("490");
 			if (seriesStatements != null && !seriesStatements.isEmpty()) {
-				for (DataField cur490a : seriesStatements){
-					String field = cur490a.getSubfieldsAsString("a");
+				for (DataField cur490 : seriesStatements){
+					String field = cur490.getSubfieldsAsString("a");
 					if (field.equalsIgnoreCase("bingepass")){
 						isBingePass = true;
 						// Use default groupingCategory of book for now
