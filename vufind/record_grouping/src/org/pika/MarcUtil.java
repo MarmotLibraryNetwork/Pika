@@ -365,7 +365,7 @@ class MarcUtil {
 		StringBuilder buffer = new StringBuilder("");
 		List<Subfield> subFields = marcField.getSubfields();
 		for (Subfield subfield : subFields) {
-			if (validSubfields.length() == 0 || validSubfields.contains("" + subfield.getCode())){
+			if (validSubfields.isEmpty() || validSubfields.contains("" + subfield.getCode())){
 				if (buffer.length() > 0) {
 					buffer.append(separator != null ? separator : " ");
 				}
@@ -431,7 +431,7 @@ class MarcUtil {
 
 	static String getFirstFieldVal(Record record, String fieldSpec) {
 		Set<String> result = MarcUtil.getFieldList(record, fieldSpec);
-		if (result.size() == 0){
+		if (result.isEmpty()){
 			return null;
 		}else{
 			return result.iterator().next();
@@ -462,11 +462,11 @@ class MarcUtil {
 	 * @author Wayne Graham
 	 * @version $Id: Utils.java 1581 2011-12-19 21:21:52Z rh9ec@virginia.edu $
 	 */
-	private static Pattern cleanJrSrPattern = Pattern.compile(".*[JS]r\\.$");
-	private static Pattern cleaner1Pattern = Pattern.compile(".*\\w\\w\\.$");
-	private static Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
-	private static Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
-	private static Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
+	private static final Pattern cleanJrSrPattern = Pattern.compile(".*[JS]r\\.$");
+	private static final Pattern cleaner1Pattern = Pattern.compile(".*\\w\\w\\.$");
+	private static final Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
+	private static final Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
+	private static final Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
 	/**
 	 * Removes trailing characters (space, comma, slash, semicolon, colon),
 	 * trailing period if it is preceded by at least three letters, and single
