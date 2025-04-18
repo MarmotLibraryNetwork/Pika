@@ -110,6 +110,12 @@
 
 		{elseif $property.type == 'pin'}
 			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*} {if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
+			{if $property.showPasswordRequirements}
+			<br>
+			<div class="alert alert-info">
+				{include file="MyAccount/passwordRequirements.tpl"}
+			</div>
+		{/if}
 
 		{elseif $property.type == 'header'}
 			<h2 id="{$propName}"{if $property.class} class="{$property.class}"{/if}>{$property.value|escape}</h2>

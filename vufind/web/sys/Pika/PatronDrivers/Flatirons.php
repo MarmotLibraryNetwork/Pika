@@ -215,11 +215,12 @@ class Flatirons extends Sierra
 			];
 
 			$fields[] = [
-				'property'    => 'pinconfirm',
-				'type'        => 'pin',
-				'label'       => 'Confirm ' . $PIN,
-				'description' => "Please confirm your $PIN.",
-				'required'    => true
+				'property'                 => 'pinconfirm',
+				'type'                     => 'pin',
+				'label'                    => 'Confirm ' . $PIN,
+				'description'              => "Please confirm your $PIN.",
+				'showPasswordRequirements' => true,
+				'required'                 => true
 			];
 		}
 

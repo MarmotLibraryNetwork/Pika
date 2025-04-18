@@ -286,6 +286,12 @@
 													</span>
 												</div>
 											</div>
+											<div class="col-tn-12">
+												<br>
+												<div class="alert alert-info">
+													{include file="MyAccount/passwordRequirements.tpl"}
+												</div>
+											</div>
 										</div>
 										<div class="form-group">
 											<div class="col-xs-8 col-xs-offset-4">

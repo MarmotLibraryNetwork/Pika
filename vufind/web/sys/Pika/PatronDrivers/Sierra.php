@@ -1628,12 +1628,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			];
 
 			$fields[] = [
-				'property'    => 'pinconfirm',
-				'type'        => 'pin',
-				'label'       => 'Confirm ' . translate('PIN'),
-				'description' => 'Please confirm your ' . translate('pin') . '.',
-//				'maxLength'   => 10,
-				'required'    => true
+				'property'                 => 'pinconfirm',
+				'type'                     => 'pin',
+				'label'                    => 'Confirm ' . translate('PIN'),
+				'description'              => 'Please confirm your ' . translate('pin') . '.',
+				'required'                 => true,
+				'showPasswordRequirements' => true,
 			];
 		}
 
