@@ -495,8 +495,9 @@ public class FormatDetermination {
 	}
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
-		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
-		String                leader       = record.getLeader().toString();
+		LinkedHashSet<String> printFormats            = new LinkedHashSet<>();
+		boolean               skipOtherDeterminations = false;
+		String                leader                  = record.getLeader().toString();
 		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -508,16 +509,21 @@ public class FormatDetermination {
 			}
 			else if (typeOfRecordLeaderChar.equals('r')) {
 				printFormats.add("PhysicalObject");
+			} else if (typeOfRecordLeaderChar.equals('o')) {
+				printFormats.add("Kit");
+				skipOtherDeterminations = true;
 			}
 		}
-		getFormatFromPublicationInfo(record, printFormats);
-		getFormatFromNotes(record, printFormats);
-		getFormatFromEdition(record, printFormats);
-		getFormatFromPhysicalDescription(record, printFormats, recordInfo.getRecordIdentifier());
-		getFormatFromSubjects(record, printFormats);
-		getFormatFromTitle(record, printFormats);
-		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		getGameFormatFrom753(record, printFormats);
+		if (!skipOtherDeterminations) {
+			getFormatFromPublicationInfo(record, printFormats);
+			getFormatFromNotes(record, printFormats);
+			getFormatFromEdition(record, printFormats);
+			getFormatFromPhysicalDescription(record, printFormats, recordInfo.getRecordIdentifier());
+			getFormatFromSubjects(record, printFormats);
+			getFormatFromTitle(record, printFormats);
+			getFormatFromDigitalFileCharacteristics(record, printFormats);
+			getGameFormatFrom753(record, printFormats);
+		}
 		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -536,14 +542,10 @@ public class FormatDetermination {
 			}
 		}
 
-//		if (leaderBit != null) {
-//			accompanyingMaterialCheck(leaderBit, printFormats);
-//		}
-
 		if (printFormats.isEmpty()){
-//			if (fullReindex) {
-//				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
-//			}
+			//if (fullReindex) {
+			//	logger.info("Did not get any formats for record {}, assuming it is a book ", recordInfo.getFullIdentifier());
+			//}
 			printFormats.add("Book");
 		}else if (logger.isDebugEnabled()){
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
@@ -656,11 +658,11 @@ public class FormatDetermination {
 		if (printFormats.size() == 1) {
 			return;
 		}
-//		if (printFormats.contains("Young Reader")) {
-//			printFormats.clear();
-//			printFormats.add("Young Reader");
-//			return;
-//		}
+		if (printFormats.contains("Kit")) {
+			printFormats.clear();
+			printFormats.add("Kit");
+			return;
+		}
 		if (printFormats.contains("Archival Materials")) {
 			printFormats.clear();
 			printFormats.add("Archival Materials");
@@ -669,6 +671,7 @@ public class FormatDetermination {
 		if (printFormats.contains("Thesis")) {
 			printFormats.clear();
 			printFormats.add("Thesis");
+			return;
 		}
 		if (printFormats.contains("Braille")) {
 			printFormats.clear();
@@ -879,7 +882,6 @@ public class FormatDetermination {
 					|| printFormats.contains("BoardBook")
 			){
 				printFormats.remove("Book");
-
 			}
 		}
 
