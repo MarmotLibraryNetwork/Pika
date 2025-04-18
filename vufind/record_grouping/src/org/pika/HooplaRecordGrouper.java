@@ -114,7 +114,8 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 			if (seriesStatements != null && !seriesStatements.isEmpty()) {
 				for (DataField cur490 : seriesStatements){
 					String field = cur490.getSubfieldsAsString("a");
-					if (field.equalsIgnoreCase("bingepass")){
+					if (field.equalsIgnoreCase("bingepass") || field.equalsIgnoreCase("seasonpass")){
+						// Some records only have SeasonPass in the 490, but the extract Kind for these is also BINGEPASS
 						isBingePass = true;
 						// Use default groupingCategory of book for now
 						break;
