@@ -41,12 +41,12 @@ class MyRatings extends MyAccount {
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
 		$rating->find();
-		$ratings  = array();
-		$ratedIds = array();
+		$ratings  = [];
+		$ratedIds = [];
 		while ($rating->fetch()){
 			$ratedIds[$rating->groupedWorkPermanentId] = clone($rating);
 		}
-		$timer->logTime("Loaded ids of titles the user has rated");
+		$timer->logTime('Loaded ids of titles the user has rated');
 
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -55,7 +55,7 @@ class MyRatings extends MyAccount {
 			$groupedWorkDriver = new GroupedWorkDriver($record);
 			if ($groupedWorkDriver->isValid){
 				$rating    = $ratedIds[$groupedWorkDriver->getPermanentId()];
-				$ratings[] = array(
+				$ratings[] = [
 					'id'            => $rating->id,
 					'groupedWorkId' => $rating->groupedWorkPermanentId,
 					'title'         => $groupedWorkDriver->getTitle(),
@@ -65,24 +65,24 @@ class MyRatings extends MyAccount {
 					'link'          => $groupedWorkDriver->getLinkUrl(),
 					'dateRated'     => $rating->dateRated,
 					'ratingData'    => $groupedWorkDriver->getRatingData(),
-				);
+				];
 			}
 		}
 
 
 		//Load titles the user is not interested in
-		$notInterested = array();
+		$notInterested = [];
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterestedObj         = new NotInterested();
 		$notInterestedObj->userId = UserAccount::getActiveUserId();
 		$notInterestedObj->orderBy('dateMarked DESC');
 		$notInterestedObj->find();
-		$notInterestedIds = array();
+		$notInterestedIds = [];
 		while ($notInterestedObj->fetch()){
-			$notInterestedIds[$notInterestedObj->groupedWorkPermanentId] = clone($notInterestedObj);
+			$notInterestedIds[$notInterestedObj->groupedWorkPermanentId] = clone $notInterestedObj;
 		}
-		$timer->logTime("Loaded ids of titles the user is not interested in");
+		$timer->logTime('Loaded ids of titles the user is not interested in');
 
 		/** @var SearchObject_Solr $searchObject */
 //		$searchObject = SearchObjectFactory::initSearchObject();
@@ -93,16 +93,16 @@ class MyRatings extends MyAccount {
 			$notInterestedObj  = $notInterestedIds[$groupedWorkId];
 			if ($groupedWorkDriver->isValid){
 
-				$notInterested[] = array(
+				$notInterested[] = [
 					'id'         => $notInterestedObj->id,
 					'title'      => $groupedWorkDriver->getTitle(),
 					'author'     => $groupedWorkDriver->getPrimaryAuthor(),
 					'dateMarked' => $notInterestedObj->dateMarked,
 					'link'       => $groupedWorkDriver->getLinkUrl()
-				);
+				];
 			}
 		}
-		$timer->logTime("Loaded grouped works for titles user is not interested in");
+		$timer->logTime('Loaded grouped works for titles user is not interested in');
 
 		$interface->assign('ratings', $ratings);
 		$interface->assign('notInterested', $notInterested);
