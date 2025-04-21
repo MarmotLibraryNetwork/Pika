@@ -47,6 +47,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	private       int                          numCharsToCreateFolderFrom;
 	private       boolean                      createFolderFromLeadingCharacters;
 	private       PreparedStatement            hooplaExtractInfoStatement;
+//	private       PreparedStatement            markForHooplaExtraction;
 	private       HooplaExtractInfo            hooplaExtractInfo;
 	private final HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
 	private final HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
@@ -67,6 +68,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 		try {
 			hooplaExtractInfoStatement = pikaConn.prepareStatement("SELECT * FROM hoopla_export WHERE hooplaId = ? LIMIT 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			//markForHooplaExtraction    = pikaConn.prepareStatement("INSERT INTO `hoopla_export` (`hooplaId`, `dateLastUpdated`) VALUES (?, NULL)");
 
 			//Load Hoopla Inclusion Rules
 			try (
@@ -129,7 +131,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					}
 				}
 			} catch (Exception e) {
-				logger.error("Error updating solr based on hoopla marc record " + identifier, e);
+				logger.error("Error updating solr based on hoopla marc record {}", identifier, e);
 			}
 		}
 	}
@@ -155,7 +157,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					if (!newId.equals(originalIdNumber)) {
 						// Only do second fetch attempt if the url id is different from the marc record number id
 						if (fullReindex && logger.isInfoEnabled()) {
-							logger.info("For " + identifier + ", trying Hoopla Id from Url : " + newId);
+							logger.info("For {}, trying Hoopla Id from Url : {}", identifier, newId);
 						}
 						if (getHooplaExtractInfo(newId)){
 							GroupedReindexMain.hooplaRecordWithOutExtractInfo.remove(identifier);
@@ -204,17 +206,18 @@ class HooplaProcessor extends MarcRecordProcessor {
 					hooplaExtractInfo.setChildren(children);
 					return true;
 				} else if (fullReindex) {
-//					logger.info("Did not find Hoopla Extract information for " + identifier);
-					//TODO: mark hoopla api info extract table for re-extraction
+					logger.info("Did not find Hoopla Extract information for {}", identifier);
 					if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(identifier)) {
 						GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(identifier);
+						//TODO: mark hoopla api info extract table for re-extraction
+						//markForExtraction(identifier);
 					}
 				}
 			}
 		} catch (NumberFormatException e) {
-			logger.error("Error parsing identifier : " + identifier + " to a hoopla id number", e);
+			logger.error("Error parsing identifier : {} to a hoopla id number", identifier, e);
 		} catch (SQLException e) {
-			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
+			logger.error("Error adding hoopla extract data to solr document for hoopla record : {}", identifier, e);
 		}
 		return false;
 	}
@@ -474,7 +477,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 		if (logger.isInfoEnabled()) {
 			Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
-			if (titleTags.size() == 0){
+			if (titleTags.isEmpty()){
 				if (!hooplaExtractInfo.title.isEmpty()){
 					logger.warn("Missing 245a has extract title of " + hooplaExtractInfo.title);
 				}
@@ -498,4 +501,17 @@ class HooplaProcessor extends MarcRecordProcessor {
 			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
 		}
 	}
+
+//	protected void markForExtraction(String identifier){
+//		try {
+//			markForHooplaExtraction.setString(1, identifier);
+//			int result = markForHooplaExtraction.executeUpdate();
+//			if (result == 0){
+//				logger.error("Failed to mark Hoopla Id {} for extraction", identifier);
+//			}
+//		} catch (SQLException e) {
+//			logger.error("Error marking new Hoopla id {} for extraction", identifier, e);
+//		}
+//	}
+
 }
