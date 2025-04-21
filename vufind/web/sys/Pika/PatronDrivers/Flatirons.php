@@ -208,7 +208,7 @@ class Flatirons extends Sierra
 				'property'        => 'pin',
 				'type'            => 'pin',
 				'label'           => $PIN,
-				'description'     => "Please set a $PIN. <br>Your $PIN must be at least 4 characters long. Do not repeat a number or letter more than two times in a row (<kbd>1112</kbd> or <kbd>zeee</kbd> will not work). Do not repeat the same two numbers or letters in a row (<kbd>1212</kbd> or <kbd>bebe</kbd> will not work).",
+				//'description'     => "Please set a $PIN. <br>Your $PIN must be at least 4 characters long. Do not repeat a number or letter more than two times in a row (<kbd>1112</kbd> or <kbd>zeee</kbd> will not work). Do not repeat the same two numbers or letters in a row (<kbd>1212</kbd> or <kbd>bebe</kbd> will not work).",
 				'showDescription' => true,
 				'maxLength'       => 10,
 				'required'        => true

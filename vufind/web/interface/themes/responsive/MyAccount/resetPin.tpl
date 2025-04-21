@@ -11,11 +11,6 @@
 				<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 			</p>
 		{else}
-			<div class="alert alert-info">
-				<p>Please enter a new {translate text="pin"}.</p>
-				{include file="MyAccount/passwordRequirements.tpl"}
-			</div>
-
 			<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">
 				{if $resetToken}
 					<input type="hidden" name="resetToken" value="{$resetToken}">
