@@ -496,7 +496,7 @@ public class FormatDetermination {
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats            = new LinkedHashSet<>();
-		boolean               skipOtherDeterminations = false;
+		//boolean               skipOtherDeterminations = false;
 		String                leader                  = record.getLeader().toString();
 		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
@@ -511,10 +511,11 @@ public class FormatDetermination {
 				printFormats.add("PhysicalObject");
 			} else if (typeOfRecordLeaderChar.equals('o')) {
 				printFormats.add("Kit");
-				skipOtherDeterminations = true;
+				//skipOtherDeterminations = true;
+				// Book Club Kit should supersede Kit
 			}
 		}
-		if (!skipOtherDeterminations) {
+		//if (!skipOtherDeterminations) {
 			getFormatFromPublicationInfo(record, printFormats);
 			getFormatFromNotes(record, printFormats);
 			getFormatFromEdition(record, printFormats);
@@ -523,7 +524,7 @@ public class FormatDetermination {
 			getFormatFromTitle(record, printFormats);
 			getFormatFromDigitalFileCharacteristics(record, printFormats);
 			getGameFormatFrom753(record, printFormats);
-		}
+		//}
 		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -658,11 +659,19 @@ public class FormatDetermination {
 		if (printFormats.size() == 1) {
 			return;
 		}
-		if (printFormats.contains("Kit")) {
+
+		if (printFormats.contains("BookClubKit")){
+			// BookClubKit needs to trump Kit
 			printFormats.clear();
-			printFormats.add("Kit");
+			printFormats.add("BookClubKit");
 			return;
 		}
+		if (printFormats.contains("Kit")) {
+				printFormats.clear();
+				printFormats.add("Kit");
+				return;
+		}
+
 		if (printFormats.contains("Archival Materials")) {
 			printFormats.clear();
 			printFormats.add("Archival Materials");
@@ -878,7 +887,7 @@ public class FormatDetermination {
 					|| printFormats.contains("GraphicNovel")
 					|| printFormats.contains("MusicalScore")
 					|| printFormats.contains("BookClubKit")
-					|| printFormats.contains("Kit")
+			//		|| printFormats.contains("Kit") // Kit filtering should happen before this now
 					|| printFormats.contains("BoardBook")
 			){
 				printFormats.remove("Book");
