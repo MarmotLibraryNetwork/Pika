@@ -252,6 +252,7 @@ public class FormatDetermination {
 						case "video":
 						case "dvd":
 						case "videodisc":
+						case "4kultrablu-ray" :
 						case "dvdblu-raycombo":
 						case "blu-ray4kcombo":
 						case "playawayview":
@@ -1017,7 +1018,7 @@ public class FormatDetermination {
 				printFormats.add("Braille");
 			}else if (titleMedium.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleMedium.contains("book club kit") || titleMedium.contains("bookclub kit")){
+			}else if (findBookClubKitPhrasesLowerCased(titleMedium)){
 				printFormats.add("BookClubKit");
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
@@ -1057,7 +1058,7 @@ public class FormatDetermination {
 				printFormats.add("SoundCassette");
 			}else if (titleForm.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleForm.contains("book club kit") || titleForm.contains("bookclub kit")){
+			}else if (findBookClubKitPhrasesLowerCased(titleForm)){
 				printFormats.add("BookClubKit");
 			}
 		}
@@ -1072,8 +1073,7 @@ public class FormatDetermination {
 		}
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
-			title = title.toLowerCase();
-			if (title.contains("book club kit") || title.contains("bookclub kit")){
+			if (findBookClubKitPhrases(title)){
 				printFormats.add("BookClubKit");
 			}
 		}
@@ -1105,6 +1105,8 @@ public class FormatDetermination {
 					String editionData = edition.getSubfield('a').getData().trim().toLowerCase();
 					if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
+					} else if (findBookClubKitPhrases(editionData)) {
+						result.add("BookClubKit");
 					} else if (editionData.equals("go reader") || editionData.matches(".*[^a-z]go reader.*")) {
 						result.add("GoReader");
 					}	 else if (editionData.contains("wonderbook")) {
@@ -1114,9 +1116,10 @@ public class FormatDetermination {
 					} else if (editionData.contains("illustrated ed")) {
 						result.add("IllustratedEdition");
 					} else if (editionData.contains("4k ultra hd + blu-ray") || editionData.contains("blu-ray + 4k ultra hd") || editionData.contains("4k ultra hd/blu-ray combo")){
+						//Do combo check before single format check
 						result.add("Blu-ray4KCombo");
 						// TODO: return immediately?, since this is definitely format if we get here
-				  } else if (find4KUltraBluRayPhrases(editionData)) {
+				  } else if (find4KUltraBluRayPhrasesLowerCased(editionData)) {
 						result.add("4KUltraBlu-Ray");
 						// not sure if this is a good idea yet. see D-2432
 						// enabled with D-5071
@@ -1160,7 +1163,7 @@ public class FormatDetermination {
 							result.add("LargePrint");
 						} else if (physicalDescriptionData.contains("braille")){
 							result.add("Braille");
-						} else if (find4KUltraBluRayPhrases(physicalDescriptionData)) {
+						} else if (find4KUltraBluRayPhrasesLowerCased(physicalDescriptionData)) {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
@@ -1253,7 +1256,7 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						} else if (sysDetailsValue.contains("playaway")) {
 							result.add("Playaway");
-						} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
+						} else if (find4KUltraBluRayPhrasesLowerCased(sysDetailsValue)) {
 							result.add("4KUltraBlu-Ray");
 						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 							result.add("Blu-ray");
@@ -1411,7 +1414,7 @@ public class FormatDetermination {
 		}
 	}
 
-	/**
+		/**
 	 *  Avoid play station format determinations for descriptions of Blu-ray player that note
 	 *  that a play station is compatible with Blu-ray players.
 	 *
@@ -1420,12 +1423,49 @@ public class FormatDetermination {
 	 */
 	private boolean isNotBluRayPlayerDescription(String value) {
 		if (logger.isInfoEnabled() && value.contains("compatible")){
-			logger.info("Blu-ray description test string w/ 'compatible' : " + value);
+			logger.info("Blu-ray description test string w/ 'compatible' : {}", value);
 			//  keying off only "compatible" is likely a false positive
 			//  since descriptions may be referring to other things.
 		}
 		return !value.contains("blu-ray player") && !value.contains("blu-ray disc player") && !value.contains("blu-ray disc computer") && !value.contains("compatible");
 		// Order by the more specific phrases first, and save phrase compatible for last to reduce potential false positives here
+	}
+
+	private Boolean find4KUltraBluRayPhrases(String subject) {
+		subject = subject.toLowerCase();
+		return find4KUltraBluRayPhrasesLowerCased(subject);
+	}
+
+	private Boolean find4KUltraBluRayPhrasesLowerCased(String subject) {
+		return subject.contains("4k ultra hd blu-ray") ||
+						subject.contains("4k ultra hd bluray") ||
+						subject.contains("4k ultrahd blu-ray") ||
+						subject.contains("4k ultrahd bluray") ||
+						subject.contains("4k uh blu-ray") ||
+						subject.contains("4k uh bluray") ||
+						subject.contains("4k ultra high-definition blu-ray") ||
+						subject.contains("4k ultra high-definition bluray") ||
+						subject.contains("4k ultra high definition blu-ray") ||
+						subject.contains("4k ultra high definition bluray") ||
+						subject.contains("4k ultra hd")
+						;
+	}
+
+	/**
+	 * @param subject A string that could contain upper case text
+	 * @return contains one of the phrases, or not
+	 */
+	private Boolean findBookClubKitPhrases(String subject){
+		subject = subject.toLowerCase();
+		return findBookClubKitPhrasesLowerCased(subject);
+	}
+
+	/**
+	 * @param subject A string that has already been made lower case
+	 * @return contains one of the phrases, or not
+	 */
+	private Boolean findBookClubKitPhrasesLowerCased(String subject){
+		return subject.contains("book club kit") || subject.contains("bookclub kit");
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {
@@ -1844,23 +1884,6 @@ public class FormatDetermination {
 					}
 			}
 		}
-	}
-
-	private Boolean find4KUltraBluRayPhrases(String subject) {
-		subject = subject.toLowerCase();
-		return
-				subject.contains("4k ultra hd blu-ray") ||
-						subject.contains("4k ultra hd bluray") ||
-						subject.contains("4k ultrahd blu-ray") ||
-						subject.contains("4k ultrahd bluray") ||
-						subject.contains("4k uh blu-ray") ||
-						subject.contains("4k uh bluray") ||
-						subject.contains("4k ultra high-definition blu-ray") ||
-						subject.contains("4k ultra high-definition bluray") ||
-						subject.contains("4k ultra high definition blu-ray") ||
-						subject.contains("4k ultra high definition bluray") ||
-						subject.contains("4k ultra hd")
-				;
 	}
 
 	HashSet<String> translateCollection(String mapName, Set<String> values, RecordIdentifier identifier) {

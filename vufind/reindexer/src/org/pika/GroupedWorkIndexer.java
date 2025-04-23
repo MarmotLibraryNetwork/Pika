@@ -1242,7 +1242,7 @@ public class GroupedWorkIndexer {
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 
 			} catch (Exception e) {
-				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
+				logger.error("Error adding grouped work to solr {}", groupedWork.getId(), e);
 			}
 		}else{
 			if (!fullReindex){
