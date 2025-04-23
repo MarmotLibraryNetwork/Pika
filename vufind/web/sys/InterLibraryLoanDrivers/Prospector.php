@@ -44,6 +44,9 @@ class Prospector {
 	 * @return array|null
 	 */
 	function getTopSearchResults($searchTerms, $maxResults){
+		if (str_contains($_SERVER["HTTP_USER_AGENT"], "YandexRenderResourcesBot")){
+			return null;
+		}
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 
 		//Load the HTML from Prospector
@@ -57,7 +60,7 @@ class Prospector {
 			]);
 			$prospectorInfo = $curl->get($prospectorUrl);
 		} catch (ErrorException $e){
-			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+			$this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
 			return null;
 		}
 		if ($curl->isCurlError()) {
@@ -74,9 +77,9 @@ class Prospector {
 
 			//Parse the information to get the titles from the page
 			preg_match_all('/gridBrowseCol2(.*?)bibLocations/si', $prospectorInfo, $titleInfo, PREG_SET_ORDER);
-			$prospectorTitles = array();
+			$prospectorTitles = [];
 			for ($matchi = 0;$matchi < count($titleInfo);$matchi++){
-				$curTitleInfo = array();
+				$curTitleInfo = [];
 				//Extract the title and bid from the titleTitleInfo
 				$titleTitleInfo = $titleInfo[$matchi][1];
 
