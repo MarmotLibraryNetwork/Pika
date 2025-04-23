@@ -7,7 +7,7 @@
     "php-curl-class/php-curl-class": "12.*",
     "monolog/monolog": "3.*",
     "php-console/php-console": "~3.1",
-    "psr/simple-cache": "~3.0.0",
+    "psr/simple-cache": "~1.0",
     "smarty/smarty": "2.6.33",
     "phpmailer/phpmailer": "~6.9",
     "pear/log": "~1.13",
