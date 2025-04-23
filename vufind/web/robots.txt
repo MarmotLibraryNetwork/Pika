@@ -30,3 +30,6 @@ Allow: /MyAccount/MyList/
 
 User-agent: facebookexternalhit/1.1
 Allow: /MyAccount/MyList/
+
+User-agent: YandexRenderResourcesBot
+Disallow: /
