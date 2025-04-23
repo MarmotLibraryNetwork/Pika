@@ -496,9 +496,10 @@ public class FormatDetermination {
 	}
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
-		LinkedHashSet<String> printFormats            = new LinkedHashSet<>();
-		//boolean               skipOtherDeterminations = false;
-		String                leader                  = record.getLeader().toString();
+		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
+		RecordIdentifier      identifier   = recordInfo.getRecordIdentifier();
+		String                leader       = record.getLeader().toString();
+
 		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -516,16 +517,15 @@ public class FormatDetermination {
 				// Book Club Kit should supersede Kit
 			}
 		}
-		//if (!skipOtherDeterminations) {
-			getFormatFromPublicationInfo(record, printFormats);
-			getFormatFromNotes(record, printFormats);
-			getFormatFromEdition(record, printFormats);
-			getFormatFromPhysicalDescription(record, printFormats, recordInfo.getRecordIdentifier());
-			getFormatFromSubjects(record, printFormats);
-			getFormatFromTitle(record, printFormats);
-			getFormatFromDigitalFileCharacteristics(record, printFormats);
-			getGameFormatFrom753(record, printFormats);
-		//}
+		getFormatFromPublicationInfo(record, printFormats);
+		getFormatFromNotes(record, printFormats);
+		getFormatFromEdition(record, printFormats, identifier);
+		getFormatFromPhysicalDescription(record, printFormats, identifier);
+		getFormatFromSubjects(record, printFormats);
+		getFormatFromTitle(record, printFormats);
+		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		getGameFormatFrom753(record, printFormats);
+
 		if (printFormats.isEmpty()) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -553,7 +553,7 @@ public class FormatDetermination {
 			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
 		accompanyingMaterialCheck(record, printFormats); //TODO: can this go before printFormats.isEmpty check?
-		filterPrintFormats(printFormats, record);
+		filterPrintFormats(printFormats, record, identifier);
 
 		if (printFormats.size() > 1){
 			String formatsString = String.join(",", printFormats);
@@ -656,12 +656,15 @@ public class FormatDetermination {
 		}
 	}
 
-	private void filterPrintFormats(Set<String> printFormats, Record record) {
+	private void filterPrintFormats(Set<String> printFormats, Record record, RecordIdentifier identifier) {
 		if (printFormats.size() == 1) {
 			return;
 		}
 
 		if (printFormats.contains("BookClubKit")){
+			if (logger.isDebugEnabled() && printFormats.contains("LargePrint")){
+				logger.debug("Book club bib {} also had large print determination", identifier);
+			}
 			// BookClubKit needs to trump Kit
 			printFormats.clear();
 			printFormats.add("BookClubKit");
@@ -1097,16 +1100,22 @@ public class FormatDetermination {
 		}
 	}
 
-	private void getFormatFromEdition(Record record, Set<String> result) {
+	private void getFormatFromEdition(Record record, Set<String> result, RecordIdentifier identifier) {
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
 			if (edition != null) {
 				if (edition.getSubfield('a') != null) {
 					String editionData = edition.getSubfield('a').getData().trim().toLowerCase();
-					if (editionData.contains("large type") || editionData.contains("large print")) {
-						result.add("LargePrint");
-					} else if (findBookClubKitPhrases(editionData)) {
+					if (findBookClubKitPhrasesLowerCased(editionData)) {
+						// Has to come before large print, because some kits are large print book club kits
 						result.add("BookClubKit");
+						if (logger.isDebugEnabled()){
+							if (editionData.contains("large type") || editionData.contains("large print")) {
+								logger.debug("Book Club kit also has large print in edition in bib {}", identifier);
+							}
+						}
+					} else if (editionData.contains("large type") || editionData.contains("large print")) {
+						result.add("LargePrint");
 					} else if (editionData.equals("go reader") || editionData.matches(".*[^a-z]go reader.*")) {
 						result.add("GoReader");
 					}	 else if (editionData.contains("wonderbook")) {
