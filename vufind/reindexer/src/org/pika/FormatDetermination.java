@@ -1124,7 +1124,7 @@ public class FormatDetermination {
 						result.add("BoardBook");
 					} else if (editionData.contains("illustrated ed")) {
 						result.add("IllustratedEdition");
-					} else if (editionData.contains("4k ultra hd + blu-ray") || editionData.contains("blu-ray + 4k ultra hd") || editionData.contains("4k ultra hd/blu-ray combo")){
+					} else if (findBluRay4KUltraBluRayComboPhrasesLowerCased(editionData)){
 						//Do combo check before single format check
 						result.add("Blu-ray4KCombo");
 						// TODO: return immediately?, since this is definitely format if we get here
@@ -1459,6 +1459,15 @@ public class FormatDetermination {
 						subject.contains("4k ultra hd")
 						;
 	}
+
+	private Boolean findBluRay4KUltraBluRayComboPhrasesLowerCased(String subject) {
+		return subject.contains("4k ultra hd + blu-ray") ||
+						subject.contains("blu-ray + 4k ultra hd") ||
+						subject.contains("4k ultra hd/blu-ray combo") ||
+						subject.contains("4k ultra hd blu-ray + blu-ray")
+						;
+	}
+
 
 	/**
 	 * @param subject A string that could contain upper case text
