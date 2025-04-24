@@ -656,6 +656,21 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * @param overridingFormat If this format is present, printFormats will be cleared and set
+	 *                         to the overriding format
+	 * @param printFormats All the format determinations to filter through
+	 * @return Whether the overriding format was found
+	 */
+	private boolean hasOverRidingFormat(String overridingFormat, Set<String> printFormats) {
+		if (printFormats.contains(overridingFormat)) {
+			printFormats.clear();
+			printFormats.add(overridingFormat);
+			return true;
+		}
+		return false;
+	}
+
 	private void filterPrintFormats(Set<String> printFormats, Record record, RecordIdentifier identifier) {
 		if (printFormats.size() == 1) {
 			return;
@@ -670,39 +685,27 @@ public class FormatDetermination {
 			printFormats.add("BookClubKit");
 			return;
 		}
-		if (printFormats.contains("Kit")) {
-				printFormats.clear();
-				printFormats.add("Kit");
+		if (hasOverRidingFormat("Kit", printFormats)) {
+				return;
+		}
+		if (hasOverRidingFormat("Archival Materials", printFormats)) {
+				return;
+		}
+		if (hasOverRidingFormat("Thesis", printFormats)) {
+				return;
+		}
+		if (hasOverRidingFormat("Braille", printFormats)) {
+				return;
+		}
+		if (hasOverRidingFormat("Phonograph", printFormats)) {
 				return;
 		}
 
-		if (printFormats.contains("Archival Materials")) {
-			printFormats.clear();
-			printFormats.add("Archival Materials");
-			return;
-		}
-		if (printFormats.contains("Thesis")) {
-			printFormats.clear();
-			printFormats.add("Thesis");
-			return;
-		}
-		if (printFormats.contains("Braille")) {
-			printFormats.clear();
-			printFormats.add("Braille");
-			return;
-		}
-		if (printFormats.contains("Phonograph")){
-			printFormats.clear();
-			printFormats.add("Phonograph");
+		// Read-Along things
+		if (hasOverRidingFormat("VoxBooks", printFormats)) {
 			return;
 		}
 
-		// Read-Along things
-		if (printFormats.contains("VoxBooks")){
-			printFormats.clear();
-			printFormats.add("VoxBooks");
-			return;
-		}
 		if (printFormats.contains("WonderBook")){
 			// This should come before Play Away because wonderbooks will get mis-determined as playaway
 			if (printFormats.contains("PlayStation3")) {
@@ -716,35 +719,26 @@ public class FormatDetermination {
 		}
 
 		// Playaway Launchpad
-		if (printFormats.contains("PlayawayLaunchpad")){
-			printFormats.clear();
-			printFormats.add("PlayawayLaunchpad");
+		if (hasOverRidingFormat("PlayawayLaunchpad", printFormats)) {
 			return;
 		}
 
 		// AudioBook Devices
-		if (printFormats.contains("PlayawayView")){
-			printFormats.clear();
-			printFormats.add("PlayawayView");
+		if (hasOverRidingFormat("PlayawayView", printFormats)) {
 			return;
 		}
-		if (printFormats.contains("Playaway")){
-			printFormats.clear();
-			printFormats.add("Playaway");
+		if (hasOverRidingFormat("Playaway", printFormats)) {
 			return;
 		}
-		if (printFormats.contains("GoReader")){
-			printFormats.clear();
-			printFormats.add("GoReader");
+		if (hasOverRidingFormat("GoReader", printFormats)) {
 			return;
 		}
 		if (printFormats.contains("YotoStory")){
-			if (printFormats.contains("YotoMusic")){
+			if (hasOverRidingFormat("YotoMusic", printFormats)) {
 				// If we have both Yoto formats, assume music is better.
-				printFormats.clear();
-				printFormats.add("YotoMusic");
 				return;
 			}
+
 			// This should filter out PhysicalObject, YotoStory
 			// Note: General need to be careful with Yoto Player records that should have determination of Physical Object
 			printFormats.clear();
@@ -753,11 +747,9 @@ public class FormatDetermination {
 		}
 
 		// Video Things
-		if (printFormats.contains("Blu-ray4KCombo")){
-			printFormats.clear();
-			printFormats.add("Blu-ray4KCombo");
-			return;
+		if (hasOverRidingFormat("Blu-ray4KCombo", printFormats)) {
 			// Check this before DVD/Blu-ray Combo checking because this combo can be confused for the other combo
+			return;
 		}
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
@@ -969,9 +961,8 @@ public class FormatDetermination {
 		}
 
 		// Physical Object Things
-		if (printFormats.contains("PhysicalObject") && printFormats.contains("SeedPacket")){
-			// Seed packets
-			printFormats.remove("PhysicalObject");
+		if (hasOverRidingFormat("SeedPacket", printFormats)) {
+			return;
 		}
 		if (printFormats.contains("PhysicalObject")) {
 			// Probable DVD players
