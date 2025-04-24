@@ -1241,7 +1241,7 @@ class MarcRecord extends IndexRecord {
 	function getLanguage(){
 		/** @var File_MARC_Control_Field $field008 */
 		$field008 = $this->getMarcRecord()->getField('008');
-		if ($field008 != null && strlen($field008->getData() >= 37)){
+		if ($field008 != null && strlen($field008->getData()) >= 37){
 			$languageCode = substr($field008->getData(), 35, 3);
 			require_once ROOT_DIR . '/sys/Language/Language.php';
 			return Language::getLanguage($languageCode);
