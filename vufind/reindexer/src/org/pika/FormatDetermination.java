@@ -1455,7 +1455,8 @@ public class FormatDetermination {
 		return subject.contains("4k ultra hd + blu-ray") ||
 						subject.contains("blu-ray + 4k ultra hd") ||
 						subject.contains("4k ultra hd/blu-ray combo") ||
-						subject.contains("4k ultra hd blu-ray + blu-ray")
+						subject.contains("4k ultra hd blu-ray + blu-ray") ||
+						subject.contains("1 blu-ray disc + 1 4K Ultra HD")
 						;
 	}
 
