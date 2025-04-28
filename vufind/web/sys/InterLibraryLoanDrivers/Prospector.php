@@ -44,9 +44,6 @@ class Prospector {
 	 * @return array|null
 	 */
 	function getTopSearchResults($searchTerms, $maxResults){
-		if (str_contains($_SERVER["HTTP_USER_AGENT"], "YandexRenderResourcesBot")){
-			return null;
-		}
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 
 		//Load the HTML from Prospector
