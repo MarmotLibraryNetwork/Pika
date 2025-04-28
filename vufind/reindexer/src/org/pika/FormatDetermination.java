@@ -513,13 +513,12 @@ public class FormatDetermination {
 				printFormats.add("PhysicalObject");
 			} else if (typeOfRecordLeaderChar.equals('o')) {
 				printFormats.add("Kit");
-				//skipOtherDeterminations = true;
 				// Book Club Kit should supersede Kit
 			}
 		}
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
-		getFormatFromEdition(record, printFormats, identifier);
+		getFormatFromEdition(record, printFormats/*, identifier*/);
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
@@ -676,14 +675,8 @@ public class FormatDetermination {
 			return;
 		}
 
-		if (printFormats.contains("BookClubKit")){
-			if (logger.isDebugEnabled() && printFormats.contains("LargePrint")){
-				logger.debug("Book club bib {} also had large print determination", identifier);
-			}
-			// BookClubKit needs to trump Kit
-			printFormats.clear();
-			printFormats.add("BookClubKit");
-			return;
+		if (hasOverRidingFormat("BookClubKit", printFormats)) {
+				return;
 		}
 		if (hasOverRidingFormat("Kit", printFormats)) {
 				return;
@@ -1091,7 +1084,7 @@ public class FormatDetermination {
 		}
 	}
 
-	private void getFormatFromEdition(Record record, Set<String> result, RecordIdentifier identifier) {
+	private void getFormatFromEdition(Record record, Set<String> result/*, RecordIdentifier identifier*/) {
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
 			if (edition != null) {
@@ -1100,11 +1093,6 @@ public class FormatDetermination {
 					if (findBookClubKitPhrasesLowerCased(editionData)) {
 						// Has to come before large print, because some kits are large print book club kits
 						result.add("BookClubKit");
-						if (logger.isDebugEnabled()){
-							if (editionData.contains("large type") || editionData.contains("large print")) {
-								logger.debug("Book Club kit also has large print in edition in bib {}", identifier);
-							}
-						}
 					} else if (editionData.contains("large type") || editionData.contains("large print")) {
 						result.add("LargePrint");
 					} else if (editionData.equals("go reader") || editionData.matches(".*[^a-z]go reader.*")) {
