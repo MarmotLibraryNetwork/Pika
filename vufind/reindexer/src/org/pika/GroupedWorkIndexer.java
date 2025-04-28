@@ -1206,10 +1206,11 @@ public class GroupedWorkIndexer {
 				//This does the bulk of the work building fields for the solr document
 				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
 					//If we didn't add any records to the work (because they are all suppressed) revert to the original
-					if (groupedWork.getNumRecords() == numRecords) {
+					int newNumRecords = groupedWork.getNumRecords();
+					if (newNumRecords == numRecords) {
 						//No change in the number of records, revert to the previous
 						if (logger.isDebugEnabled()) {
-							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+							logger.debug("Record {} did not contribute any records to the work, reverting to previous state {}", identifier, newNumRecords);
 						}
 						groupedWork = originalWork;
 					} else {
