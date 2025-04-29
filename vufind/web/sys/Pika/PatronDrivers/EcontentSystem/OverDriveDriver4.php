@@ -365,14 +365,14 @@ class OverDriveDriver4 {
 			}
 			//$curlInfo = $curl->getInfo(); // for debugging
 
-            if ($curl->httpStatusCode === 204) {
-                return true; // Code 204 is success
-            }
+			if ($curl->httpStatusCode === 204){
+				return true; // Code 204 is success
+			}
 
-            if (!isset($returnVal->message)) { // || $returnVal->message != 'An unexpected error has occurred.'
-                return $returnVal;
-            }
-        }
+			if (!isset($returnVal->message)){ // || $returnVal->message != 'An unexpected error has occurred.'
+				return $returnVal;
+			}
+		}
 		return false;
 	}
 
@@ -1003,9 +1003,10 @@ class OverDriveDriver4 {
 							$result['message'] .= "\r\n\r\n {$response->message}";
 						}
 				}
+				$this->logger->error("OverDrive error for patron {$user->id} : (Error code $response->errorCode) " . $response->errorMessage);
 			}else{
-				//Give more information about why it might gave failed, ie expired card or too much fines
-				$this->logger->error('Unexpected response from OverDrive checkout call: ' . var_export($response, true));
+				//Give more information about why it might have failed, ie expired card or too much fines
+				$this->logger->error('Unexpected response from OverDrive checkout call for patron ' . $user->id . ' : ' . var_export($response, true));
 				if (isset($response->message)){
 					$result['message'] .= "\r\n\r\n  {$response->message}";
 				}else{
