@@ -1149,8 +1149,10 @@ public class FormatDetermination {
 						}
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
-						} else if (physicalDescriptionData.contains("braille")){
+						} else if (physicalDescriptionData.contains("braille")) {
 							result.add("Braille");
+						} else if (physicalDescriptionData.contains("1 blu-ray disc + 1 4k ultra hd")) {
+							result.add("Blu-ray4KCombo");
 						} else if (find4KUltraBluRayPhrasesLowerCased(physicalDescriptionData)) {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
@@ -1443,8 +1445,7 @@ public class FormatDetermination {
 		return subject.contains("4k ultra hd + blu-ray") ||
 						subject.contains("blu-ray + 4k ultra hd") ||
 						subject.contains("4k ultra hd/blu-ray combo") ||
-						subject.contains("4k ultra hd blu-ray + blu-ray") ||
-						subject.contains("1 blu-ray disc + 1 4k ultra hd")
+						subject.contains("4k ultra hd blu-ray + blu-ray")
 						;
 	}
 
