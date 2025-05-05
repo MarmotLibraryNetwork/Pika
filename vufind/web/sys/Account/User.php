@@ -208,6 +208,10 @@ class User extends DB_DataObject {
 		return $this->accountProfile;
 	}
 
+	public function hasPasswordSet(){
+		return $this->getAccountProfile()->usingPins() && !empty($this->password);
+	}
+
 	/**
 	 * Get unencrypted password
 	 *

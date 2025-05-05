@@ -59,7 +59,8 @@ class Admin_UserAdmin extends Admin_Admin {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 							require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 
-							$duplicateUsers = [];
+							$duplicateUsers   = [];
+							//$duplicateUserIds = [];
 							while ($patron->fetch()){
 								// Check for user created and user related data for potential duplicates users
 								// that would need to be re-assigned to delete the user.
@@ -83,13 +84,13 @@ class Admin_UserAdmin extends Admin_Admin {
 								$role                              = new UserRoles();
 								$role->userId                      = $patron->id;
 								$patron->roleCount                 = $role->count();
-								$usingPins                         = $patron->getAccountProfile()->usingPins();
-								$patron->passwordSet               = $usingPins && !empty($patron->password);
 								$patron->safeToDelete              = !($patron->userListCount || $patron->readingHistoryCount || $patron->userReviewsCount || $patron->notInterestedCount || $patron->userTagsCount || $patron->linkedUsersCount || $patron->roleCount) && !$patron->passwordSet;
 								$duplicateUsers[]                  = clone $patron;
+								//$duplicateUserIds[]                 = $patron->id;
 							}
 							$interface->assign([
 								'duplicateUsers'   => $duplicateUsers,
+								//'duplicateUserIds' => $duplicateUserIds,
 								'duplicateBarcode' => $barcode
 							]);
 						}elseif ($count == 1){
@@ -126,7 +127,33 @@ class Admin_UserAdmin extends Admin_Admin {
 						$interface->assign('duplicateError', 'Invalid user Id');
 					}
 				}
-			}elseif ($_REQUEST['userAction'] == 'showReadingHistoryActions'){
+			}elseif ($_REQUEST['userAction'] == 'moveUserData'){
+				if (UserAccount::userHasRole('userAdmin')){ // Double check that authorized admin user is requesting the action
+					$userId = $_REQUEST['userId'];
+					if (ctype_digit($userId) && !empty($userId) && $userId > 0){ // Validate Id number to prevent malicious input
+						$patron     = new User();
+						$patron->id = $userId;
+						if ($patron->find(true) && $patron->N === 1){ // Confirm only one user was found
+							$moveUserId = $_REQUEST['moveUserId'];
+							if (ctype_digit($moveUserId) && !empty($moveUserId) && $moveUserId > 0){
+								require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+								require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
+								require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+								require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+								require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
+								require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+
+								// Move user lists
+								$userList          = new UserList();
+								$userList->user_id = $moveUserId;
+								$userList->whereAdd("user_id = $userId");
+								$numListsMoved = $userList->update();
+
+							}
+						}
+					}
+				}
+				}elseif ($_REQUEST['userAction'] == 'showReadingHistoryActions'){
 				if (UserAccount::userHasRole('userAdmin')){
 					$barcode = trim($_REQUEST['barcode']);
 					$interface->assign('readingHistoryBarcode', $barcode);

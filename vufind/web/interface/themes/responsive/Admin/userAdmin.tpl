@@ -76,10 +76,8 @@
 							<td>{$duplicateUser->created|date_format:'%m/%d/%Y'}</td>
 							<td>{$duplicateUser->ilsUserId}</td>
 							<td>{$duplicateUser->getHomeLibrarySystemName()}</td>
-{*							<td>{if $duplicateUser->getAccountProfile()}Password set{/if}</td>*}
-							<td>{if $duplicateUser->passwordSet}Password set{/if}</td>
-							<td>{if $duplicateUser->hasStaffPtypes()}Staff Ptype{/if}</td>
-{*							<td>{if $duplicateUser->getAccountProfile()->usingPins() && !empty($duplicateUser->password)}Password set{/if}</td>*}
+							<td>{if $duplicateUser->hasPasswordSet()}<span class="badge badge-info">Password set</span>{/if}</td>
+							<td>{if $duplicateUser->hasStaffPtypes()}<span class="badge badge-info">Staff Ptype</span>{/if}</td>
 							<td>
 								{if $duplicateUser->safeToDelete}
 									<form method="post" enctype="multipart/form-data">
