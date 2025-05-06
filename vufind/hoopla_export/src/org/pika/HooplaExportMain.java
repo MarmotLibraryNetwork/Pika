@@ -407,11 +407,15 @@ public class HooplaExportMain {
 					updateHooplaTitleInDB.setBoolean(12, curTitle.getBoolean("fiction"));
 					updateHooplaTitleInDB.setString(13, curTitle.getString("language"));
 					updateHooplaTitleInDB.setString(14, curTitle.getString("publisher"));
-					String duration = curTitle.getString("duration");
-					if (duration.equals("0m 0s")){
-						updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
+					if (curTitle.has("duration")) {
+						String duration = curTitle.getString("duration");
+						if (duration.equals("0m 0s")) {
+							updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
+						} else {
+							updateHooplaTitleInDB.setString(15, duration);
+						}
 					} else {
-						updateHooplaTitleInDB.setString(15, duration);
+						updateHooplaTitleInDB.setNull(15, Types.VARCHAR);
 					}
 					if (curTitle.has("series")){
 						updateHooplaTitleInDB.setString(16, curTitle.getString("series"));
