@@ -46,7 +46,10 @@ import java.util.Date;
  * Time: 2:26 PM
  */
 public class GroupedWorkIndexer {
+	public static final String INDEXER_URL = "http://localhost:";
+
 	private final String                                   serverName;
+	private final String                                   searcherURL                           = PikaConfigIni.getIniValue("Index", "url");
 	private final org.apache.logging.log4j.Logger          logger;
 	private final PikaSystemVariables                      systemVariables;
 	private final HttpSolrClient                           solrServer;
@@ -124,7 +127,7 @@ public class GroupedWorkIndexer {
 
 		// Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		final String baseSolrIndexerUrl = INDEXER_URL + solrPort + "/solr/grouped";
 		if (fullReindex){
 			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
 			if (isRunning == null){ // Not found
@@ -135,14 +138,13 @@ public class GroupedWorkIndexer {
 			}
 
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
-			initializeUpdateServer(baseSolrUrl);
+			solrServer   = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
+			initializeUpdateServer(baseSolrIndexerUrl);
 
 			// Stop replication polling by the searcher
 			// (Do this before disabling replication on the indexer core)
-			String url = PikaConfigIni.getIniValue("Index", "url");
-			if (url != null && !url.isEmpty()) {
-				url += "/grouped/replication?command=disablepoll";
+			if (searcherURL != null && !searcherURL.isEmpty()) {
+				String url  = searcherURL + "/grouped/replication?command=disablepoll";
 				if (!sendSolrCommand(url, "Disable Searcher Polling")){
 					logger.error("Failed to Disable polling. Quitting here");
 					okToIndex = false;
@@ -155,7 +157,7 @@ public class GroupedWorkIndexer {
 			}
 
 			// Stop replication from the indexer core
-			url = baseSolrUrl + "/replication?command=disablereplication";
+			String url = baseSolrIndexerUrl + "/replication?command=disablereplication";
 			sendSolrCommand(url, "Disable Indexer Replication");
 
 			updateFullReindexRunning(true);
@@ -201,8 +203,8 @@ public class GroupedWorkIndexer {
 				}
 			}
 
-			initializeUpdateServer(baseSolrUrl);
-			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
+			initializeUpdateServer(baseSolrIndexerUrl);
+			solrServer   = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
 		}
 
 		loadScopes();
@@ -313,7 +315,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void initializeUpdateServer(){
-		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		final String baseSolrUrl = INDEXER_URL + solrPort + "/solr/grouped";
 		initializeUpdateServer(baseSolrUrl);
 	}
 
@@ -780,24 +782,11 @@ public class GroupedWorkIndexer {
 			} catch (SolrServerException e) {
 				logger.error("Error with Solr calling final commit", e);
 			}
-			//Restart replication from the master
-			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
-			URLPostResponse startReplicationResponse = Util.getURL(url, logger);
-			if (!startReplicationResponse.isSuccess()){
-				logger.error("Error restarting replication " + startReplicationResponse.getMessage());
 
-			//MDN 10-21-2015 do not swap indexes when using replication
-			//Swap the indexes
-			/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
-			try {
-				Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
-			} catch (Exception e) {
-				logger.error("Error shutting down update server", e);
-			}*/
-			}
-			if (logger.isInfoEnabled()){
-				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
-			}
+			//Restart replication from the indexer core
+			String url = INDEXER_URL + solrPort + "/solr/grouped/replication?command=enablereplication";
+			sendSolrCommand(url, "Enable indexer replication");
+
 			enableSearcherSolrPolling();
 		}else {
 			// Regular, day-time, partial indexing
@@ -831,7 +820,7 @@ public class GroupedWorkIndexer {
 //	private void enableSearcherSolrPolling() {
 //		int     tries   = 0;
 //		boolean success = false;
-//		String url = PikaConfigIni.getIniValue("Index", "url");
+//		String url = searcherURL;
 //		if (url != null && !url.isEmpty()) {
 //			url += "/grouped/replication?command=enablepoll";
 //			do {
@@ -864,12 +853,9 @@ public class GroupedWorkIndexer {
 //	}
 
 	private void enableSearcherSolrPolling() {
-		int     tries   = 0;
-		boolean success = false;
-		String url = PikaConfigIni.getIniValue("Index", "url");
-		if (url != null && !url.isEmpty()) {
-			url += "/grouped/replication?command=enablepoll";
-			sendSolrCommand(url, "enable searcher polling", 3);
+		if (searcherURL != null && !searcherURL.isEmpty()) {
+			String url = searcherURL + "/grouped/replication?command=enablepoll";
+			sendSolrCommand(url, "Enable Searcher Polling", 3);
 		} else {
 			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
 		}
@@ -881,6 +867,7 @@ public class GroupedWorkIndexer {
 		do {
 			URLPostResponse solrResponse = null;
 			try {
+				logger.info("Sending solr command '{}'", command);
 				solrResponse = Util.getURL(url, logger);
 				success = solrResponse.isSuccess();
 				if (!success) {
