@@ -664,7 +664,7 @@ class OverDriveDriver4 {
 								}
 							}
 						} else {
-							$this->logger->warn('Information for OverDrive Checkout supplement title not found');
+							$this->logger->warning('Information for OverDrive Checkout supplement title not found');
 						}
 					}
 				}
