@@ -21,3 +21,12 @@
 	</div>
 </form>
 {/strip}
+<script>
+	{literal}
+	$("#overDriveHoldPromptsForm").validate({
+		submitHandler: function(){
+			Pika.OverDrive.processOverDriveHoldPrompts();
+		}
+	});
+	{/literal}
+</script>
