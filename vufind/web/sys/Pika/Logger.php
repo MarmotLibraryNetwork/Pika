@@ -56,4 +56,9 @@ class Logger extends MonoLogger {
 			ErrorHandler::register($this);
 		}
 	}
+    
+    public function warn($message, $info)
+    {
+        parent::warning($message, $info);
+    }
 }
