@@ -231,6 +231,9 @@ public class GroupedWorkIndexer {
 								case "SideLoadedEContent":
 									indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "SideLoadedPhysical":
+									indexingRecordProcessors.put(sourceName, new SideLoadedPhysicalRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
 								case "OverDriveSideLoad":
 									indexingRecordProcessors.put(sourceName, new OverDriveSideLoadProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
