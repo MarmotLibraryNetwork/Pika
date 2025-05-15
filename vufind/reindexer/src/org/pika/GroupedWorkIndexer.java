@@ -204,7 +204,7 @@ public class GroupedWorkIndexer {
 			}
 
 			initializeUpdateServer(baseSolrIndexerUrl);
-			solrServer   = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
+			solrServer = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
 		}
 
 		loadScopes();
@@ -244,20 +244,16 @@ public class GroupedWorkIndexer {
 								case "Sierra":
 									indexingRecordProcessors.put(sourceName, new SierraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "MLN1":
 								case "Marmot":
 									indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "MLN2":
 								case "Flatirons":
 									indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
-								case "NorthernWaters":
-									indexingRecordProcessors.put(sourceName, new NorthernWatersRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
-								case "Sacramento":
-									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								// Polaris Processors
 								case "Clearview":
@@ -273,7 +269,7 @@ public class GroupedWorkIndexer {
 									return;
 							}
 						} else if (fullReindex && logger.isInfoEnabled()) {
-							logger.info("Could not find indexing profile for type " + sourceName);
+							logger.info("Could not find indexing profile for type {}", sourceName);
 							// This indicates there are related records in the grouping primary identifiers table for a source that no
 							// longer has a corresponding indexing profile.
 							// Most likely cause of this is a sideload that has been removed.
@@ -284,7 +280,7 @@ public class GroupedWorkIndexer {
 
 			setupIndexingStats(); //TODO: only during fullReindex
 
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Error loading record processors for ILS records", e);
 		}
 		//Load translation maps
