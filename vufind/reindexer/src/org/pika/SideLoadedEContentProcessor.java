@@ -77,7 +77,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		itemInfo.setDateAdded(dateAdded);
 
 		itemInfo.setLocationCode(indexingProfileSourceDisplayName);
-		//No itypes for Side loaded econtent
+		//No iTypes for Side loaded eContent
 		//itemInfo.setITypeCode();
 		//itemInfo.setIType();
 		itemInfo.setCallNumber("Online " + indexingProfileSourceDisplayName);
