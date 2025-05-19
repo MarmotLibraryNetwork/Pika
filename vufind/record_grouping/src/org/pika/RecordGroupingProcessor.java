@@ -511,7 +511,7 @@ class RecordGroupingProcessor {
 				return groupedWorkId;
 			}
 		} catch (SQLException e) {
-			logger.warn("Error looking up work id from permanent id: " + permanentId, e);
+			logger.warn("Error looking up work id from permanent id: {}", permanentId, e);
 		}
 		return 0L;
 	}
@@ -551,7 +551,7 @@ class RecordGroupingProcessor {
 					return count == 0;
 				}
 			} catch (SQLException e) {
-				logger.warn("Error looking up work in historical table for " + groupedWork.getPermanentId(), e);
+				logger.warn("Error looking up work in historical table for {}", groupedWork.getPermanentId(), e);
 			}
 		}
 		return true;  // When things go awry, say work is not in table.  If it is, the follow-up INSERT statement will fail on unique check anyway.

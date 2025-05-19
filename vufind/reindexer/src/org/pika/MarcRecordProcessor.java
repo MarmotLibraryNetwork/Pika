@@ -1052,7 +1052,7 @@ abstract class MarcRecordProcessor {
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
-		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
+		if ((authorInTitleField != null && !authorInTitleField.isEmpty()) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
 		} else {
 			//We didn't get an author from the 245, combine with the 100
