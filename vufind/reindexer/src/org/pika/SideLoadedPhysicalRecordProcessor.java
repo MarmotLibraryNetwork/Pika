@@ -105,7 +105,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 
 			RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 			relatedRecord.addItem(itemInfo);
-			loadEContentUrl(record, itemInfo, identifier);
+			//loadEContentUrl(record, itemInfo, identifier);
 
 			loadPrintFormatInformation(relatedRecord, record);
 
