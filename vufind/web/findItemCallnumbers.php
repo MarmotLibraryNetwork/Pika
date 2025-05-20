@@ -136,7 +136,7 @@ function getRecordByAlternateIds($id, $fieldsToReturn = null){
 		//$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
 
 		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
-		$this->client->setHeaders(['User-Agent' => 'SteamboatPikaCovers']); // Needed to get through
+		//TODO: set user agent
 		$result = $this->client->get($this->host . '/select', $options);
 
 		if ($this->client->isError()) {
