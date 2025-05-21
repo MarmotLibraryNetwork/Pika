@@ -21,13 +21,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 12/15/2015
- * Time: 3:03 PM
- */
 class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -42,41 +35,27 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for ILS eContent items.
-		//For Sideloaded Econtent there will only be one related record
-		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
+		//For Sideloaded eContent there will only be one related record
 
-		try{
-			//Now look for eContent items
-			RecordInfo recordInfo = loadEContentRecord(groupedWork, identifier, record);
-			allRelatedRecords.add(recordInfo);
+		try {
+			RecordInfo          recordInfo        = loadEContentRecord(groupedWork, identifier, record);
+			HashSet<RecordInfo> allRelatedRecords = new HashSet<RecordInfo>(){{add(recordInfo);}};
+			String              primaryFormat     = recordInfo.getPrimaryFormat();
 
-			//Do updates based on the overall bib (shared regardless of scoping)
-			String primaryFormat = null;
-			for (RecordInfo ilsRecord : allRelatedRecords) {
-				primaryFormat = ilsRecord.getPrimaryFormat();
-				if (primaryFormat != null){
-					break;
-				}
-			}
 			if (primaryFormat == null) primaryFormat = "Unknown";
+
 			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, loadedNovelistSeries);
 
-			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
-			for (RecordInfo ilsRecord : allRelatedRecords) {
-				String primaryFormatForRecord = ilsRecord.getPrimaryFormat();
-				if (primaryFormatForRecord == null){
-					primaryFormatForRecord = "Unknown";
-				}
-				groupedWork.addDescription(fullDescription, primaryFormatForRecord);
-			}
+			groupedWork.addDescription(fullDescription, primaryFormat);
+
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
 			loadSystemLists(groupedWork, record);
 
-			if (record.getControlNumber() != null){
+			if (record.getControlNumber() != null) {
 				groupedWork.addKeywords(record.getControlNumber());
 			}
 
@@ -84,17 +63,13 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 
 			// Do updates based on the items
 			scopeItems(recordInfo, groupedWork, record);
-		}catch (Exception e){
-			logger.error("Error updating grouped work for MARC record with identifier {}", identifier, e);
+		} catch (Exception e) {
+			logger.error("Error updating grouped work for Sideload record with identifier {}", identifier, e);
 		}
 	}
 
-	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
-		//We will always have a single record
-		return getEContentIlsRecord(groupedWork, record, identifier);
-	}
-
-	private RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
+		//We will always have a single record and a single item
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
@@ -102,7 +77,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		itemInfo.setDateAdded(dateAdded);
 
 		itemInfo.setLocationCode(indexingProfileSourceDisplayName);
-		//No itypes for Side loaded econtent
+		//No iTypes for Side loaded eContent
 		//itemInfo.setITypeCode();
 		//itemInfo.setIType();
 		itemInfo.setCallNumber("Online " + indexingProfileSourceDisplayName);

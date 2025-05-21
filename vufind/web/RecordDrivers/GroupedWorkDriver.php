@@ -1197,10 +1197,8 @@ class GroupedWorkDriver extends RecordInterface {
 					if ($response && isset($response['response'])){
 						//Get information about each project
 						if ($searchObject->getResultTotal() > 0){
-							$firstObjectDriver = RecordDriverFactory::initRecordDriver($response['response']['docs'][0]);
-
-							$archiveLink = $firstObjectDriver->getRecordUrl();
-
+							$firstObjectDriver                     = RecordDriverFactory::initRecordDriver($response['response']['docs'][0]);
+							$archiveLink                           = $firstObjectDriver->getRecordUrl();
 							$samePikaCache                         = new IslandoraSamePikaCache();
 							$samePikaCache->groupedWorkPermanentId = $groupedWorkId;
 							if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink){
@@ -1209,7 +1207,7 @@ class GroupedWorkDriver extends RecordInterface {
 								$numUpdates                 = $samePikaCache->update();
 								if ($numUpdates == 0){
 									global $pikaLogger;
-									$pikaLogger->error("Did not update same pika cache " . print_r($samePikaCache->_lastError, true));
+									$pikaLogger->error('Did not update same pika cache :' . print_r($samePikaCache->_lastError, true));
 								}
 							}
 							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;

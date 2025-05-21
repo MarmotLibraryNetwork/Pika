@@ -61,51 +61,70 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 	 */
 	@Override
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
-		List<DataField> fields099 = getDataFields(marcRecord, "099");
-		DataField       cur099    = fields099.iterator().next();
-		String          groupingCategory;
-		String          format    = cur099.getSubfield('a').getData().toLowerCase();
-		switch (format) {
-			case "evideo hoopla":
-				groupingCategory = "movie";
-				break;
-			case "emusic hoopla":
-				groupingCategory = "music";
-				break;
-			case "ecomic hoopla":
-				groupingCategory = "comic";
-				break;
-			default:
-				logger.error("Unknown Hoopla format for " + identifier + " : " + format);
-			case "eaudiobook hoopla":
-			case "ebook hoopla":
-				groupingCategory = "book";
+		List<DataField> fields099        = getDataFields(marcRecord, "099");
+		String          groupingCategory = "book";
+		if (fields099 != null && !fields099.isEmpty()) {
+			DataField       cur099    = fields099.iterator().next();
+			String          format    = cur099.getSubfield('a').getData().toLowerCase();
+			switch (format) {
+				case "evideo hoopla":
+					groupingCategory = "movie";
+					break;
+				case "emusic hoopla":
+					groupingCategory = "music";
+					break;
+				case "ecomic hoopla":
+					groupingCategory = "comic";
+					break;
+				default:
+					logger.error("Unknown Hoopla format for {} : {}", identifier, format);
+				case "eaudiobook hoopla":
+				case "ebook hoopla":
+					groupingCategory = "book";
 
-				// Determine if this should be the young reader grouping category instead
-					// Hoopla doesn't appear to have much edition information in the MARC, except "Unabridged." when applicable
-//				List<DataField> editions = marcRecord.getDataFields("250");
-//				for (DataField edition : editions) {
-//					if (edition != null) {
-//						if (edition.getSubfield('a') != null) {
-//							String editionData = edition.getSubfield('a').getData().toLowerCase();
-//							if (editionData.contains("young reader")) {
-//								groupingCategory = "young";
-//								break;
-//							}
-//						}
-//					}
-//				}
-				String subTitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
-				// Check subTitle first as that is where we will more likely find a match
-				if (subTitle != null && subTitle.replace("'", "").toLowerCase().contains("young readers edition")) {
-					groupingCategory = "young";
-					break;
+					// Determine if this should be the young reader grouping category instead
+						// Hoopla doesn't appear to have much edition information in the MARC, except "Unabridged." when applicable
+	//				List<DataField> editions = marcRecord.getDataFields("250");
+	//				for (DataField edition : editions) {
+	//					if (edition != null) {
+	//						if (edition.getSubfield('a') != null) {
+	//							String editionData = edition.getSubfield('a').getData().toLowerCase();
+	//							if (editionData.contains("young reader")) {
+	//								groupingCategory = "young";
+	//								break;
+	//							}
+	//						}
+	//					}
+	//				}
+					String subTitle = MarcUtil.getFirstFieldVal(marcRecord, "245b");
+					// Check subTitle first as that is where we will more likely find a match
+					if (subTitle != null && subTitle.replace("'", "").toLowerCase().contains("young readers edition")) {
+						groupingCategory = "young";
+						break;
+					}
+					String title = MarcUtil.getFirstFieldVal(marcRecord, "245a");
+					if (title != null && title.replace("'", "").toLowerCase().contains("young readers edition")) {
+						groupingCategory = "young";
+						break;
+					}
+			}
+		} else {
+			boolean isBingePass = false;
+			List<DataField> seriesStatements = marcRecord.getDataFields("490");
+			if (seriesStatements != null && !seriesStatements.isEmpty()) {
+				for (DataField cur490 : seriesStatements){
+					String field = cur490.getSubfieldsAsString("a");
+					if (field.equalsIgnoreCase("bingepass") || field.equalsIgnoreCase("seasonpass")){
+						// Some records only have SeasonPass in the 490, but the extract Kind for these is also BINGEPASS
+						isBingePass = true;
+						// Use default groupingCategory of book for now
+						break;
+					}
 				}
-				String title = MarcUtil.getFirstFieldVal(marcRecord, "245a");
-				if (title != null && title.replace("'", "").toLowerCase().contains("young readers edition")) {
-					groupingCategory = "young";
-					break;
-				}
+			}
+			if (!isBingePass) {
+				logger.warn("Hoopla record {} has no 099 or 490a (BingePass) for grouping category", identifier);
+			}
 		}
 
 		workForTitle.setGroupingCategory(groupingCategory, identifier);

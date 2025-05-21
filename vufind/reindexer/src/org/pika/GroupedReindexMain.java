@@ -214,7 +214,7 @@ public class GroupedReindexMain {
 		if (logger.isInfoEnabled()) {
 			long endTime     = new Date().getTime();
 			long elapsedTime = endTime - startTime;
-			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+			logger.info("Elapsed Minutes {}", (elapsedTime / 60000));
 		}
 	}
 

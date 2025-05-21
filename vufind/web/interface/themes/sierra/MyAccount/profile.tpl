@@ -39,7 +39,7 @@
 					</a>
 					<div id="barcodePanel" class="panel-collapse collapse in">
 						<div class="panel-body" style="text-align: center;">
-							<svg role="img" id="barcode" style="margin: 0 auto;" aria-labelledby="barcodeTitle"></svg>
+							<svg role="img" id="barcode" style="margin: 0 auto;max-width: 100%" aria-labelledby="barcodeTitle"></svg>
 							{literal}
 							<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
 							<script>
@@ -48,7 +48,7 @@
 									lineColor: "#000000",
 									width: 2,
 									height: 200,
-									displayValue: false
+									displayValue: {/literal}{if !empty($displayBarcodeValue)}true{else}false{/if}{literal},
 								});
 							</script>
 							{/literal}
@@ -284,6 +284,12 @@
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
 														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 													</span>
+												</div>
+											</div>
+											<div class="col-tn-12">
+												<br>
+												<div class="alert alert-info">
+													{include file="MyAccount/passwordRequirements.tpl"}
 												</div>
 											</div>
 										</div>

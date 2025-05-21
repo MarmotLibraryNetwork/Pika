@@ -30,6 +30,8 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -44,47 +46,50 @@ import java.util.Date;
  * Time: 2:26 PM
  */
 public class GroupedWorkIndexer {
-	private       String                                   serverName;
-	private       org.apache.logging.log4j.Logger          logger;
+	public static final String INDEXER_URL = "http://localhost:";
+
+	private final String                                   serverName;
+	private final String                                   searcherURL                           = PikaConfigIni.getIniValue("Index", "url");
+	private final org.apache.logging.log4j.Logger          logger;
 	private final PikaSystemVariables                      systemVariables;
-	private       HttpSolrClient                           solrServer;
+	private final HttpSolrClient                           solrServer;
 	private       ConcurrentUpdateSolrClient               updateServer;
-	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
+	private final HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
-	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
+	private final HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
 	// The file based translation Maps
-	private       HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
-	private       HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
-	private       String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
-	private       String                                   baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
+	private final HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
+	private final HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
+	private final String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
+	private final String                                   baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
 	private       Integer                                  maxWorksToProcess                     = PikaConfigIni.getIntIniValue("Reindex", "maxWorksToProcess");
 	private       Integer                                  availableAtLocationBoostValue         = PikaConfigIni.getIntIniValue("Reindex", "availableAtLocationBoostValue");
 	private       Integer                                  ownedByLocationBoostValue             = PikaConfigIni.getIntIniValue("Reindex", "ownedByLocationBoostValue");
-	private       boolean                                  giveOnOrderItemsTheirOwnShelfLocation = PikaConfigIni.getBooleanIniValue("Reindex", "giveOnOrderItemsTheirOwnShelfLocation");
+	private final boolean                                  giveOnOrderItemsTheirOwnShelfLocation = PikaConfigIni.getBooleanIniValue("Reindex", "giveOnOrderItemsTheirOwnShelfLocation");
 
-	private Connection        pikaConn;
-	private PreparedStatement getRatingStmt;
-	private PreparedStatement getNovelistStmt;
-	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
-	private PreparedStatement getDateFirstDetectedStmt;
+	private final Connection        pikaConn;
+	private       PreparedStatement getRatingStmt;
+	private       PreparedStatement getNovelistStmt;
+	private       PreparedStatement getGroupedWorkPrimaryIdentifiers;
+	private       PreparedStatement getDateFirstDetectedStmt;
 
-	private Long    indexStartTime;
-	public  boolean fullReindex;
-	private long    lastReindexTime;
-	private boolean okToIndex = true;
+	private final Long    indexStartTime;
+	public        boolean fullReindex;
+	private       long    lastReindexTime;
+	private       boolean okToIndex = true;
 
-	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
-	private TreeSet<Scope>  scopes                        = new TreeSet<>();
+	private final HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
+	private final TreeSet<Scope>  scopes                        = new TreeSet<>();
 
 	//Keep track of what we are indexing for validation purposes
-	private TreeMap<String, TreeSet<String>>     ilsRecordsIndexed = new TreeMap<>();
-	private TreeMap<String, TreeSet<String>>     ilsRecordsSkipped = new TreeMap<>();
-	private TreeMap<String, ScopedIndexingStats> indexingStats     = new TreeMap<>();
+	private final TreeMap<String, TreeSet<String>>     ilsRecordsIndexed = new TreeMap<>();
+	private final TreeMap<String, TreeSet<String>>     ilsRecordsSkipped = new TreeMap<>();
+	// TODO: these might be obsolete; or it needs to be fixed (no files get written)
+
+	private final TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
 	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
 	private int orphanedGroupedWorkPrimaryIdentifiersProcessed = 0;
-
-
 
 	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, org.apache.logging.log4j.Logger logger) {
 		indexStartTime                        = new Date().getTime() / 1000;
@@ -117,12 +122,12 @@ public class GroupedWorkIndexer {
 			getGroupedWorkPrimaryIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getDateFirstDetectedStmt          = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
-			logger.error("Could not load statements to get identifiers ", e);
+			logger.error("Could not load statements to get identifiers", e);
 		}
 
-		//Initialize the updateServer and solr server
+		// Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		final String baseSolrIndexerUrl = INDEXER_URL + solrPort + "/solr/grouped";
 		if (fullReindex){
 			Boolean isRunning = systemVariables.getBooleanValuedVariable("systemVariables");
 			if (isRunning == null){ // Not found
@@ -133,36 +138,30 @@ public class GroupedWorkIndexer {
 			}
 
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
-			initializeUpdateServer(baseSolrUrl);
-
-			//Stop replication from the master
-			String url                              = baseSolrUrl + "/replication?command=disablereplication";
-			URLPostResponse stopReplicationResponse = Util.getURL(url, logger);
-			if (!stopReplicationResponse.isSuccess()){
-				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
-			}
-			if (logger.isInfoEnabled()){
-				logger.info("Replication Disable command response :" + stopReplicationResponse.getMessage());
-			}
+			solrServer   = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
+			initializeUpdateServer(baseSolrIndexerUrl);
 
 			// Stop replication polling by the searcher
-			url = PikaConfigIni.getIniValue("Index", "url");
-			if (url != null && !url.isEmpty()){
-				url += "/grouped/replication?command=disablepoll";
-				URLPostResponse stopSearcherReplicationPollingResponse = Util.getURL(url, logger);
-				if (!stopSearcherReplicationPollingResponse.isSuccess()){
-					logger.error("Error disabling polling of solr searcher for replication.");
-				}
-				if (logger.isInfoEnabled()){
-					logger.info("Searcher Replication Polling Disable command response : " + stopSearcherReplicationPollingResponse.getMessage());
+			// (Do this before disabling replication on the indexer core)
+			if (searcherURL != null && !searcherURL.isEmpty()) {
+				String url  = searcherURL + "/grouped/replication?command=disablepoll";
+				if (!sendSolrCommand(url, "Disable Searcher Polling")){
+					logger.error("Failed to Disable polling. Quitting here");
+					okToIndex = false;
+					return;
 				}
 			} else {
 				logger.error("Unable to get solr search index url. Could not disable replication polling.");
+				okToIndex = false;
+				return;
 			}
 
+			// Stop replication from the indexer core
+			String url = baseSolrIndexerUrl + "/replication?command=disablereplication";
+			sendSolrCommand(url, "Disable Indexer Replication");
+
 			updateFullReindexRunning(true);
-		}else{
+		} else {
 			//TODO: Bypass this if called from an export process?
 			//TODO: Bypass when process user lists only
 
@@ -204,8 +203,8 @@ public class GroupedWorkIndexer {
 				}
 			}
 
-			initializeUpdateServer(baseSolrUrl);
-			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
+			initializeUpdateServer(baseSolrIndexerUrl);
+			solrServer = new HttpSolrClient.Builder(baseSolrIndexerUrl).build();
 		}
 
 		loadScopes();
@@ -232,6 +231,9 @@ public class GroupedWorkIndexer {
 								case "SideLoadedEContent":
 									indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "SideLoadedPhysical":
+									indexingRecordProcessors.put(sourceName, new SideLoadedPhysicalRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
 								case "OverDriveSideLoad":
 									indexingRecordProcessors.put(sourceName, new OverDriveSideLoadProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
@@ -242,20 +244,16 @@ public class GroupedWorkIndexer {
 								case "Sierra":
 									indexingRecordProcessors.put(sourceName, new SierraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "MLN1":
 								case "Marmot":
 									indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
+								case "MLN2":
 								case "Flatirons":
 									indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
-								case "NorthernWaters":
-									indexingRecordProcessors.put(sourceName, new NorthernWatersRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-									break;
-								case "Sacramento":
-									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								// Polaris Processors
 								case "Clearview":
@@ -266,12 +264,12 @@ public class GroupedWorkIndexer {
 									indexingRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								default:
-									logger.error("Unknown indexing class " + ilsIndexingClassString);
+									logger.error("Unknown indexing class {}", ilsIndexingClassString);
 									okToIndex = false;
 									return;
 							}
 						} else if (fullReindex && logger.isInfoEnabled()) {
-							logger.info("Could not find indexing profile for type " + sourceName);
+							logger.info("Could not find indexing profile for type {}", sourceName);
 							// This indicates there are related records in the grouping primary identifiers table for a source that no
 							// longer has a corresponding indexing profile.
 							// Most likely cause of this is a sideload that has been removed.
@@ -282,7 +280,7 @@ public class GroupedWorkIndexer {
 
 			setupIndexingStats(); //TODO: only during fullReindex
 
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Error loading record processors for ILS records", e);
 		}
 		//Load translation maps
@@ -316,7 +314,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void initializeUpdateServer(){
-		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
+		final String baseSolrUrl = INDEXER_URL + solrPort + "/solr/grouped";
 		initializeUpdateServer(baseSolrUrl);
 	}
 
@@ -348,7 +346,7 @@ public class GroupedWorkIndexer {
 			}
 			libraryAndLocationDataLoaded = true;
 			if (logger.isInfoEnabled()) {
-				logger.info("Loaded " + scopes.size() + " scopes");
+				logger.info("Loaded {} scopes", scopes.size());
 			}
 		}
 	}
@@ -377,7 +375,7 @@ public class GroupedWorkIndexer {
 			String code        = locationInformationRS.getString("code").toLowerCase();
 			String facetLabel  = locationInformationRS.getString("facetLabel");
 			String displayName = locationInformationRS.getString("displayName");
-			if (facetLabel.length() == 0){
+			if (facetLabel.isEmpty()){
 				facetLabel = displayName;
 			}
 
@@ -581,7 +579,7 @@ public class GroupedWorkIndexer {
 					logger.info("Starting to read accelerated reader data");
 				}
 				int    numLines = 0;
-				try (CSVReader arDataReader = new CSVReader(new InputStreamReader(new FileInputStream(acceleratedReaderPath), StandardCharsets.ISO_8859_1), '\t')) {
+				try (CSVReader arDataReader = new CSVReader(new InputStreamReader(Files.newInputStream(Paths.get(acceleratedReaderPath)), StandardCharsets.ISO_8859_1), '\t')) {
 //				try (CSVReader arDataReader = new CSVReader(new FileReader(arFile), '\t')) {
 					//Skip over the header
 					String[] keys = arDataReader.readNext();
@@ -636,7 +634,7 @@ public class GroupedWorkIndexer {
 											arInformation.put(isbn.toString(), titleInfo);
 										}
 									} catch (Exception e) {
-										logger.info("Error getting ISBN (col " + i + " from AR data line " + numLines, e);
+										logger.info("Error getting ISBN (col {} from AR data line {}", i, numLines, e);
 									}
 								}
 							}
@@ -650,10 +648,10 @@ public class GroupedWorkIndexer {
 					}
 				}
 				if (logger.isInfoEnabled()) {
-					logger.info("Read " + numLines + " lines of accelerated reader data");
+					logger.info("Read {} lines of accelerated reader data", numLines);
 				}
 			} else if (fullReindex) {
-				logger.warn("Accelerated Reader data file not found : " + acceleratedReaderPath);
+				logger.warn("Accelerated Reader data file not found : {}", acceleratedReaderPath);
 			}
 		}catch (Exception e){
 			logger.error("Error loading accelerated reader data", e);
@@ -686,7 +684,7 @@ public class GroupedWorkIndexer {
 								try {
 									titleInfo.setLexileScore(lexileFields[5]);
 								} catch (NumberFormatException e) {
-									logger.warn("Failed to parse lexile score " + lexileFields[5], e);
+									logger.warn("Failed to parse lexile score {}", lexileFields[5], e);
 								}
 								if (!lexileFields[10].equalsIgnoreCase("none")) {
 									titleInfo.setSeries(lexileFields[10]);
@@ -705,13 +703,13 @@ public class GroupedWorkIndexer {
 					}
 				}
 				if (logger.isInfoEnabled()) {
-					logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+					logger.info("Read {} lines of lexile data",  lexileInformation.size());
 				}
 			} else if (fullReindex) {
-				logger.warn("Lexile data file not found : " + lexileExportPath);
+				logger.warn("Lexile data file not found : {}", lexileExportPath);
 			}
 		} catch (Exception e) {
-			logger.error("Error loading lexile data on " + curLine + Arrays.toString(lexileFields), e);
+			logger.error("Error loading lexile data on {} {}", curLine, Arrays.toString(lexileFields), e);
 		}
 	}
 
@@ -744,7 +742,7 @@ public class GroupedWorkIndexer {
 
 	void deleteRecord(String id) {
 		if (logger.isInfoEnabled()) {
-			logger.info("Clearing existing work from index " + id);
+			logger.info("Clearing existing work from index {}", id);
 		}
 		try {
 			updateServer.deleteById(id);
@@ -783,24 +781,11 @@ public class GroupedWorkIndexer {
 			} catch (SolrServerException e) {
 				logger.error("Error with Solr calling final commit", e);
 			}
-			//Restart replication from the master
-			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
-			URLPostResponse startReplicationResponse = Util.getURL(url, logger);
-			if (!startReplicationResponse.isSuccess()){
-				logger.error("Error restarting replication " + startReplicationResponse.getMessage());
 
-			//MDN 10-21-2015 do not swap indexes when using replication
-			//Swap the indexes
-			/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
-			try {
-				Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
-			} catch (Exception e) {
-				logger.error("Error shutting down update server", e);
-			}*/
-			}
-			if (logger.isInfoEnabled()){
-				logger.info("Replication Enable command response :" + startReplicationResponse.getMessage());
-			}
+			//Restart replication from the indexer core
+			String url = INDEXER_URL + solrPort + "/solr/grouped/replication?command=enablereplication";
+			sendSolrCommand(url, "Enable indexer replication");
+
 			enableSearcherSolrPolling();
 		}else {
 			// Regular, day-time, partial indexing
@@ -831,40 +816,89 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+//	private void enableSearcherSolrPolling() {
+//		int     tries   = 0;
+//		boolean success = false;
+//		String url = searcherURL;
+//		if (url != null && !url.isEmpty()) {
+//			url += "/grouped/replication?command=enablepoll";
+//			do {
+//				URLPostResponse startSearcherReplicationPollingResponse = null;
+//				try {
+//					startSearcherReplicationPollingResponse = Util.getURL(url, logger);
+//					success = startSearcherReplicationPollingResponse.isSuccess();
+//				} catch (Exception e) {
+//					if (tries == 2){
+//						logger.error("Failed to get response to enable polling for 3 tries");
+//					}
+//				}
+//				if (!success) {
+//					try {
+//						Thread.sleep(3000);
+//					} catch (InterruptedException e) {
+//						logger.error("Error during thread sleep", e);
+//					}
+//					if (tries == 2) {
+//						logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
+//					}
+//				}
+//				if (logger.isInfoEnabled()) {
+//					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
+//				}
+//			} while (!success && ++tries < 3);
+//		} else {
+//			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
+//		}
+//	}
+
 	private void enableSearcherSolrPolling() {
-		int     tries   = 0;
-		boolean success = false;
-		String url = PikaConfigIni.getIniValue("Index", "url");
-		if (url != null && !url.isEmpty()) {
-			url += "/grouped/replication?command=enablepoll";
-			do {
-				URLPostResponse startSearcherReplicationPollingResponse = null;
-				try {
-					startSearcherReplicationPollingResponse = Util.getURL(url, logger);
-					success = startSearcherReplicationPollingResponse.isSuccess();
-				} catch (Exception e) {
-					if (tries == 2){
-						logger.error("Failed to get response to enable polling for 3 tries");
-					}
-				}
-				if (!success) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						logger.error("Error during thread sleep", e);
-					}
-					if (tries == 2) {
-						logger.error("Error enabling polling of solr searcher for replication after 3 tries.");
-					}
-				}
-				if (logger.isInfoEnabled()) {
-					logger.info("Searcher Replication Polling Enable command response : " + startSearcherReplicationPollingResponse.getMessage());
-				}
-			} while (!success && ++tries < 3);
+		if (searcherURL != null && !searcherURL.isEmpty()) {
+			String url = searcherURL + "/grouped/replication?command=enablepoll";
+			sendSolrCommand(url, "Enable Searcher Polling", 3);
 		} else {
 			logger.error("Unable to get solr search index url. Could not re-enable replication polling.");
 		}
 	}
+
+	private boolean sendSolrCommand(String url, String command, int numAttempts){
+		boolean success = false;
+		int     tries   = 0;
+		do {
+			URLPostResponse solrResponse = null;
+			try {
+				logger.info("Sending solr command '{}'", command);
+				solrResponse = Util.getURL(url, logger);
+				success = solrResponse.isSuccess();
+				if (!success) {
+					logger.error("Error for {}, attempt {}", command, tries);
+				}
+				if (logger.isInfoEnabled()) {
+					logger.info("Solr '{}' command response : {}", command, solrResponse.getMessage());
+				}
+			} catch (Exception e) {
+				logger.warn("Error issuing solr '{}' command, attempt {}", command, tries, e);
+			}
+			if (!success){
+				if (tries == (numAttempts-1)){
+					logger.error("Failed to issue solr '{}' command");
+					return false;
+				} else {
+					try {
+						// Wait 5 seconds
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						logger.error("Error during thread sleep", e);
+					}
+				}
+			}
+		} while (!success && ++tries < numAttempts);
+		return success;
+	}
+
+	private boolean sendSolrCommand(String url, String command){
+		return sendSolrCommand(url, command, 5);
+	}
+
 
 	private void writeStats() {
 		try {
@@ -922,7 +956,7 @@ public class GroupedWorkIndexer {
 		writeExistingRecordsFile(overDriveRecordsSkipped, "reindexer_overdrive_records_skipped");
 	}
 
-	private SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private final SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix) {
 		try {
 			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
@@ -1206,10 +1240,11 @@ public class GroupedWorkIndexer {
 				//This does the bulk of the work building fields for the solr document
 				if (updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier, loadedNovelistSeries)) {
 					//If we didn't add any records to the work (because they are all suppressed) revert to the original
-					if (groupedWork.getNumRecords() == numRecords) {
+					int newNumRecords = groupedWork.getNumRecords();
+					if (newNumRecords == numRecords) {
 						//No change in the number of records, revert to the previous
 						if (logger.isDebugEnabled()) {
-							logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+							logger.debug("Record {} did not contribute any records to the work, reverting to previous state {}", identifier, newNumRecords);
 						}
 						groupedWork = originalWork;
 					} else {
@@ -1242,7 +1277,7 @@ public class GroupedWorkIndexer {
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 
 			} catch (Exception e) {
-				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
+				logger.error("Error adding grouped work to solr {}", groupedWork.getId(), e);
 			}
 		}else{
 			if (!fullReindex){

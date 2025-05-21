@@ -77,7 +77,7 @@ function getLibraryLocationUpdates(): array{
 		],
 
 		'2025.01.0_add_newspaper_subscription_url' => [
-			'release'         => '2024.04.0',
+			'release'         => '2025.01.0',
 			'title'           => 'Add Newspaper subscription URLs to library settings',
 			'description'     => 'Allow patron authentication for libraries\' newspaper subscriptions',
 			'continueOnError' => false,
@@ -85,6 +85,17 @@ function getLibraryLocationUpdates(): array{
 				'ALTER TABLE `library` ADD COLUMN `nytimesUrl` VARCHAR(128) NULL ',
 				'ALTER TABLE `library` ADD COLUMN `wpUrl` VARCHAR(128) NULL ',
 				'ALTER TABLE `library` ADD COLUMN `wsjUrl` VARCHAR(128) NULL ',
+			]
+		],
+
+		'2025.02.0_update_showPatronBarcodeImage' => [
+			'release'         => '2025.02.0',
+			'title'           => 'Add Patron Barcodes encoding style options',
+			'description'     => 'Switch to enum column',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` DROP COLUMN IF EXISTS `showPatronBarcodeImage`; ",
+				"ALTER TABLE `library` ADD COLUMN `showPatronBarcodeImage` ENUM('none', 'codabar', 'code39', 'code39mod43', 'code39mod10') NOT NULL DEFAULT 'none' AFTER `maxBarcodeLength`;",
 			]
 		],
 

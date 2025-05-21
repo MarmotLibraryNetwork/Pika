@@ -124,7 +124,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	}
 
 	/**
-	 * @param languageCode The ISO 639-2 (Bibliographic) language code See http://id.loc.gov/vocabulary/iso639-2.html
+	 * @param languageCode The ISO 639-2 (Bibliographic) language code See <a href="http://id.loc.gov/vocabulary/iso639-2.html">...</a>
 	 */
 	void setGroupingLanguage(String languageCode){
 		this.groupingLanguage = languageCode;
@@ -170,7 +170,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 				//Insert -'s for formatting
 				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
 			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Error generating permanent id" + e.toString());
+				System.out.println("Error generating permanent id" + e);
 			}
 		}
 		return this.permanentId;
@@ -186,7 +186,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern apostropheStrip               = Pattern.compile("['’]+s"); // include typos with multiple apostrophes
 	// Example of multiple apostrophe characters : Her Mother''s Daughter
 	// Example for alternate apostrophe character : God’s guide to a good life: moral theology. catholic moral theology
-	// Example for alternate apostrophe character : Alzheimer´s disease ii //TODO: never comes into play. this gets normalized treated as a diacritcal combination
+	// Example for alternate apostrophe character : Alzheimer´s disease ii //TODO: never comes into play. this gets normalized treated as a diacritical combination
 	final private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
@@ -247,9 +247,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		//Revert when normalizating title to nothing
 		if (groupingTitle.isEmpty() && !titleBeforeRemovingSubtitles.isEmpty()){
-			if (logger.isDebugEnabled()) {
-				logger.debug("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
-			}
+			logger.debug("Title '{}' was normalized to nothing, reverting to '{}'", fullTitle, titleBeforeRemovingSubtitles);
 			groupingTitle = titleBeforeRemovingSubtitles;
 		}
 
@@ -351,15 +349,13 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		//Remove any bracketed parts of the title
 		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
 		//Make sure we don't strip the entire title
-		if (tmpTitle.length() > 0){
+		if (!tmpTitle.isEmpty()){
 			if (!tmpTitle.equals(groupingTitle)) {
 				//And make sure we don't have just special characters
 				String noSpecialCharactersTmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
 				//Note: specialCharacterStrip will remove diacritical characters
-				if (noSpecialCharactersTmpTitle.length() == 0) {
-					if (logger.isInfoEnabled()) {
-						logger.info("After removing brackets, there were only special characters: '" + groupingTitle + "' to '" + tmpTitle + "'" );
-					}
+				if (noSpecialCharactersTmpTitle.isEmpty()) {
+					logger.info("After removing brackets, there were only special characters: '{}' to '{}'", groupingTitle,  tmpTitle);
 					// Just remove the brackets, so that the text within the brackets now remains
 					groupingTitle = groupingTitle.replace("[", "").replace("]","");
 				} else {
@@ -416,9 +412,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 				}
 			}
 		}else{
-			if (logger.isDebugEnabled()) {
-				logger.debug("Not appending subtitle '" + subtitle + "' because it was already part of the title '" + title + "'.");
-			}
+			logger.debug("Not appending subtitle '{}' because it was already part of the title '{}'.", subtitle, title);
 		}
 		return title;
 	}
@@ -453,6 +447,5 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		sortTitle = sortTitle.trim();
 		return sortTitle;
 	}
-
 
 }

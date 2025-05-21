@@ -289,7 +289,7 @@ function checkMaintenanceMode(){
 		global $interface;
 
 		$isMaintenanceUser = false;
-		$activeIp          = $_SERVER['REMOTE_ADDR'];
+		$activeIp          = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
 		if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
 			$maintenanceIps    = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
 			$isMaintenanceUser = in_array($activeIp, $maintenanceIps);
@@ -440,6 +440,12 @@ function loadUserData(){
 		$interface->assign('hasLinkedUsers', $hasLinkedUsers);
 		$interface->assign('pType', UserAccount::getUserPType());
 		$interface->assign('homeLibrary', $user->getHomeLibrarySystemName());
+		$homeLibrary = $user->getHomeLibrary();
+		if (!empty($homeLibrary) && $homeLibrary->showPatronBarcodeImage != 'none'){
+			// Display the barcode value beneath the mobile barcode display only if barcode/pin scheme in use.
+			// and not if the name/barcode scheme is used.
+			$interface->assign('displayBarcodeValue', !empty($user->getAccountProfile()->usingPins()));
+		}
 
 		// Set up any masquerading
 		$interface->assign('canMasquerade', UserAccount::getActiveUserObj()->canMasquerade());
@@ -467,7 +473,7 @@ function loadUserData(){
 			}else{
 				$interface->assign('lastPartialReindexFinish', 'Unknown');
 			}
-			$timer->logTime("Load Information about Index status");
+			$timer->logTime('Load Information about Index status');
 		}
 	}
 }

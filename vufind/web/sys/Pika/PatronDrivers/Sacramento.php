@@ -677,13 +677,15 @@ class Sacramento extends Sierra {
 			/*'maxLength' => 4, 'size' => 4,*/
 			'required'    => true
 		];
+
 		$fields[] = [
-			'property'    => 'pinconfirm',
-			'type'        => 'pin',
-			'label'       => 'Confirm ' . $PIN,
-			'description' => "Please confirm your $PIN.",
+			'property'                 => 'pinconfirm',
+			'type'                     => 'pin',
+			'label'                    => 'Confirm ' . $PIN,
+			'description'              => "Please confirm your $PIN.",
 			/*'maxLength' => 4, 'size' => 4,*/
-			'required'    => true
+			'showPasswordRequirements' => true,
+			'required'                 => true
 		];
 
 		return $fields;

@@ -41,15 +41,15 @@ abstract class HooplaSetting extends DB_DataObject {
 
 	static function getObjectStructure(){
 		$hooplaKinds = self::getHooplaKinds();
-		$structure   = array(
-			'id'                        => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'),
-			'kind'                      => array('property' => 'kind', 'type' => 'enum', 'label' => 'Hoopla Format', 'values' => $hooplaKinds, 'description' => 'The Hoopla format these settings will apply to.', 'required' => true),
-			'maxPrice'                  => array('property' => 'maxPrice', 'type' => 'number', 'label' => 'Hoopla Max. Price', 'description' => 'The maximum price per use to include in search results. (0 = include everything; 0.01 to exclude the entire format)', 'min' => 0, 'step' => "0.01", 'default' => '0.00' /* leave default as a string so that value is displayed in form*/),
-			'excludeParentalAdvisory'   => array('property' => 'excludeParentalAdvisory', 'type' => 'checkbox', 'label' => 'Exclude Parental Advisory Titles', 'description' => 'Whether or not titles Hoopla has marked as having a parental advisory notice are excluded.', 'default' => 0),
-			'excludeProfanity'          => array('property' => 'excludeProfanity', 'type' => 'checkbox', 'label' => 'Exclude Titles with Profanity', 'description' => 'Whether or not titles Hoopla has marked as having profanity are excluded.', 'default' => 0),
-			'includeChildrenTitlesOnly' => array('property' => 'includeChildrenTitlesOnly', 'type' => 'checkbox', 'label' => 'Include Titles for Children only', 'description' => 'Whether or not only titles Hoopla has marked as for children are included.', 'default' => 0),
+		$structure   = [
+			'id'                        => ['property' => 'id',                        'type' => 'label',    'label' => 'Id', 'description' => 'The unique id of this association'],
+			'kind'                      => ['property' => 'kind',                      'type' => 'enum',     'label' => 'Hoopla Format', 'values' => $hooplaKinds, 'description' => 'The Hoopla format these settings will apply to.', 'required' => true],
+			'maxPrice'                  => ['property' => 'maxPrice',                  'type' => 'number',   'label' => 'Hoopla Max. Price', 'description' => 'The maximum price per use to include in search results. (0 = include everything; 0.01 to exclude the entire format)', 'min' => 0, 'step' => "0.01", 'default' => '0.00' /* leave default as a string so that value is displayed in form*/],
+			'excludeParentalAdvisory'   => ['property' => 'excludeParentalAdvisory',   'type' => 'checkbox', 'label' => 'Exclude Parental Advisory Titles', 'description' => 'Whether or not titles Hoopla has marked as having a parental advisory notice are excluded.', 'default' => 0],
+			'excludeProfanity'          => ['property' => 'excludeProfanity',          'type' => 'checkbox', 'label' => 'Exclude Titles with Profanity', 'description' => 'Whether or not titles Hoopla has marked as having profanity are excluded.', 'default' => 0],
+			'includeChildrenTitlesOnly' => ['property' => 'includeChildrenTitlesOnly', 'type' => 'checkbox', 'label' => 'Include Titles for Children only', 'description' => 'Whether or not only titles Hoopla has marked as for children are included.', 'default' => 0],
 
-		);
+		];
 		return $structure;
 	}
 

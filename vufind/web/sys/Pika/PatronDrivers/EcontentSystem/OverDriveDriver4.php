@@ -365,14 +365,14 @@ class OverDriveDriver4 {
 			}
 			//$curlInfo = $curl->getInfo(); // for debugging
 
-            if ($curl->httpStatusCode === 204) {
-                return true; // Code 204 is success
-            }
-
-            if (!isset($returnVal->message)) { // || $returnVal->message != 'An unexpected error has occurred.'
-                return $returnVal;
-            }
-        }
+			if (empty($returnVal)){
+				return $curl->httpStatusCode === 204; // Code 204 is success
+			}elseif (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+				// Have to return the response value if there is an error,
+				// so that the error can be returned to the user
+				return $returnVal;
+			}
+		}
 		return false;
 	}
 
@@ -664,7 +664,7 @@ class OverDriveDriver4 {
 								}
 							}
 						} else {
-							$this->logger->warn('Information for OverDrive Checkout supplement title not found');
+							$this->logger->warning('Information for OverDrive Checkout supplement title not found');
 						}
 					}
 				}
@@ -820,7 +820,7 @@ class OverDriveDriver4 {
 	}
 
 	/**
-	 * Places a hold on an title in OverDrive
+	 * Places a hold on a title in OverDrive
 	 *
 	 * @param string $overDriveId
 	 * @param User $user
@@ -828,22 +828,31 @@ class OverDriveDriver4 {
 	 * @return array (result, message)
 	 */
 	public function placeOverDriveHold($overDriveId, User $user, $email = null){
-		$email    ??= $user->overDriveEmail;
-		$result   = [];
-		$url      = $this->patronApi . '/v1/patrons/me/holds/' . $overDriveId;
-		$params   = [
-			'reserveId'    => $overDriveId,
-			'emailAddress' => trim($email),
+		$email  ??= $user->overDriveEmail;
+		$result = [];
+		$url    = $this->patronApi . '/v1/patrons/me/holds/' . $overDriveId;
+		$params = [
+			'reserveId' => $overDriveId,
 		];
+		if (empty($email)){
+			// By default, the API call requires email address now.
+			// If we do not supply an email address, we have to set the ignoreHoldEmail flag to true
+			// for the call to succeed.
+			$params['ignoreHoldEmail'] = true;
+		} else {
+			$params['emailAddress'] = $email;
+		}
+
 		$response = $this->_callPatronUrl($user, $url, $params);
 		if (isset($response->holdListPosition)){
 			$result['success'] = true;
-			$result['message'] = 'Your hold was placed successfully.  You are number ' . $response->holdListPosition . ' on the wait list.';
+			$result['message'] = '<p class="alert alert-success">Your hold was placed successfully.  You are number ' . $response->holdListPosition . ' on the wait list.</p>';
 		}else{
 			$result['success'] = false;
-			$result['message'] = 'Sorry, but we could not place a hold for you on this title.';
+			$result['message'] = '<p>Sorry, but we could not place a hold for you on this title.</p>';
 			if (isset($response->message)){
-				$result['message'] .= "  {$response->message}";
+				$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
+				$this->logger->info("Place OverDrive hold call for $user->id received error response : $response->message");
 			}
 		}
 		$this->clearCachedOverDriveUserInfo($user);
@@ -878,16 +887,17 @@ class OverDriveDriver4 {
 		if (isset($response->holdSuspension)){
 			$frozen            = translate('frozen');
 			$result['success'] = true;
-			$result['message'] = "Your hold was $frozen successfully";
+			$result['message'] = "<p class='alert alert-success'>Your hold was $frozen successfully</p>";
 			$result['title']   = ucwords($result['message']);
 		}else{
 			$freeze            = translate('freeze');
 			$Freezing          = ucfirst(translate('freezing'));
 			$result['success'] = false;
-			$result['message'] = "Sorry, but we could not $freeze your hold for you on this title.";
-			$result['title']   = "Error $Freezing OverDrive Hold";
+			$result['message'] = "<p>Sorry, but we could not $freeze your hold for you on this title.</p>";
+			$result['title']   = "<p>Error $Freezing OverDrive Hold</p>";
 			if (isset($response->message)){
-				$result['message'] .= "  {$response->message}";
+				$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
+				$this->logger->info("Freeze OverDrive hold call for $user->id received error response : $response->message");
 			}
 		}
 		$this->clearCachedOverDriveUserInfo($user);
@@ -910,11 +920,12 @@ class OverDriveDriver4 {
 		];
 		if ($response === true){
 			$result['success'] = true;
-			$result['message'] = 'Your hold was cancelled successfully.';
+			$result['message'] = '<p class="alert alert-success">Your hold was cancelled successfully.</p>';
 		}else{
-			$result['message'] = 'There was an error cancelling your hold.';
+			$result['message'] = '<p>There was an error cancelling your hold.</p>';
 			if (isset($response->message)){
-				$result['message'] .= "  {$response->message}";
+				$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
+				$this->logger->info("Cancel OverDrive hold call for $user->id received error response : $response->message");
 			}
 		}
 		$this->clearCachedOverDriveUserInfo($user);
@@ -938,11 +949,12 @@ class OverDriveDriver4 {
 		];
 		if ($response === true){
 			$result['success'] = true;
-			$result['message'] = 'Your hold was thawed successfully.';
+			$result['message'] = '<p class="alert alert-success">Your hold was thawed successfully.</p>';
 		}else{
-			$result['message'] = 'There was an error thawing your hold.';
+			$result['message'] = '<p>There was an error thawing your hold.</p>';
 			if (isset($response->message)){
-				$result['message'] .= "  {$response->message}";
+				$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
+				$this->logger->info("Thaw OverDrive hold call for $user->id received error response : $response->message");
 			}
 		}
 		$this->clearCachedOverDriveUserInfo($user);
@@ -974,7 +986,7 @@ class OverDriveDriver4 {
 		if (isset($response->expires)){
 			// Successful checkout
 			$result['success'] = true;
-			$result['message'] = 'Your title was checked out successfully. You may now view the title in your account.';
+			$result['message'] = '<p class="alert alert-success">Your title was checked out successfully. You may now view the title in your account.</p>';
 			if (!empty($response->formats) && count($response->formats) == 1){
 				//This should be the read online option
 				$result['formatType'] = $response->formats[0]->formatType;
@@ -984,32 +996,33 @@ class OverDriveDriver4 {
 			}
 		}else{
 			$result['success'] = false;
-			$result['message'] = 'Sorry, we could not checkout this title to you.'; // add pre-amble to error messages
+			$result['message'] = '<p>Sorry, we could not check out this title to you.</p>'; // add pre-amble to error messages
 			if (!empty($response->errorCode)){
 				switch ($response->errorCode){
 					case 'PatronHasExceededCheckoutLimit' :
-						$result['message'] .= "\r\n\r\nYou have reached the maximum number of OverDrive titles you can checkout one time.";
+						$result['message'] .= "<p>You have reached the maximum number of OverDrive titles you can checkout one time.</p>";
 						break;
 					case 'NoCopiesAvailable' :
 					case 'NoCopiesAvailable_AvailableInCpcForFastLaneMembersOnly' :
 						$result['noCopies'] = true;
-						$result['message']  .= "\r\n\r\nWould you like to place a hold instead?";
+						$result['message']  .= "<p>Would you like to place a hold instead?</p>";
 						break;
 					case 'TitleAlreadyCheckedOut' :
 						$result['alreadyCheckedOut'] = true;
 						break;
 					default :
 						if (isset($response->message)){
-							$result['message'] .= "\r\n\r\n {$response->message}";
+							$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
 						}
 				}
+				$this->logger->error("OverDrive error for patron {$user->id} : (Error code $response->errorCode) " . $response->errorMessage);
 			}else{
-				//Give more information about why it might gave failed, ie expired card or too much fines
-				$this->logger->error('Unexpected response from OverDrive checkout call: ' . var_export($response, true));
+				//Give more information about why it might have failed, ie expired card or too much fines
+				$this->logger->error('Unexpected response from OverDrive checkout call for patron ' . $user->id . ' : ' . var_export($response, true));
 				if (isset($response->message)){
-					$result['message'] .= "\r\n\r\n  {$response->message}";
+					$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
 				}else{
-					$result['message']      = "Unknown Error <br><br>" . $result['message'] . " Attempt to place a hold instead?.";
+					$result['message']      = "<p>Unknown Error <br></p>" . $result['message'] . " <p>Attempt to place a hold instead?.</p>";
 					$result['promptNeeded'] = true;
 					$result['buttons']      = '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold OverDrive" onclick="return Pika.OverDrive.placeOverDriveHold(\'' . $overDriveId . '\');">';
 				}
@@ -1036,11 +1049,11 @@ class OverDriveDriver4 {
 		];
 		if ($response === true){
 			$result['success'] = true;
-			$result['message'] = 'Your item was returned successfully.';
+			$result['message'] = '<p class="alert alert-success">Your item was returned successfully.</p>';
 		}else{
-			$result['message'] = 'There was an error returning this item.';
+			$result['message'] = '<p>There was an error returning this item.</p>';
 			if (isset($response->message)){
-				$result['message'] .= "  {$response->message}";
+				$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
 			}
 		}
 
@@ -1089,11 +1102,11 @@ class OverDriveDriver4 {
 		global $timer;
 		$tokenData = $this->_connectToPatronAPI($user);
 		$timer->logTime("Checked to see if the user {$user->id} is valid for OverDrive");
-        //if (!is_array($tokenData)) {
-        if (!isset($tokenData->error)){
-            return true; //!empty($tokenData) && !array_key_exists('error', $tokenData);
-        }
-        return false;
+		//if (!is_array($tokenData)) {
+		if (!isset($tokenData->error)){
+			return true; //!empty($tokenData) && !array_key_exists('error', $tokenData);
+		}
+		return false;
 	}
 
 	/**

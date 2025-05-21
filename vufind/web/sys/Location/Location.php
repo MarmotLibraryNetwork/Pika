@@ -910,7 +910,7 @@ class Location extends DB_DataObject {
 					$matchedLocation->locationId = $subnet->locationid;
 					if ($matchedLocation->find(true)){
 						//Only use the physical location regardless of where we are
-						$this->ipLocation = clone($matchedLocation);
+						$this->ipLocation = clone $matchedLocation;
 						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
 
 						$this->ipId = $subnet->id;
@@ -950,11 +950,11 @@ class Location extends DB_DataObject {
 			//Set a cookie so we don't have to transfer the ip from page to page.
 //			setcookie('test_ip', $ip, 0, '/', NULL, 1, 1);
 			handleCookie('test_ip', $ip);
-//		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
 		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
 			$ip = $_COOKIE['test_ip'];
 		}else{
-			$ip = $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_FORWARDED'] ??
+			$ip = $_SERVER['HTTP_CF_CONNECTING_IP'] // Cloudflare Proxy parameter
+				?? $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_FORWARDED'] ??
 				$_SERVER['HTTP_FORWARDED_FOR'] ?? $_SERVER['HTTP_FORWARDED'] ?? $_SERVER['HTTP_FORWARDED'] ??
 				$_SERVER['REMOTE_HOST'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
 		}
@@ -1675,8 +1675,8 @@ class Location extends DB_DataObject {
 						setcookie('opac', $this->opacStatus, time() - 1000, '/', null, 0, 1);
 					}
 				}elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']){
-					if(!$configArray['Site']['isDevelopment']){
-					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 1, 1);
+					if (!$configArray['Site']['isDevelopment']){
+						setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', null, 1, 1);
 					}else{
 						setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', null, 0, 1);
 					}

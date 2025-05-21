@@ -823,14 +823,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'required' => true,
         ];
 
-        $fields[] = [
-            'property' => 'Password2',
-            'type' => 'pin',
-            'label' => 'Confirm ' . translate('PIN'),
-            'description' => 'Please confirm your ' . translate('pin') . '.',
-            'maxLength' => 10,
-            'required' => true,
-        ];
+			$fields[] = [
+				'property'                 => 'Password2',
+				'type'                     => 'pin',
+				'label'                    => 'Confirm ' . translate('PIN'),
+				'description'              => 'Please confirm your ' . translate('pin') . '.',
+				'maxLength'                => 10,
+				'showPasswordRequirements' => true,
+				'required'                 => true,
+			];
 
         return $fields;
     }
