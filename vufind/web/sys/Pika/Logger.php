@@ -57,8 +57,8 @@ class Logger extends MonoLogger {
 		}
 	}
     
-    public function warn($message, $info)
+    public function warn(string $message, array $context = []): void
     {
-       return parent::warning($message, $info);
+       parent::warning($message, $context);
     }
 }
