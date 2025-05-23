@@ -10607,10 +10607,15 @@ a .header-button:hover {
 a .header-button {
   font-weight: bold;
   font-size: 16px;
+  background-color: #FDB525;
+  color: #2F3438;
+  border-radius: 25px;
+  margin-top: 40px;
+  line-height: 45px;
 }
 a .header-button:hover {
-  background-color: #fff;
-  color: #A82E2E;
+  background-color: #F99D25;
+  color: #fff;
 }
 #home-page-login {
   text-shadow: none;
@@ -10693,12 +10698,15 @@ a .header-button:hover {
   letter-spacing: 0.25em;
   text-decoration: underline;
 }
+#browse-category-carousel .browse-category {
+  border-radius: 30px;
+}
 #browse-category-carousel .browse-category button:hover {
-  color: #fdb525;
+  color: #F99D25;
   text-decoration: none;
 }
 #browse-category-carousel .browse-category.selected {
-  background-color: #fdb525;
+  background-color: #FDB525;
 }
 #browse-category-carousel .browse-category.selected button {
   color: #2F3438;
