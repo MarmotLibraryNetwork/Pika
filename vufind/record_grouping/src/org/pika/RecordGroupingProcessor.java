@@ -374,7 +374,7 @@ class RecordGroupingProcessor {
 													author = author.substring(0, author.indexOf(';') - 1);
 												}
 												if (logger.isInfoEnabled()) {
-													logger.info("Resorting to 245c for grouping author for " + identifier + " : " + author);
+													logger.info("Resorting to 245c for grouping author for {} : {}", identifier, author);
 												}
 											}
 										}
