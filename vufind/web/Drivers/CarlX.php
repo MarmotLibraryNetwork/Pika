@@ -496,7 +496,7 @@ class CarlX extends SIP2Driver{
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false) {
 		return $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 

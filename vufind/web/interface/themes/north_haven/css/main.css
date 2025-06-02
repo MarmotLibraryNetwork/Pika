@@ -8528,6 +8528,7 @@ hr.menu {
   font-size: 50px;
   border: none;
   padding-inline: 0;
+  z-index: 1;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {

@@ -176,9 +176,11 @@ class DataObjectUtil {
 				if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 					$object->$propertyName = strip_tags($object->$propertyName);
 				}else{
-					$allowableTags         = $property['allowableTags'] ?? '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6>';
-
-					$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
+					$allowableTags = $property['allowableTags'] ?? '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6>';
+					if (!empty($object->$propertyName)){
+						// prevent "Passing null to parameter #1" php notice
+						$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
+					}
 				}
 				break;
 			case 'integer':

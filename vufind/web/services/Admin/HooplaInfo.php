@@ -102,7 +102,7 @@ class Admin_HooplaInfo extends Admin_Admin {
 				$_REQUEST['hooplaId'] = trim(str_replace(['MWT', 'mwt'], '', $_REQUEST['hooplaId']));
 				$response             = $driver->getHooplaRecordMetaData($hooplaLibraryId, $_REQUEST['hooplaId']);
 				$hooplaData           = json_encode($response, JSON_PRETTY_PRINT);
-				if ($success = (!empty($response->titles[0]->id) && $_REQUEST['hooplaId'] == $response->titles[0]->id)){
+				if ($success = (!empty($response->titles[0]->id)/* && $_REQUEST['hooplaId'] == $response->titles[0]->id*/)){
 					$message = 'Matching Id found.';
 				} else {
 					$message = 'Matching ID not found.';

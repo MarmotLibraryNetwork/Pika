@@ -93,6 +93,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	protected $aboutUrl;
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
+	private $homePickupHoldNote = 'Pika placed homePickup hold';
 
 
 	/**
@@ -157,9 +158,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$checkoutEntries = [];
 		do {
 			$params = [
-			 'fields' => 'default,barcode,callNumber',
-			 'limit'  => $limit,
-			 'offset' => $offset
+				'fields' => 'default,barcode,callNumber',
+				'limit'  => $limit,
+				'offset' => $offset
 			];
 			$rawCheckouts = $this->_doRequest($operation, $params);
 			if(!$rawCheckouts) {
@@ -191,7 +192,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
-        
+
 				$checkout['checkoutSource'] =  $this->accountProfile->recordSource; //TODO: this might be a bad idea for ILL items for reading history
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
@@ -1423,12 +1424,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			// Combine fixed fields ahead of merging main parameters (because any set in $params would be overwritten)
 			// e.g. selfRegistrationAgencyCode is set; but site driver sets notification preferences
 			if (isset($extraSelfRegParams['fixedFields']) && isset($params['fixedFields'])){
-                $params['fixedFields'] += $extraSelfRegParams['fixedFields'];
-                // Use array + (union) operator in order to preserve the specific numeric keys
-                // required for setting the fixedFields on a self-reg user.
-                unset($extraSelfRegParams['fixedFields']);
-                // Now that the fixedFields element is merged, remove it from extra params array
-                // so other extra fields can be merged (below)
+				$params['fixedFields'] += $extraSelfRegParams['fixedFields'];
+				// Use array + (union) operator in order to preserve the specific numeric keys
+				// required for setting the fixedFields on a self-reg user.
+				unset($extraSelfRegParams['fixedFields']);
+				// Now that the fixedFields element is merged, remove it from extra params array
+				// so other extra fields can be merged (below)
 			}
 			$params = array_merge($params, $extraSelfRegParams);
 		}
@@ -1614,7 +1615,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				'required'    => true
 			];
 		}
-		
+
 		// if library uses pins
 		if($this->accountProfile->usingPins()) {
 			$fields[] = [
@@ -1627,12 +1628,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			];
 
 			$fields[] = [
-				'property'    => 'pinconfirm',
-				'type'        => 'pin',
-				'label'       => 'Confirm ' . translate('PIN'),
-				'description' => 'Please confirm your ' . translate('pin') . '.',
-//				'maxLength'   => 10,
-				'required'    => true
+				'property'                 => 'pinconfirm',
+				'type'                     => 'pin',
+				'label'                    => 'Confirm ' . translate('PIN'),
+				'description'              => 'Please confirm your ' . translate('pin') . '.',
+				'required'                 => true,
+				'showPasswordRequirements' => true,
 			];
 		}
 
@@ -1843,7 +1844,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		}
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if ($patronHolds = $this->cache->get($patronHoldsCacheKey)) {
-			$this->logger->info("Found holds in memcache:" . $patronHoldsCacheKey);
+			$this->logger->info('Found holds in memcache:' . $patronHoldsCacheKey);
 			return $patronHolds;
 		}
 
@@ -1854,13 +1855,13 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$operation = "patrons/$patronId/holds";
 		if ((integer)$this->configArray['Catalog']['api_version'] > 4){
 			$params = [
-				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate,canFreeze,note',
 				'limit'  => 1000,
 				'expand' => 'record'
 			];
 		}else{
 			$params = [
-				'fields' => 'default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate',
+				'fields' => 'default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate,note',
 				'limit'  => 1000
 			];
 		}
@@ -1934,6 +1935,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
 
+			// Is homePickup hold hack
+			$isHomePickupHold      = stristr($hold->note, $this->homePickupHoldNote) !== false;
+			$h['isHomePickupHold'] = $isHomePickupHold;
+
 			// status, cancelable, freezable
 			$recordStatus = $hold->status->code;
 			// check item record status
@@ -1947,7 +1952,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 						// check for in transit status see
 						if($recordItemStatus == 't') {
 							if(isset($hold->priority) && (int)$hold->priority == 1)
-							$recordStatus = 't';
+								$recordStatus = 't';
 						}
 					}
 				} else {
@@ -1960,13 +1965,13 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				case '0':
 				case '-':
 					if($hold->frozen) {
-						$status = "Frozen";
+						$status = 'Frozen';
 					} else {
 						$status = 'On hold';
 					}
 					$cancelable = true;
 					$freezeable = true;
-					if($canUpdatePL) {
+					if(!$isHomePickupHold && $canUpdatePL) {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
@@ -1988,7 +1993,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$updatePickup = false;
 					break;
 				case "&": // inn-reach status
-					$status       = "Requested";
+					$status       = 'Requested';
 					if($illName) {
 						$status .= ' from '.$illName;
 					}
@@ -2001,7 +2006,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$status             = 'Ready';
 					$freezeable         = false;
 					$cancelable         = false;
-					$updatePickup = false;
+					$updatePickup       = false;
 					break;
 				default:
 					if(isset($recordItemStatusMessage)) {
@@ -2013,21 +2018,26 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$freezeable   = false;
 					$updatePickup = false;
 			}
-			// for sierra, holds can't be frozen if patron is next in line
-			if(isset($hold->priorityQueueLength)) {
-				if(isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)) {
-					$freezeable = false;
-				// if the patron is the only person on wait list hold can't be frozen
-				} elseif(isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)) {
-					$freezeable = false;
-				// if there is no priority set but queueLength = 1
-				} elseif(!isset($hold->priority) && $hold->priorityQueueLength == 1) {
-					$freezeable = false;
-				} 
+			if (isset($hold->canFreeze)){
+				// Sierra holds now have a canFreeze flag
+				$freezeable = (boolean)$hold->canFreeze;
+			}else{
+				// for sierra, holds can't be frozen if patron is next in line
+				if (isset($hold->priorityQueueLength)){
+					if (isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)){
+						$freezeable = false;
+						// if the patron is the only person on wait list hold can't be frozen
+					}elseif (isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)){
+						$freezeable = false;
+						// if there is no priority set but queueLength = 1
+					}elseif (!isset($hold->priority) && $hold->priorityQueueLength == 1){
+						$freezeable = false;
+					}
+				}
 			}
-			$h['status']    = $status;
-			$h['freezeable']= $freezeable;
-			$h['cancelable']= $cancelable;
+			$h['status']             = $status;
+			$h['freezeable']         = $freezeable;
+			$h['cancelable']         = $cancelable;
 			$h['locationUpdateable'] = $updatePickup;
 			// unset for next round.
 			unset($status, $freezeable, $cancelable, $updatePickup);
@@ -2036,7 +2046,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			if (!empty($hold->pickupLocation)){
 				$pickupBranch = new Location();
 				$where        = "code = '{$hold->pickupLocation->code}'";
-				$pickupBranch->whereAdd($where);
+				$pickupBranch->whereAdd($where); //TODO: simplify
 				if ($pickupBranch->find(1)){
 					$h['currentPickupId']   = $pickupBranch->locationId;
 					$h['currentPickupName'] = $pickupBranch->displayName;
@@ -2047,7 +2057,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$h['location']          = $hold->pickupLocation->name;
 				}
 			} else{
-				//This shouldn't happen but we have had examples where it did
+				//This shouldn't happen, but we have had examples where it did
 				$this->logger->error("Patron with barcode {$patron->getBarcode()} has a hold with out a pickup location ");
 				$h['currentPickupId']   = false;
 				$h['currentPickupName'] = false;
@@ -2144,7 +2154,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	 * @param string|null $cancelDate
 	 * @return array|false
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false) {
 		if($cancelDate) {
 			$d        = DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
 			$neededBy = $d ? $d->format('Y-m-d') : false;
@@ -2183,14 +2193,18 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		if($neededBy) {
 			$params['neededBy'] = $neededBy;
 		}
+		if ($hasHomePickupItems){
+			$params['note'] = $this->homePickupHoldNote;
+			// Add optional note to the hold, so that we can detect a homePickup hold for the My Holds page
+		}
 
 		$operation = "patrons/$patronId/holds/requests";
 
-		$r = $this->_doRequest($operation, $params, "POST");
+		$r = $this->_doRequest($operation, $params, 'POST');
 
 		// check if error we need to do an item level hold
 		if ($this->apiLastError && stristr($this->apiLastError, 'Volume record selection is required to proceed')
-		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
+			|| (stristr($this->apiLastError,'This record is not available') && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 
 			$this->logger->notice("Sierra patron $patronId hold on $recordId requires item level hold");
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items
@@ -2410,12 +2424,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		// something went wrong
 		if(!$r) {
 			$return = ['success' => false];
-				if($this->apiLastError) {
-					$message = $this->_getPrettyError();
-					$return['message'] = $message;
-				} else {
-					$return['message'] = "Unable to freeze your hold. Please contact your library for further assistance.";
-				}
+			if($this->apiLastError) {
+				$message = $this->_getPrettyError();
+				$return['message'] = $message;
+			} else {
+				$return['message'] = "Unable to freeze your hold. Please contact your library for further assistance.";
+			}
 			return $return;
 		}
 
@@ -2632,11 +2646,11 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$limit  = 2000;
 
 		$historyEntries = [];
-		 do {
-		 	$params = [
-				 'limit' => $limit,
-				 'offset'=> $offset
-		  ];
+		do {
+			$params = [
+				'limit' => $limit,
+				'offset'=> $offset
+			];
 			$rawHistory = $this->_doRequest($operation, $params);
 			if(!$rawHistory) {
 				return false;
@@ -3254,8 +3268,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$opts = [
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_HEADER         => false,
-                CURLOPT_SSL_VERIFYPEER => false, // REMOVE
-                CURLOPT_SSL_VERIFYHOST => false, // REMOVE
+				CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+				CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 			];
 
 			// If there's an exception here, let it play out
@@ -3329,8 +3343,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$opts = [
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HEADER         => false,
-            CURLOPT_SSL_VERIFYPEER => false, // REMOVE
-            CURLOPT_SSL_VERIFYHOST => false, // REMOVE
+			CURLOPT_SSL_VERIFYPEER => false, // REMOVE
+			CURLOPT_SSL_VERIFYHOST => false, // REMOVE
 		];
 
 		// instantiate the Curl object and set the base url

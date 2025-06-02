@@ -18,7 +18,7 @@
  */
 
 /**
- *  Matching a file of rbdigtial title isbns against works in the marmot search index that also have
+ *  Matching a file of rbDigital title itemNumbers against works in the marmot search index that also have
  *  hoopla/(overdrive) titles)
  *
  * @category Pika
@@ -26,7 +26,7 @@
  * Date: 1/13/2020
  *
  */
-
+exit; // prevent unintentional execution
 define('ROOT_DIR', __DIR__);
 
 // Composer autoloader

@@ -160,9 +160,7 @@ public class Util {
 		URLPostResponse retVal;
 		HttpURLConnection conn;
 		try {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Getting URL " + url);
-			}
+			logger.debug("Getting URL {}", url);
 			URL emptyIndexURL = new URL(url);
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			if (conn instanceof HttpsURLConnection){
@@ -188,7 +186,7 @@ public class Util {
 				}
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				logger.error("Received error {} getting {}",  conn.getResponseCode(), url);
 				// Get any errors
 				try (BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
 					String line;
@@ -201,10 +199,10 @@ public class Util {
 			}
 
 		} catch (MalformedURLException e) {
-			logger.error("URL to post (" + url + ") is malformed", e);
+			logger.error("URL to post ({}) is malformed", url, e);
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url " + url, e);
+			logger.error("Error posting to url {}", url, e);
 			retVal = new URLPostResponse(false, -1, "Error posting to url " + url + "\n" + e);
 		}
 		logger.debug("  Finished calling url");

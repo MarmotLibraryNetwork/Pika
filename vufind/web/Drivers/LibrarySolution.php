@@ -507,7 +507,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false) {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result       = [
 			'success' => false,

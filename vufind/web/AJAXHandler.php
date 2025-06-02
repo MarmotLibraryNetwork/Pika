@@ -44,6 +44,14 @@ abstract class AJAXHandler extends Action {
 
 	protected $logger;
 
+	// Most if not all AJAX calls require javascript to be executed,
+	// so most bots & crawls don't trigger AJAX calls.  But we have found
+	// that at least one does execute javascript, and is also malicious
+	// in the amount of requests it makes
+	private $maliciousAgents = [
+		'YandexRenderResourcesBot'
+	];
+
 	function __construct($error_class = null){
 		global $pikaLogger;
 		$this->logger = $pikaLogger->withName(get_class($this)); // note: get_class will return the class name for classes that extend this class
@@ -51,6 +59,12 @@ abstract class AJAXHandler extends Action {
 	}
 
 	function launch(){
+		foreach ($this->maliciousAgents as $maliciousAgent){
+			if (str_contains($_SERVER["HTTP_USER_AGENT"], $maliciousAgent)){
+				$this->logger->info("Malicious agent found on AJAX call, aborting without response: " . $maliciousAgent);
+				die;
+			}
+		}
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		if (!empty($method) && method_exists($this, $method)){
@@ -66,7 +80,7 @@ abstract class AJAXHandler extends Action {
 				$result = $this->$method();
 				$this->sendHTTPHeaders('text/html');
 				echo $result;
-			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithXML)){
+			}elseif (property_exists($this, 'methodsThatRespondWithXML') && in_array($method, $this->methodsThatRespondWithXML)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('text/xml');
 

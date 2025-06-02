@@ -62,7 +62,8 @@
     color: @browseCarouselControlColor;
     font-size: 50px;
     border:none;
-    padding-inline:0;
+    padding-inline: 0;
+    z-index: 1; // Ensure the button is above the carousel card on narrow views.
 
     &:focus {
       text-decoration: none;

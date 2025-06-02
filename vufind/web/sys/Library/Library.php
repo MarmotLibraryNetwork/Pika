@@ -320,6 +320,14 @@ class Library extends DB_DataObject {
 		'list'  => 'List',
 	];
 
+	static $displayPatronBarcodeOption = [
+		'none'        => 'Do not display',
+		'codabar'     => 'Codabar',
+		'code39'      => 'Code 39 - No Mod',
+		'code39mod43' => 'Code 39 - Mod43',
+		//'code39mod10' => 'Code 39 - Mod10',
+	];
+
 	/**
 	 * Needed override for OneToManyDataObjectOperations
 	 * @return string
@@ -331,6 +339,7 @@ class Library extends DB_DataObject {
 	function keys(){
 		return ['libraryId', 'subdomain'];
 	}
+
 
 	public function getObjectStructure(){
 		// get the structure for the library system's holidays
@@ -505,7 +514,7 @@ class Library extends DB_DataObject {
 						]],
 					'userProfileSection' => ['property' => 'userProfileSection', 'type' => 'section', 'label' => 'User Profile', 'hideInLists' => true,
 					                         'helpLink' =>'https://marmot-support.atlassian.net/l/c/QnBxrnfU', 'properties' => [
-							'showPatronBarcodeImage'               => ['property' => 'showPatronBarcodeImage', 'type' =>'checkbox', 'label' =>'Show a scannable barcode image in mobile menu', 'description' =>'', 'hideInLists' => true, 'default' => 0],
+							'showPatronBarcodeImage'               => ['property' => 'showPatronBarcodeImage', 'type' =>'enum', 'label' =>'Show a scannable barcode image in mobile menu', 'values'=> self::$displayPatronBarcodeOption, 'description' =>'', 'hideInLists' => true, 'default' => 0],
 							'patronNameDisplayStyle'               => ['property' =>'patronNameDisplayStyle', 'type' =>'enum', 'values' => ['firstinitial_lastname' =>'First Initial. Last Name', 'lastinitial_firstname' =>'First Name Last Initial.'], 'label' =>'Patron Display Name Style', 'description' =>'How to generate the patron display name'],
 							'allowProfileUpdates'                  => ['property' =>'allowProfileUpdates', 'type' =>'checkbox', 'label' =>'Allow Profile Updates', 'description' =>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1],
 							'allowPinReset'                        => ['property' =>'allowPinReset', 'type' =>'checkbox', 'label' =>'Allow '. translate('PIN') .' Update', 'description' =>'Whether or not the user can update their '. translate('PIN') .' in the Account Settings page.', 'hideInLists' => true, 'default' => 0],
@@ -1078,7 +1087,7 @@ class Library extends DB_DataObject {
 			'NewspaperAuthenticationSection' => [
 				'property'   => 'NewspaperAuthenticationSection', 'type' => 'section', 'label' => 'Newspaper Authentication', 'hideInLists' => true,
 				// TODO: Add documentation link.
-				//'helpLink'   => '',
+				'helpLink'   => 'https://marmot-support.atlassian.net/l/cp/dAUR1fce',
 				'properties' => [
 					'nytimes' => ['property' => 'nytimesUrl', 'type' => 'text', 'label' => 'NY Times Subscription URL (MyAccount/NYTimes)',        'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
 					'wsj'     => ['property' => 'wsjUrl',     'type' => 'text', 'label' => 'Wall Street Journal Subscription URL (MyAccount/WSJ)', 'description' => 'The URL to provide to an authenticated patron for access to the newspaper'],
@@ -1320,27 +1329,27 @@ class Library extends DB_DataObject {
 
 	public function __get($name){
 		switch ($name){
-			case "holidays":
+			case 'holidays':
 				if (!isset($this->holidays)){
 					$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
 				}
 				return $this->holidays;
-			case "moreDetailsOptions":
+			case 'moreDetailsOptions':
 				if (!isset($this->moreDetailsOptions)){
 					$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
 				}
 				return $this->moreDetailsOptions;
-			case "archiveMoreDetailsOptions":
+			case 'archiveMoreDetailsOptions':
 				if (!isset($this->archiveMoreDetailsOptions)){
 					$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
 				}
 				return $this->archiveMoreDetailsOptions;
-			case "facets":
+			case 'facets':
 				if (!isset($this->facets) && $this->libraryId){
 					$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
 				}
 				return $this->facets;
-			case "archiveSearchFacets":
+			case 'archiveSearchFacets':
 				if (!isset($this->archiveSearchFacets)){
 					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
 				}
@@ -1416,13 +1425,13 @@ class Library extends DB_DataObject {
 	}
 
 	public function __set($name, $value){
-		if ($name == "holidays") {
+		if ($name == 'holidays') {
 			$this->holidays = $value;
-		}elseif ($name == "moreDetailsOptions") {
+		}elseif ($name == 'moreDetailsOptions') {
 			$this->moreDetailsOptions = $value;
-		}elseif ($name == "archiveMoreDetailsOptions") {
+		}elseif ($name == 'archiveMoreDetailsOptions') {
 			$this->archiveMoreDetailsOptions = $value;
-		}elseif ($name == "facets") {
+		}elseif ($name == 'facets') {
 			$this->facets = $value;
 		}elseif ($name == "archiveSearchFacets") {
 			$this->archiveSearchFacets = $value;

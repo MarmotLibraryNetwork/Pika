@@ -855,7 +855,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 	 * @return  array                    Array of (success and message) to be used for an AJAX response
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false) {
 		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelDate);
 		return $result;
 

@@ -66,7 +66,7 @@
 	{/if}
 </div>
 {/strip}
-{if !offline}
+{if !$offline}
 <script>
 	{if $promptForBirthDateInSelfReg}
 	{* #borrower_note is birthdate for anythink *}

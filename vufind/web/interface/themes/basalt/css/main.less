@@ -20,10 +20,14 @@
 a .header-button {
   font-weight: bold;
   font-size: 16px;
-
+  background-color: @new-basalt-light-orange;
+  color: @dark-gray;
+  border-radius: 25px;
+  margin-top: 40px;
+  line-height: 45px;
   &:hover {
-    background-color: #fff;
-    color: @new-basalt-dark-red;
+    background-color: @new-basalt-orange;
+    color: #fff;
   }
 }
 
@@ -171,12 +175,13 @@ a .header-button {
 }
 
 #browse-category-carousel .browse-category {
+  border-radius:30px;
   button {
     //color: #65656a;
     //border: none;
 
     &:hover {
-      color: #fdb525;
+      color: @new-basalt-orange;
       text-decoration: none;
       //border: none;
 
@@ -184,7 +189,8 @@ a .header-button {
   }
 
   &.selected {
-    background-color: #fdb525;
+    background-color: @new-basalt-light-orange;
+
     button {
       color: @dark-gray;
     }

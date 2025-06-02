@@ -34,7 +34,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 	public $collapseByDefault;
 	public $weight;
 
-	static $moreDetailsOptions = array(
+	static $moreDetailsOptions = [
 		'description'          => 'Description',
 		'bio'                  => 'Biographical Information',
 		'wikipedia'            => 'From Wikipedia',
@@ -63,7 +63,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'moreDetails'          => 'More Details',
 		'rightsStatements'     => 'Rights Statements',
 		'staffView'            => 'Staff View',
-	);
+	];
 
 	static function getObjectStructure(){
 		//Load Libraries for lookup values
@@ -80,15 +80,14 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = array(
-			'id'                => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the hours within the database'),
-			'libraryId'         => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'section'           => array('property' => 'section', 'type' => 'enum', 'label' => 'Section', 'values' => self::$moreDetailsOptions, 'description' => 'The section to display'),
-			'collapseByDefault' => array('property' => 'collapseByDefault', 'type' => 'checkbox', 'label' => 'Collapse By Default', 'description' => 'Whether or not the section should be collapsed by default', 'default' => true),
-//			'weight'            => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the accordion.  Lower weights are displayed to the left of the screen.', 'required' => true),
+		$structure = [
+			'id'                => ['property' => 'id',                'type' => 'label',     'label' => 'Id', 'description' => 'The unique id of the hours within the database'],
+			'libraryId'         => ['property' => 'libraryId',         'type' => 'enum',     'label' => 'Library', 'values' => $libraryList, 'description' => 'A link to the library which the location belongs to'],
+			'section'           => ['property' => 'section',           'type' => 'enum',     'label' => 'Section', 'values' => self::$moreDetailsOptions, 'description' => 'The section to display'],
+			'collapseByDefault' => ['property' => 'collapseByDefault', 'type' => 'checkbox', 'label' => 'Collapse By Default', 'description' => 'Whether or not the section should be collapsed by default', 'default' => true],
+			//'weight'            => ['property' => 'weight',            'type' => 'integer',  'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the accordion.  Lower weights are displayed to the left of the screen.', 'required' => true],
 			// Weight isn't needed in the object structure for display of oneToMany sections
-
-		);
+		];
 		return $structure;
 	}
 
@@ -97,7 +96,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 //	}
 
 	static function getDefaultOptions($libraryId = -1){
-		$defaultOptions = array();
+		$defaultOptions = [];
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;

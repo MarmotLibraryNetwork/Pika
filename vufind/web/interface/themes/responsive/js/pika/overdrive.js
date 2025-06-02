@@ -115,7 +115,11 @@ Pika.OverDrive = (function(){
 					if (data.availableForCheckout){
 						Pika.OverDrive.checkOutOverDriveTitle(overdriveId);
 					}else{
-						Pika.showMessageWithButtons("Placed Hold", data.message, data.buttons);
+						if (data.success){
+							Pika.showMessageWithButtons("Placed Hold", data.message, data.buttons);
+						} else {
+							Pika.showMessage("Error Placing Hold", data.message);
+						}
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");

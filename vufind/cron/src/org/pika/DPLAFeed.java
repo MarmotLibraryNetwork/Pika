@@ -51,7 +51,7 @@ public class DPLAFeed implements IProcessHandler {
 		processLog.addNote("Building DPLA Feed File");
 
 		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
-		if (pikaUrl == null || pikaUrl.length() == 0) {
+		if (pikaUrl == null || pikaUrl.isEmpty()) {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
@@ -60,8 +60,10 @@ public class DPLAFeed implements IProcessHandler {
 		boolean fatal            = false;
 		int     currentPage      = 1;
 		String  DPLAFeedFilePath = PikaConfigIni.getIniValue("Site", "local");
-		try (FileWriter fileWriter = new FileWriter(DPLAFeedFilePath + "/dplaFeed.json");
-			 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+		try (
+			FileWriter fileWriter         = new FileWriter(DPLAFeedFilePath + "/dplaFeed.json");
+			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)
+		) {
 			String DLPAFeedUrlString = pikaUrl + "/API/ArchiveAPI?method=getDPLAFeed";
 			int    numPages          = 0;
 			int    pageSize          = 100;
@@ -95,14 +97,14 @@ public class DPLAFeed implements IProcessHandler {
 					if (dplaFeedRaw instanceof InputStream) {
 						String jsonData = "";
 						jsonData = Util.convertStreamToString((InputStream) dplaFeedRaw);
-						if (jsonData != null && jsonData.length() > 0) {
-							logger.debug("Fetched page " + currentPage + " of " + numPages);
+						if (jsonData != null && !jsonData.isEmpty()) {
+							logger.debug("Fetched page {} of {}", currentPage, numPages);
 							try {
 								JSONObject dplaFeedData = new JSONObject(jsonData);
 								JSONObject result       = dplaFeedData.getJSONObject("result");
 								if (numPages == 0 && result.has("numPages")) {
 									numPages = result.getInt("numPages");
-									String note = numPages + " to fetch from Archive API for the DPLA feed.";
+									String note = numPages + " pages to fetch from Archive API for the DPLA feed.";
 									processLog.addNote(note);
 									logger.info(note);
 								}
@@ -129,19 +131,19 @@ public class DPLAFeed implements IProcessHandler {
 										tryAgain = true;
 									}
 								} else {
-									logger.error("DPLA Feed Call did not return any archive objects : " + DPLAFeedUrl + " response : " + jsonData);
+									logger.error("DPLA Feed Call did not return any archive objects : {} response : {}", DPLAFeedUrl, jsonData);
 									tryAgain = true;
 								}
 							} catch (JSONException e) {
-								logger.error("DPLA Feed JSON Error for call : " + DPLAFeedUrl, e);
+								logger.error("DPLA Feed JSON Error for call : {}", DPLAFeedUrl, e);
 								tryAgain = true;
 							}
 						} else {
-							logger.error("DPLA Feed Call had an empty json response : " + DPLAFeedUrl + " response : " + jsonData);
+							logger.error("DPLA Feed Call had an empty json response : {} response : {}", DPLAFeedUrl, jsonData);
 							tryAgain = true;
 						}
 					} else {
-						logger.error("DPLA Feed Call was not an InputStream " + DPLAFeedUrl);
+						logger.error("DPLA Feed Call was not an InputStream {}", DPLAFeedUrl);
 						tryAgain = true;
 					}
 				} catch (MalformedURLException e) {

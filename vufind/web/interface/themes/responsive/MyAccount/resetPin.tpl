@@ -11,21 +11,6 @@
 				<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 			</p>
 		{else}
-			<div class="alert alert-info">
-				<p>Please enter a new {translate text="pin"}.</p>
-				<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{elseif $numericOnlyPins}Use only numbers.{else}Use numbers and/or letters.{/if}</strong></p>
-				{if $pinMinimumLength == $pinMaximumLength}
-					<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} characters in length.</strong></p>
-				{else}
-					<p><strong>&bull; Your new {translate text='pin'} must be {$pinMinimumLength} to {$pinMaximumLength} characters in length.</strong></p>
-				{/if}
-        {if $sierraTrivialPin}
-					<br>
-					<p><strong>&bull; Do not repeat a character three or more times in a row (for example: <code>1112</code>, <code>zeee</code>, or <code>x7gp3333</code> will not work).</strong></p>
-					<p><strong>&bull; Do not repeat a set of characters two or more times in a row (for example: <code>1212</code>, <code>abab</code>, <code>abcabc</code>, <code>abcdabcd</code>, <code>queue</code>, or <code>banana</code> will not work).</strong></p>
-        {/if}
-			</div>
-
 			<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">
 				{if $resetToken}
 					<input type="hidden" name="resetToken" value="{$resetToken}">
@@ -42,8 +27,8 @@
 						<div class="input-group">
 							<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-				        <button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-				      </span>
+								<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
+							</span>
 						</div>
 					</div>
 				</div>
@@ -53,8 +38,14 @@
 						<div class="input-group">
 							<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-				        <button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-				      </span>
+								<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
+							</span>
+						</div>
+					</div>
+					<div class="col-tn-12">
+						<br>
+						<div class="alert alert-info">
+							{include file="MyAccount/passwordRequirements.tpl"}
 						</div>
 					</div>
 				</div>

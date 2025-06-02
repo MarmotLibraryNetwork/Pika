@@ -64,7 +64,8 @@ abstract class SIP2Driver implements DriverInterface{
 						//global $pikaLogger;
 						//$pikaLogger->info("Permanent location " . $result['variable']['AQ'][0] . " current location " . $result['variable']['AP'][0]);
 						$itemSip2Data['locationCode'] = $result['variable'][$currentLocationSIPField][0];
-						$itemSip2Data['location'] = mapValue('shelf_location', $itemSip2Data['locationCode']);
+						$itemSip2Data['location']     = mapValue('shelf_location', $itemSip2Data['locationCode']);
+						//TODO: using mapValue currently file maps instead of indexing profile maps
 					}
 					//Override circulation status based on SIP
 					if (isset($result['fixed']['CirculationStatus'])){

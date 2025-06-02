@@ -6,12 +6,12 @@
 		<fieldset>
 			<legend>Reset Display Name</legend>
 
-        {if $error}
-					<div class="alert alert-danger">{$error}</div>
-        {/if}
-        {if $success}
-					<div class="alert alert-success">{$success}</div>
-        {/if}
+			{if $error}
+				<div class="alert alert-danger">{$error}</div>
+			{/if}
+			{if $success}
+				<div class="alert alert-success">{$success}</div>
+			{/if}
 
 			<input type="hidden" name="userAction" value="resetDisplayName">
 			<div class="row form-group">
@@ -28,17 +28,17 @@
 		</fieldset>
 	</form>
 
-  {if in_array('userAdmin', $userRoles)}
+	{if in_array('userAdmin', $userRoles)}
 		<form name="manageDuplicateUsers" method="post" enctype="multipart/form-data" class="form-horizontal">
 			<fieldset>
 				<legend>Manage Duplicate-Barcode Accounts</legend>
 
-	        {if $duplicateError}
+					{if $duplicateError}
 						<div class="alert alert-danger">{$duplicateError}</div>
-	        {/if}
-	        {if $duplicateSuccess}
+					{/if}
+					{if $duplicateSuccess}
 						<div class="alert alert-success">{$duplicateSuccess}</div>
-	        {/if}
+					{/if}
 
 				<input type="hidden" name="userAction" value="showDuplicates">
 				<div class="row form-group">
@@ -76,10 +76,8 @@
 							<td>{$duplicateUser->created|date_format:'%m/%d/%Y'}</td>
 							<td>{$duplicateUser->ilsUserId}</td>
 							<td>{$duplicateUser->getHomeLibrarySystemName()}</td>
-{*							<td>{if $duplicateUser->getAccountProfile()}Password set{/if}</td>*}
-							<td>{if $duplicateUser->passwordSet}Password set{/if}</td>
-							<td>{if $duplicateUser->hasStaffPtypes()}Staff Ptype{/if}</td>
-{*							<td>{if $duplicateUser->getAccountProfile()->usingPins() && !empty($duplicateUser->password)}Password set{/if}</td>*}
+							<td>{if $duplicateUser->hasPasswordSet()}<span class="badge badge-info">Password set</span>{/if}</td>
+							<td>{if $duplicateUser->hasStaffPtypes()}<span class="badge badge-info">Staff Ptype</span>{/if}</td>
 							<td>
 								{if $duplicateUser->safeToDelete}
 									<form method="post" enctype="multipart/form-data">
@@ -87,6 +85,17 @@
 										<input type="hidden" name="userId" value="{$duplicateUser->id}">
 										<button class="btn btn-sm btn-danger" onclick="if(confirm('Confirm delete user account? THIS CAN NOT BE UNDONE!')) $(this).parent('form').submit(); return false">Delete Pika Account</button>
 									</form>
+								{*{else}
+									{foreach from=$duplicateUserIds item=userId name=moveloop}
+										{if ($userId != $duplicateUser->id)}
+											<form method="post" enctype="multipart/form-data">
+												<input type="hidden" name="userAction" value="moveUserData">
+												<input type="hidden" name="userId" value="{$duplicateUser->id}">
+												<input type="hidden" name="moveUserId" value="{$userId}">
+												<button class="btn btn-sm btn-default" onclick="if(confirm('Confirm move user data to listed user #{$smarty.foreach.moveloop.iteration}')) $(this).parent('form').submit(); return false">Move data to user #{$smarty.foreach.moveloop.iteration}</button>
+											</form>
+										{/if}
+									{/foreach}*}
 								{/if}
 							</td>
 						</tr>
@@ -102,25 +111,25 @@
 				{/foreach}
 			</table>
 		{/if}
-	  <form name="checkUserReadingHistoryActions" method="post" enctype="multipart/form-data" class="form-horizontal">
-		  <fieldset>
-			  <legend>Check User Reading History Actions <small>(after {$readingHistoryLogStartDate|date_format})</small></legend>
+		<form name="checkUserReadingHistoryActions" method="post" enctype="multipart/form-data" class="form-horizontal">
+			<fieldset>
+				<legend>Check User Reading History Actions <small>(after {$readingHistoryLogStartDate|date_format})</small></legend>
 
-			  <input type="hidden" name="userAction" value="showReadingHistoryActions">
-			  <div class="row form-group">
-				  <label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-				  <div class="col-sm-6">
-					  <input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
-				  </div>
-				  <div class="col-sm-2">
-					  <button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
-				  </div>
-			  </div>
-			  <div class="form-group">
-			  </div>
-		  </fieldset>
-	  </form>
-	  {if !empty($readingHistoryActions) && $readingHistorySuccess}
+				<input type="hidden" name="userAction" value="showReadingHistoryActions">
+				<div class="row form-group">
+					<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
+					<div class="col-sm-6">
+						<input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
+					</div>
+					<div class="col-sm-2">
+						<button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
+					</div>
+				</div>
+				<div class="form-group">
+				</div>
+			</fieldset>
+		</form>
+		{if !empty($readingHistoryActions) && $readingHistorySuccess}
 			<table class="table-responsive table-striped dataTable">
 				<thead>
 				<tr>
@@ -128,16 +137,16 @@
 					<th>Action</th>
 				</tr>
 				</thead>
-		  {foreach from=$readingHistoryActions item=historyAction}
+			{foreach from=$readingHistoryActions item=historyAction}
 				<tr>
 					<td><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
 					<td>{$historyAction.action}</td>
 				</tr>
 			{/foreach}
 			</table>
-	  {elseif $readingHistoryError}
-		  <p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
-	  {/if}
-  {/if}
+		{elseif $readingHistoryError}
+			<p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
+		{/if}
+	{/if}
 </div>
 {/strip}

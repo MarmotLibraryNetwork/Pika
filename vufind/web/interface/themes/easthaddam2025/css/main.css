@@ -8531,6 +8531,7 @@ hr.menu {
   font-size: 50px;
   border: none;
   padding-inline: 0;
+  z-index: 1;
 }
 #browse-category-picker .jcarousel-control-prev:focus,
 #browse-category-picker .jcarousel-control-next:focus {
@@ -9357,8 +9358,13 @@ a.browse-thumbnail-sorted.active {
   color: #D32522;
 }
 .homePickupButton {
-  color: #BB0099;
   padding: 0;
+}
+.homePickupButton,
+.homePickupButton:hover,
+.homePickupButton:active,
+.homePickupButton:visited {
+  color: #BB0099;
 }
 #recordcover {
   position: relative;

@@ -60,9 +60,9 @@ class CollectionDriver extends IslandoraDriver {
 			return;
 		}
 		$this->anonymousMasterDownload = $this->getModsValue('anonymousMasterDownload', 'marmot') != 'no';
-		$this->verifiedMasterDownload = $this->getModsValue('verifiedMasterDownload', 'marmot') != 'no';
-		$this->anonymousLcDownload = $this->getModsValue('anonymousLcDownload', 'marmot') != 'no';
-		$this->verifiedLcDownload = $this->getModsValue('verifiedLcDownload', 'marmot') != 'no';
+		$this->verifiedMasterDownload  = $this->getModsValue('verifiedMasterDownload', 'marmot') != 'no';
+		$this->anonymousLcDownload     = $this->getModsValue('anonymousLcDownload', 'marmot') != 'no';
+		$this->verifiedLcDownload      = $this->getModsValue('verifiedLcDownload', 'marmot') != 'no';
 	}
 
 	public function getFormat(){

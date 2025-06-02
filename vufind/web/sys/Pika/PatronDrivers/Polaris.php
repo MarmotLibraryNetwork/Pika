@@ -823,14 +823,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'required' => true,
         ];
 
-        $fields[] = [
-            'property' => 'Password2',
-            'type' => 'pin',
-            'label' => 'Confirm ' . translate('PIN'),
-            'description' => 'Please confirm your ' . translate('pin') . '.',
-            'maxLength' => 10,
-            'required' => true,
-        ];
+			$fields[] = [
+				'property'                 => 'Password2',
+				'type'                     => 'pin',
+				'label'                    => 'Confirm ' . translate('PIN'),
+				'description'              => 'Please confirm your ' . translate('pin') . '.',
+				'maxLength'                => 10,
+				'showPasswordRequirements' => true,
+				'required'                 => true,
+			];
 
         return $fields;
     }
@@ -2356,7 +2357,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
      *
      * @inheritDoc
      */
-    public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null)
+    public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false)
     {
 		// Determine if item-level hold is needed
 	    $sourceAndId = new SourceAndId($this->accountProfile->recordSource . ':' . $recordId);

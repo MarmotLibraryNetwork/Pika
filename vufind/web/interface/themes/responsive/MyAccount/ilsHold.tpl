@@ -110,6 +110,7 @@
 						<div class="result-label col-tn-3">{translate text='Pickup'}</div>
 						<div class="col-tn-9 result-value">
 							{if empty($record.location)}Not Set{else}{$record.location}{/if}
+							{if $record.isHomePickupHold}<br><span class="homePickupButton">Home Pickup Item</span>{/if}
 						</div>
 					</div>
 

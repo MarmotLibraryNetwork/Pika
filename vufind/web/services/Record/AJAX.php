@@ -59,7 +59,7 @@ class Record_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/services/SourceAndId.php';
 			$sourceAndId        = new SourceAndId($_REQUEST['id']);
 			$recordSource       = $_REQUEST['recordSource'];
-			$hasHomePickupItems = $_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true';
+			$hasHomePickupItems = !empty($_REQUEST['hasHomePickupItems']) && ($_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true');
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
 				$interface->assign('volume', $_REQUEST['volume']);
@@ -261,6 +261,7 @@ class Record_AJAX extends AJAXHandler {
 				$cancelDate           = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
 				$patron               = null;
 				$doingStaffPlacedHold = !empty($_REQUEST['patronBarcode']);
+				$isHomePickupHold     = !empty($_REQUEST['hasHomePickupItems']) && ($_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true');
 
 				if (!$doingStaffPlacedHold){
 					if (!empty($_REQUEST['selectedUser'])){
@@ -319,13 +320,13 @@ class Record_AJAX extends AJAXHandler {
 				else{
 					if ($doingStaffPlacedHold){
 						$patronBarcode = trim(strip_tags($_REQUEST['patronBarcode']));
-						$return        = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null);
+						$return        = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null, $isHomePickupHold);
 					}elseif (isset($_REQUEST['selectedItem'])){
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus, $cancelDate);
 					}elseif (isset($_REQUEST['volume'])){
 						$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus, $cancelDate);
 					}else{
-						$return = $patron->placeHold($shortId, $campus, $cancelDate);
+						$return = $patron->placeHold($shortId, $campus, $cancelDate, $isHomePickupHold);
 						// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
 						if (!empty($return['items']) && count($return['items']) == 1){
 							global $pikaLogger;

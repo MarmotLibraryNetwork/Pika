@@ -31,8 +31,8 @@ import java.util.*;
  * Time: 10:25 AM
  */
 class FlatironsRecordProcessor extends SierraRecordProcessor {
-	char locationsSubfield = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
-	char sierraFixedFilesLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
+	char locationsSubfield                 = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
+	char sierraFixedFieldLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
 
 	FlatironsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -70,14 +70,16 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 				if (firstEContentLocation == null || firstEContentLocation.equalsIgnoreCase("multi")) {
 					// This is a fallback; Sierra includes the bibLevelLocationsSubfield in Fixed field tag
 					// in the subfield h  (Standard for other sites is a)
-					firstEContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + sierraFixedFilesLocationsSubfield);
+					firstEContentLocation = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + sierraFixedFieldLocationsSubfield);
 					if (firstEContentLocation == null) {
+						//TODO: this is probably obsolete at this point
+						logger.info("For flatirons ils encontent had to fall back to subfield a for {}", identifier);
 						eContentLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + 'a');
 						// This is a fallback; The Pika extractor puts the bibLevelLocationsSubfield in Fixed field tag
 						// subfield h is proper and correct for Flatirons, but records previously extracted may have put them
 						// in subfield a instead.
 					} else {
-						eContentLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + sierraFixedFilesLocationsSubfield);
+						eContentLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + sierraFixedFieldLocationsSubfield);
 					}
 				} else {
 					eContentLocations = MarcUtil.getFieldList(record, recordNumberTag + locationsSubfield);
@@ -267,6 +269,7 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 		groupedWork.addTargetAudiences(target_audiences);
 		groupedWork.addTargetAudiencesFull(target_audiences);
 	}
+
 	private class IsRecordEContent {
 		private String           url;
 		private boolean          isEContent = false;
