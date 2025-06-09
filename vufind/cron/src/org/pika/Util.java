@@ -265,7 +265,7 @@ public class Util {
 		try {
 			URL emptyIndexURL = new URL(url);
 			HttpURLConnection conn = (HttpURLConnection) emptyIndexURL.openConnection();
-			logger.debug("Getting From URL " + url);
+			logger.debug("Getting From URL {}", url);
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
 				sslConn.setHostnameVerifier(new HostnameVerifier() {
@@ -284,13 +284,13 @@ public class Util {
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				String line;
 				while ((line = rd.readLine()) != null) {
-					response.append(line + "\r\n");
+					response.append(line).append("\r\n");
 				}
 
 				rd.close();
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				logger.error("Received error {} getting {}", conn.getResponseCode(), url);
 				// Get any errors
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
 				String line;
@@ -303,10 +303,10 @@ public class Util {
 			}
 
 		} catch (MalformedURLException e) {
-			logger.error("URL to post (" + url + ") is malformed", e);
+			logger.error("URL to post ({}) is malformed", url, e);
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url \r\n" + url, e);
+			logger.error("Error posting to url : {}, error : {}", url, e.getMessage());
 			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
 		}
 		return retVal;
@@ -320,7 +320,7 @@ public class Util {
 			conn = (HttpURLConnection) emptyIndexURL.openConnection();
 			conn.setConnectTimeout(1000);
 			conn.setReadTimeout(300000);
-			logger.debug("Posting To URL " + url + (postData != null && postData.length() > 0 ? "?" + postData : ""));
+			logger.debug("Posting To URL {} {}", url, (postData != null && !postData.isEmpty() ? "post : " + postData : ""));
 
 			if (conn instanceof HttpsURLConnection){
 				HttpsURLConnection sslConn = (HttpsURLConnection)conn;
@@ -334,7 +334,7 @@ public class Util {
 				conn.setRequestProperty("Referer", referer);
 			}
 			conn.setRequestMethod("POST");
-			if (postData != null && postData.length() > 0) {
+			if (postData != null && !postData.isEmpty()) {
 				conn.setRequestProperty("Content-Type", contentType + "; charset=utf-8");
 				conn.setRequestProperty("Content-Language", "en-US");
 				conn.setRequestProperty("Connection", "keep-alive");
@@ -358,7 +358,7 @@ public class Util {
 				rd.close();
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " posting to " + url);
+				logger.error("Received error {} posting to {}", conn.getResponseCode(), url);
 				logger.info(postData);
 				// Get any errors
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
@@ -383,10 +383,10 @@ public class Util {
 			}
 
 		} catch (MalformedURLException e) {
-			logger.error("URL to post (" + url + ") is malformed", e);
+			logger.error("URL to post ({}) is malformed: ", url, e.getMessage());
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url \r\n" + url, e);
+			logger.error("Error posting to url {}, error : {}", url, e.getMessage());
 			retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
 		}finally{
 			if (conn != null) conn.disconnect();

@@ -880,7 +880,7 @@ public class GroupedWorkIndexer {
 			}
 			if (!success){
 				if (tries == (numAttempts-1)){
-					logger.error("Failed to issue solr '{}' command");
+					logger.error("Failed to issue solr '{}' command on {} tries", command, tries);
 					return false;
 				} else {
 					try {
