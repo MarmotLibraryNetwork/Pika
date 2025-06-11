@@ -202,8 +202,9 @@ public class Util {
 			logger.error("URL to post ({}) is malformed", url, e);
 			retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
 		} catch (IOException e) {
-			logger.error("Error posting to url {}", url, e);
-			retVal = new URLPostResponse(false, -1, "Error posting to url " + url + "\n" + e);
+			String message = e.getMessage();
+			logger.error("Error posting to url {} : {}", url, message);
+			retVal = new URLPostResponse(false, -1, "Error posting to url " + url + "\n" + message);
 		}
 		logger.debug("  Finished calling url");
 		return retVal;
