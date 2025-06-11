@@ -170,12 +170,12 @@ public class Util {
 		if (!directoryToCopyTo.exists()) {
 			throw new IOException("Directory to copy to does not exist.");
 		}
-		int numTries = 0;
-		String newFilename = fileToCopy.getName();
+		int    numTries     = 0;
+		String newFilename  = fileToCopy.getName();
 		String baseFilename = newFilename.substring(0, newFilename.indexOf("."));
-		String extension = newFilename.substring(newFilename.indexOf(".") + 1, newFilename.length());
-		File newFile = new File(directoryToCopyTo + File.separator + newFilename);
-		while (newFile.exists() && numTries < 100) {
+		String extension    = newFilename.substring(newFilename.indexOf(".") + 1);
+		File   newFile      = new File(directoryToCopyTo + File.separator + newFilename);
+		while (newFile.exists() && numTries < 10) {
 			// Check to see if the checksums of the file are the same and if so,
 			// return this name
 			// without copying.
