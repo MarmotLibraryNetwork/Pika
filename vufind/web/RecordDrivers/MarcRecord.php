@@ -1354,12 +1354,36 @@ class MarcRecord extends IndexRecord {
 			}
 		}
 		if ($isBookable && $library->enableMaterialsBooking){
-			$actions[] = [
-				'title'        => 'Schedule Item',
-				'url'          => '',
-				'onclick'      => "return Pika.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-				'requireLogin' => false,
-			];
+//			$actions[] = [
+//				'title'        => 'Schedule Item',
+//				'url'          => '',
+//				'onclick'      => "return Pika.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+//				'requireLogin' => false,
+//			];
+
+			// Work-around for the fact that we can not screenscrape the classic interface anymore for bookings
+			// (This largely follows the logic in setClassicViewLinks() in Record_Record )
+			$catalogConnection = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+			if (!empty($catalogConnection->accountProfile->vendorOpacUrl)){
+				global $searchSource;
+				$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+				$recordId           = $this->getId();
+				$classicId          = substr($recordId, 1, strlen($recordId) - 2);
+				$searchLocation     = Location::getSearchLocation($searchSource);
+				if (!empty($searchLocation->ilsLocationId)){
+					$sierraOpacScope = $searchLocation->ilsLocationId;
+				}else{
+					$sierraOpacScope = !empty($library->scope) ? $library->scope : (empty($configArray['OPAC']['defaultScope']) ? '93' : $configArray['OPAC']['defaultScope']);
+				}
+				$classicUrl = $classicOpacBaseURL . "/record=$classicId&amp;searchscope={$sierraOpacScope}";
+				$actions[]  = [
+					'title'        => 'Schedule in Classic',
+					'url'          => $classicUrl,
+					'openTab'      => true,
+					'requireLogin' => false,
+				];
+			}
+
 		}
 
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
