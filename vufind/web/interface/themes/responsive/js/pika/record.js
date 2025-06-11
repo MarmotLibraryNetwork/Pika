@@ -12,6 +12,7 @@ Pika.Record = (function(){
 						volume = idParts[2];
 					}
 				}else{
+					console.log('showPlaceHold: missing record source for id', id);
 					source = 'ils';
 				}
 				if (hasHomePickupItems === undefined){
@@ -89,6 +90,7 @@ Pika.Record = (function(){
 						volume = idParts[2];
 					}
 				}else{
+					console.log('showPlaceHoldEditions: missing record source for id', id);
 					source = 'ils';
 				}
 
@@ -103,33 +105,33 @@ Pika.Record = (function(){
 			return false;
 		},
 
-		showBookMaterial: function(module, id){
-			Pika.Account.ajaxLogin(function (){
-				Pika.loadingMessage();
-				//var source; // source not used for booking at this time
-				if (id.indexOf(":") > 0){
-					var idParts = id.split(":", 2);
-					//source = idParts[0];
-					id = idParts[1];
-				}
-				$.getJSON("/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
-					Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(Pika.ajaxFail)
-			});
-			return false;
-		},
-
-		submitBookMaterialForm: function() {
-			var params = $('#bookMaterialForm').serialize() + '&method=bookMaterial',
-					module = $('#module').val();
-			Pika.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON("/" + module + "/AJAX", params, function (data) {
-				if (data.modalBody) Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				// For errors that can be fixed by the user, the form will be re-displayed
-				if (data.success) Pika.showMessageWithButtons('Success', data.message, data.buttons);
-				else if (data.message) Pika.showMessage('Error', data.message);
-			}).fail(Pika.ajaxFail);
-		},
+		// showBookMaterial: function(module, id){
+		// 	Pika.Account.ajaxLogin(function (){
+		// 		Pika.loadingMessage();
+		// 		//var source; // source not used for booking at this time
+		// 		if (id.indexOf(":") > 0){
+		// 			var idParts = id.split(":", 2);
+		// 			//source = idParts[0];
+		// 			id = idParts[1];
+		// 		}
+		// 		$.getJSON("/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
+		// 			Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+		// 		}).fail(Pika.ajaxFail)
+		// 	});
+		// 	return false;
+		// },
+		//
+		// submitBookMaterialForm: function() {
+		// 	var params = $('#bookMaterialForm').serialize() + '&method=bookMaterial',
+		// 			module = $('#module').val();
+		// 	Pika.showMessage('Scheduling', 'Processing, please wait.');
+		// 	$.getJSON("/" + module + "/AJAX", params, function (data) {
+		// 		if (data.modalBody) Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+		// 		// For errors that can be fixed by the user, the form will be re-displayed
+		// 		if (data.success) Pika.showMessageWithButtons('Success', data.message, data.buttons);
+		// 		else if (data.message) Pika.showMessage('Error', data.message);
+		// 	}).fail(Pika.ajaxFail);
+		// },
 
 		submitHoldForm: function(){
 			var id = $('#id').val()
