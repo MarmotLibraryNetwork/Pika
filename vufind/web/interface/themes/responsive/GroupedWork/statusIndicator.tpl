@@ -26,6 +26,7 @@
 {*			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>*}
 			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
+			like "On Display";
 			like "Shelving"; or "Recently Returned" for Clearview *}
 			{*TODO:  Need a condition when all the holdable copies are checked out and the remaining copies are library use only*}
 		{/if}

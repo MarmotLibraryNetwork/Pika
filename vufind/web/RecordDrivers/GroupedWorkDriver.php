@@ -2669,7 +2669,8 @@ class GroupedWorkDriver extends RecordInterface {
 		'Library Use Only'      => 9,
 		'Available Online'      => 10,
 		'In Transit'            => 11,
-		'On Shelf'              => 12,
+		'On Display'            => 12,
+		'On Shelf'              => 13,
 	];
 
 	/**
