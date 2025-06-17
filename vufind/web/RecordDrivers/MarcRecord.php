@@ -1361,7 +1361,7 @@ class MarcRecord extends IndexRecord {
 //				'requireLogin' => false,
 //			];
 
-			// Work-around for the fact that we can not screenscrape the classic interface anymore for bookings
+			// Work-around for the fact that we can not screen scrape the classic interface anymore for bookings
 			// (This largely follows the logic in setClassicViewLinks() in Record_Record )
 			$catalogConnection = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
 			if (!empty($catalogConnection->accountProfile->vendorOpacUrl)){

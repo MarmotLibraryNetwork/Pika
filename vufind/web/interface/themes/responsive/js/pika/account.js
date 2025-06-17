@@ -147,7 +147,7 @@ Pika.Account = (function(){
 				}
 				$(".readingHistory-placeholder").html(data.readingHistory);
 				$(".materialsRequests-placeholder").html(data.materialsRequests);
-				$(".bookings-placeholder").html(data.bookings);
+				//$(".bookings-placeholder").html(data.bookings);
 				$(".availableHoldsNoticePlaceHolder").html(data.availableHoldsNotice);
 				$(".expirationFinesNotice-placeholder").html(data.expirationFinesNotice);
 				$(".fineBadge-placeholder").html(data.fines);
@@ -451,84 +451,82 @@ Pika.Account = (function(){
 		return false;
 	},
 
-		cancelBooking: function(patronId, cancelId){
-			Pika.confirm("Are you sure you want to cancel this scheduled item?", function(){
-				Pika.Account.ajaxLogin(function (){
-					Pika.loadingMessage();
-					var c = {};
-					c[patronId] = cancelId;
-					$.getJSON("/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
-						Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
-						if (data.success) {
-							// remove canceled item from page
-							var escapedId = cancelId.replace(/:/g, "\\:"); // needed for jquery selector to work correctly
-							// first backslash for javascript escaping, second for css escaping (within jquery)
-							$('div.result').has('#selected'+escapedId).remove();
-						}
-					}).fail(Pika.ajaxFail)
-				});
-			});
+		// cancelBooking: function(patronId, cancelId){
+		// 	Pika.confirm("Are you sure you want to cancel this scheduled item?", function(){
+		// 		Pika.Account.ajaxLogin(function (){
+		// 			Pika.loadingMessage();
+		// 			var c = {};
+		// 			c[patronId] = cancelId;
+		// 			$.getJSON("/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
+		// 				Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+		// 				if (data.success) {
+		// 					// remove canceled item from page
+		// 					var escapedId = cancelId.replace(/:/g, "\\:"); // needed for jquery selector to work correctly
+		// 					// first backslash for javascript escaping, second for css escaping (within jquery)
+		// 					$('div.result').has('#selected'+escapedId).remove();
+		// 				}
+		// 			}).fail(Pika.ajaxFail)
+		// 		});
+		// 	});
+		// 	return false
+		// },
 
-			return false
-		},
+		// cancelSelectedBookings: function(){
+		// 	Pika.Account.ajaxLogin(function (){
+		// 		var selectedTitles = Pika.Account.getSelectedTitles(),
+		// 				numBookings = $("input.titleSelect:checked").length;
+		// 		// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
+		// 		if (numBookings > 0){
+		// 			Pika.confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?',function () {
+		// 				Pika.loadingMessage();
+		// 				$.getJSON("/MyAccount/AJAX?method=cancelBooking&" + selectedTitles, function (data){
+		// 					Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+		// 					if (data.success){
+		// 						// remove canceled items from page
+		// 						$("input.titleSelect:checked").closest('div.result').remove();
+		// 					}else if (data.failed){ // remove items that didn't fail
+		// 						var searchArray = data.failed.map(function (ele){
+		// 							return ele.toString()
+		// 						});
+		// 						// convert any number values to string, this is needed bcs inArray() below does strict comparisons
+		// 						// & id will be a string. (sometimes the id values are of type number )
+		// 						$("input.titleSelect:checked").each(function (){
+		// 							var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
+		// 							if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
+		// 								$(this).closest('div.result').remove();
+		// 						});
+		// 					}
+		// 				}).fail(Pika.ajaxFail);
+		// 			});
+		// 		}
+		// 	});
+		// 	return false;
+		// },
 
-		cancelSelectedBookings: function(){
-			Pika.Account.ajaxLogin(function (){
-				var selectedTitles = Pika.Account.getSelectedTitles(),
-						numBookings = $("input.titleSelect:checked").length;
-				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
-				if (numBookings > 0){
-					Pika.confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?',function () {
-						Pika.loadingMessage();
-						$.getJSON("/MyAccount/AJAX?method=cancelBooking&" + selectedTitles, function (data){
-							Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
-							if (data.success){
-								// remove canceled items from page
-								$("input.titleSelect:checked").closest('div.result').remove();
-							}else if (data.failed){ // remove items that didn't fail
-								var searchArray = data.failed.map(function (ele){
-									return ele.toString()
-								});
-								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-								// & id will be a string. (sometimes the id values are of type number )
-								$("input.titleSelect:checked").each(function (){
-									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-									if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-										$(this).closest('div.result').remove();
-								});
-							}
-						}).fail(Pika.ajaxFail);
-					});
-				}
-			});
-			return false;
-
-		},
-
-		cancelAllBookings: function(){
-			Pika.confirm('Cancel all of your scheduled items?',function () {
-				Pika.Account.ajaxLogin(function (){
-					Pika.loadingMessage();
-					$.getJSON("/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
-						Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect").closest('div.result').remove();
-						} else if (data.failed) { // remove items that didn't fail
-							var searchArray = data.failed.map(function(ele){return ele.toString()});
-							// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-							// & id will be a string. (sometimes the id values are of type number )
-							$("input.titleSelect").each(function(){
-								var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-								if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-									$(this).closest('div.result').remove();
-							});
-						}
-					}).fail(Pika.ajaxFail);
-				});
-			});
-			return false;
-		},
+		// cancelAllBookings: function(){
+		// 	Pika.confirm('Cancel all of your scheduled items?',function () {
+		// 		Pika.Account.ajaxLogin(function (){
+		// 			Pika.loadingMessage();
+		// 			$.getJSON("/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
+		// 				Pika.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+		// 				if (data.success) {
+		// 					// remove canceled items from page
+		// 					$("input.titleSelect").closest('div.result').remove();
+		// 				} else if (data.failed) { // remove items that didn't fail
+		// 					var searchArray = data.failed.map(function(ele){return ele.toString()});
+		// 					// convert any number values to string, this is needed bcs inArray() below does strict comparisons
+		// 					// & id will be a string. (sometimes the id values are of type number )
+		// 					$("input.titleSelect").each(function(){
+		// 						var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
+		// 						if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
+		// 							$(this).closest('div.result').remove();
+		// 					});
+		// 				}
+		// 			}).fail(Pika.ajaxFail);
+		// 		});
+		// 	});
+		// 	return false;
+		// },
 
 		changeAccountSort: function (newSort, sortParameterName){
 			if (typeof sortParameterName === 'undefined') {

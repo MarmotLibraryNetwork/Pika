@@ -1639,12 +1639,12 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 
 			//Count of bookings
-			$homeLibrary = $user->getHomeLibrary();
-			if (!empty($homeLibrary) && $homeLibrary->enableMaterialsBooking){
-				$result['bookings'] = '<span class="badge">' . $user->getNumBookingsTotal() . '</span>';
-			}else{
-				$result['bookings'] = '';
-			}
+//			$homeLibrary = $user->getHomeLibrary();
+//			if (!empty($homeLibrary) && $homeLibrary->enableMaterialsBooking){
+//				$result['bookings'] = '<span class="badge">' . $user->getNumBookingsTotal() . '</span>';
+//			}else{
+//				$result['bookings'] = '';
+//			}
 
 			//Count of Reading History
 			$result['readingHistory'] = '';
