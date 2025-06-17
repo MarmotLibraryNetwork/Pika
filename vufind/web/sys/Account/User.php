@@ -1129,7 +1129,7 @@ class User extends DB_DataObject {
 	public function getMyHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
 		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this, !$includeLinkedUsers);
 		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
-		if (PEAR_Singleton::isError($ilsHolds)){
+		if (PEAR_Singleton::isError($ilsHolds) || $ilsHolds === false){
 			$ilsHolds = [];
 		}
 
