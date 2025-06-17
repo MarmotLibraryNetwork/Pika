@@ -31,20 +31,32 @@ class MyAccount_Bookings extends MyAccount {
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
+		$sierraUserId = $user->ilsUserId;
 
-//		// Define sorting options
-//		$sortOptions = array(
-//			'title' => 'Title',
-//			'author' => 'Author',
-//			'format' => 'Format',
-//			'placed' => 'Date Placed',
-//			'location' => 'Pickup Location',
-//			'status' => 'Status',
-//		);
 
-		// Get Booked Items
-		$bookings = $user->getMyBookings();
-		$interface->assign('recordList', $bookings);
+
+//		// Get Booked Items
+//		$bookings = $user->getMyBookings();
+//		$interface->assign('recordList', $bookings);
+
+		if (!empty($sierraUserId)){
+			// Work-around for the fact that we can not screen scrape the classic interface anymore for bookings
+			// (This largely follows the logic in setClassicViewLinks() in Record_Record )
+			$catalogConnection = CatalogFactory::getCatalogConnectionInstance();// This will use the $activeRecordIndexingProfile to get the catalog connector
+			if (!empty($catalogConnection->accountProfile->vendorOpacUrl)){
+				global $searchSource;
+				$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+				$searchLocation     = Location::getSearchLocation($searchSource);
+				if (!empty($searchLocation->ilsLocationId)){
+					$sierraOpacScope = $searchLocation->ilsLocationId;
+				}else{
+					$sierraOpacScope = !empty($library->scope) ? $library->scope : (empty($configArray['OPAC']['defaultScope']) ? '93' : $configArray['OPAC']['defaultScope']);
+				}
+				$classicUrl = $classicOpacBaseURL . "/patroninfo~{$sierraOpacScope}/$sierraUserId/bookings";
+				$interface->assign('classicBookingUrl', $classicUrl);
+			}
+		}
+
 
 		// Additional Template Settings
 		if ($library->showLibraryHoursNoticeOnAccountPages) {

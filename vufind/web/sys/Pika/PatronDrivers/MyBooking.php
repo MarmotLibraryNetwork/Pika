@@ -18,7 +18,7 @@
  */
 
 /**
- *  Class for defining the properties for a Booking
+ *  Class for defining the properties for Bookings
  *  A Booking is akin to a hold with a scheduled time component
  *
  * @category Pika
