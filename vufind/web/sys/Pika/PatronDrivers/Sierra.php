@@ -1936,7 +1936,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$h['cancelId'] = $m[1];
 
 			// Is homePickup hold hack
-			$isHomePickupHold      = stristr($hold->note, $this->homePickupHoldNote) !== false;
+			$isHomePickupHold      = !empty($hold->note) && stristr($hold->note, $this->homePickupHoldNote) !== false;
 			$h['isHomePickupHold'] = $isHomePickupHold;
 
 			// status, cancelable, freezable
@@ -3356,7 +3356,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		try {
 			$c = new Curl();
 		} catch (Exception $e) {
-			$this->logger->error($e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
+			$this->logger->error('Sierra API call exception :' . $e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
 			return false;
 		}
 		$c->setHeaders($headers);
@@ -3413,7 +3413,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			}
 			if(isset($c->response->code)) {
 				//$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
-				$message = 'API Error: ' . $c->response->code . ': '; // name usually redundant part of the description below
+				$message = 'Sierra API Error: ' . $c->response->code . ': '; // name usually redundant part of the description below
 				if(isset($c->response->description)){
 					$message .= ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
