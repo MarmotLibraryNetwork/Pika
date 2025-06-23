@@ -16,7 +16,7 @@
 				<ul>
 					<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
 					<li><span id="account-summary-holds"><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></span></li>
-					{* Disable this menu option since booked items can only be seen in the Classic OPAC *}
+					{* Disable this menu option since booked items can only be seen in the Classic OPAC
 					{if $enableMaterialsBooking}
 					<li><strong><span class="bookings-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/Bookings">scheduled</a></li>
 					{/if}*}
