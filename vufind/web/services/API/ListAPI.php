@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 class ListAPI extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = [
 		'getAllListIds',
 		'getPublicLists',
 		'getUserLists',
@@ -37,11 +37,11 @@ class ListAPI extends AJAXHandler {
 		'clearListTitles',
 		'getAvailableListsFromNYT',
 		'createUserListFromNYT',
-	);
+	];
 
-	protected $methodsThatRespondThemselves = array(
+	protected $methodsThatRespondThemselves = [
 		'getRSSFeed',
-	);
+	];
 
 	function getAllListIds(){
 		$allListNames = array();

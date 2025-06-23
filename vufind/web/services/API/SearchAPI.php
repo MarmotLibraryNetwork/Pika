@@ -573,6 +573,7 @@ class SearchAPI extends AJAXHandler {
 
 	function getListWidget(){
 		global $interface;
+		//TODO: complete deprecate login status with list widgets
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
