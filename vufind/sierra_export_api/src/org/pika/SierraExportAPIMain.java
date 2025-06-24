@@ -191,7 +191,7 @@ public class SierraExportAPIMain {
 			}
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
-		if (indexingProfile.marcPath.contains("flatirons")){
+		if (indexingProfile.marcPath.contains("flatirons") || indexingProfile.marcPath.contains("mln2")){
 			isFlatirons = true;
 			bibLevelLocationsSubfield = 'h';
 		}
@@ -1394,10 +1394,15 @@ public class SierraExportAPIMain {
 					@SuppressWarnings("unchecked") Iterator<String> tags      = (Iterator<String>) fieldData.keys();
 					while (tags.hasNext()) {
 						String tag = tags.next();
-						if (isFlatirons && (tag.equals(indexingProfile.recordNumberTag) || tag.equals(indexingProfile.sierraRecordFixedFieldsTag))){
-							// Skip duplicating tags that appear here
-							// These are strange special purpose tags used by other vendors for flatirons. (some kind of authority control for the record Number tag)
+						if (tag.equals(indexingProfile.recordNumberTag) || tag.equals(indexingProfile.sierraRecordFixedFieldsTag)) {
+								// Skip duplicating tags that appear here
+								// These are strange special purpose tags used by other vendors for flatirons. (some kind of authority control for the record Number tag)
+							if (!isFlatirons) {
+								logger.warn("API Reported regular tag with tag number ({}) matching the recordNumber ({}) or Fixed Fields ({}) tag numbers : {}", tag, indexingProfile.recordNumberTag, indexingProfile.sierraRecordFixedFieldsTag, id);
+							}
 							continue;
+							// Skip for all sites since this can cause problems for suppression and record number identification.
+							// For now, warn for any site but flatirons
 						}
 							if (fieldData.get(tag) instanceof JSONObject) {
 							JSONObject fieldDataDetails = fieldData.getJSONObject(tag);
