@@ -34,7 +34,7 @@ class MyAccount_AJAX extends AJAXHandler {
 //		'GetPreferredBranches', //not checked
 		'getCreateListForm', 'getBulkAddToListForm', 'AddList', 'getCreateListMultipleForm',
 		'addListMultiple', 'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
-		'transferList', 'isStaffUser', 'transferListToUser','copyListPrompt', 'copyList',
+		'transferList', 'isStaffUser', 'transferListToUser',/*'copyListPrompt',*/ 'copyList',
 		'removeTag',
 		'saveSearch', 'deleteSavedSearch',
 		'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold',
@@ -1687,22 +1687,22 @@ class MyAccount_AJAX extends AJAXHandler {
 			// Get My Tags
 			$tagList = $user->getTags();
 			$interface->assign('tagList', $tagList);
-			$timer->logTime("Load Tags");
+			$timer->logTime('Load Tags');
 			$result['tagsMenu'] = $interface->fetch('MyAccount/tagsMenu.tpl');
 		}//User is not logged in
 
 		return $result;
 	}
 
-	function copyListPrompt(){
-		global $interface;
-
-		if (isset($_REQUEST['id'])){
-			$id = $_REQUEST['id'];
-			$interface->assign('copyFromId', $id);
-		}else{
-			$id = '';
-		}
+//	function copyListPrompt(){
+//		global $interface;
+//
+//		if (isset($_REQUEST['id'])){
+//			$id = $_REQUEST['id'];
+//			$interface->assign('copyFromId', $id);
+//		}else{
+//			$id = '';
+//		}
 
 		return [
 			'title'   => 'Create new List',
