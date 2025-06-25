@@ -1015,7 +1015,7 @@ class OverDriveDriver4 {
 							$result['message'] .= "<p class='alert alert-warning'>$response->message</p>";
 						}
 				}
-				$this->logger->error("OverDrive error for patron {$user->id} : (Error code $response->errorCode) " . $response->errorMessage);
+				$this->logger->error("OverDrive error for patron {$user->id} : (Error code $response->errorCode) " . ($response->errorMessage ?? ''));
 			}else{
 				//Give more information about why it might have failed, ie expired card or too much fines
 				$this->logger->error('Unexpected response from OverDrive checkout call for patron ' . $user->id . ' : ' . var_export($response, true));
