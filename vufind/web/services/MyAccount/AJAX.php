@@ -1706,7 +1706,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		return [
 			'title'   => 'Create new List',
-			'body'    => '<form><label for="title">Title</label><input id="title" text ="title" name="title">',
+			'body'    => '<form><label for="title">Title</label><input id="title" name="title" type="text">',
 			'buttons' => "<button class='tool btn btn-primary' onclick='return Pika.Lists.copyList({$id});'>Copy List</button></form>",
 		];
 	}
