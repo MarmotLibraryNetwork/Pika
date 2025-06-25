@@ -17,6 +17,7 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 // Import log4j classes.
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
@@ -61,7 +62,8 @@ public class SierraExportAPIMain {
 
 	private static IndexingProfile   indexingProfile;
 	private static MarcRecordGrouper recordGroupingProcessor;
-	private static boolean           isFlatirons = false;
+	private static boolean           isMLN2 = false;
+	private static boolean           isMLN1 = false;
 //	private static GroupedWorkIndexer groupedWorkIndexer;
 
 	private static String  apiBaseUrl            = null;
@@ -192,8 +194,10 @@ public class SierraExportAPIMain {
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 		if (indexingProfile.marcPath.contains("flatirons") || indexingProfile.marcPath.contains("mln2")){
-			isFlatirons = true;
+			isMLN2                    = true;
 			bibLevelLocationsSubfield = 'h';
+		} else if (indexingProfile.marcPath.contains("marmot") || indexingProfile.marcPath.contains("mln1")) {
+			isMLN1 = true;
 		}
 
 		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
@@ -1395,14 +1399,12 @@ public class SierraExportAPIMain {
 					while (tags.hasNext()) {
 						String tag = tags.next();
 						if (tag.equals(indexingProfile.recordNumberTag) || tag.equals(indexingProfile.sierraRecordFixedFieldsTag)) {
-								// Skip duplicating tags that appear here
-								// These are strange special purpose tags used by other vendors for flatirons. (some kind of authority control for the record Number tag)
-							if (!isFlatirons) {
-								logger.warn("API Reported regular tag with tag number ({}) matching the recordNumber ({}) or Fixed Fields ({}) tag numbers : {}", tag, indexingProfile.recordNumberTag, indexingProfile.sierraRecordFixedFieldsTag, id);
-							}
-							continue;
+							// Skip duplicating tags that appear here
+							// These are strange special purpose tags used by other vendors for flatirons. (some kind of authority control for the record Number tag)
 							// Skip for all sites since this can cause problems for suppression and record number identification.
-							// For now, warn for any site but flatirons
+							// For now, warn for any site but mln1 or mln2
+							logger.log((isMLN2 || isMLN1) ? Level.DEBUG : Level.WARN, "API Reported regular tag with tag number ({}) matching the recordNumber ({}) or Fixed Fields ({}) : {}", tag, indexingProfile.recordNumberTag, indexingProfile.sierraRecordFixedFieldsTag, id);
+							continue;
 						}
 							if (fieldData.get(tag) instanceof JSONObject) {
 							JSONObject fieldDataDetails = fieldData.getJSONObject(tag);
@@ -1458,7 +1460,7 @@ public class SierraExportAPIMain {
 								}
 							} else {
 								sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
-								if (isFlatirons){
+								if (isMLN2){
 									recordNumberField.addSubfield(marcFactory.newSubfield('b', location));
 								}
 							}
