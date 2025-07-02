@@ -30,7 +30,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'GetSuggestions', // not checked
-		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
+		//'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 //		'GetPreferredBranches', //not checked
 		'getCreateListForm', 'getBulkAddToListForm', 'AddList', 'getCreateListMultipleForm',
 		'addListMultiple', 'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
@@ -495,10 +495,10 @@ class MyAccount_AJAX extends AJAXHandler {
 				echo 'DEBUG: ' . $e->getMessage();
 				echo '</pre>';
 			}
-			$result = array(
+			$result = [
 				'result'  => false,
 				'message' => 'We could not connect to the circulation system, please try again later.',
-			);
+			];
 		}
 
 		global $interface;
@@ -512,12 +512,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		}
 		$interface->assign('cancelResults', $result);
 		$interface->assign('totalCanceled', count($cancelId));
-		return array(
+		return [
 			'title'     => 'Cancel Hold',
 			'modalBody' => $interface->fetch('MyAccount/cancelhold.tpl'),
 			'success'   => $result['success'],
 			'failed'    => $failed,
-		);
+		];
 	}
 
 	function getFreezeHoldsForm(){
@@ -553,7 +553,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		{
 			$suspendDate = $_REQUEST['suspendDate'];
 		}
-		$freezeIds = "";
+		$freezeIds = '';
 
 		if (!empty($_REQUEST['selectedTitles'])){
 			$freezeIds = $_REQUEST['selectedTitles'];
@@ -596,12 +596,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		$interface->assign('freezeResults', $result);
 		$interface->assign('totalFrozen', count($freezeId));
 		$interface->assign('numFrozen', $result['numFrozen']);
-		return array(
-			'title' => translate('Freeze') . ' Holds',
+		return [
+			'title'     => translate('Freeze') . ' Holds',
 			'modalBody' => $interface->fetch('MyAccount/freezeHolds.tpl'),
-			'success' => $result['success'],
-			'failed' => $failed
-		);
+			'success'   => $result['success'],
+			'failed'    => $failed
+		];
 	}
 
 	function thawHolds(){
@@ -661,10 +661,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function thawHold(){
 		$user   = UserAccount::getLoggedInUser();
-		$result = [ // set default response
-		            'success' => false,
-		            'message' => 'Error thawing hold.',
-		];
+		$result = [
+			'success' => false,
+			'message' => 'Error thawing hold.',
+		]; // set default response
 
 		if (!$user){
 			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
@@ -774,7 +774,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getCreateListForm(){
 		global $interface;
-		$list['title'] = "";
+		$list['title'] = '';
 		if(isset($_REQUEST['defaultTitle'])){
 			$list['title'] = $_REQUEST['defaultTitle'];
 		}
@@ -794,7 +794,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getCreateListMultipleForm(){
 		global $interface;
-		$list['title'] = "";
+		$list['title'] = '';
 		if(isset($_REQUEST['ids'])){
 			$ids =$_REQUEST['ids'];
 			$interface->assign('ids',$ids);
@@ -810,10 +810,10 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 	function addListMultiple(){
 		$recordsToAdd = false;
-		$return = array();
+		$return       = [];
 		if (!UserAccount::isLoggedIn()){
 			$return['success'] = false;
-			$return['message'] = "You must be logged in to create a list";
+			$return['message'] = 'You must be logged in to create a list';
 			return $return;
 		}else{
 			$userId = UserAccount::getActiveUserId();
@@ -844,7 +844,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 
 			$recordsToAdd = explode("%2C", $_REQUEST['ids']);
-			$errors = array();
+			$errors = [];
 			if(count($recordsToAdd) > 0){
 				require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
 
@@ -918,76 +918,77 @@ class MyAccount_AJAX extends AJAXHandler {
 			$titles[$key]              = $rawData;
 		}
 
-		$return = array('titles' => $titles, 'currentIndex' => 0);
+		$return = ['titles' => $titles, 'currentIndex' => 0];
 		return $return;
 	}
 
-	function GetListTitles(){
-		global $configArray;
-		global $timer;
-
-		$listId         = $_REQUEST['listId'];
-		$_REQUEST['id'] = 'list:' . $listId;
-		$listName       = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $listId);
-		$scrollerName   = isset($_GET['scrollerName']) ? strip_tags($_GET['scrollerName']) : $listName;
-
-		//Determine the caching parameters
-		require_once(ROOT_DIR . '/services/API/ListAPI.php');
-		$listAPI   = new ListAPI();
-		$cacheInfo = $listAPI->getCacheInfoForList();
-
-		$listData = $this->cache->get($cacheInfo['cacheName']);
-
-		$return = false; // default response
-		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
-			global $interface;
-
-			$titles = $listAPI->getListTitles();
-			$timer->logTime('getListTitles');
-			$addStrandsTracking = false;
-			if ($titles['success'] == true){
-				if (isset($titles['strands'])){
-					$addStrandsTracking = true;
-					$strandsInfo        = $titles['strands'];
-				}
-				$titles = $titles['titles'];
-				if (is_array($titles)){
-					foreach ($titles as $key => $rawData){
-
-						$interface->assign('title', $rawData['title']);
-//						$interface->assign('description', $rawData['description'] . 'w00t!');
-						$interface->assign('description', $rawData['description']); // Looks like not in use currently
-						$interface->assign('length', $rawData['length']);
-						$interface->assign('publisher', $rawData['publisher']);
-						$descriptionInfo = $interface->fetch('Record/ajax-description-popup.tpl');
-
-						$formattedTitle            = "<div id=\"scrollerTitle{$scrollerName}{$key}\" class=\"scrollerTitle\">";
-						$shortId                   = $rawData['id'];
-						$shortId                   = str_replace('.b', 'b', $shortId);
-						$formattedTitle            .= '<a href="' . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
-						$formattedTitle            .= "<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
-							"</a></div>" .
-							"<div id='descriptionPlaceholder{$shortId}' style='display:none' class='loaded'>" .
-							$descriptionInfo .
-							"</div>";
-						$rawData['formattedTitle'] = $formattedTitle;
-						$titles[$key]              = $rawData;
-					}
-				}
-				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
-
-				$return   = array('titles' => $titles, 'currentIndex' => $currentIndex);
-				$listData = json_encode($return);
-			}else{
-				$return   = array('titles' => array(), 'currentIndex' => 0);
-				$listData = json_encode($return);
-			}
-
-			$this->cache->set($cacheInfo['cacheName'], $listData, $cacheInfo['cacheLength']);
-		}
-
-		return $return;
-	}
+	//Probable Obsolete Method. pascal. 7-2-2025
+//	function GetListTitles(){
+//		global $configArray;
+//		global $timer;
+//
+//		$listId         = $_REQUEST['listId'];
+//		$_REQUEST['id'] = 'list:' . $listId;
+//		$listName       = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $listId);
+//		$scrollerName   = isset($_GET['scrollerName']) ? strip_tags($_GET['scrollerName']) : $listName;
+//
+//		//Determine the caching parameters
+//		require_once(ROOT_DIR . '/services/API/ListAPI.php');
+//		$listAPI   = new ListAPI();
+//		$cacheInfo = $listAPI->getCacheInfoForList();
+//
+//		$listData = $this->cache->get($cacheInfo['cacheName']);
+//
+//		$return = false; // default response
+//		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
+//			global $interface;
+//
+//			$titles = $listAPI->getListTitles();
+//			$timer->logTime('getListTitles');
+//			$addStrandsTracking = false;
+//			if ($titles['success'] == true){
+//				if (isset($titles['strands'])){
+//					$addStrandsTracking = true;
+//					$strandsInfo        = $titles['strands'];
+//				}
+//				$titles = $titles['titles'];
+//				if (is_array($titles)){
+//					foreach ($titles as $key => $rawData){
+//
+//						$interface->assign('title', $rawData['title']);
+////						$interface->assign('description', $rawData['description'] . 'w00t!');
+//						$interface->assign('description', $rawData['description']); // Looks like not in use currently
+//						$interface->assign('length', $rawData['length']);
+//						$interface->assign('publisher', $rawData['publisher']);
+//						$descriptionInfo = $interface->fetch('Record/ajax-description-popup.tpl');
+//
+//						$formattedTitle            = "<div id=\"scrollerTitle{$scrollerName}{$key}\" class=\"scrollerTitle\">";
+//						$shortId                   = $rawData['id'];
+//						$shortId                   = str_replace('.b', 'b', $shortId);
+//						$formattedTitle            .= '<a href="' . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
+//						$formattedTitle            .= "<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
+//							"</a></div>" .
+//							"<div id='descriptionPlaceholder{$shortId}' style='display:none' class='loaded'>" .
+//							$descriptionInfo .
+//							"</div>";
+//						$rawData['formattedTitle'] = $formattedTitle;
+//						$titles[$key]              = $rawData;
+//					}
+//				}
+//				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
+//
+//				$return   = array('titles' => $titles, 'currentIndex' => $currentIndex);
+//				$listData = json_encode($return);
+//			}else{
+//				$return   = array('titles' => array(), 'currentIndex' => 0);
+//				$listData = json_encode($return);
+//			}
+//
+//			$this->cache->set($cacheInfo['cacheName'], $listData, $cacheInfo['cacheLength']);
+//		}
+//
+//		return $return;
+//	}
 
 	function LoginForm(){
 		// Check if already logged in (eg. in another tab)

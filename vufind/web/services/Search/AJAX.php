@@ -30,7 +30,6 @@ class AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'sendEmail',
 		'getMoreSearchResults',
-		'GetListTitles',
 		'loadExploreMoreBar',
 		'getDplaResults',
 		'getEmailForm',
@@ -160,93 +159,6 @@ class AJAX extends AJAXHandler {
 		}
 	}
 
-	/**
-	 * Fetching list widget entries 
-	 *
-	 * @return array Data representing the list information
-	 */
-	function GetListTitles(){
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $timer;
-
-		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
-
-		//Determine the caching parameters
-		require_once ROOT_DIR . '/services/API/ListAPI.php';
-		$listAPI   = new ListAPI();
-		$cacheInfo = $listAPI->getCacheInfoForList();
-
-		$cacheName = $cacheInfo['cacheName'];
-		if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
-			$cacheName .= '_medium';
-		}
-		global $library;
-		$cacheName .= '_' . $library->subdomain;
-
-		$listData = $memCache->get($cacheName);
-		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
-			global $interface;
-			$interface->assign('listName', $listName);
-
-			$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
-			$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
-
-			$numTitlesToShow = $_REQUEST['numTitlesToShow'] ?? 25;
-
-			$titles = $listAPI->getListTitles(null, $numTitlesToShow);
-			$timer->logTime('getListTitles');
-			if ($titles['success'] == true){
-				$titles = $titles['titles'];
-				if (is_array($titles)){
-					foreach ($titles as $key => $rawData){
-						$interface->assign('key', $key);
-						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
-
-						$titleShort = preg_replace(['/\:.*?$/', '/\s*\/$\s*/'], '', $rawData['title']);
-//						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
-//						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
-
-						$imageUrl = $rawData['small_image'];
-						if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
-							$imageUrl = $rawData['image'];
-						}
-
-						$interface->assign('title', $titleShort);
-						$interface->assign('author', $rawData['author']);
-						$interface->assign('description', $rawData['description'] ?? null);
-						$interface->assign('length', $rawData['length'] ?? null);
-						$interface->assign('publisher', $rawData['publisher'] ?? null);
-						$interface->assign('shortId', $rawData['shortId']);
-						$interface->assign('id', $rawData['id']);
-						$interface->assign('titleURL', $rawData['titleURL']);
-						$interface->assign('imageUrl', $imageUrl);
-
-						if ($showRatings){
-							$interface->assign('ratingData', $rawData['ratingData']);
-						}
-
-						$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');
-						$rawData['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
-						// TODO: Modify these for Archive Objects
-
-						$titles[$key] = $rawData;
-					}
-				}
-				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
-
-				$listData = ['titles' => $titles, 'currentIndex' => $currentIndex];
-
-				$memCache->set($cacheName, $listData, 0, $cacheInfo['cacheLength']);
-			}else{
-				$listData = ['titles' => [], 'currentIndex' => 0];
-				if ($titles['message']){
-					$listData['error'] = $titles['message'];
-				} // send error message to widget javascript
-			}
-		}
-		return $listData;
-	}
 
 	function getEmailForm(){
 		global $interface;

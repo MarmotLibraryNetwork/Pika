@@ -39,12 +39,16 @@ class ListAPI extends AJAXHandler {
 		'createUserListFromNYT',
 	];
 
+	protected $methodsThatRespondWithJSONUnstructured = [
+		'getListWidgetTitles',
+	];
+
 	protected $methodsThatRespondThemselves = [
 		'getRSSFeed',
 	];
 
 	function getAllListIds(){
-		$allListNames = array();
+		$allListNames = [];
 		$publicLists  = $this->getPublicLists();
 		if ($publicLists['success'] = true){
 			foreach ($publicLists['lists'] as $listInfo){
@@ -223,139 +227,139 @@ class ListAPI extends AJAXHandler {
 	function getSystemLists(){
 		//System lists are not stored in tables, but are generated based on
 		//a variety of factors.
-		$systemLists[] = array(
+		$systemLists[] = [
 			'id'          => 'newfic',
 			'title'       => 'New Fiction',
 			'description' => 'A selection of New Fiction Titles that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newnonfic',
 			'title'       => 'New Non-Fiction',
 			'description' => 'A selection of New Non-Fiction Titles that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newdvd',
 			'title'       => 'New DVDs',
 			'description' => 'A selection of New DVDs that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newmyst',
 			'title'       => 'New Mysteries',
 			'description' => 'A selection of New Mystery Books that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newaudio',
 			'title'       => 'New Audio',
 			'description' => 'A selection of New Audio Books that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newya',
 			'title'       => 'New Young Adult',
 			'description' => 'A selection of New Titles appropriate for Young Adult that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newkids',
 			'title'       => 'New Kids',
 			'description' => 'A selection of New Titles appropriate for children that have arrived recently or are on order.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newEpub',
 			'title'       => 'New Online Books',
 			'description' => 'The most recently added online books in the catalog.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'newebooks',
 			'title'       => 'New eBooks',
 			'description' => 'The most recently added online books in the catalog.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoonfic',
 			'title'       => 'Coming Soon Fiction',
 			'description' => 'A selection of Fiction Titles that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoonnonfic',
 			'title'       => 'Coming Soon Non-Fiction',
 			'description' => 'A selection of Non-Fiction Titles that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoondvd',
 			'title'       => 'Coming Soon DVDs',
 			'description' => 'A selection of DVDs that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoonkids',
 			'title'       => 'Coming Soon Kids',
 			'description' => 'A selection of Kids Titles that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoonya',
 			'title'       => 'Coming Soon Young Adult',
 			'description' => 'A selection of Young Adult Titles that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'comingsoonmusic',
 			'title'       => 'Coming Soon Music',
 			'description' => 'A selection of Music Tiles that are on order and due in soon.',
 			'numTitles'   => 30,
-		);
-/*		$systemLists[] = array(
+		];
+/*		$systemLists[] = [
 			'id'          => 'popularEpub',
 			'title'       => 'Popular Online Books',
 			'description' => 'The most popular books that are available to read online.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'availableEpub',
 			'title'       => 'Available Online Books',
 			'description' => 'Online books that can be read immediately.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'recommendedEpub',
 			'title'       => 'Recommended Online Books',
 			'description' => 'Online books that you may like based on your ratings and reading history.',
 			'numTitles'   => 30,
-		);*/
-		$systemLists[] = array(
+		];*/
+		$systemLists[] = [
 			'id'          => 'recentlyReviewed',
 			'title'       => 'Recently Reviewed',
 			'description' => 'Titles that have had new reviews added to them.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'highestRated',
 			'title'       => 'Highly Rated',
 			'description' => 'Titles that have the highest ratings within the catalog.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'mostPopular',
 			'title'       => 'Most Popular Titles',
 			'description' => 'Most Popular titles based on checkout history.',
 			'numTitles'   => 30,
-		);
-		$systemLists[] = array(
+		];
+		$systemLists[] = [
 			'id'          => 'recommendations',
 			'title'       => 'Recommended For You',
 			'description' => 'Titles Recommended for you based off your ratings.',
 			'numTitles'   => 30,
-		);
-		return array('success' => true, 'lists' => $systemLists);
+		];
+		return ['success' => true, 'lists' => $systemLists];
 	}
 
 	private function _getUserListTitles($listId, $numTitlesToShow){
@@ -366,9 +370,9 @@ class ListAPI extends AJAXHandler {
 			//Make sure the user has access to the list
 			if ($list->public == 0){
 				if (!isset($user)){
-					return array('success' => false, 'message' => 'The user was invalid.  A valid user must be provided for private lists.');
+					return ['success' => false, 'message' => 'The user was invalid.  A valid user must be provided for private lists.'];
 				}elseif ($list->user_id != $user->id){
-					return array('success' => false, 'message' => 'The user does not have access to this list.');
+					return ['success' => false, 'message' => 'The user does not have access to this list.'];
 				}
 			}
 
@@ -376,10 +380,10 @@ class ListAPI extends AJAXHandler {
 			$user               = UserAccount::getLoggedInUser();
 			$favoriteHandler    = new FavoriteHandler($list, false);
 			$isMixedContentList = $favoriteHandler->isMixedUserList();
-			$orderedListOfIds   = $isMixedContentList ? $favoriteHandler->getFavorites() : array();
+			$orderedListOfIds   = $isMixedContentList ? $favoriteHandler->getFavorites() : [];
 			// Use this array to combined Mixed Lists Back into their list-defined order
 
-			$catalogItems = $archiveItems = array();
+			$catalogItems = $archiveItems = [];
 			$catalogIds   = $favoriteHandler->getCatalogIds();
 			$archiveIds   = $favoriteHandler->getArchiveIds();
 			if (count($catalogIds) > 0){
@@ -398,9 +402,9 @@ class ListAPI extends AJAXHandler {
 			}
 
 
-			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles' => $titles, 'cacheLength' => 24);
+			return ['success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles' => $titles, 'cacheLength' => 24];
 		}else{
-			return array('success' => false, 'message' => 'The specified list could not be found.');
+			return ['success' => false, 'message' => 'The specified list could not be found.'];
 		}
 	}
 
@@ -422,6 +426,7 @@ class ListAPI extends AJAXHandler {
 			$listId = $_REQUEST['id'];
 		}
 
+		//TODO comment when this is necessary; otherwise this is likely obsolete
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
@@ -510,6 +515,92 @@ class ListAPI extends AJAXHandler {
 
 			}
 		}
+	}
+
+	/**
+	 * Fetching list widget entries
+	 *
+	 * @return array Data representing the list information
+	 */
+	function getListWidgetTitles(){
+		/** @var Memcache $memCache */
+		global $memCache;
+		global $timer;
+
+		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
+
+		//Determine the caching parameters
+		$cacheInfo = $this->getCacheInfoForList();
+
+		$cacheName = $cacheInfo['cacheName'];
+		if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
+			$cacheName .= '_medium';
+		}
+		global $library;
+		$cacheName .= '_' . $library->subdomain;
+
+		$listData = $memCache->get($cacheName);
+		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
+			global $interface;
+			$interface->assign('listName', $listName);
+
+			$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
+			$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
+
+			$numTitlesToShow = $_REQUEST['numTitlesToShow'] ?? 25;
+
+			$titles = $this->getListTitles(null, $numTitlesToShow);
+			$timer->logTime('getListTitles');
+			if ($titles['success'] == true){
+				$titles = $titles['titles'];
+				if (is_array($titles)){
+					foreach ($titles as $key => $rawData){
+						$interface->assign('key', $key);
+						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
+
+						$titleShort = preg_replace(['/\:.*?$/', '/\s*\/$\s*/'], '', $rawData['title']);
+//						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
+//						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
+
+						$imageUrl = $rawData['small_image'];
+						if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
+							$imageUrl = $rawData['image'];
+						}
+
+						$interface->assign('title', $titleShort);
+						$interface->assign('author', $rawData['author']);
+						$interface->assign('description', $rawData['description'] ?? null);
+						$interface->assign('length', $rawData['length'] ?? null);
+						$interface->assign('publisher', $rawData['publisher'] ?? null);
+						$interface->assign('shortId', $rawData['shortId']);
+						$interface->assign('id', $rawData['id']);
+						$interface->assign('titleURL', $rawData['titleURL']);
+						$interface->assign('imageUrl', $imageUrl);
+
+						if ($showRatings){
+							$interface->assign('ratingData', $rawData['ratingData']);
+						}
+
+						$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');
+						$rawData['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
+						// TODO: Modify these for Archive Objects
+
+						$titles[$key] = $rawData;
+					}
+				}
+				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
+
+				$listData = ['titles' => $titles, 'currentIndex' => $currentIndex];
+
+				$memCache->set($cacheName, $listData, 0, $cacheInfo['cacheLength']);
+			}else{
+				$listData = ['titles' => [], 'currentIndex' => 0];
+				if ($titles['message']){
+					$listData['error'] = $titles['message'];
+				} // send error message to widget javascript
+			}
+		}
+		return $listData;
 	}
 
 	/**
