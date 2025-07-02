@@ -136,159 +136,164 @@ class SearchAPI extends AJAXHandler {
 		//Do not check partial index or overdrive extract if there is a full index running since they pause during that period
 		//Also do not check these from 9pm to 7am since between these hours, we're running full indexing and these issues wind up being ok.
 		$curHour = date('H');
-		if (!$fullIndexRunning && !$recordGroupingRunning && ($curHour >= 7 && $curHour <= 21)){
-			$isPartialIndexPaused       = false;
-			$partialIndexPauseIntervals = new Variable('partial_index_pause_intervals');
-			if (!empty($partialIndexPauseIntervals->N)){
+		if (($curHour >= 7 && $curHour <= 21)){
+			if (!$fullIndexRunning && !$recordGroupingRunning){
+				$isPartialIndexPaused       = false;
+				$partialIndexPauseIntervals = new Variable('partial_index_pause_intervals');
+				if (!empty($partialIndexPauseIntervals->N)){
 
-				if (!empty($partialIndexPauseIntervals->value)){
-					// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24-hour format; Intervals can't cross 24:00/00:00)
-					$intervals = explode(';', trim($partialIndexPauseIntervals->value));
-					foreach ($intervals as $interval){
-						[$start, $stop] = explode('-', trim($interval));
-						[$startHour, $startMin] = explode(':', trim($start));
-						[$stopHour, $stopMin] = explode(':', trim($stop));
+					if (!empty($partialIndexPauseIntervals->value)){
+						// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24-hour format; Intervals can't cross 24:00/00:00)
+						$intervals = explode(';', trim($partialIndexPauseIntervals->value));
+						foreach ($intervals as $interval){
+							[$start, $stop] = explode('-', trim($interval));
+							[$startHour, $startMin] = explode(':', trim($start));
+							[$stopHour, $stopMin] = explode(':', trim($stop));
 
-						if (is_numeric($startHour) && is_numeric($startMin) && is_numeric($stopHour) && is_numeric($startMin)){
-							$startTimeStamp = mktime($startHour, $startMin, 0);
-							$stopTimeStamp  = mktime($stopHour, $stopMin, 0);
-							if ($currentTime >= $startTimeStamp && $currentTime <= $stopTimeStamp){
-								$isPartialIndexPaused = true;
-								$status[]             = self::STATUS_OK;
-								$notes[]              = 'Partial Index monitoring is currently paused';
-								break;
+							if (is_numeric($startHour) && is_numeric($startMin) && is_numeric($stopHour) && is_numeric($startMin)){
+								$startTimeStamp = mktime($startHour, $startMin, 0);
+								$stopTimeStamp  = mktime($stopHour, $stopMin, 0);
+								if ($currentTime >= $startTimeStamp && $currentTime <= $stopTimeStamp){
+									$isPartialIndexPaused = true;
+									$status[]             = self::STATUS_OK;
+									$notes[]              = 'Partial Index monitoring is currently paused';
+									break;
+								}
 							}
 						}
 					}
 				}
-			}
 
-			// When partialIndexMonitoring is paused, skip last index time and skip last extract times,
-			if (!$isPartialIndexPaused){
-				// Partial Index //
-				$lastPartialIndexVariable = new Variable('lastPartialReindexFinish');
-				if (!empty($lastPartialIndexVariable->N)){
-					//Get the last time either a full or partial index finished
-					$lastIndexFinishedWasFull = false;
-					$lastIndexTime            = $lastPartialIndexVariable->value;
-					if ($lastFullIndexVariable && $lastFullIndexVariable->value > $lastIndexTime){
-						$lastIndexTime            = $lastFullIndexVariable->value;
-						$lastIndexFinishedWasFull = true;
-					}
-
-					//Check to see if the last partial index finished more than PARTIAL_INDEX_INTERVAL_WARN seconds ago
-					if ($lastIndexTime < ($currentTime - self::PARTIAL_INDEX_INTERVAL_WARN)){
-						$status[] = ($lastIndexTime < ($currentTime - self::PARTIAL_INDEX_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-
-						if ($lastIndexFinishedWasFull){
-							$notes[] = 'Full Index last finished ' . date('m-d-Y H:i:s', $lastFullIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago, and a new partial index hasn\'t completed since.';
-						}else{
-							$notes[] = 'Partial Index last finished ' . date('m-d-Y H:i:s', $lastPartialIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago';
+				// When partialIndexMonitoring is paused, skip last index time and skip last extract times,
+				if (!$isPartialIndexPaused){
+					// Partial Index //
+					$lastPartialIndexVariable = new Variable('lastPartialReindexFinish');
+					if (!empty($lastPartialIndexVariable->N)){
+						//Get the last time either a full or partial index finished
+						$lastIndexFinishedWasFull = false;
+						$lastIndexTime            = $lastPartialIndexVariable->value;
+						if ($lastFullIndexVariable && $lastFullIndexVariable->value > $lastIndexTime){
+							$lastIndexTime            = $lastFullIndexVariable->value;
+							$lastIndexFinishedWasFull = true;
 						}
-					}
-				}else{
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'Partial index has never been run';
-				}
 
-				// Verify Actual Extraction of ILS records is happening.
-				// That ils MARC records are in fact being updated.
-				// This is for the case when all of the processes are running but new data isn't actually being delivered
-				// so nothing in fact is being updated.
-				require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
-				$ilsExtractInfo = new IlsExtractInfo();
-				$ilsExtractInfo->orderBy('lastExtracted DESC');
-				$ilsExtractInfo->limit(1);
-				// SELECT * FROM pika.ils_extract_info ORDER BY lastExtracted DESC LIMIT 1;
-				//TODO: handling for multiple ILSes
-				if ($ilsExtractInfo->find(true)){
-					// Fetch the last updated MARC Record
-					$lastIlsRecordExtractTime = $ilsExtractInfo->lastExtracted;
-					if ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
-						$status[] = ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastIlsRecordExtractTime)) / 60, 2) . ' minutes ago';
-					}
-				}
+						//Check to see if the last partial index finished more than PARTIAL_INDEX_INTERVAL_WARN seconds ago
+						if ($lastIndexTime < ($currentTime - self::PARTIAL_INDEX_INTERVAL_WARN)){
+							$status[] = ($lastIndexTime < ($currentTime - self::PARTIAL_INDEX_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 
-				// Sierra Extract //
-				if ($configArray['Catalog']['ils'] == 'Sierra'){
-					$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
-					if (!empty($lastSierraExtractVariable->N)){
-						//Check to see if the last sierra extract finished more than SIERRA_EXTRACT_INTERVAL_WARN seconds ago
-						$lastSierraExtractTime = $lastSierraExtractVariable->value;
-						if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
-							$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-							$notes[]  = 'Sierra Last Extract time ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
+							if ($lastIndexFinishedWasFull){
+								$notes[] = 'Full Index last finished ' . date('m-d-Y H:i:s', $lastFullIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago, and a new partial index hasn\'t completed since.';
+							}else{
+								$notes[] = 'Partial Index last finished ' . date('m-d-Y H:i:s', $lastPartialIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago';
+							}
 						}
 					}else{
 						$status[] = self::STATUS_WARN;
-						$notes[]  = 'Sierra Extract has never been run';
+						$notes[]  = 'Partial index has never been run';
 					}
 
-					//Sierra Export Remaining items
-					$remainingSierraRecords = new Variable('remaining_sierra_records');
-					if (!empty($remainingSierraRecords->N)){
-						if ($remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_WARN){
-							$notes[]  = "{$remainingSierraRecords->value} changed items remain to be processed from Sierra";
-							$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+					// Verify Actual Extraction of ILS records is happening.
+					// That ils MARC records are in fact being updated.
+					// This is for the case when all of the processes are running but new data isn't actually being delivered
+					// so nothing in fact is being updated.
+					require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+					$ilsExtractInfo = new IlsExtractInfo();
+					$ilsExtractInfo->orderBy('lastExtracted DESC');
+					$ilsExtractInfo->limit(1);
+					// SELECT * FROM pika.ils_extract_info ORDER BY lastExtracted DESC LIMIT 1;
+					//TODO: handling for multiple ILSes
+					if ($ilsExtractInfo->find(true)){
+						// Fetch the last updated MARC Record
+						$lastIlsRecordExtractTime = $ilsExtractInfo->lastExtracted;
+						if ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_WARN)){
+							$status[] = ($lastIlsRecordExtractTime < ($currentTime - self::LAST_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							$notes[]  = 'The last ILS record was extracted ' . round(($currentTime - ($lastIlsRecordExtractTime)) / 60, 2) . ' minutes ago';
+						}
+					}
+
+					// Sierra Extract //
+					if ($configArray['Catalog']['ils'] == 'Sierra'){
+						$lastSierraExtractVariable = new Variable('last_sierra_extract_time');
+						if (!empty($lastSierraExtractVariable->N)){
+							//Check to see if the last sierra extract finished more than SIERRA_EXTRACT_INTERVAL_WARN seconds ago
+							$lastSierraExtractTime = $lastSierraExtractVariable->value;
+							if ($lastSierraExtractTime < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_WARN)){
+								$status[] = ($lastSierraExtractVariable->value < ($currentTime - self::SIERRA_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+								$notes[]  = 'Sierra Last Extract time ' . date('m-d-Y H:i:s', $lastSierraExtractTime) . ' - ' . round(($currentTime - ($lastSierraExtractTime)) / 60, 2) . ' minutes ago';
+							}
+						}else{
+							$status[] = self::STATUS_WARN;
+							$notes[]  = 'Sierra Extract has never been run';
+						}
+
+						//Sierra Export Remaining items
+						$remainingSierraRecords = new Variable('remaining_sierra_records');
+						if (!empty($remainingSierraRecords->N)){
+							if ($remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_WARN){
+								$notes[]  = "{$remainingSierraRecords->value} changed items remain to be processed from Sierra";
+								$status[] = $remainingSierraRecords->value >= self::SIERRA_MAX_REMAINING_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							}
 						}
 					}
 				}
-			}
 
 
-			if (!empty($configArray['OverDrive']['url']) && !$isPartialIndexPaused){
-				// Checking that the url is set as a proxy for Overdrive being enabled
+				if (!empty($configArray['OverDrive']['url']) && !$isPartialIndexPaused){
+					// Checking that the url is set as a proxy for Overdrive being enabled
 
-				// OverDrive Extract //
-				$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
-				if (!empty($lastOverDriveExtractVariable->N)){
-					//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
-					$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
-					if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){
-						$status[] = ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = 'OverDrive Extract last finished ' . date('m-d-Y H:i:s', $lastOverDriveExtractTime) . ' - ' . round(($currentTime - ($lastOverDriveExtractTime)) / 3600, 2) . ' hours ago';
-					}
-				}else{
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'OverDrive Extract has never been run';
-				}
-
-				// Overdrive extract errors
-				require_once ROOT_DIR . '/sys/Log/OverDriveExtractLogEntry.php';
-				$logEntry = new OverDriveExtractLogEntry();
-				$logEntry->orderBy('id DESC');
-				$logEntry->limit(1);
-				if ($logEntry->find(true)){
-					if ($logEntry->numErrors > 0){
+					// OverDrive Extract //
+					$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
+					if (!empty($lastOverDriveExtractVariable->N)){
+						//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
+						$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
+						if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){
+							$status[] = ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							$notes[]  = 'OverDrive Extract last finished ' . date('m-d-Y H:i:s', $lastOverDriveExtractTime) . ' - ' . round(($currentTime - ($lastOverDriveExtractTime)) / 3600, 2) . ' hours ago';
+						}
+					}else{
 						$status[] = self::STATUS_WARN;
-						$notes[]  = "Last OverDrive Extract round had {$logEntry->numErrors} errors";
+						$notes[]  = 'OverDrive Extract has never been run';
+					}
+
+					// Overdrive extract errors
+					require_once ROOT_DIR . '/sys/Log/OverDriveExtractLogEntry.php';
+					$logEntry = new OverDriveExtractLogEntry();
+					$logEntry->orderBy('id DESC');
+					$logEntry->limit(1);
+					if ($logEntry->find(true)){
+						if ($logEntry->numErrors > 0){
+							$status[] = self::STATUS_WARN;
+							$notes[]  = "Last OverDrive Extract round had {$logEntry->numErrors} errors";
+						}
+					}
+
+					// Check How Many Overdrive Items have been deleted in the last 24 hours
+					$overdriveItems          = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
+					$overdriveItems->deleted = true;
+					$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
+					// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
+					$deletedOverdriveItems = $overdriveItems->count();
+					if ($deletedOverdriveItems !== false && $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_WARN){
+						$notes[]  = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
+						$status[] = $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+					}
+
+					// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
+					$overdriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
+					$overdriveProduct->needsUpdate = 1;
+					$overdriveProduct->deleted     = 0;
+					$numOutstandingChanges         = $overdriveProduct->count();
+					if (!empty($numOutstandingChanges) && $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_WARN){
+						$notes[]  = "$numOutstandingChanges Overdrive Items needing to be processed";
+						$status[] = $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
 					}
 				}
-
-				// Check How Many Overdrive Items have been deleted in the last 24 hours
-				$overdriveItems          = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
-				$overdriveItems->deleted = true;
-				$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
-				// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
-				$deletedOverdriveItems = $overdriveItems->count();
-				if ($deletedOverdriveItems !== false && $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_WARN){
-					$notes[]  = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
-					$status[] = $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
-				}
-
-				// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
-				$overdriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
-				$overdriveProduct->needsUpdate = 1;
-				$overdriveProduct->deleted     = 0;
-				$numOutstandingChanges         = $overdriveProduct->count();
-				if (!empty($numOutstandingChanges) && $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_WARN){
-					$notes[]  = "$numOutstandingChanges Overdrive Items needing to be processed";
-					$status[] = $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
-				}
-			}
-
-		} // end of if (!$fullIndexRunning && !$recordGroupingRunning && ($curHour >= 7 && $curHour <= 21)){
+			} // end of if (!$fullIndexRunning && !$recordGroupingRunning){
+			elseif ($fullIndexRunning){
+				$notes[]  = "Full Index Running is running in daytime hours";
+				$status[] = self::STATUS_WARN;
+			} 
+		} // end of if ($curHour >= 7 && $curHour <= 21){
 
 		// Solr Checks //
 		// Try solr checks around the clock; ignoring full indexing, and hours checking
