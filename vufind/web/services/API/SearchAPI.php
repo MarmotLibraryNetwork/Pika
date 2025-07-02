@@ -51,7 +51,7 @@ class SearchAPI extends AJAXHandler {
 	const OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)
-	const SOLR_RESTART_INTERVAL_CRITICAL      = 129600; // 36 Hours (in seconds)
+	const SOLR_RESTART_INTERVAL_CRITICAL      = 172800; // 48 Hours (in seconds)
 	const OVERDRIVE_DELETED_ITEMS_WARN        = 300;
 	const OVERDRIVE_DELETED_ITEMS_CRITICAL    = 1000;
 	const OVERDRIVE_UNPROCESSED_ITEMS_WARN    = 5000;
@@ -292,7 +292,7 @@ class SearchAPI extends AJAXHandler {
 			elseif ($fullIndexRunning){
 				$notes[]  = "Full Index Running is running in daytime hours";
 				$status[] = self::STATUS_WARN;
-			} 
+			}
 		} // end of if ($curHour >= 7 && $curHour <= 21){
 
 		// Solr Checks //
