@@ -27,9 +27,10 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-class DjatokaResolver extends Action{
 
-	function launch() {
+class DjatokaResolver extends Action {
+
+	function launch(){
 		//Pass the request to the Islandora server for processing
 
 		global $configArray;
@@ -39,26 +40,26 @@ class DjatokaResolver extends Action{
 		if (substr($queryString, 0, 1) == '&'){
 			$queryString = substr($queryString, 1);
 		}
-		$queryString = str_replace('https', 'http', $queryString);
+		$queryString       = str_replace('https', 'http', $queryString);
 		$baseRepositoryUrl = $configArray['Islandora']['repositoryUrl'];
 		$baseRepositoryUrl = str_replace('https', 'http', $baseRepositoryUrl);
-		$requestUrl = $baseRepositoryUrl . '/adore-djatoka/resolver?' . $queryString;
+		$requestUrl        = $baseRepositoryUrl . '/adore-djatoka/resolver?' . $queryString;
 
-		try{
+		try {
 			$response = @file_get_contents($requestUrl);
 			if (!$response){
-				$response = json_encode(array(
-						'success' => false,
-						'message' => 'Could not load from the specified URL ' . $requestUrl
-				));
-			}
-		}catch (Exception $e){
-			$response = json_encode(array(
+				$response = json_encode([
 					'success' => false,
-					'message' => $e
-			));
+					'message' => 'Could not load from the specified URL ' . $requestUrl
+				]);
+			}
+		} catch (Exception $e){
+			$response = json_encode([
+				'success' => false,
+				'message' => $e
+			]);
 		}
 
-		echo($response);
+		echo $response;
 	}
 }

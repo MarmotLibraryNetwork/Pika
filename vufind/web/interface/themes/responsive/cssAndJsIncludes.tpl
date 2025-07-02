@@ -113,6 +113,9 @@
 				Globals.repositoryUrl = '{$repositoryUrl}';
 				Globals.encodedRepositoryUrl = '{$encodedRepositoryUrl}';
 			{/if}
+			{if $debugViewer}
+				Globals.debugViewer = true;
+			{/if}
 
 			{if $automaticTimeoutLength}
 			Globals.automaticTimeoutLength = {$automaticTimeoutLength};

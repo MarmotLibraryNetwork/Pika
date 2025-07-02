@@ -68,7 +68,7 @@ Pika.Archive = (function(){
 			return {
 				"id": "pika-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
-				"debugMode": false,
+				"debugMode": Globals.debugViewer,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
 				"tileSize": 256,
 				"tileOverlap": 0,
