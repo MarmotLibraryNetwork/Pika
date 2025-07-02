@@ -9,7 +9,7 @@
   background: none;
 }
 
-.header-login-button-mixin(rgba(51,51,51,0.4), #fff, 0, 30px);
+.header-login-button-mixin(@asu-green, #fff, 6px, 45px);
 
 #header_black {
   background: black;
@@ -19,28 +19,17 @@
 
 #header_library {
   line-height: 21px;
-  background: linear-gradient(#007A53, #014731);
+  background: @asu-gray;
   padding: 20px;
   //width: 100%; // not needed
   margin: 0;
-  height: 64px;
+  height: 100px;
 }
 
 @import url('https://fonts.googleapis.com/css?family=Special+Elite');
 
 .nielsenlibrarytxt {
-  &,&:visited {
-    color: #fff;
-  }
-  &:hover, &:active,&:focus {
-    color: black;
-  }
-  height: auto;
-  font-family: 'Special Elite', serif ;
-  font-size: 2.5em;
-  font-variant: small-caps;
-  margin: .25em 0 .35em;
-  text-decoration: none;
+display:none;
 }
 
 // Search Bar CSS Changes //
@@ -57,8 +46,8 @@
 
 
 .sidebar-button {
-  background-color: #fff;
-  background: linear-gradient(to bottom,#e7e7e7,#d7d7d7);
+
+  background: rgba(0,0,0,.35);
   color: #000;
   padding: 3px 0;
   margin-bottom: 15px;
@@ -117,9 +106,14 @@
 
   .panel-body {
     font-size: 14px;
-    color: #000;
+    color: #fff;
     //background-color: #fff;
   }
+}
+
+.sidebar-links .panel-body{
+    background: #eee;
+    //background-color: #fff;
 }
 
 // Prospector CSS Changes //
@@ -136,4 +130,19 @@
   a {
     color: @darkened-link-color-resp; // https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=F4EAE4
   }
+}
+#horizontal-search-box #horizontal-search-label{
+ color: #333;
+}
+
+#keepFiltersSwitchLabel, #advancedSearchLink{
+  color: #333;
+}
+
+#home-page-login{
+  border-bottom: 1px solid rgba(0,0,0,.35);
+}
+
+#header-logo{
+  max-height: 4em;
 }

@@ -1,14 +1,10 @@
-<div class="row">
-	<div id="header_black" class="col-tn-12">
-		<a href="http://www.adams.edu/">
-			<img src="https://libapps.s3.amazonaws.com/accounts/14067/images/Adams_State_University_Logo.png" alt="Adams State University">
-		</a>
-	</div>
-</div>
+
 <div class="row">
 	<div id="header_library">
 		<div class="col-tn-4 col-xs-4 col-sm-3 col-md-8 col-lg-8">
-			<a class="nielsenlibrarytxt" href="https://adams.edu/library/">Nielsen Library</a>
+			<a href="{if !empty($logoLink)}{$logoLink}{else}/{*empty link to home page*}{/if}" title="{$logoLinkTitleAttribute}">
+				<img id="header-logo" class="img-fluid" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+			</a>
 		</div>
 
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
