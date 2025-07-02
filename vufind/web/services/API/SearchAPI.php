@@ -312,6 +312,7 @@ class SearchAPI extends AJAXHandler {
 				}
 
 				// Solr Level Check
+				$numRecords           = $data['status']['grouped']['index']['numDocs'];
 				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
 				if (!empty($minNumRecordVariable->N)){
 					$minNumRecords = $minNumRecordVariable->value;
