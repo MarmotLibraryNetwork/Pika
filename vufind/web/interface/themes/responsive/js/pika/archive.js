@@ -488,6 +488,7 @@ Pika.Archive = (function(){
 				if (!$('#pika-openseadragon').hasClass('processed')) {
 					$('#pika-openseadragon').addClass('processed');
 					settings = Pika.Archive.openSeadragonViewerSettings();
+					console.log('Debug Mode', settings.debugMode);
 					settings.tileSources = new Array();
 					settings.tileSources.push(tile);
 					Pika.Archive.openSeaDragonViewer = new OpenSeadragon(settings);
