@@ -59,6 +59,7 @@ class DjatokaResolver extends Action{
 			));
 		}
 
-		echo($response);
+		header('Content-type: image/jpeg');
+		echo $response;
 	}
 }
