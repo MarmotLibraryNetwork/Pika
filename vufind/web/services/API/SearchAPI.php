@@ -59,6 +59,14 @@ class SearchAPI extends AJAXHandler {
 	const SIERRA_MAX_REMAINING_ITEMS_WARN     = 5000;
 	const SIERRA_MAX_REMAINING_ITEMS_CRITICAL = 20000;
 
+	const SOLR_COUNT_MIN_LEVEL_WARN           = 2000;
+	// number below the currently set level to warn for;
+	// further below this value will be Critical
+
+	const SOLR_COUNT_ABOVE_LEVEL_WARN         = 10000;
+	// Warn when the count is above this level;
+	// This means that the solr count value needs to be raised
+
 	const STATUS_OK       = 'okay';
 	const STATUS_WARN     = 'warning';
 	const STATUS_CRITICAL = 'critical';
@@ -248,10 +256,10 @@ class SearchAPI extends AJAXHandler {
 					if (!empty($minNumRecordVariable->N)){
 						$minNumRecords = $minNumRecordVariable->value;
 						if (!empty($minNumRecords) && $numRecords < $minNumRecords){
-							// Warn till more than 500 works below the limit
-							$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+							// Warn till more than SOLR_COUNT_MIN_LEVEL_WARN works below the limit
+							$status[] = $numRecords < ($minNumRecords - self::SOLR_COUNT_MIN_LEVEL_WARN) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 							$notes[]  = "Index count ($numRecords) is below the minimum ($minNumRecords)";
-						}elseif ($numRecords > $minNumRecords + 10000){
+						}elseif ($numRecords > $minNumRecords + self::SOLR_COUNT_ABOVE_LEVEL_WARN){
 							$status[] = self::STATUS_WARN;
 							$notes[]  = "Index count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
 						}
