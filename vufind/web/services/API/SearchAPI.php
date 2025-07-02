@@ -236,70 +236,6 @@ class SearchAPI extends AJAXHandler {
 				}
 			}
 
-			// Solr Restart //
-			if ($configArray['Index']['engine'] == 'Solr'){
-				$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
-				if (!empty($json)){
-					$data = json_decode($json, true);
-
-					$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
-					$solrStartTime = strtotime($data['status']['grouped']['startTime']);
-					if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
-						//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$status[] = self::STATUS_WARN;
-						$notes[]  = 'Solr Index last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
-					}
-
-					$numRecords = $data['status']['grouped']['index']['numDocs'];
-
-					$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
-					if (!empty($minNumRecordVariable->N)){
-						$minNumRecords = $minNumRecordVariable->value;
-						if (!empty($minNumRecords) && $numRecords < $minNumRecords){
-							// Warn till more than SOLR_COUNT_MIN_LEVEL_WARN works below the limit
-							$status[] = $numRecords < ($minNumRecords - self::SOLR_COUNT_MIN_LEVEL_WARN) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-							$notes[]  = "Index count ($numRecords) is below the minimum ($minNumRecords)";
-						}elseif ($numRecords > $minNumRecords + self::SOLR_COUNT_ABOVE_LEVEL_WARN){
-							$status[] = self::STATUS_WARN;
-							$notes[]  = "Index count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
-						}
-
-					}else{
-						$status[] = self::STATUS_WARN;
-						$notes[]  = 'The minimum number of records for Index has not been set.';
-					}
-
-				}else{
-					$status[] = self::STATUS_CRITICAL;
-					$notes[]  = 'Could not get status from Solr searcher core. Solr is down or unresponsive';
-				}
-
-				// Check that the indexing core is up
-				$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
-				$masterJson     = @file_get_contents($masterIndexUrl);
-				if (!$masterJson){
-					$status[] = self::STATUS_CRITICAL;
-					$notes[]  = 'Could not get status from Solr indexer core. Solr is down or unresponsive';
-				}
-
-
-				// This no longer appears to be a problem, disabling checking. pascal 7/2/2025
-				// Count Number of Back-up Index Folders
-//				$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
-//				$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
-//				if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
-//					$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
-//					$numIndexBackupDirectories = count($indexBackupDirectories);
-//					if ($numIndexBackupDirectories >= 7){
-//						$status[] = self::STATUS_CRITICAL;
-//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-//					}elseif ($numIndexBackupDirectories >= 4){
-//						$status[] = self::STATUS_WARN;
-//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-//					}
-//
-//				}
-			}
 
 			if (!empty($configArray['OverDrive']['url']) && !$isPartialIndexPaused){
 				// Checking that the url is set as a proxy for Overdrive being enabled
@@ -352,6 +288,73 @@ class SearchAPI extends AJAXHandler {
 				}
 			}
 
+		} // end of if (!$fullIndexRunning && !$recordGroupingRunning && ($curHour >= 7 && $curHour <= 21)){
+
+		// Solr Checks //
+		// Try solr checks around the clock; ignoring full indexing, and hours checking
+		if ($configArray['Index']['engine'] == 'Solr'){
+			$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+			if (!empty($json)){
+				$data = json_decode($json, true);
+
+				// Solr Restart Checks
+				$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
+				$solrStartTime = strtotime($data['status']['grouped']['startTime']);
+				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
+					//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+					$status[] = self::STATUS_WARN;
+					$notes[]  = 'Solr Index last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+				}
+
+				// Solr Level Check
+				$numRecords           = $data['status']['grouped']['index']['numDocs'];
+				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
+				if (!empty($minNumRecordVariable->N)){
+					$minNumRecords = $minNumRecordVariable->value;
+					if (!empty($minNumRecords) && $numRecords < $minNumRecords){
+						// Warn till more than SOLR_COUNT_MIN_LEVEL_WARN works below the limit
+						$status[] = $numRecords < ($minNumRecords - self::SOLR_COUNT_MIN_LEVEL_WARN) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$notes[]  = "Index count ($numRecords) is below the minimum ($minNumRecords)";
+					}elseif ($numRecords > $minNumRecords + self::SOLR_COUNT_ABOVE_LEVEL_WARN){
+						$status[] = self::STATUS_WARN;
+						$notes[]  = "Index count ($numRecords) is more than " . number_format(self::SOLR_COUNT_ABOVE_LEVEL_WARN) . " above the minimum ($minNumRecords)";
+					}
+
+				}else{
+					$status[] = self::STATUS_WARN;
+					$notes[]  = 'The minimum number of records for Index has not been set.';
+				}
+
+			}else{
+				$status[] = self::STATUS_CRITICAL;
+				$notes[]  = 'Could not get status from Solr searcher core. Solr is down or unresponsive';
+			}
+
+			// Check that the indexing core is up
+			$masterIndexUrl = str_replace('8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
+			$masterJson     = @file_get_contents($masterIndexUrl);
+			if (!$masterJson){
+				$status[] = self::STATUS_CRITICAL;
+				$notes[]  = 'Could not get status from Solr indexer core. Solr is down or unresponsive';
+			}
+
+
+			// This no longer appears to be a problem, disabling checking. pascal 7/2/2025
+			// Count Number of Back-up Index Folders
+//				$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
+//				$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
+//				if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
+//					$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
+//					$numIndexBackupDirectories = count($indexBackupDirectories);
+//					if ($numIndexBackupDirectories >= 7){
+//						$status[] = self::STATUS_CRITICAL;
+//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+//					}elseif ($numIndexBackupDirectories >= 4){
+//						$status[] = self::STATUS_WARN;
+//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+//					}
+//
+//				}
 		}
 
 		// Unprocessed Offline Circs //
