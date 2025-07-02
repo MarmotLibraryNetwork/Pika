@@ -283,21 +283,22 @@ class SearchAPI extends AJAXHandler {
 				}
 
 
+				// This no longer appears to be a problem, disabling checking. pascal 7/2/2025
 				// Count Number of Back-up Index Folders
-				$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
-				$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
-				if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
-					$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
-					$numIndexBackupDirectories = count($indexBackupDirectories);
-					if ($numIndexBackupDirectories >= 7){
-						$status[] = self::STATUS_CRITICAL;
-						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-					}elseif ($numIndexBackupDirectories >= 4){
-						$status[] = self::STATUS_WARN;
-						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-					}
-
-				}
+//				$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
+//				$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
+//				if (strpos($solrSearcherPath, 'grouped')){ // If we didn't make a good path, skip the rest of these checks
+//					$indexBackupDirectories    = glob($solrSearcherPath . 'index.*', GLOB_ONLYDIR);
+//					$numIndexBackupDirectories = count($indexBackupDirectories);
+//					if ($numIndexBackupDirectories >= 7){
+//						$status[] = self::STATUS_CRITICAL;
+//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+//					}elseif ($numIndexBackupDirectories >= 4){
+//						$status[] = self::STATUS_WARN;
+//						$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+//					}
+//
+//				}
 			}
 
 			if (!empty($configArray['OverDrive']['url']) && !$isPartialIndexPaused){
