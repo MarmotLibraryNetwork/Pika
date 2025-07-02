@@ -312,7 +312,6 @@ class SearchAPI extends AJAXHandler {
 				}
 
 				// Solr Level Check
-				$numRecords           = $data['status']['grouped']['index']['numDocs'];
 				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
 				if (!empty($minNumRecordVariable->N)){
 					$minNumRecords = $minNumRecordVariable->value;
@@ -648,11 +647,11 @@ class SearchAPI extends AJAXHandler {
 
 		global $interface;
 		global $configArray;
-		global $timer;
+		//global $timer;
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
-		$timer->logTime('Include search engine');
+		//$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
@@ -665,7 +664,7 @@ class SearchAPI extends AJAXHandler {
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
-		$timer->logTime('Setup Search');
+		//$timer->logTime('Setup Search');
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
@@ -674,7 +673,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 		if ($searchObject->getResultTotal() < 1){
-			return "";
+			return '';
 		}else{
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
@@ -691,11 +690,11 @@ class SearchAPI extends AJAXHandler {
 
 		global $interface;
 		global $configArray;
-		global $timer;
+		//global $timer;
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
-		$timer->logTime('Include search engine');
+		//$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
@@ -708,7 +707,7 @@ class SearchAPI extends AJAXHandler {
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
-		$timer->logTime('Setup Search');
+		//$timer->logTime('Setup Search');
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
@@ -717,7 +716,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 		if ($searchObject->getResultTotal() < 1){
-			return "";
+			return '';
 		}else{
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
@@ -734,14 +733,14 @@ class SearchAPI extends AJAXHandler {
 
 		global $interface;
 		global $configArray;
-		global $timer;
+		//global $timer;
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
-		$timer->logTime('Include search engine');
+		//$timer->logTime('Include search engine');
 
 		//setup the results array.
-		$jsonResults = array();
+		$jsonResults = [];
 
 		// Initialise from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -753,7 +752,7 @@ class SearchAPI extends AJAXHandler {
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
-		$timer->logTime('Setup Search');
+		//$timer->logTime('Setup Search');
 
 		// Process Search
 		/** @var SearchObject_Solr $searchObject */
@@ -766,13 +765,13 @@ class SearchAPI extends AJAXHandler {
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
 			foreach ($recordSet as $recordKey => $record){
-				$jsonResults[] = array(
+				$jsonResults[] = [
 					'id'              => $record['id'],
-					'title'           => isset($record['title']) ? $record['title'] : null,
-					'author'          => isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'] : ''),
-					'format'          => isset($record['format']) ? $record['format'] : '',
-					'format_category' => isset($record['format_category']) ? $record['format_category'] : '',
-				);
+					'title'           => $record['title'] ?? null,
+					'author'          => $record['author'] ?? $record['author2'] ?? '',
+					'format'          => $record['format'] ?? '',
+					'format_category' => $record['format_category'] ?? '',
+				];
 			}
 		}
 		return $jsonResults;
