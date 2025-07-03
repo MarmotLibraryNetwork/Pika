@@ -35,31 +35,36 @@ class Archive_Postcard extends Archive_Object{
 		//$this->loadExploreMoreContent();
 
 		//Get the front of the object
-		$fedoraUtils = FedoraUtils::getInstance();
+		$fedoraUtils   = FedoraUtils::getInstance();
 		$postCardSides = $fedoraUtils->getCompoundObjectParts($this->pid);
 
-		$front = $fedoraUtils->getObject($postCardSides[1]['pid']);
-		$back = $fedoraUtils->getObject($postCardSides[2]['pid']);
+		$front     = $fedoraUtils->getObject($postCardSides[1]['pid']);
+		$back      = $fedoraUtils->getObject($postCardSides[2]['pid']);
+		$objectUrl = $configArray['Islandora']['objectUrl'];
 		if ($front->getDatastream('JP2') != null) {
-			$interface->assign('front_image', $configArray['Islandora']['objectUrl'] . "/{$front->id}/datastream/JP2/view");
+			$interface->assign('front_image', $objectUrl . "/{$front->id}/datastream/JP2/view");
+		} elseif ($front->getDatastream('LC') != null) {
+			$interface->assign('front_image', $objectUrl . "/{$front->id}/datastream/LC/view");
 		}
 		if ($front->getDatastream('MC') != null){
-			$interface->assign('front_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$front->id}/datastream/MC/view");
+			$interface->assign('front_thumbnail', $objectUrl . "/{$front->id}/datastream/MC/view");
 		}elseif ($front->getDatastream('SC') != null){
-			$interface->assign('front_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$front->id}/datastream/SC/view");
+			$interface->assign('front_thumbnail', $objectUrl . "/{$front->id}/datastream/SC/view");
 		}elseif ($front->getDatastream('TN') != null){
-			$interface->assign('front_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$front->id}/datastream/TN/view");
+			$interface->assign('front_thumbnail', $objectUrl . "/{$front->id}/datastream/TN/view");
 		}
 
-		if ($back->getDatastream('JP2') != null) {
-			$interface->assign('back_image', $configArray['Islandora']['objectUrl'] . "/{$back->id}/datastream/JP2/view");
+		if ($back->getDatastream('JP2') != null){
+			$interface->assign('back_image', $objectUrl . "/{$back->id}/datastream/JP2/view");
+		}elseif ($back->getDatastream('LC') != null){
+			$interface->assign('back_image', $objectUrl . "/{$back->id}/datastream/LC/view");
 		}
 		if ($back->getDatastream('MC') != null){
-			$interface->assign('back_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$back->id}/datastream/MC/view");
+			$interface->assign('back_thumbnail', $objectUrl . "/{$back->id}/datastream/MC/view");
 		}elseif ($back->getDatastream('SC') != null){
-			$interface->assign('back_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$back->id}/datastream/SC/view");
+			$interface->assign('back_thumbnail', $objectUrl . "/{$back->id}/datastream/SC/view");
 		}elseif ($back->getDatastream('TN') != null){
-			$interface->assign('back_thumbnail', $configArray['Islandora']['objectUrl'] . "/{$back->id}/datastream/TN/view");
+			$interface->assign('back_thumbnail', $objectUrl . "/{$back->id}/datastream/TN/view");
 		}
 
 		$interface->assign('showExploreMore', true);
