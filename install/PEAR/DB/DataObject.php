@@ -4726,7 +4726,7 @@ class DB_DataObject extends DB_DataObject_Overload
     * If the value is a string set to "null" and the "disable_null_strings" option is not set to 
     * true, then the value is considered to be null.
     * If the value is actually a PHP NULL value, and "disable_null_strings" has been set to 
-    * the value "full", then it will also be considered null. - this can not differenticate between not set
+    * the value "full", then it will also be considered null. - this can not differentiate between not set
     * 
     * 
     * @param  object|array $obj_or_ar 

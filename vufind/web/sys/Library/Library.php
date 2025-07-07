@@ -1520,6 +1520,9 @@ class Library extends DB_DataObject {
 		if (empty($this->selfRegistrationAgencyCode)){
 			$this->selfRegistrationAgencyCode = "null";
 		}
+		if (empty($this->systemMessage)){
+			$this->systemMessage = "null";
+		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
 			// convert array to string before storing in database
 			$this->showInMainDetails = serialize($this->showInMainDetails);
