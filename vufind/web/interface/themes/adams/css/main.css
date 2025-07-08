@@ -10600,10 +10600,6 @@ a .header-button:hover {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-#header_black {
-  background: black;
-  border: 5px solid black;
-}
 #header_library {
   line-height: 21px;
   background: #00000059;
