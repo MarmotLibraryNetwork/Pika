@@ -20,6 +20,11 @@
 		{if !empty($searchSources) && $searchSources|@count <= 1 && !empty($searchSources[$searchSource])}
 			{assign var="hiddenSearchSource" value=true}
 			<input type="hidden" name="searchSource" value="{$searchSource}">
+			{assign var="archiveOnly" value=false}
+			{if $searchSource == "islandora"}
+				{assign var="archiveOnly" value=true}
+				{assign var="hiddenSearchSource" value=false}
+			{/if}
 		{/if}
 
 		<div class="col-sm-9 col-xs-12">
@@ -55,7 +60,9 @@
 				{else}
 				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
-
+				{if $archiveOnly}
+					<input type="hidden" name="basicType" id="basicSearchTypes" value="Keyword" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results.">
+				{else}
 					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora'}style="display:none"{/if}>
 						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
@@ -68,7 +75,7 @@
 							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
-
+				{/if}
 				</div>
 
 					{if !$hiddenSearchSource}
