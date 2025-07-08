@@ -1538,6 +1538,8 @@ class Library extends DB_DataObject {
 			$this->enableArchive             = true;
 			$this->enableOverdriveCollection = false;
 			$this->showLoginButton           = false;
+			$this->showAdvancedSearchbox     = false;
+			$this->repeatInOnlineCollection  = false;
 			$this->includeNovelistEnrichment = false;
 			$this->showGoodReadsReviews      = false;
 			$this->showStandardReviews       = false;
@@ -1611,20 +1613,22 @@ class Library extends DB_DataObject {
 		if ($this->archiveOnlyInterface ?? false){
 			$this->clearRecordsOwned();
 			$this->clearRecordsToInclude();
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton = false;
-			$this->enableArchive = true;
 			$this->clearHooplaSettings();
+			$this->enableArchive             = true;
+			$this->enableOverdriveCollection = false;
+			$this->showLoginButton           = false;
+			$this->showAdvancedSearchbox     = false;
+			$this->repeatInOnlineCollection  = false;
 			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews = false;
-			$this->showStandardReviews = false;
-			$this->preferSyndeticsSummary = false;
-			$this->showSimilarAuthors = false;
-			$this->showSimilarTitles = false;
-			$this->showWikipediaContent = false;
-			$this->showFavorites = false;
-			$this->showRatings = false;
-			$this->hideCommentsWithBadWords = false;
+			$this->showGoodReadsReviews      = false;
+			$this->showStandardReviews       = false;
+			$this->preferSyndeticsSummary    = false;
+			$this->showSimilarAuthors        = false;
+			$this->showSimilarTitles         = false;
+			$this->showWikipediaContent      = false;
+			$this->showFavorites             = false;
+			$this->showRatings               = false;
+			$this->hideCommentsWithBadWords  = false;
 		}
 		$ret = parent::insert();
 		if ($ret !== false){
