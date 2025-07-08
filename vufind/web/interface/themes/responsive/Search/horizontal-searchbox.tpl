@@ -35,6 +35,8 @@
 				<div class="
 				{if $hiddenSearchSource}
 				col-lg-9 col-md-8
+				{elseif $archiveOnly}
+				 col-lg-8 col-md-7
 				{else}
 				col-lg-6 col-md-5
 				{/if} col-sm-10 col-xs-12">
@@ -79,7 +81,7 @@
 				</div>
 
 					{if !$hiddenSearchSource}
-						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
+						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7" {if $archiveOnly} style="margin-top:-1px;"{/if}>
 							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
