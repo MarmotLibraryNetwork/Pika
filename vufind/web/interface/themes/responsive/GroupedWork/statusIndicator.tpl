@@ -48,7 +48,10 @@
 		<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 	{elseif $statusInformation.available}
 		{if $isGlobalScope}
-			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
+			like "On Display";
+			like "Shelving"; or "Recently Returned" for Clearview *}
 		{else}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'}</div>
 		{/if}
