@@ -10,7 +10,7 @@
 			{/if}
 		{else}
 			{if $showItsHere && $isOpac}
-				<div class="related-manifestation-shelf-status available">It's Here{if (!empty($statusInformation.groupedStatus) && $statusInformation.groupedStatus != "On Shelf")} ($statusInformation.groupedStatus){/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+				<div class="related-manifestation-shelf-status available">It's Here{if (!empty($statusInformation.groupedStatus) && $statusInformation.groupedStatus != "On Shelf")} ({$statusInformation.groupedStatus}){/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 				{* This allows for other available statuses, like "On Display";
 				like "Shelving"; or "Recently Returned" for Clearview *}
 			{else}
