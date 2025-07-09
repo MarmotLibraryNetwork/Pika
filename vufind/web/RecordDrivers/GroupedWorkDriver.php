@@ -221,7 +221,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$publishers = $this->getPublishers();
 		$pubDates   = $this->getPublicationDates();
 		//$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors'  => $authors,
 			'title'    => $this->getTitleShort(),
 			'subtitle' => $this->getSubtitle(),
@@ -230,7 +230,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'pubDate'  => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition'  => $this->getEdition(),
 			'format'   => $this->getFormats()
-		);
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
