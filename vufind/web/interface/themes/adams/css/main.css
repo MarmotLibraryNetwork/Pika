@@ -10737,3 +10737,6 @@ a .header-button:hover {
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #444444;
 }
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-icon img {
+  filter: invert(80%);
+}
