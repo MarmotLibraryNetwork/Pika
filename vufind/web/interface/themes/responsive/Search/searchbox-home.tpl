@@ -110,7 +110,7 @@
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of EBSO search" name="ebscoType" class="searchTypeHome form-control ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
+						<select aria-label="Select type of EBSCO search" name="ebscoType" class="searchTypeHome form-control ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
 							{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $ebscoSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
