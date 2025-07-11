@@ -6977,7 +6977,7 @@ body > .container {
   }
 }
 .panel-heading {
-  background-color: #e9e0daeb;
+  background-color: #fff;
   border: 1px solid #ddd;
 }
 .panel-title {
@@ -7104,7 +7104,7 @@ a:focus img.listResultImage {
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #00000059 !important;
+  border: 2px solid rgba(0, 0, 0, 0.6) !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -8189,7 +8189,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8232,7 +8232,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -9797,7 +9797,7 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #00000059;
+  border-top: 5px solid rgba(0, 0, 0, 0.6);
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9812,8 +9812,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #00000059;
-  border-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 0, 0, 0.6);
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -10020,8 +10020,8 @@ a.browse-thumbnail-sorted.active {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
-  color: #FFF;
-  background-color: rgba(0, 0, 0, 0.34901961);
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.6);
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -10038,7 +10038,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #00000059;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.6);
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10080,12 +10080,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #00000059;
+  border: solid 1px rgba(0, 0, 0, 0.6);
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10103,7 +10103,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10123,7 +10123,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10196,10 +10196,10 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #00000059;
+  color: rgba(0, 0, 0, 0.6);
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #00000059;
+  border: 1px solid rgba(0, 0, 0, 0.6);
 }
 #explore-more-body .jcarousel-control-prev,
 #relatedProjectsLibraryScroller .jcarousel-control-prev,
@@ -10341,7 +10341,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10351,7 +10351,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.34901961);
+  border: 1px solid rgba(0, 0, 0, 0.6);
   padding: 3px;
   margin-left: 5px;
 }
@@ -10379,7 +10379,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #00000059;
+  background-color: rgba(0, 0, 0, 0.6);
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10602,7 +10602,7 @@ a .header-button:hover {
 }
 #header_library {
   line-height: 21px;
-  background: #00000059;
+  background: rgba(0, 0, 0, 0.35);
   padding: 20px;
   margin: 0;
   height: 100px;
@@ -10705,10 +10705,10 @@ a .header-button:hover {
 }
 #more-details-accordion .panel-body {
   font-size: 14px;
-  color: #fff;
+  color: #000;
 }
 .sidebar-links .panel-body {
-  background: #eee;
+  background: #fff;
 }
 .result {
   border-bottom: 2px solid #d5d6da;
