@@ -80,6 +80,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 					rule.setLibraryId(libraryRulesResultSet.getLong("libraryId"));
 					rule.setKind(libraryRulesResultSet.getString("kind"));
+					rule.setMinPrice(libraryRulesResultSet.getFloat("minPrice"));
 					rule.setMaxPrice(libraryRulesResultSet.getFloat("maxPrice"));
 					rule.setExcludeParentalAdvisory(libraryRulesResultSet.getBoolean("excludeParentalAdvisory"));
 					rule.setExcludeProfanity(libraryRulesResultSet.getBoolean("excludeProfanity"));
@@ -98,6 +99,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 					rule.setLocationId(locationRulesResultSet.getLong("locationId"));
 					rule.setKind(locationRulesResultSet.getString("kind"));
+					rule.setMinPrice(locationRulesResultSet.getFloat("minPrice"));
 					rule.setMaxPrice(locationRulesResultSet.getFloat("maxPrice"));
 					rule.setExcludeParentalAdvisory(locationRulesResultSet.getBoolean("excludeParentalAdvisory"));
 					rule.setExcludeProfanity(locationRulesResultSet.getBoolean("excludeProfanity"));

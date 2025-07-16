@@ -1215,6 +1215,7 @@ class Location extends DB_DataObject {
 			$locationHooplaSetting                            = new LocationHooplaSettings();
 			$locationHooplaSetting->locationId                = $this->locationId;
 			$locationHooplaSetting->kind                      = $setting->kind;
+			$locationHooplaSetting->minPrice                  = $setting->minPrice;
 			$locationHooplaSetting->maxPrice                  = $setting->maxPrice;
 			$locationHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
 			$locationHooplaSetting->excludeProfanity          = $setting->excludeProfanity;
@@ -1242,6 +1243,7 @@ class Location extends DB_DataObject {
 			$copyToHooplaSetting                            = new LocationHooplaSettings();
 			$copyToHooplaSetting->locationId                = $this->locationId;
 			$copyToHooplaSetting->kind                      = $setting->kind;
+			$copyToHooplaSetting->minPrice                  = $setting->minPrice;
 			$copyToHooplaSetting->maxPrice                  = $setting->maxPrice;
 			$copyToHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
 			$copyToHooplaSetting->excludeProfanity          = $setting->excludeProfanity;

@@ -33,6 +33,7 @@ abstract class HooplaSetting extends DB_DataObject {
 
 	public $id;
 	public $kind;                      // Hoopla's version of format
+	public $minPrice;                  // Exclude Titles with a value for price in the Hoopla Extract table lesser than this
 	public $maxPrice;                  // Exclude Titles with a value for price in the Hoopla Extract table greater than this
 	public $excludeParentalAdvisory;   // Titles with `pa` = 1 in Hoopla Extract table
 	public $excludeProfanity;          // Titles with profanity = 1 in Hoopla Extract table
@@ -44,6 +45,7 @@ abstract class HooplaSetting extends DB_DataObject {
 		$structure   = [
 			'id'                        => ['property' => 'id',                        'type' => 'label',    'label' => 'Id', 'description' => 'The unique id of this association'],
 			'kind'                      => ['property' => 'kind',                      'type' => 'enum',     'label' => 'Hoopla Format', 'values' => $hooplaKinds, 'description' => 'The Hoopla format these settings will apply to.', 'required' => true],
+			'minPrice'                  => ['property' => 'minPrice',                  'type' => 'number',   'label' => 'Hoopla Min. Price', 'description' => 'The minimum price per use to include in search results. (0 = include everything; 0.01 to exclude the entire format)', 'min' => 0, 'step' => "0.01", 'default' => '0.00' /* leave default as a string so that value is displayed in form*/],
 			'maxPrice'                  => ['property' => 'maxPrice',                  'type' => 'number',   'label' => 'Hoopla Max. Price', 'description' => 'The maximum price per use to include in search results. (0 = include everything; 0.01 to exclude the entire format)', 'min' => 0, 'step' => "0.01", 'default' => '0.00' /* leave default as a string so that value is displayed in form*/],
 			'excludeParentalAdvisory'   => ['property' => 'excludeParentalAdvisory',   'type' => 'checkbox', 'label' => 'Exclude Parental Advisory Titles', 'description' => 'Whether or not titles Hoopla has marked as having a parental advisory notice are excluded.', 'default' => 0],
 			'excludeProfanity'          => ['property' => 'excludeProfanity',          'type' => 'checkbox', 'label' => 'Exclude Titles with Profanity', 'description' => 'Whether or not titles Hoopla has marked as having profanity are excluded.', 'default' => 0],

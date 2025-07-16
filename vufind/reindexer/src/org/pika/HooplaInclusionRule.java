@@ -22,6 +22,7 @@ public class HooplaInclusionRule {
 	private Long libraryId;
 	private Long locationId;
 	private String kind;  // Hoopla Format
+	private float minPrice;
 	private float maxPrice;
 	private boolean excludeParentalAdvisory;
 	private boolean excludeProfanity;
@@ -54,7 +55,6 @@ public class HooplaInclusionRule {
 	public void setKind(String kind) {
 		this.kind = kind;
 	}
-
 	public float getMaxPrice() {
 		return maxPrice;
 	}
@@ -62,6 +62,15 @@ public class HooplaInclusionRule {
 	public void setMaxPrice(float maxPrice) {
 		this.maxPrice = maxPrice;
 	}
+
+	public float getMinPrice() {
+		return minPrice;
+	}
+
+	public void setMinPrice(float minPrice) {
+		this.minPrice = minPrice;
+	}
+
 
 	public boolean isExcludeParentalAdvisory() {
 		return excludeParentalAdvisory;
@@ -110,22 +119,27 @@ public class HooplaInclusionRule {
 	}
 
 	public boolean isHooplaTitleExcluded(HooplaExtractInfo hooplaExtractInfo) {
-		if (maxPrice == 0 || hooplaExtractInfo.getPrice() == 0 || hooplaExtractInfo.getPrice() <= maxPrice) {  // include title, if hoopla price isn't set or the max price isn't set or the hoopla price is less than or equal to the max price; and...
-			if (!hooplaExtractInfo.isParentalAdvisory() || !isExcludeParentalAdvisory()) {    // if the title doesn't have a PA warning or we aren't excluding PA warning titles; and...
-				if (!hooplaExtractInfo.isProfanity() || !isExcludeProfanity()) {              // if the title doesn't have profanity or we aren't excluding profanity; and...
-					if (!isIncludeChildrenTitlesOnly() || hooplaExtractInfo.isChildren()) {  // if we aren't limiting to only children's titles or it is a children's title.
-						return false;
+		if (maxPrice == 0 || hooplaExtractInfo.getPrice() == 0 || hooplaExtractInfo.getPrice() <= maxPrice) {
+		                                                                                      // include title, if hoopla price isn't set or the max price isn't set or the hoopla price is less than or equal to the max price; and...
+			if (minPrice == 0 || hooplaExtractInfo.getPrice() >= minPrice) {                    // if hoopla min price isn't set or the hoopla price is greater than or equal to the minimum price setting; and...
+				if (!hooplaExtractInfo.isParentalAdvisory() || !isExcludeParentalAdvisory()) {    // if the title doesn't have a PA warning or we aren't excluding PA warning titles; and...
+					if (!hooplaExtractInfo.isProfanity() || !isExcludeProfanity()) {                // if the title doesn't have profanity or we aren't excluding profanity; and...
+						if (!isIncludeChildrenTitlesOnly() || hooplaExtractInfo.isChildren()) {       // if we aren't limiting to only children's titles or it is a children's title.
+							return false;
+						} else if (logger.isDebugEnabled()) {
+							logger.debug("Not including because not a children's title for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+						}
 					} else if (logger.isDebugEnabled()) {
-						logger.debug("Not including because not a children's title for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+						logger.debug("Excluding due to profanity for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 					}
 				} else if (logger.isDebugEnabled()) {
-					logger.debug("Excluding due to profanity for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+					logger.debug("Excluding due to parental advisory for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 				}
 			} else if (logger.isDebugEnabled()) {
-				logger.debug("Excluding due to parental advisory for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+				logger.debug("Excluding due to min price for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 			}
 		} else if (logger.isDebugEnabled()) {
-			logger.debug("Excluding due to price for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+			logger.debug("Excluding due to max price for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 		}
 		return true; // Otherwise, exclude the title.
 	}
