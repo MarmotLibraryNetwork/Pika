@@ -10473,7 +10473,7 @@ fieldset[disabled] .btn-masquerade.active {
 a .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #F8F9FA;
+  color: #FFF;
   background-color: #5E7D2C;
   margin-top: 0;
   line-height: 40px;
@@ -10598,20 +10598,20 @@ a .header-button:hover {
   color: #F8F9FA;
 }
 .alert a {
-  color: white;
+  color: #FFF;
 }
 .alert a:hover {
-  color: #F8F9FA;
+  color: #FFF;
   text-shadow: 0 0 15px #f7f8f9;
 }
 .alert-info {
-  color: #F8F9FA;
+  color: #FFF;
 }
 .alert-danger {
-  color: #F8F9FA;
+  color: #FFF;
 }
 .alert-warning {
-  color: #F8F9FA;
+  color: #FFF;
 }
 .alert-success a {
   color: #104A1D;
@@ -10625,7 +10625,7 @@ a .header-button:hover {
 }
 .breadcrumbs,
 .breadcrumb {
-  background-color: white;
+  background-color: #FFFF;
 }
 #browse-category-picker .jcarousel-control-next,
 #browse-category-picker .jcarousel-control-prev {
