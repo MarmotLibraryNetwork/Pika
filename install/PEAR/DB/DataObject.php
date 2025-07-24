@@ -4458,20 +4458,20 @@ class DB_DataObject extends DB_DataObject_Overload
      /**
     * standard get* implementation.
     *
-    *  with formaters..
-    * supported formaters:  
-    *   date/time : %d/%m/%Y (eg. php strftime) or pear::Date 
-    *   numbers   : %02d (eg. sprintf)
+    *  with formatters...
+    * supported formatters:  
+    *   date/time : d/m/Y (e.g. php date()) or pear::Date
+    *   numbers   : %02d (e.g. sprintf)
     *  NOTE you will get unexpected results with times like 0000-00-00 !!!
     *
     *
     * 
     * @param   string       column of database
-    * @param   format       foramt
+    * @param   format       format
     *
     * @return   true     Description
     * @access   public 
-    * @see      DB_DataObject::_call(),strftime(),Date::format()
+    * @see      DB_DataObject::_call(),date(),Date::format()
     */
     function toValue($col,$format = null) 
     {
@@ -4486,7 +4486,7 @@ class DB_DataObject extends DB_DataObject_Overload
                 }
                 $guess = strtotime($this->$col);
                 if ($guess != -1) {
-                    return strftime($format, $guess);
+                    return date($format, $guess);
                 }
                 // eak... - no way to validate date time otherwise...
                 return $this->$col;
@@ -4496,7 +4496,7 @@ class DB_DataObject extends DB_DataObject_Overload
                 } 
                 $guess = strtotime($this->$col);
                 if ($guess != -1) {
-                    return strftime($format,$guess);
+                    return date($format, $guess);
                 }
                 // try date!!!!
                 require_once 'Date.php';
@@ -4509,7 +4509,7 @@ class DB_DataObject extends DB_DataObject_Overload
                 }
                 $guess = strtotime($this->$col);
                 if ($guess > -1) {
-                    return strftime($format, $guess);
+                    return date($format, $guess);
                 }
                 // otherwise an error in type...
                 return $this->$col;

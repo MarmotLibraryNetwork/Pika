@@ -1276,7 +1276,7 @@ class Location extends DB_DataObject {
 			}
 
 			// get the day of the week (0=Sunday to 6=Saturday)
-			$dayOfWeekToday = strftime('%w', $timeToCheck);
+			$dayOfWeekToday = date('w', $timeToCheck);
 
 			// find library hours for the above day of the week
 			require_once ROOT_DIR . '/sys/Location/LocationHours.php';
@@ -1289,7 +1289,7 @@ class Location extends DB_DataObject {
 					'open'           => ltrim($hours->open, '0'),
 					'close'          => ltrim($hours->close, '0'),
 					'closed'         => $hours->closed ? true : false,
-					'openFormatted'  => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
+					'openFormatted'  => ($hours->open  == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 					'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close))),
 				];
 			}
@@ -1312,7 +1312,7 @@ class Location extends DB_DataObject {
 					$closureReason = $todaysLibraryHours['closureReason'];
 				}
 				//Library is closed now
-				$nextDay      = time() + (24 * 60 * 60);
+				$nextDay      = $today + (24 * 60 * 60);
 				$nextDayHours = Location::getLibraryHours($locationId, $nextDay);
 				$daysChecked  = 0;
 				while (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true && $daysChecked < 7){
@@ -1321,7 +1321,7 @@ class Location extends DB_DataObject {
 					$daysChecked++;
 				}
 
-				$nextDayOfWeek = strftime('%a', $nextDay);
+				$nextDayOfWeek = date('D', $nextDay); // Three letter representation of the day of week
 				if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true){
 					if (isset($closureReason)){
 						$libraryHoursMessage = "$locationName is closed today for $closureReason.";
@@ -1337,9 +1337,9 @@ class Location extends DB_DataObject {
 				}
 			}else{
 				//Library is open
-				$currentHour = strftime('%H', $today);
-				$openHour    = strftime('%H', strtotime($todaysLibraryHours['open']));
-				$closeHour   = strftime('%H', strtotime($todaysLibraryHours['close']));
+				$currentHour = date('H', $today);
+				$openHour    = date('H', strtotime($todaysLibraryHours['open']));
+				$closeHour   = date('H', strtotime($todaysLibraryHours['close']));
 				if ($closeHour == 0 && $closeHour < $openHour){
 					$closeHour = 24;
 				}
