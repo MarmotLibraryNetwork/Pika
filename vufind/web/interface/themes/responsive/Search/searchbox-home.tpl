@@ -38,6 +38,7 @@
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
 							</div>
+
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-default" type="submit">GO</button>
 								<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-label="Select type of search">
@@ -45,6 +46,9 @@
 								</button>
 
 								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
+									{if $searchSources|@count == 1 && array_key_exists('islandora', $searchSources)}
+
+									{else}
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
@@ -71,7 +75,7 @@
 										{/foreach}
 										<li class="divider ebscoType"></li>
 									{/if}
-
+									{/if}
 									<li class="catalogType">
 										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
 											{translate text="Advanced"}
