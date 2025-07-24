@@ -216,7 +216,7 @@ class Location extends DB_DataObject {
 
 			'displaySection' => [
 				'property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true,
-				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Basic-Display',
 				'properties' => [
 					['property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'],
 					['property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true],
@@ -226,7 +226,7 @@ class Location extends DB_DataObject {
 
 			'ilsSection' => [
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
-				'helpLink' => 'https://marmot-support.atlassian.net/l/c/SaLWEWH7',
+				'helpLink' => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#ILS/Account-Integration',
 				'properties' => [
 					['property' => 'ilsLocationId', 'type' => 'text', 'label' => 'ILS Location Id  (Polaris Organization ID or Sierra Scope)', 'description' => 'The ID for the location in the ILS. Previously, the scope for the branch used in the Sierra Classic OPAC.'],
 					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
@@ -237,7 +237,7 @@ class Location extends DB_DataObject {
 
 			'searchingSection'  => [
 				'property'   => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true,
-				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Searching',
 				'properties' => [
 					['property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false],
 					['property' => 'publicListsToInclude', 'type' => 'enum', 'values' => [0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'], 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
@@ -296,7 +296,7 @@ class Location extends DB_DataObject {
 					],
 					'combinedResultsSection' => [
 						'property'   => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true,
-						'helpLink'   => 'https://marmot-support.atlassian.net/l/c/tq17UkKT',
+						'helpLink'   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Combined-Results',
 						'properties' => [
 							'useLibraryCombinedResultsSettings' => ['property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true],
 							'enableCombinedResults'             => ['property' => 'enableCombinedResults', 'type' => 'checkbox', 'label' => 'Enable Combined Results', 'description' => 'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false],
@@ -326,7 +326,7 @@ class Location extends DB_DataObject {
 			// Catalog Enrichment //
 			'enrichmentSection' => [
 				'property' => 'enrichmentSection', 'type' => 'section', 'label' => 'Catalog Enrichment', 'hideInLists' => true,
-				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk/l/c/5b3zzY8E',
+				'helpLink' => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Catalog-Enrichment',
 				'properties' => [
 					['property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Standard Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => true],
 					['property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true],
@@ -339,7 +339,7 @@ class Location extends DB_DataObject {
 			// Full Record Display //
 			'fullRecordSection' => [
 				'property' => 'fullRecordSection', 'type' => 'section', 'label' => 'Full Record Display', 'hideInLists' => true,
-				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink' => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Full-Record-Display',
 				'properties' => [
 //	disabled					'showTextThis'  => ['property' =>'showTextThis', 'type' =>'checkbox', 'label' =>'Show Text This', 'description' =>'Whether or not the Text This link is shown', 'hideInLists' => true, 'default' => 1],
 					'showEmailThis'            => ['property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1],
@@ -377,7 +377,7 @@ class Location extends DB_DataObject {
 			'browseCategorySection' => [
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
 				'instructions' => 'For more information on how to set up browse categories, see the <a href="https://marmot-support.atlassian.net/l/c/98rtRQZ2">online documentation</a>.',
-				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink' => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Browse-Categories',
 				'properties' => [
 					'defaultBrowseMode'         => [
 						'property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
@@ -424,7 +424,7 @@ class Location extends DB_DataObject {
 			/* OVERDRIVE SECTION */
 			'overdriveSection'  => [
 				'property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true,
-				'helpLink' => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink' => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#OverDrive',
 				'properties' => [
 					'enableOverdriveCollection'         => ['property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
 					'includeOverDriveAdult'             => ['property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true, 'isIndexingSetting' => true, 'changeRequiresReindexing' => true],
@@ -438,7 +438,7 @@ class Location extends DB_DataObject {
 			/* HOOPLA SECTION */
 			'hooplaSection' => [
 				'property'   => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true,
-				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Hoopla',
 				'properties' => [
 					'hooplaSettings' => [
 						'property'                   => 'hooplaSettings',
@@ -483,7 +483,7 @@ class Location extends DB_DataObject {
 				'structure'                  => $hoursStructure,
 				'label'                      => 'Hours',
 				'description'                => 'Library Hours',
-				'helpLink'                   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'                   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Hours',
 				'sortable'                   => false,
 				'storeDb'                    => true,
 				'additionalOneToManyActions' => [
@@ -499,7 +499,7 @@ class Location extends DB_DataObject {
 				'type'                     => 'oneToMany',
 				'label'                    => 'Records Owned',
 				'description'              => 'Information about what records are owned by the location',
-				'helpLink'                 => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'                 => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Records-Owned-and-Included',
 				'keyThis'                  => 'locationId',
 				'keyOther'                 => 'locationId',
 				'subObjectType'            => 'LocationRecordOwned',
@@ -517,7 +517,7 @@ class Location extends DB_DataObject {
 				'type'                       => 'oneToMany',
 				'label'                      => 'Records To Include',
 				'description'                => 'Information about what records to include in this scope',
-				'helpLink'                   => 'https://marmot-support.atlassian.net/l/c/EXBe0oAk',
+				'helpLink'                   => 'https://marmot-support.atlassian.net/wiki/x/RACFLg#Records-Owned-and-Included',
 				'keyThis'                    => 'locationId',
 				'keyOther'                   => 'locationId',
 				'subObjectType'              => 'LocationRecordToInclude',

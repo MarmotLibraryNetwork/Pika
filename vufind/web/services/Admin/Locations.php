@@ -158,6 +158,6 @@ class Locations extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information about Location Setting configuration, see the <a href="https://marmot-support.atlassian.net/l/c/EXBe0oAk">online documentation</a>.';
+		return 'For more information about Location Setting configuration, see the <a href="https://marmot-support.atlassian.net/wiki/x/RACFLg">online documentation</a>.';
 	}
 }
