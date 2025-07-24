@@ -17,9 +17,13 @@
 
 		{assign var="hiddenSearchSource" value=false}
 		{* Switch sizing when no search source is to be displayed *}
-		{if !empty($searchSources) && $searchSources|@count <= 1}
+		{if !empty($searchSources) && $searchSources|@count <= 1 && !empty($searchSources[$searchSource])}
 			{assign var="hiddenSearchSource" value=true}
 			<input type="hidden" name="searchSource" value="{$searchSource}">
+		{/if}
+		{if $archiveOnlyInterface}
+			{assign var="hiddenSearchSource" value=true}
+			<input type="hidden" name="searchSource" value="islandora">
 		{/if}
 
 		<div class="col-sm-9 col-xs-12">
@@ -28,15 +32,21 @@
 					<label id="horizontal-search-label" for="lookfor"{* class=""*}>{translate text="Search for"} </label>
 				</div>
 				<div class="
-				{if $hiddenSearchSource}
-				col-lg-9 col-md-8
+				{if $archiveOnlyInterface}
+				col-lg-10 col-md-9
+				{elseif $hiddenSearchSource}
+				col-lg-8 col-md-7
 				{else}
 				col-lg-6 col-md-5
 				{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
 							          id="lookfor"
-							          placeholder="Find books, movies, and more..." {* changed cj 8/31/24 *}
+					              {if $archiveOnlyInterface}
+						              placeholder="Search local digital archive"
+					              {else}
+							            placeholder="Find books, movies, and more..." {* changed cj 8/31/24 *}
+												{/if}
 {*							          type="search"*}
 							          name="lookfor"
 {*							          value=""*}
@@ -56,18 +66,22 @@
 				{else}
 				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
-					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy'}style="display:none"{/if}>
-						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
-						{/foreach}
-					</select>
-					{*TODO: How to chose the Genealogy Search type initially *}
-					<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
-						{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
-						{/foreach}
-					</select>
+					{if $archiveOnlyInterface}
+						<input type="hidden" name="basicType" id="basicSearchTypes" value="Keyword" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results.">
+					{else}
+						<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora'}style="display:none"{/if}>
+							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
+								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
+							{/foreach}
+						</select>
 
+						{*TODO: How to chose the Genealogy Search type initially *}
+						<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
+								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							{/foreach}
+						</select>
+					{/if}
 				</div>
 
 					{if !$hiddenSearchSource}
