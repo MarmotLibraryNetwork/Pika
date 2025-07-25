@@ -997,7 +997,7 @@ class ListAPI extends AJAXHandler {
 		}
 		$api_key = $configArray['NYT_API']['books_API_key'];
 
-		$listName = 'names';
+		$listName = null; // When null, this will trigger the overview of lists of calls
 		if (!empty($_REQUEST['name']) && !is_array($_REQUEST['name'])){
 			$listName = trim($_REQUEST['name']);
 		}
@@ -1047,14 +1047,14 @@ class ListAPI extends AJAXHandler {
 
 		//Get from the API with a list of all the names
 		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
-		$availableLists = $nyt_api->getList('names');
+		$availableLists = $nyt_api->getLists();
 
 		//Get the human-readable title for our selected list
 		$selectedListTitle       = null;
 		$selectedListTitleShort  = null;
 		$selectedListDescription = null;
 		//Get the title and description for the selected list
-		foreach ($availableLists->results as $listInformation){
+		foreach ($availableLists->results->lists as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
 				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
 				$selectedListTitleShort  = $listInformation->display_name;

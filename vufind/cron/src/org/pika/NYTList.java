@@ -81,19 +81,18 @@ public class NYTList implements IProcessHandler {
 	}
 
 	public void addNYTItemsToList(String pikaSiteURL, Logger logger, CronProcessLogEntry processEntry, Connection pikaConn ) throws MalformedURLException {
-		String url         = pikaSiteURL + "/API/ListAPI?method=getAvailableListsFromNYT";
-		URL    apiLocation = new URL(url);
+		String        url         = pikaSiteURL + "/API/ListAPI?method=getAvailableListsFromNYT";
+		URL           apiLocation = new URL(url);
+		StringBuilder str         = new StringBuilder();
 		try {
-			StringBuilder str;
 			try (Scanner scan = new Scanner(apiLocation.openStream())) {
-				str = new StringBuilder();
 				while (scan.hasNext()) {
 					str.append(scan.nextLine());
 				}
 			}
 			JSONObject obj     = new JSONObject(stripPHPNoticeFromJSONResponse(str, logger));
 			JSONObject result  = obj.getJSONObject("result");
-			JSONArray  results = result.getJSONArray("results");
+			JSONArray  results = result.getJSONObject("results").getJSONArray("lists");
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject    newResult         = (JSONObject) results.get(i);
 				String        encoded_list_name = newResult.get("list_name_encoded").toString();
@@ -123,6 +122,7 @@ public class NYTList implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			logger.error("Cannot reach Pika server or server down", e);
+			logger.error("Pika Response: {}", str);
 		}
 	}
 
