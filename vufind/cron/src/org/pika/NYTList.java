@@ -36,6 +36,7 @@ public class NYTList implements IProcessHandler {
 			}
 		} catch (Exception e) {
 			logger.error(e);
+			processEntry.incErrors();
 		}
 		processEntry.setFinished();
 		processEntry.saveToDatabase(pikaConn, logger);
@@ -117,12 +118,14 @@ public class NYTList implements IProcessHandler {
 					processEntry.saveToDatabase(pikaConn, logger);
 				} catch (Exception e){
 					logger.error("Error trying to update NY Times list " + encoded_list_name, e);
+					processEntry.incErrors();
 					// Caught exception, now try to build other lists
 				}
 			}
 		} catch (Exception e) {
 			logger.error("Cannot reach Pika server or server down", e);
 			logger.error("Pika Response: {}", str);
+			processEntry.incErrors();
 		}
 	}
 
