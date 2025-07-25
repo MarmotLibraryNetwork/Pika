@@ -1380,7 +1380,7 @@ public class FormatDetermination {
 			return "PlayStation4";
 		} else if ((value.contains("playstation 3") ||value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
 			if (value.contains("xbox live")){
-				logger.info("PS string mentioning xbox live :" + value);
+				logger.info("PS string mentioning xbox live : {}", value);
 			}
 			return "PlayStation3";
 		} else if (value.replaceAll("playstation (plus|network)", "").contains("playstation") && isNotBluRayPlayerDescription(value)) {
@@ -1393,6 +1393,8 @@ public class FormatDetermination {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch 2")) {
+			return "NintendoSwitch2";
 		} else if (value.contains("nintendo switch")) {
 			return "NintendoSwitch";
 		} else if (value.contains("nintendo ds")) {

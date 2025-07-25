@@ -978,6 +978,8 @@ public class GroupingFormatDetermination {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch 2")) {
+			return "NintendoSwitch2";
 		} else if (value.contains("nintendo switch")) {
 			return "NintendoSwitch";
 		} else if (value.contains("nintendo ds")) {
