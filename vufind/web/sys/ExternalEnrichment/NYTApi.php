@@ -81,6 +81,15 @@ class NYTApi {
 		curl_setopt_array($curl, $curl_opts);
 		// Send the request & save response to $response
 		$response = curl_exec($curl);
+
+		if (!$response){
+			$error = curl_error($curl);
+			if (!empty($error)){
+				global $pikaLogger;
+				$logger = $pikaLogger->withName(__CLASS__);
+				$logger->error($error);
+			}
+		}
 		// Close request to clear up some resources
 		curl_close($curl);
 		// return response
