@@ -110,5 +110,15 @@ function getLibraryLocationUpdates(): array{
 			]
 		],
 
+		'2025.03.0_allow_force_pin_reset' => [
+			'release'         => '2025.03.0',
+			'title'           => 'Allow Force Pin Reset',
+			'description'     => 'Add Library setting to allow force pin reset',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ADD allowForcePinUpdate TINYINT(1) UNSIGNED DEFAULT 0 NOT NULL AFTER allowPinReset;",
+			],
+		],
+
 	];
 }
