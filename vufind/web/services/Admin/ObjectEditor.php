@@ -279,7 +279,7 @@ abstract class ObjectEditor extends Admin_Admin {
 								global $pikaLogger;
 								$pikaLogger->error("An error occurred updating {$this->getObjectType()} with id of $id : $errorDescription");
 								@session_start();
-								$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
+								$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">" . htmlspecialchars($errorDescription, ENT_QUOTES) . '</blockquote>';
 								$errorOccurred         = true;
 							}
 						}else{
