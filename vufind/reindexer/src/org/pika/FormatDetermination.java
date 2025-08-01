@@ -897,6 +897,9 @@ public class FormatDetermination {
 		}
 
 		// Video Game Things
+		if (printFormats.contains("NintendoSwitch") && printFormats.contains("NintendoSwitch2")){
+			printFormats.remove("NintendoSwitch");
+		}
 		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
 			printFormats.remove("Wii");
 		}
@@ -939,6 +942,7 @@ public class FormatDetermination {
 				|| printFormats.contains("PlayStation") || printFormats.contains("PlayStation3")
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
+				|| printFormats.contains("NintendoSwitch2")
 				|| printFormats.contains("NintendoSwitch")
 				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
 				|| printFormats.contains("WindowsGame")){
@@ -1346,6 +1350,10 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * @param value lower-cased string to check for game system formats
+	 * @return videoGame format determination or null
+	 */
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
@@ -1362,7 +1370,7 @@ public class FormatDetermination {
 			return "XboxOne";
 		} else if ((value.contains("xbox 360") || value.contains("xbox360")) && !value.contains("compatible")) {
 			if (logger.isInfoEnabled() && value.contains("xbox live")){
-				logger.info("Potential xbox game format string contains 'xbox live': " + value);
+				logger.info("Potential xbox game format string contains 'xbox live': {}", value);
 			}
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
@@ -1375,10 +1383,10 @@ public class FormatDetermination {
 			return "PlayStation5";
 		} else if ((value.contains("playstation 4") ||value.contains("playstation4") || value.equals("ps4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
 			if (value.contains("xbox live")){
-				logger.info("PS string mentioning xbox live :" + value);
+				logger.info("PS string mentioning xbox live : {}",  value);
 			}
 			return "PlayStation4";
-		} else if ((value.contains("playstation 3") ||value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 3") || value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
 			if (value.contains("xbox live")){
 				logger.info("PS string mentioning xbox live : {}", value);
 			}
