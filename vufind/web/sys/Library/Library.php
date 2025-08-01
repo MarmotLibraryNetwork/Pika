@@ -1534,24 +1534,7 @@ class Library extends DB_DataObject {
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
 		if ($this->archiveOnlyInterface ?? false){
-			$this->clearRecordsOwned();
-			$this->clearRecordsToInclude();
-			$this->clearHooplaSettings();
-			$this->enableArchive             = true;
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton           = false;
-			$this->showAdvancedSearchbox     = false;
-			$this->repeatInOnlineCollection  = false;
-			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews      = false;
-			$this->showStandardReviews       = false;
-			$this->preferSyndeticsSummary    = false;
-			$this->showSimilarAuthors        = false;
-			$this->showSimilarTitles         = false;
-			$this->showWikipediaContent      = false;
-			$this->showFavorites             = false;
-			$this->showRatings               = false;
-			$this->hideCommentsWithBadWords  = false;
+			$this->enableArchiveOnlyMode();
 		}
 		$ret = parent::update();
 		if ($ret !== false){
@@ -1592,6 +1575,33 @@ class Library extends DB_DataObject {
 	}
 
 	/**
+	 * Update all the appropriate settings for enacting an Archive Only interface
+	 * @return void
+	 */
+	private function enableArchiveOnlyMode() : void {
+		$this->clearRecordsOwned();
+		$this->clearRecordsToInclude();
+		$this->clearHooplaSettings();
+		$this->enableArchive             = true;
+		$this->enableOverdriveCollection = false;
+		$this->showLoginButton           = false;
+		$this->showAdvancedSearchbox     = false;
+		$this->enableCombinedResults     = false;
+		$this->defaultToCombinedResults  = false;
+		$this->repeatInOnlineCollection  = false;
+		$this->includeNovelistEnrichment = false;
+		$this->showGoodReadsReviews      = false;
+		$this->showStandardReviews       = false;
+		$this->preferSyndeticsSummary    = false;
+		$this->showSimilarAuthors        = false;
+		$this->showSimilarTitles         = false;
+		$this->showWikipediaContent      = false;
+		$this->showFavorites             = false;
+		$this->showRatings               = false;
+		$this->hideCommentsWithBadWords  = false;
+	}
+
+	/**
 	 * Override the insert functionality to save the related objects
 	 *
 	 * @see DB/DB_DataObject::insert()
@@ -1613,24 +1623,7 @@ class Library extends DB_DataObject {
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
 		if ($this->archiveOnlyInterface ?? false){
-			$this->clearRecordsOwned();
-			$this->clearRecordsToInclude();
-			$this->clearHooplaSettings();
-			$this->enableArchive             = true;
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton           = false;
-			$this->showAdvancedSearchbox     = false;
-			$this->repeatInOnlineCollection  = false;
-			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews      = false;
-			$this->showStandardReviews       = false;
-			$this->preferSyndeticsSummary    = false;
-			$this->showSimilarAuthors        = false;
-			$this->showSimilarTitles         = false;
-			$this->showWikipediaContent      = false;
-			$this->showFavorites             = false;
-			$this->showRatings               = false;
-			$this->hideCommentsWithBadWords  = false;
+			$this->enableArchiveOnlyMode();
 		}
 		$ret = parent::insert();
 		if ($ret !== false){
