@@ -746,8 +746,8 @@ class Library extends DB_DataObject {
 				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/VBdaXS4e',
 				'properties' => [
 					'showItsHere'                => ['property' => 'showItsHere', 'type' => 'checkbox', 'label' => 'Show It\'s Here', 'description' => 'Whether or not the holdings summary should show It\'s here based on IP and the currently logged in patron\'s location.', 'hideInLists' => true, 'default' => 1],
-					'showGroupedHoldCopiesCount' => ['property' => 'showGroupedHoldCopiesCount', 'type' => 'checkbox', 'label' => 'Show Hold and Copy Counts', 'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.', 'hideInLists' => true, 'default' => 1],
-					'showOnOrderCounts'          => ['property' => 'showOnOrderCounts', 'type' => 'checkbox', 'label' => 'Show On Order Counts', 'description' => 'Whether or not counts of Order Items should be shown .', 'hideInLists' => true, 'default' => 1],
+					'showGroupedHoldCopiesCount' => ['property' => 'showGroupedHoldCopiesCount', 'type' => 'checkbox', 'label' => 'Show Hold and Copy Counts for Format Manifestation in Search Results', 'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.', 'hideInLists' => true, 'default' => 1],
+					'showOnOrderCounts'          => ['property' => 'showOnOrderCounts', 'type' => 'checkbox', 'label' => 'Show On Order Counts in Search Results', 'description' => 'Whether or not counts of Order Items should be shown .', 'hideInLists' => true, 'default' => 1],
 				],
 			],
 
