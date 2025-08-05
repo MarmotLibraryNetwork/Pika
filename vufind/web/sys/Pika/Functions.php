@@ -68,14 +68,14 @@ function recaptchaCheckAnswer($recaptchaResponse = false) {
 	global $configArray;
 	$logger = new Logger('reCaptcha');
 
-	if(!isset($configArray['ReCaptcha']['privateKey']) || empty($configArray['ReCaptcha']['privateKey'])) {
+	if (empty($configArray['ReCaptcha']['privateKey'])){
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
 
-	if(!$recaptchaResponse) {
-		if(!isset($_REQUEST["g-recaptcha-response"])) {
+	if (!$recaptchaResponse){
+		if (!isset($_REQUEST["g-recaptcha-response"])){
 			throw new \DomainException('No reCaptcha response found');
-		} else {
+		}else{
 			$recaptchaResponse = $_REQUEST["g-recaptcha-response"];
 		}
 	}
