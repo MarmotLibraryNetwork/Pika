@@ -180,7 +180,7 @@ class Library extends DB_DataObject {
 	public $accessibilityEmail;
 
 	public $allowPinReset;
-	public $allowForcePinUpdate;
+	public bool $allowForcePinUpdate;
 	public $preventExpiredCardLogin;
 	public $showLibraryHoursAndLocationsLink;
 	public $showLibraryHoursNoticeOnAccountPages;

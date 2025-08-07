@@ -729,14 +729,14 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 					$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
 					if (empty($varField)){
 						$library = $patron->getHomeLibrary();
-						if ($library->allowforcePinUpdate){
+						if ($library->allowForcePinUpdate){
 							$patron->pinUpdateRequired = true;
 						}
 					}else{
 						$lastPinUpdateTimeInILS = (reset($varField))->content;
 						if (empty($lastPinUpdateTimeInILS)){
 							$library = $patron->getHomeLibrary();
-							if ($library->allowforcePinUpdate){
+							if ($library->allowForcePinUpdate){
 								$patron->pinUpdateRequired = true;
 							}
 						}
@@ -1056,7 +1056,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	function setPatronPinSetTimeInILS(User $patron){
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			$library = $patron->getHomeLibrary();
-			if ($library->allowforcePinUpdate){
+			if ($library->allowForcePinUpdate){
 				$params['varFields'] = [(object)[
 					'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
 					'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
@@ -1104,7 +1104,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$params    = ['pin' => $newPin];
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			$library = $patron->getHomeLibrary();
-			if ($library->allowforcePinUpdate){
+			if ($library->allowForcePinUpdate){
 				// Taken from setPatronPinSetTimeInILS()
 				// Set the patron pin set time in the same call
 				$params['varFields'] = [(object)[
@@ -1163,7 +1163,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$params    = ['pin' => (string)$newPin];
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 			$library = $patron->getHomeLibrary();
-			if ($library->allowforcePinUpdate){
+			if ($library->allowForcePinUpdate){
 				// Taken from setPatronPinSetTimeInILS()
 				// Set the patron pin set time in the same call
 				$params['varFields'] = [(object)[
@@ -1454,7 +1454,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		// Set Pin set time
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-			if ($library->allowforcePinUpdate){
+			if ($library->allowForcePinUpdate){
 				// Have to do have the extra params ($extraSelfRegParams) merging above since there can be more than one varFields
 				// to add to self reg users
 				$params['varFields'][] = [
