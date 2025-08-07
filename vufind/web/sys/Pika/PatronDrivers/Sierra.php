@@ -515,9 +515,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				$patron->lastname  = $lastName;
 				// empty display name so it will reset to new name
 				$patron->displayName = '';
-			}// Check email
-			// email is returned as array from sierra api
-			if ((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email){
+			}
+			// Check email, email is returned as array from sierra api
+			if (!empty($pInfo->emails) && $pInfo->emails[0] != $patron->email){
 				$updatePatron  = true;
 				$patron->email = $pInfo->emails[0];
 			}elseif ((empty($pInfo->emails) || !isset($pInfo->emails))){
@@ -528,7 +528,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			// home locations
 			if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
 				$updatePatron = true;
-			}// things not stored in database so don't need to check for updates but do need to add to object.
+			}
+
+			// things not stored in database so don't need to check for updates but do need to add to object.
 			// alt username
 			// this is used on sites allowing username login.
 			if ($this->hasUsernameField()){
@@ -764,6 +766,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 						// Error is pear error
 						$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
 						return $patron->_lastError;
+						//TODO: explain why error message is being returned; what handles the error message?
 					}
 				}
 			}// if this is a new user we won't cache -- will happen on next getPatron call
