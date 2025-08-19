@@ -64,7 +64,10 @@ public class NYTList implements IProcessHandler {
 				long documentsInIndex = Long.parseLong(documentCount);
 				Long indexCountLevel  = systemVariables.getLongValuedVariable("solr_grouped_minimum_number_records");
 				if (indexCountLevel == null){
-					logger.error("No system variable 'solr_grouped_minimum_number_records' found.");
+					String message = "No system variable 'solr_grouped_minimum_number_records' found.";
+					logger.error(message);
+					processEntry.addNote(message);
+					processEntry.incErrors();
 				} else if ((indexCountLevel - documentsInIndex) > 10000) {
 					final String message = "Index document count is more than 10,000 below solr_grouped_minimum_number_records : " + documentsInIndex;
 					logger.error(message);
@@ -75,7 +78,9 @@ public class NYTList implements IProcessHandler {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Cannot reach Solr server or server down", e);
+			String message = "Cannot reach Solr server or server down";
+			logger.error(message, e);
+			processEntry.addNote(message);
 			processEntry.incErrors();
 		}
 		return false;
@@ -117,7 +122,7 @@ public class NYTList implements IProcessHandler {
 					}
 					processEntry.saveToDatabase(pikaConn, logger);
 				} catch (Exception e){
-					logger.error("Error trying to update NY Times list " + encoded_list_name, e);
+					logger.error("Error trying to update NY Times list {}", encoded_list_name, e);
 					processEntry.incErrors();
 					// Caught exception, now try to build other lists
 				}
@@ -134,11 +139,11 @@ public class NYTList implements IProcessHandler {
 		if (!resultStr.isEmpty() && updateStr.charAt(0) != '{'){
 			String[] split     = resultStr.split("\\{", 2);
 			if (split.length < 2) {
-				logger.info("Response did not begin with { and did not contain { : '" + resultStr + "'");
+				logger.info("Response did not begin with { and did not contain { : '{}'", resultStr);
 			} else {
 				String phpNotice = split[0];
 				resultStr = "{" + split[1];
-				logger.info("PHP notice from API call: " + phpNotice);
+				logger.info("PHP notice from API call: {}", phpNotice);
 			}
 		}
 		return resultStr;
