@@ -185,8 +185,8 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 		String format    = "online_resource";
 		String bibFormat = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 		//Load the eContent Format from the sierra Bcode2  (format)
-		// Flatirons' export profile labels this Format (bcode2).
-		// However the API uses the same fixed field for MatType for this, so we will also
+		// Flatirons' export profile labels this Format (bCode2).
+		// However, the API uses the same fixed field for MatType for this, so we will also
 		bibFormat = (bibFormat == null) ? "" : bibFormat.trim();
 		switch (bibFormat) {
 			case "3":
@@ -228,7 +228,6 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 						}
 					} else {
 						logger.warn("MLN2 ils eContent record with eContent item w/o call number {}, item {}", econtentRecord.getRecordIdentifier(), econtentItem.getItemIdentifier());
-						//TODO: format value
 					}
 				} else {
 					logger.warn("MLN2 ILS eContent Record w/o a valid bcode2 format value {}; Resorting to eBook", bibFormat);
@@ -239,8 +238,17 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 		String translatedFormat         = translateValue("format", format, econtentRecord.getRecordIdentifier());
 		String translatedFormatCategory = translateValue("format_category", format, econtentRecord.getRecordIdentifier());
 		String translatedFormatBoost    = translateValue("format_boost", format, econtentRecord.getRecordIdentifier());
-		econtentItem.setFormat(translatedFormat);
-		econtentItem.setFormatCategory(translatedFormatCategory);
+		if (econtentItem != null) {
+			econtentItem.setFormat(translatedFormat);
+			econtentItem.setFormatCategory(translatedFormatCategory);
+		}
+		else {
+			//TODO: previously didn't not have an if-block checking the econtent item. Does this block come into effect?
+			// If so, does the bib need format determination from here?
+			logger.info("Itemless ILS eContent Record {}, Does it need a format?", econtentRecord.getRecordIdentifier());
+			//econtentRecord.addFormat(translatedFormat);
+			//econtentRecord.addFormatCategory(translatedFormatCategory);
+		}
 		try {
 			econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
 		} catch (NumberFormatException e) {
