@@ -4,7 +4,7 @@
 			<div class="col-tn-12">
 		<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 		{if $twitterLink}
-			<a href="{$twitterLink}" class="connect-icon" title="Contact the library on X (twitter)"><img src="{img filename='twitter.png'}" alt="Contact the library on Twitter" class="img-rounded"></a>
+			<a href="{$twitterLink}" class="connect-icon" title="Contact the library on X (twitter)"><img src="{img filename='x.png'}" alt="Contact the library on X" class="img-rounded"></a>
 		{/if}
 		{if $facebookLink}
 			<a href="{$facebookLink}" class="connect-icon" title="Contact the library on facebook"><img src="{img filename='facebook.png'}" alt="Contact the library on Facebook" class="img-rounded"></a>

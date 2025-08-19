@@ -109,9 +109,9 @@
 															</a>
 																</li>
 																<li>
-																	<a href="https://twitter.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
-																 target="_blank" title="Share on Twitter">
-																<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
+																	<a href="https://x.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
+																 target="_blank" title="Share on X">
+																<img class="x-twit" src="{img filename='X-icon.png'}" alt="Share on X">
 															</a>
 																</li>
 																<li>

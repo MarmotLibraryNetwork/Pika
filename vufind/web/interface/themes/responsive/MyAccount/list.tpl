@@ -99,6 +99,7 @@
 					{/if}
 					<div class="btn-group">
 						{if $favList->public !=0 && $allowEdit == 0}
+							{* Public lists not owned by the user; or user is logged out *}
 
 							<div class="btn-toolbar">
 
