@@ -226,7 +226,13 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 						} else if (econtentItem.getCallNumber().contains("OH")) {
 							format = "Oral History";
 						}
+					} else {
+						logger.warn("MLN2 ils eContent record with eContent item w/o call number {}, item {}", econtentRecord.getRecordIdentifier(), econtentItem.getItemIdentifier());
+						//TODO: format value
 					}
+				} else {
+					logger.warn("MLN2 ILS eContent Record w/o a valid bcode2 format value {}; Resorting to eBook", bibFormat);
+					format = "eBook";
 				}
 		}
 
