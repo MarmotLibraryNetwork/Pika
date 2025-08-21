@@ -327,7 +327,7 @@ class OverDrive_AJAX extends AJAXHandler {
 					return [
 						'title'   => $promptTitle,
 						'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
-						'buttons' =>  $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-buttons.tpl'),
+						'buttons' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-buttons.tpl'),
 //						'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . $title . '" onclick="$(\'#overdriveFreezeHoldPromptsForm\').submit(); return false;">',
 					];
 				}

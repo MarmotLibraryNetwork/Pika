@@ -17,11 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Help/Home.php';
-require_once ROOT_DIR . '/services/Help/AJAX.php';
-require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/Action.php';
 
-use Action;
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class OverDrivePurchaseRequest extends Action {
@@ -32,6 +29,6 @@ class OverDrivePurchaseRequest extends Action {
 			$captchaCode = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
-		$this->display('overdrivePurchaseForm.tpl', 'Request OverDrive Purchase');
+		$this->display('overdrivePurchaseRequest.tpl', 'Request OverDrive Purchase');
 	}
 }

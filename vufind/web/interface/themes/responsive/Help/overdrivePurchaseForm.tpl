@@ -1,7 +1,7 @@
 <h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 <div class="col-tn-12">
 	<div class="alert alert-info">
-		Can't find what you are looking for in OverDrive? Please fill out this form to suggest a purchase.
+		Can't find the title you're looking for in OverDrive or Libby? Please fill out this form to suggest that your library purchases your desired title for the OverDrive collection. All fields marked <span class="required-input">*</span> are required.
 	</div>
 	<form id="overdrivePurchaseRequest" action="/Help/OverDrivePurchaseRequest" method="post">
 		<input type="hidden" name="submit" value="submitted">
@@ -14,7 +14,7 @@
 		{else}
 			<div class="form-group">
 				<label for="libraryCardNumber" class="control-label">Library Card Number: <span class="required-input">*</span></label>
-				<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" disabled="true" aria-disabled="true" size="20" value="{$user->barcode}">
+				<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" disabled="disabled" aria-disabled="true" size="20" value="{$user->barcode}">
 				<input type="hidden" name="homeLibrary" value="{$user->homeLocation}">
 			</div>
 		{/if}
@@ -35,14 +35,15 @@
 			<select id="format" name="format" class="form-control required" aria-required="true">
 				{if empty($formats) || count($formats) > 1}
 					{* Only show the default option if there are multiples to select. Or no formats set. *}
-					<option value="na">-Select a Format-</option>
+					<option value="na">- Select a Format -</option>
 				{/if}
 				{foreach from="$formats" item="formatName" key="formatTextId"}
 					<option value="{$formatTextId}">{$formatName}</option>
 					{foreachelse}
 					<option value="audiobook">Audiobook</option>
 					<option value="ebook">eBook</option>
-					<option value="emagazine">eMagazine</option>
+{*					<option value="ecomic">eComic (Graphic Novel)</option>*}
+{*					<option value="emagazine">eMagazine</option>*}
 					<option value="any">Any Format</option>
 				{/foreach}
 			</select>
