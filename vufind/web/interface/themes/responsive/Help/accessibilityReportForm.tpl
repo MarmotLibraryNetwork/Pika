@@ -1,7 +1,7 @@
 <h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 <div class="col-tn-12">
 	<div class="alert alert-info">
-		Need help with accessibility concerns? Please fill out the accessibility report form.
+		Need help with accessibility concerns? Please fill out the accessibility report form. All fields marked <span class="required-input">*</span> are required.
 	</div>
 	<form id="accessibilityReport" action="/Help/accessibilityReportForm" method="post">
 		<input type="hidden" name="submit" value="submitted">
@@ -20,7 +20,7 @@
 		</div>
 
 		<div class="form-group">
-			<label for="report" class="control-label">Please describe your issue: <span class="required-input">*</span></label><br>
+			<label for="report" class="control-label">Please describe your web accessibility issue: <span class="required-input">*</span></label><br>
 			<textarea rows="10" cols="40" name="report" id="report" aria-required="true" class="form-control required"></textarea>
 		</div>
       {if $captcha}
