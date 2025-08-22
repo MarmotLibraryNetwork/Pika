@@ -97,6 +97,7 @@ public class ItemInfo {
 	}
 
 	void seteContentUrl(String eContentUrl) {
+		// TODO: can be external online reservation links for physical items
 		this.eContentUrl = eContentUrl;
 	}
 

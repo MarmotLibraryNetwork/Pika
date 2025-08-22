@@ -1107,7 +1107,7 @@ abstract class MarcRecordProcessor {
 				//Try to determine if this is a resource or not.
 				if (isLikelyEContentUrl(urlField)){
 					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
-						logger.info("Related link used for access link for " + identifier);
+						logger.info("Related link used for access link for {}",  identifier);
 						// Log some examples so we can verify the exclusion below
 					}
 					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());

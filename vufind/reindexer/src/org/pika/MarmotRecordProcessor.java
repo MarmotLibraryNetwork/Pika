@@ -83,7 +83,7 @@ class MarmotRecordProcessor extends SierraRecordProcessor {
 								// Skip Hoopla and Overdrive items
 								String source;
 								if (eContentData.indexOf(':') >= 0) {
-									//The econtent field used to require multiple parts separated by a colon; this in now longer required,
+									//The eContent field used to require multiple parts separated by a colon; this in now longer required,
 									//But this will take the source from data that still has the other pieces
 									String[] eContentFields = eContentData.split(":");
 									source = eContentFields[0].trim().toLowerCase();

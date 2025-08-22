@@ -96,6 +96,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char    volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
+	private boolean isItemUrlSubfieldSet = false;
 	boolean suppressItemlessBibs;
 
 	private int numCharsToCreateFolderFrom;
@@ -172,6 +173,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
+			if (itemUrlSubfieldIndicator != ' '){
+				isItemUrlSubfieldSet = true;
+			}
 
 			formatSource              = indexingProfileRS.getString("formatSource");
 			formatDeterminationMethod = indexingProfileRS.getString("formatDeterminationMethod");
@@ -775,6 +779,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				} catch (Exception e) {
 					logger.warn("Could not get boost for format {}", format);
 				}
+			}
+		}
+
+		// Check for Online Reservation URLs for physical items
+		if (isItemUrlSubfieldSet){
+			Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
+			if (urlSubfield != null) {
+				//Item-level 856 (Gets exported into the itemUrlSubfield)
+				itemInfo.seteContentUrl(urlSubfield.getData().trim());
+				//TODO: rename method to setURL() to neutral now about what type of URL it is
 			}
 		}
 
