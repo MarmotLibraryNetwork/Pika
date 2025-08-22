@@ -42,7 +42,7 @@ public class ItemInfo {
 	private String     IType;
 	private String     ITypeCode;
 	private String     eContentSource;
-	private String     eContentUrl;
+	private String     itemUrl;
 	private String     statusCode;
 	private String     detailedStatus;
 	private String     isHoldableCode;
@@ -92,13 +92,14 @@ public class ItemInfo {
 		this.locationCode = locationCode;
 	}
 
-	String geteContentUrl() {
-		return eContentUrl;
+	String getItemUrl() {
+		return itemUrl;
 	}
 
-	void seteContentUrl(String eContentUrl) {
-		// TODO: can be external online reservation links for physical items
-		this.eContentUrl = eContentUrl;
+	void setItemUrl(String itemUrl) {
+		// This can eContent URL for ILS eContent items;
+		// or external online reservation links for physical items
+		this.itemUrl = itemUrl;
 	}
 
 	String getItemIdentifier() {
@@ -191,7 +192,7 @@ public class ItemInfo {
 							(isOrderItem ? "1" : "0") + "|" +                          // 7
 							(isEContent ? "1" : "0") + "|" +                           // 8
 							Util.getCleanDetailValue(eContentSource) + "|" +           // 9
-							Util.getCleanDetailValue(eContentUrl) + "|" +              // 10
+							Util.getCleanDetailValue(itemUrl) + "|" +                  // 10
 							Util.getCleanDetailValue(detailedStatus) + "|" +           // 11
 							Util.getCleanDetailValue(formattedLastCheckinDate) + "|" + // 12
 							Util.getCleanDetailValue(locationCode);                    // 13

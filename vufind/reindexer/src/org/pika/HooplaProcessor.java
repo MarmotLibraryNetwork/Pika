@@ -414,7 +414,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
 		//Figure out ownership information
 		for (Scope curScope : indexer.getScopes()) {
-			String                originalUrl = itemInfo.geteContentUrl();
+			String                originalUrl = itemInfo.getItemUrl();
 			Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 			if (result.isIncluded) {
 

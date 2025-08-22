@@ -101,11 +101,11 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 
 						//Check the 856 tag to see if there is a link there
 						loadEContentUrl(record, itemInfo, identifier);
-						String url = itemInfo.geteContentUrl();
+						String url = itemInfo.getItemUrl();
 						if (url == null) {
 							//possibly not a good url to use if loadEContentUrl() didn't return something
 							url = isRecordEContent.getUrl();
-							itemInfo.seteContentUrl(url);
+							itemInfo.setItemUrl(url);
 						}
 
 						//Determine eContent Source

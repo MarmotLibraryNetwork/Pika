@@ -256,7 +256,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
 				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
-				itemInfo.seteContentUrl(url);
+				itemInfo.setItemUrl(url);
 
 				//Set the format based on the material type
 				itemInfo.setFormat(translateValue("format", matType, identifier));

@@ -1088,13 +1088,13 @@ abstract class MarcRecordProcessor {
 			if (urlField.getIndicator2() == '0') {
 				// 2nd indicator of 0 is meant to be the resource
 				if (urlField.getSubfield('u') != null) {
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			} else if (urlField.getIndicator2() == ' ' && isLikelyEContentUrl(urlField)) {
 				// empty 2nd indicator might be the resource
 				if (urlField.getSubfield('u') != null) {
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			}
@@ -1110,7 +1110,7 @@ abstract class MarcRecordProcessor {
 						logger.info("Related link used for access link for {}",  identifier);
 						// Log some examples so we can verify the exclusion below
 					}
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			}
