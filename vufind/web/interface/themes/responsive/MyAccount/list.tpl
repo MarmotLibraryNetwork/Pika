@@ -129,17 +129,17 @@
 													</a>
 												</li>
 												<li>
-													<a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on X">
-														<img src="{img filename='x-icon.png'}" alt="Share on X">
-													</a>
-												</li>
-												<li>
 													<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
 														<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 													</a>
 												</li>
 												<li>
 													{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
+												</li>
+												<li>
+													<a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on X">
+														<img class="x-twit" src="{img filename='x-icon.png'}" alt="Share on X">
+													</a>
 												</li>
 											{/if}
 										</ul>
