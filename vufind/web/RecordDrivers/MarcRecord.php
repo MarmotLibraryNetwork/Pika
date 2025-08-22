@@ -1396,6 +1396,7 @@ class MarcRecord extends IndexRecord {
 		}
 
 		//Special Item-less Print Record Actions with url links, like KitKeeper Records
+		// Also regular print items with external reservation URLs
 		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
 			//TODO: not sure what the best check is at this point
 			// not-holdable might be good; maybe better than is available
