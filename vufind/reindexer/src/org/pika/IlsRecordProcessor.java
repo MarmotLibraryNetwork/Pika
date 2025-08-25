@@ -235,6 +235,20 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			useEContentSubfield              = eContentSubfieldIndicator != ' ';
 			doAutomaticEcontentSuppression   = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
 
+			if (dateAddedFormat != null && !dateAddedFormat.isEmpty()){
+				dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
+			} else {
+				logger.error("No Date Added Format in indexing profile");
+				//TODO: this probably should be a fatal error, since dateAdded appears to be necessary
+			}
+
+			if (lastCheckInFormat != null && !lastCheckInFormat.isEmpty()){
+				lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
+				lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+				// Assume last check in dates are set in zulu time.
+				// This is needed for timeToReshelve intervals to be calculated correctly
+			}
+
 			loadTranslationMapsForProfile(pikaConn, indexingProfileRS.getLong("id"));
 			formatDetermination = new FormatDetermination(indexingProfileRS, translationMaps, logger);
 
@@ -681,9 +695,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && !dateAddedStr.isEmpty()) {
 			try {
-				if (dateAddedFormatter == null){
-					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
-				}
+//				if (dateAddedFormatter == null){
+//					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
+//				}
 				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
 				itemInfo.setDateAdded(dateAdded);
 			} catch (ParseException e) {
@@ -696,15 +710,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private SimpleDateFormat lastCheckInFormatter = null;
 
 	void getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
-		if (dateAddedFormatter == null){
-			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
-		}
-		if (lastCheckInFormatter == null && lastCheckInFormat != null && !lastCheckInFormat.isEmpty()){
-			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
-			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			// Assume last check in dates are set in zulu time.
-			// This is needed for timeToReshelve intervals to be calculated correctly
-		}
+//		if (dateAddedFormatter == null){
+//			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
+//		}
+//		if (lastCheckInFormatter == null && lastCheckInFormat != null && !lastCheckInFormat.isEmpty()){
+//			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
+//			lastCheckInFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+//			// Assume last check in dates are set in zulu time.
+//			// This is needed for timeToReshelve intervals to be calculated correctly
+//		}
 		ItemInfo itemInfo = new ItemInfo();
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
