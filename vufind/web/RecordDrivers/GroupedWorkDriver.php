@@ -3061,7 +3061,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}else{
 					$relatedUrls[] = [
 						'source' => $curItem->eContentSource,
-						'url'    => $curItem->eContentUrl
+						'url'    => $curItem->itemUrl
 					];
 				}
 
@@ -3070,10 +3070,10 @@ class GroupedWorkDriver extends RecordInterface {
 				if (!$forCovers){
 					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
-			}elseif (!empty($curItem->eContentUrl)){
+			}elseif (!empty($curItem->itemUrl)){
 				// Special Physical Records, like KitKeeper
 				$relatedUrls[] = [
-					'url' => $curItem->eContentUrl
+					'url' => $curItem->itemUrl
 				];
 			}
 
