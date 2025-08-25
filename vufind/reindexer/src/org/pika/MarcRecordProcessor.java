@@ -63,9 +63,9 @@ abstract class MarcRecordProcessor {
 				case "600": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -89,9 +89,9 @@ abstract class MarcRecordProcessor {
 				case "610": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -115,9 +115,9 @@ abstract class MarcRecordProcessor {
 				case "611": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "bijmow".indexOf(curSubfieldCode) == -1) { // any letter but b, i, j, m, o, or w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -141,9 +141,9 @@ abstract class MarcRecordProcessor {
 				case "630": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "cdeijqw".indexOf(curSubfieldCode) == -1) { // any letter but b, c, d, e, i, j, m, o, or w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -165,18 +165,22 @@ abstract class MarcRecordProcessor {
 					break;
 				}
 				case "648": {
-					String curSubject = "";
+					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'a' || curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
+						char curSubfieldCode = curSubfield.getCode();
+						if ("axvyz".indexOf(curSubfieldCode) >= 0) {
+							String curSubfieldData = curSubfield.getData().trim();
+							if (curSubject.length() > 0) curSubject.append(" -- ");
+							curSubject.append(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'a' || curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					if (curSubject.length() > 0) {
@@ -199,9 +203,9 @@ abstract class MarcRecordProcessor {
 					}
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ("abcdevxyz".indexOf(curSubfieldCode) >= 0) {
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -309,7 +313,6 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		groupedWork.addSubjects(subjects);
-
 	}
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier, String format, boolean loadedNovelistSeries) {
