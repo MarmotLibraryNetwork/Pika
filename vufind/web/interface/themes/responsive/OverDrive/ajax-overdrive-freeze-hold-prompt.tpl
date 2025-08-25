@@ -24,7 +24,8 @@ $(function(){
 	});
 	$( "#thawDate" ).datepicker({
 		format: "mm-dd-yyyy",
-		startDate: Date(),
+		startDate: "0",
+		endDate: "+365d"
 	});
 });
 {/literal}
