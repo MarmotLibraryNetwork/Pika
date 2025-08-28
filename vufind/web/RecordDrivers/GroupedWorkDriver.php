@@ -3050,7 +3050,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			//Update the record with information from the item and from scoping.
+			// Update the record with information from the item and from scoping.
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
 				if (!empty($scopingDetails->localUrl)){
@@ -3071,7 +3071,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
 			}elseif (!empty($curItem->itemUrl)){
-				// Special Physical Records, like KitKeeper
+				// Special Physical Records, like KitKeeper, that link to an external reservation system
 				$relatedUrls[] = [
 					'url' => $curItem->itemUrl
 				];
