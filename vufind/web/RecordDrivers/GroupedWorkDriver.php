@@ -3075,6 +3075,9 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedUrls[] = [
 					'url' => $curItem->itemUrl
 				];
+				if (!$holdable & $available /*&& $status == 'On Shelf'*/){
+					$status = translate('Available for Reservation');
+				}
 			}
 
 			$displayByDefault = false;
