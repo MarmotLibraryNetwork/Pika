@@ -18,6 +18,8 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/services/Help/AJAX.php';
 
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
