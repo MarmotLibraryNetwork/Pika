@@ -611,6 +611,7 @@ public class FormatDetermination {
 		}
 
 		List<DataField> physicalDescriptions = record.getDataFields("300");
+		int formats = printFormats.size();
 		for (DataField physicalDescription : physicalDescriptions) {
 			if (physicalDescription != null) {
 				if (physicalDescription.getSubfield('e') != null) {
@@ -652,6 +653,10 @@ public class FormatDetermination {
 					}
 				}
 			}
+		}
+		if (printFormats.size() > formats + 1) {
+			logger.warn("More than one accompany material determination present : " + String.join(",", printFormats));
+
 		}
 	}
 
@@ -807,6 +812,8 @@ public class FormatDetermination {
 			printFormats.remove("CompactDisc");
 		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
+			//TODO: I wonder if this happens?
+			logger.info("Found music recording + CD in filter print formats");
 			if (printFormats.contains("DVD")) {
 				// Probable Accompanying Material
 				printFormats.clear();

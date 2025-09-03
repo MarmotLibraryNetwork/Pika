@@ -1301,10 +1301,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				return true;
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
-				if (iTypesToSuppressPattern.matcher(iType).matches()){
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to Itype " + iType);
-					}
+				if (iTypesToSuppressPattern.matcher(iType).matches()) {
+					logger.debug("Item record is suppressed due to Itype {}", iType);
 					return true;
 				}
 			}
@@ -1362,7 +1360,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		String translatedValue;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + indexingProfileSource);
+			logger.error("Unable to find translation map for {} in profile {}", mapName, indexingProfileSource);
 			translatedValue = value;
 		}else{
 			translatedValue = translationMap.translateValue(value, identifier, reportErrors);
@@ -1374,7 +1372,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + indexingProfileSource);
+			logger.error("Unable to find translation map for {} in profile {}", mapName, indexingProfileSource);
 //			if (values instanceof HashSet){
 //				translatedValues = (HashSet<String>)values;
 //			}else{
