@@ -221,7 +221,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$publishers = $this->getPublishers();
 		$pubDates   = $this->getPublicationDates();
 		//$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors'  => $authors,
 			'title'    => $this->getTitleShort(),
 			'subtitle' => $this->getSubtitle(),
@@ -230,7 +230,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'pubDate'  => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition'  => $this->getEdition(),
 			'format'   => $this->getFormats()
-		);
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -2669,7 +2669,8 @@ class GroupedWorkDriver extends RecordInterface {
 		'Library Use Only'      => 9,
 		'Available Online'      => 10,
 		'In Transit'            => 11,
-		'On Shelf'              => 12,
+		'On Display'            => 12,
+		'On Shelf'              => 13,
 	];
 
 	/**
@@ -3049,7 +3050,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 
-			//Update the record with information from the item and from scoping.
+			// Update the record with information from the item and from scoping.
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
 				if (!empty($scopingDetails->localUrl)){
@@ -3060,7 +3061,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}else{
 					$relatedUrls[] = [
 						'source' => $curItem->eContentSource,
-						'url'    => $curItem->eContentUrl
+						'url'    => $curItem->itemUrl
 					];
 				}
 
@@ -3069,11 +3070,14 @@ class GroupedWorkDriver extends RecordInterface {
 				if (!$forCovers){
 					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
-			}elseif (!empty($curItem->eContentUrl)){
-				// Special Physical Records, like KitKeeper
+			}elseif (!empty($curItem->itemUrl)){
+				// Special Physical Records, like KitKeeper, that link to an external reservation system
 				$relatedUrls[] = [
-					'url' => $curItem->eContentUrl
+					'url' => $curItem->itemUrl
 				];
+				if (!$holdable & $available /*&& $status == 'On Shelf'*/){
+					$status = translate('Available for Reservation');
+				}
 			}
 
 			$displayByDefault = false;

@@ -146,7 +146,7 @@ function getIndexingUpdates(): array{
 		'2025.02.0_add_4k_blu_ray_combo' => [
 			'release'         => '2025.02.0',
 			'title'           => 'Add Blu-Ray/4K Ultra HD Blu-Ray Combo Pack Format',
-			'description'     => 'Add Blu-Ray/4K Ultra HD Blu-Ray Combo Combo to translation maps',
+			'description'     => 'Add Blu-Ray/4K Ultra HD Blu-Ray Combo to translation maps',
 			'continueOnError' => true,
 			'sql'             => [
 				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
@@ -158,6 +158,24 @@ function getIndexingUpdates(): array{
 					'Blu-ray4KCombo', 'Movies')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 					'Blu-ray4KCombo', '12')"
+			],
+		],
+
+		'2025.03.0_add_nintendo_switch2' => [
+			'release'         => '2025.03.0',
+			'title'           => 'Add Nintendo Switch 2 Format',
+			'description'     => 'Add Nintendo Switch 2 to translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES 
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'NintendoSwitch2', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'NintendoSwitch2', 'Nintendo Switch 2')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'NintendoSwitch2', 'Video Games')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'NintendoSwitch2', '4')"
 			],
 		],
 

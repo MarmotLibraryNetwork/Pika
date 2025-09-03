@@ -277,7 +277,7 @@ class IndexingProfile extends DB_DataObject{
 					'opacMessage'         => ['property' => 'opacMessage', 'type' => 'text', 'label' => 'Opac Message Field (Sierra Only)', 'maxLength' => 1, 'description' => 'Subfield for Sierra Opac Message field'],
 					'format'              => ['property' => 'format', 'type' => 'text', 'label' => 'Format subfield', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information', 'changeRequiresReindexing' => true],
 					'iType'               => ['property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType', 'changeRequiresReindexing' => true],
-					'eContentDescriptor'  => ['property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)', 'changeRequiresReindexing' => true],
+					'eContentDescriptor'  => ['property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor(MLN1 Only)', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)', 'changeRequiresReindexing' => true],
 					'itemUrl'             => ['property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)', 'changeRequiresReindexing' => true],
 				]],
 

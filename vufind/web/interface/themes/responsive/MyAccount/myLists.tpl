@@ -100,29 +100,34 @@
 															<ul aria-labelledby="share-list-tools-label-{$myList.id}" class="share-tools-list list-inline">
 																<li>
 																	<a href="#" onclick="return Pika.Lists.emailListAction({$myList.id})" title="share via e-mail">
-																<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
-															</a>
+																		<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
+																	</a>
 																</li>
 																<li>
 																	<a href="#" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
-																<img src="{img filename='excel.png'}" alt="Export to Excel">
-															</a>
+																		<img src="{img filename='excel.png'}" alt="Export to Excel">
+																	</a>
 																</li>
-																<li>
-																	<a href="https://twitter.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
-																 target="_blank" title="Share on Twitter">
-																<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
-															</a>
-																</li>
-																<li>
-																	<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$myList.id}"
-																 target="_blank" title="Share on Facebook">
-																<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
-															</a>
-																</li>
-																<li>
-																	{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl=$url|cat:"/bookcover.php?id="|cat:$myList.id|cat:"&size=medium&type=userList"}
-																</li>
+																{if $showShareOnExternalSites}
+																	<li>
+																		<a href="https://bsky.app/intent/compose?text={$myList.name|escape:"html"}%20{$url|escape:"html"}/MyAccount/MyList/{$myList.id}" target="_blank" title="Share on Bluesky">
+																			{include file="images/bluesky-svg.tpl"}
+																		</a>
+																	</li>
+																	<li>
+																		<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$myList.id}" target="_blank" title="Share on Facebook">
+																			<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
+																		</a>
+																	</li>
+																	<li>
+																		{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl=$url|cat:"/bookcover.php?id="|cat:$myList.id|cat:"&size=medium&type=userList"}
+																	</li>
+																	<li>
+																		<a href="https://x.com/compose/tweet?text={$myList.name|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList.id}" target="_blank" title="Share on X">
+																			<img class="x-twit" src="{img filename='x-icon.png'}" alt="Share on X">
+																		</a>
+																	</li>
+																{/if}
 															</ul>
 														</div>
 													</div>

@@ -515,9 +515,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				$patron->lastname  = $lastName;
 				// empty display name so it will reset to new name
 				$patron->displayName = '';
-			}// Check email
-			// email is returned as array from sierra api
-			if ((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email){
+			}
+			// Check email, email is returned as array from sierra api
+			if (!empty($pInfo->emails) && $pInfo->emails[0] != $patron->email){
 				$updatePatron  = true;
 				$patron->email = $pInfo->emails[0];
 			}elseif ((empty($pInfo->emails) || !isset($pInfo->emails))){
@@ -528,7 +528,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			// home locations
 			if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
 				$updatePatron = true;
-			}// things not stored in database so don't need to check for updates but do need to add to object.
+			}
+
+			// things not stored in database so don't need to check for updates but do need to add to object.
 			// alt username
 			// this is used on sites allowing username login.
 			if ($this->hasUsernameField()){
@@ -726,11 +728,17 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
 					$varField = $this->_getVarField($this->configArray['Catalog']['patronPinSetTimeField'], $pInfo->varFields);
 					if (empty($varField)){
-						$patron->pinUpdateRequired = true;
+						$library = $patron->getHomeLibrary();
+						if ($library->allowForcePinUpdate){
+							$patron->pinUpdateRequired = true;
+						}
 					}else{
 						$lastPinUpdateTimeInILS = (reset($varField))->content;
 						if (empty($lastPinUpdateTimeInILS)){
-							$patron->pinUpdateRequired = true;
+							$library = $patron->getHomeLibrary();
+							if ($library->allowForcePinUpdate){
+								$patron->pinUpdateRequired = true;
+							}
 						}
 					}
 				}
@@ -758,6 +766,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 						// Error is pear error
 						$this->logger->error("Error updating user $patron->id : " . $patron->_lastError->getUserInfo());
 						return $patron->_lastError;
+						//TODO: explain why error message is being returned; what handles the error message?
 					}
 				}
 			}// if this is a new user we won't cache -- will happen on next getPatron call
@@ -1046,16 +1055,19 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 	function setPatronPinSetTimeInILS(User $patron){
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-			$params['varFields'] = [(object)[
-				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
-			];
-			$operation           = 'patrons/' . $patron->ilsUserId;
-			$r                   = $this->_doRequest($operation, $params, 'PUT');
-			if (!$r){
-				$this->logger->error('Unable to set patron pin set time in Sierra for user ' . $patron->ilsUserId, ["message" => $this->apiLastError]);
-				$errors[] = 'An error occurred. Please try in again later.';
-				return false;
+			$library = $patron->getHomeLibrary();
+			if ($library->allowForcePinUpdate){
+				$params['varFields'] = [(object)[
+					'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+					'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
+				];
+				$operation           = 'patrons/' . $patron->ilsUserId;
+				$r                   = $this->_doRequest($operation, $params, 'PUT');
+				if (!$r){
+					$this->logger->error('Unable to set patron pin set time in Sierra for user ' . $patron->ilsUserId, ["message" => $this->apiLastError]);
+					$errors[] = 'An error occurred. Please try in again later.';
+					return false;
+				}
 			}
 		}
 		return true;
@@ -1091,12 +1103,15 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => $newPin];
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-			// Taken from setPatronPinSetTimeInILS()
-			// Set the patron pin set time in the same call
-			$params['varFields'] = [(object)[
-				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => 'Patron set in Pika on ' .  date('Y-m-d H:i:s')]
-			];
+			$library = $patron->getHomeLibrary();
+			if ($library->allowForcePinUpdate){
+				// Taken from setPatronPinSetTimeInILS()
+				// Set the patron pin set time in the same call
+				$params['varFields'] = [(object)[
+					'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+					'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
+				];
+			}
 		}
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
@@ -1147,12 +1162,15 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		$operation = 'patrons/' . $patronId;
 		$params    = ['pin' => (string)$newPin];
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-			// Taken from setPatronPinSetTimeInILS()
-			// Set the patron pin set time in the same call
-			$params['varFields'] = [(object)[
-				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
-			];
+			$library = $patron->getHomeLibrary();
+			if ($library->allowForcePinUpdate){
+				// Taken from setPatronPinSetTimeInILS()
+				// Set the patron pin set time in the same call
+				$params['varFields'] = [(object)[
+					'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+					'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')]
+				];
+			}
 		}
 
 		// update sierra first
@@ -1436,12 +1454,14 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		// Set Pin set time
 		if (!empty($this->configArray['Catalog']['patronPinSetTimeField'])){
-			// Have to do have the extra params ($extraSelfRegParams) merging above since there can be more than one varFields
-			// to add to self reg users
-			$params['varFields'][] = [
-				'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
-				'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')
-			];
+			if ($library->allowForcePinUpdate){
+				// Have to do have the extra params ($extraSelfRegParams) merging above since there can be more than one varFields
+				// to add to self reg users
+				$params['varFields'][] = [
+					'fieldTag' => $this->configArray['Catalog']['patronPinSetTimeField'],
+					'content'  => 'Patron set in Pika on ' . date('Y-m-d H:i:s')
+				];
+			}
 		}
 
 		$this->logger->debug('Self registering patron', ['params' => $params]);

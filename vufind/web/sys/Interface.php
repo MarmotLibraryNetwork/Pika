@@ -114,6 +114,9 @@ class UInterface extends Smarty {
 			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
 			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
 		}
+		if (!empty($configArray['Islandora']['debugViewer'])){
+			$this->assign('debugViewer', true);
+		}
 
 		if (isset($configArray['Site']['libraryName'])){
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
@@ -472,6 +475,7 @@ class UInterface extends Smarty {
 			$this->assign('showStandardReviews', $library->showStandardReviews);
 			$this->assign('showSimilarTitles', $library->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
+			$this->assign('archiveOnlyInterface', $library->archiveOnlyInterface);
 
 			if ($library->showLibraryHoursAndLocationsLink){
 				$this->assign('showLibraryHoursAndLocationsLink', true);
@@ -527,6 +531,8 @@ class UInterface extends Smarty {
 			$this->assign('showStaffView', 1);
 			$this->assign('showGoodReadsReviews', 1);
 			$this->assign('showStandardReviews', 1);
+			$this->assign('archiveOnlyInterface', 0);
+
 		}
 
 		// Location-level settings

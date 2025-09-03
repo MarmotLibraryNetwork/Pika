@@ -424,7 +424,7 @@ var Pika = (function(){
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) Pika.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) Pika.showMessage('Request Failed', 'Request failed (network error). Please try again.');
 		},
 
 		toggleHiddenElementWithButton: function(button){

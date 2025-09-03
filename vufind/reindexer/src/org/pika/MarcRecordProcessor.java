@@ -63,9 +63,9 @@ abstract class MarcRecordProcessor {
 				case "600": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -89,9 +89,9 @@ abstract class MarcRecordProcessor {
 				case "610": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -115,9 +115,9 @@ abstract class MarcRecordProcessor {
 				case "611": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "bijmow".indexOf(curSubfieldCode) == -1) { // any letter but b, i, j, m, o, or w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -141,9 +141,9 @@ abstract class MarcRecordProcessor {
 				case "630": {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "cdeijqw".indexOf(curSubfieldCode) == -1) { // any letter but b, c, d, e, i, j, m, o, or w
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -165,18 +165,22 @@ abstract class MarcRecordProcessor {
 					break;
 				}
 				case "648": {
-					String curSubject = "";
+					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'a' || curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
+						char curSubfieldCode = curSubfield.getCode();
+						if ("axvyz".indexOf(curSubfieldCode) >= 0) {
+							String curSubfieldData = curSubfield.getData().trim();
+							if (curSubject.length() > 0) curSubject.append(" -- ");
+							curSubject.append(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'a' || curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					if (curSubject.length() > 0) {
@@ -199,9 +203,9 @@ abstract class MarcRecordProcessor {
 					}
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData().trim();
+						char curSubfieldCode = curSubfield.getCode();
 						if ("abcdevxyz".indexOf(curSubfieldCode) >= 0) {
+							String curSubfieldData = curSubfield.getData().trim();
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
@@ -309,7 +313,6 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		groupedWork.addSubjects(subjects);
-
 	}
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier, String format, boolean loadedNovelistSeries) {
@@ -1088,13 +1091,13 @@ abstract class MarcRecordProcessor {
 			if (urlField.getIndicator2() == '0') {
 				// 2nd indicator of 0 is meant to be the resource
 				if (urlField.getSubfield('u') != null) {
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			} else if (urlField.getIndicator2() == ' ' && isLikelyEContentUrl(urlField)) {
 				// empty 2nd indicator might be the resource
 				if (urlField.getSubfield('u') != null) {
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			}
@@ -1107,10 +1110,10 @@ abstract class MarcRecordProcessor {
 				//Try to determine if this is a resource or not.
 				if (isLikelyEContentUrl(urlField)){
 					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
-						logger.info("Related link used for access link for " + identifier);
+						logger.info("Related link used for access link for {}",  identifier);
 						// Log some examples so we can verify the exclusion below
 					}
-					itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
 					return;
 				}
 			}

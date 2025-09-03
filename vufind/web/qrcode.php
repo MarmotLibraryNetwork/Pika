@@ -19,30 +19,36 @@
 
 require_once 'bootstrap.php';
 use chillerlan\QRCode\{QRCode, QROptions};
-//Create the QR Code if it doesn't exit or we have a reload url parameter
-// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to related record.
-//$type     = $_REQUEST['type'];
-$type     = 'GroupedWork';
-$id       = $_REQUEST['id'];
-//$filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}.png";
-$filename = $configArray['Site']['qrcodePath'] . '/'
-	. str_replace(['.', 'http://', 'https://', '/'], '', $configArray['Site']['url'])
-	."_$id.png";
-// Store images by site urls because they should be different qrcodes depending on which url the
-// generated qrcode is from.
-// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
-if (isset($_REQUEST['reload']) || !file_exists($filename)){
-	$options = new QROptions([
-	 'version'          => 5,
-	 'outputType'       => QRCode::OUTPUT_IMAGE_PNG,
-	 'eccLevel'         => QRCode::ECC_L,
-	 'imageBase64'      => true,
-	 'imageTransparent' => false
-	]);
-// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
-	$data = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
-	$im = (new QRCode($options))->render($data, $filename);
+try {
+	//Create the QR Code if it doesn't exit or we have a reload url parameter
+	// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to related record.
+	//$type     = $_REQUEST['type'];
+	$type = 'GroupedWork';
+	$id   = $_REQUEST['id'];
+	//$filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}
+	global $configArray;
+	$filename = $configArray['Site']['qrcodePath'] . '/'
+		. str_replace(['.', 'http://', 'https://', '/'], '', $configArray['Site']['url'])
+		. "_$id.png";
+	// Store images by site urls because they should be different qrcodes depending on which url the
+	// generated qrcode is from.
+	// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
+	if (isset($_REQUEST['reload']) || !file_exists($filename)){
+		$options = new QROptions([
+			'version'          => 5,
+			'outputType'       => QRCode::OUTPUT_IMAGE_PNG,
+			'eccLevel'         => QRCode::ECC_L,
+			'imageBase64'      => true,
+			'imageTransparent' => false
+		]);
+		// Note: $configArray['Site']['url'] is set to  $_SERVER['SERVER_NAME'] in readConfig()
+		$data = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
+		$im   = (new QRCode($options))->render($data, $filename);
+	}
+	header('Content-type: image/png');
+	readfile($filename);
+	//$timer->writeTimings(); // The $timer destruct() will write out timing messages
+} catch (Exception $ex) {
+	global $pikaLogger;
+	$pikaLogger->error('QRCode generation error : ' . $ex->getMessage());
 }
-header('Content-type: image/png');
-readfile($filename);
-//$timer->writeTimings(); // The $timer destruct() will write out timing messages

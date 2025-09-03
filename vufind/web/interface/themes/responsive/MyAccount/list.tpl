@@ -1,5 +1,3 @@
-{*{strip}*}
-
 {if $params.page}{assign var="pageNum" value=$params.page}{else}{assign var="pageNum" value=1}{/if}
 {if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
 {if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=null}{/if}
@@ -7,6 +5,7 @@
 <a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
 {/if}
 {if isset($favList)}
+	{strip}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			{foreach from=$smarty.get.filter item="filter"}<input type="hidden" name="filter[]" value="{$filter|escape}">{/foreach}
@@ -67,9 +66,16 @@
 								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
 								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
 								<li><a href="#" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
-								{if $favList->public}<li><a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="X Share">Share on X <img class="pull-right x-twit" src="{img filename='x-icon.png'}" alt="Share on X"></a></li>{/if}
-								{if $favList->public}<li><a href="https://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>{/if}
-								{if $favList->public}<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>{/if}
+								{if $favList->public && $showShareOnExternalSites}
+									<li>
+										<a href="https://bsky.app/intent/compose?text={$favList->title|escape:"html"}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank"> Share on Bluesky
+											<span class="pull-right">{include file="images/bluesky-svg.tpl"}</span>
+										</a>
+									</li>
+									<li><a href="https://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>
+									<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>
+									<li><a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="X Share">Share on X <img class="pull-right x-twit" src="{img filename='x-icon.png'}" alt="Share on X"></a></li>
+									{/if}
 							</ul>
 						</div>
 						<div class="btn-group">
@@ -99,15 +105,13 @@
 					{/if}
 					<div class="btn-group">
 						{if $favList->public !=0 && $allowEdit == 0}
+							{* Public lists not owned by the user; or user is logged out *}
 
 							<div class="btn-toolbar">
-
-
 								<div class="btn-group btn-group-sm">
 									<div class="share-tools">
 										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
 										<ul aria-labelledby="share-list-tools-label-{$favList->id}" class="share-tools-list list-inline">
-
 											<li>
 												<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
 													<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
@@ -118,19 +122,26 @@
 													<img src="{img filename='excel.png'}" alt="Export to Excel">
 												</a>
 											</li>
-											<li>
-												<a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
-													<img src="{img filename='x-icon.png'}" alt="Share on X">
-												</a>
-											</li>
-											<li>
-												<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
-											<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
-										</a>
-											</li>
-											<li>
-												{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
-											</li>
+											{if $showShareOnExternalSites}
+												<li>
+													<a href="https://bsky.app/intent/compose?text={$favList->title|urlencode}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Bluesky">
+														{include file="images/bluesky-svg.tpl"}
+													</a>
+												</li>
+												<li>
+													<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
+														<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
+													</a>
+												</li>
+												<li>
+													{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
+												</li>
+												<li>
+													<a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on X">
+														<img class="x-twit" src="{img filename='x-icon.png'}" alt="Share on X">
+													</a>
+												</li>
+											{/if}
 										</ul>
 									</div>
 								</div>
@@ -170,12 +181,13 @@
 							<button value="clearList" id="ClearLists" class="btn btn-sm btn-warning" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize},"{$listSort}");'>Clear List</button>
 							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction({$pageNum}, {$pageSize},"{$listSort}");'>Delete List</button>
 						</div>
-
 					{/if}
+
 				</div>
 			{/if}
 		</div>
 	</form>
+	{/strip}
 
 	{if $favList->deleted == 0}
 		{if $resourceList}
@@ -229,7 +241,7 @@
 				{/foreach}
 			</div>
 
-{if $userSort}
+			{if $userSort}
 				<script>
 					{literal}
 					$(function(){
@@ -307,7 +319,6 @@
 		});
 	</script>
 {/literal}
-{*{/strip}*}
 <script>
 	{literal}
 	// Setup records per page

@@ -45,7 +45,7 @@ class NYTLists extends Admin_Admin {
 
 			//Get the raw response from the API with a list of all the names
 			//Convert into an object that can be processed
-			$availableLists = $nyt_api->getList('names');
+			$availableLists = $nyt_api->getLists();
 
 			$interface->assign('availableLists', $availableLists);
 
@@ -74,7 +74,7 @@ class NYTLists extends Admin_Admin {
 			$catalog              = CatalogFactory::getCatalogConnectionInstance();
 			$nyTimesUser          = new User();
 			$nyTimesUser->barcode = $catalog->accountProfile->usingPins() ? $configArray['NYT_API']['pika_username'] : $configArray['NYT_API']['pika_password'];
-			if ($nyTimesUser->find(1)){
+			if ($nyTimesUser->find(true)){
 				// Get User Lists
 				$nyTimesUserLists          = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;

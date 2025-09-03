@@ -12,6 +12,7 @@ var Globals = (function () {
 		automaticTimeoutLengthLoggedOut: 0,
 		repositoryUrl: '',
 		encodedRepositoryUrl: '',
+		debugViewer: false,
 		activeAction: '',
 		activeModule: ''
 	}

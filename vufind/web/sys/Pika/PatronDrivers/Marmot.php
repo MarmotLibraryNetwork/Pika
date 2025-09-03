@@ -452,9 +452,8 @@ class Marmot extends Sierra {
 							break;
 						}
 					}
-//					$errors[$booking['cancelValue']] = 'Failed to cancel scheduled item <strong>' . $booking['title'] . '</strong> from ' . strftime('%b %d, %Y at %I:%M %p', $booking['startDateTime']) . ' to ' . strftime('%b %d, %Y at %I:%M %p', $booking['endDateTime']);
 					// Time included
-					$errors[$booking->cancelValue] = 'Failed to cancel scheduled item <strong>' . $booking->title . '</strong> from ' . strftime('%b %d, %Y', $booking->startDateTime) . ' to ' . strftime('%b %d, %Y', $booking->endDateTime);
+					$errors[$booking->cancelValue] = 'Failed to cancel scheduled item <strong>' . $booking->title . '</strong> from ' . date('M d, Y', $booking->startDateTime) . ' to ' . date('M d, Y', $booking->endDateTime);
 					// Dates only
 
 				}
@@ -496,9 +495,7 @@ class Marmot extends Sierra {
 			$bookings = $this->parseBookingsPage($html);
 			if (!empty($bookings)){ // a booking wasn't canceled
 				foreach ($bookings as $booking){
-//					$errors[$booking['cancelValue']] = 'Failed to cancel scheduled item <strong>' . $booking['title'] . '</strong> from ' . strftime('%b %d, %Y at %I:%M %p', $booking['startDateTime']) . ' to ' . strftime('%b %d, %Y at %I:%M %p', $booking['endDateTime']);
-					// Time included
-					$errors[$booking['cancelValue']] = 'Failed to cancel scheduled item <strong>' . $booking['title'] . '</strong> from ' . strftime('%b %d, %Y', $booking['startDateTime']) . ' to ' . strftime('%b %d, %Y', $booking['endDateTime']);
+					$errors[$booking['cancelValue']] = 'Failed to cancel scheduled item <strong>' . $booking['title'] . '</strong> from ' . date('M d, Y', $booking['startDateTime']) . ' to ' . date('M d, Y', $booking['endDateTime']);
 					// Dates only
 				}
 			}

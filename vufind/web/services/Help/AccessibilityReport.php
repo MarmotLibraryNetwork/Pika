@@ -17,10 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-require_once ROOT_DIR . '/services/Help/Home.php';
-require_once ROOT_DIR . '/services/Help/AJAX.php';
+require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/services/Help/AJAX.php';
+
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class AccessibilityReport extends Action {
@@ -31,6 +31,6 @@ class AccessibilityReport extends Action {
 			$captchaCode        = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
-		$this->display('accessibilityReportForm.tpl', 'Report Accessibility Issue');
+		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');
 	}
 }

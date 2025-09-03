@@ -15,7 +15,7 @@
 #-------------------------------------------------------------------------
 # declare variables
 #-------------------------------------------------------------------------
-HOST=$1
+PIKASERVER=$1
 WD=`pwd`
 
 #-------------------------------------------------------------------------
@@ -25,7 +25,7 @@ WD=`pwd`
 if [ $# = 1 ];then
   echo ""
   echo "Working directory is: $WD"
-  echo "Server name is: $HOST"
+  echo "Server name is: $PIKASERVER"
   echo ""
   #-----------------
   echo "setting up data directory"
@@ -35,8 +35,8 @@ if [ $# = 1 ];then
   cd pika
   echo "creating accelerated reader data folder"
   mkdir accelerated_reader
-  mkdir $HOST
-  cd $HOST
+  mkdir $PIKASERVER
+  cd $PIKASERVER
   cp -rp $WD/data_dir_setup/* .
   #-----------------
   echo "setting group permissions to data directory for user apache"
@@ -53,8 +53,8 @@ if [ $# = 1 ];then
   cd /var/log
   mkdir pika
   cd pika
-  mkdir $HOST
-  cd $HOST
+  mkdir $PIKASERVER
+  cd $PIKASERVER
   mkdir jetty
   #-----------------
   echo "setting group permissions to logs for user apache"
@@ -71,7 +71,7 @@ if [ $# = 1 ];then
   chmod g+w $WD/vufind/web/interface/compile $WD/vufind/web/interface/cache
   #-----------------
   echo "setting up Pika log rotation."
-  cat $WD/install/pika |sed -r "s/\{servername\}/$HOST/" > /etc/logrotate.d/pika
+  cat $WD/install/pika |sed -r "s/\{servername\}/$PIKASERVER/" > /etc/logrotate.d/pika
   # The line above updates the log rotation file so that it doesn't need to be manually modifed
   #-----------------
   #echo "setting up Pika log rotation. Note: Servername must be manually set."
@@ -82,9 +82,9 @@ if [ $# = 1 ];then
   #-----------------
   echo "Creating symbolic link in /etc/httpd/conf.d to apache config file"
   # for centos
-  #ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/httpd/conf.d/httpd-$HOST.conf
+  #ln -s $WD/sites/$PIKASERVER/httpd-$PIKASERVER.conf /etc/httpd/conf.d/httpd-$PIKASERVER.conf
   # for ubuntu
-  ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/apache2/sites-enabled/httpd-$HOST.conf
+  ln -s $WD/sites/$PIKASERVER/httpd-$PIKASERVER.conf /etc/apache2/sites-enabled/httpd-$PIKASERVER.conf
   #-----------------
   echo "Copying mysql config file to /etc/my.cnf.d"
   # Probably centos 7/mariadb setups only
@@ -99,12 +99,12 @@ if [ $# = 1 ];then
   # Probably centos 7/mariadb setups only
   cp $WD/install/.my.cnf ~/.my.cnf
   #-----------------
-  echo "Installing Solr Files for $HOST"
-  cd $WD/data_dir_setup/; ./update_solr_files.sh $HOST
+  echo "Installing Solr Files for $PIKASERVER"
+  cd $WD/data_dir_setup/; ./update_solr_files.sh $PIKASERVER
   #-----------------
-  echo "Creating pika system service for $HOST"
-#  cat $WD/sites/default/pika_startup.sh |sed -r 's/\{servername\}/$HOST/' > /etc/init.d/pika.sh
-  cat $WD/sites/default/pika_startup.sh |sed -r "s/\{servername\}/$HOST/"|sed -r "/mysqld/mariadb/" > /etc/init.d/pika.sh
+  echo "Creating pika system service for $PIKASERVER"
+#  cat $WD/sites/default/pika_startup.sh |sed -r 's/\{servername\}/$PIKASERVER/' > /etc/init.d/pika.sh
+  cat $WD/sites/default/pika_startup.sh |sed -r "s/\{servername\}/$PIKASERVER/"|sed -r "/mysqld/mariadb/" > /etc/init.d/pika.sh
   chmod u+x /etc/init.d/pika.sh
 #  CentOS7 version that uses mariadb instead
 

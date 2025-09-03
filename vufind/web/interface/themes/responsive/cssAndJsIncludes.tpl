@@ -113,6 +113,10 @@
 				Globals.repositoryUrl = '{$repositoryUrl}';
 				Globals.encodedRepositoryUrl = '{$encodedRepositoryUrl}';
 			{/if}
+			{if $debugViewer}
+				Globals.debugViewer = true;
+				console.log("Setting global setting debugViewer", Globals.debugViewer);
+			{/if}
 
 			{if $automaticTimeoutLength}
 			Globals.automaticTimeoutLength = {$automaticTimeoutLength};

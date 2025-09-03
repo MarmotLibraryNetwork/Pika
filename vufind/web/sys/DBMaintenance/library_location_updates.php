@@ -99,5 +99,26 @@ function getLibraryLocationUpdates(): array{
 			]
 		],
 
+		'2025.03.0_add_hoopla_min_price' => [
+			'release'         => '2025.03.0',
+			'title'           => 'Add Hoopla Setting for a minimum price',
+			'description'     => 'Add Hoopla Setting for a minimum price',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library_hoopla_setting` ADD COLUMN `minPrice` DECIMAL(3,2)NULL DEFAULT 0.00 AFTER `kind`;",
+				"ALTER TABLE `location_hoopla_setting` ADD COLUMN `minPrice` DECIMAL(3,2)NULL DEFAULT 0.00 AFTER `kind`;",
+			]
+		],
+
+		'2025.03.0_allow_force_pin_reset' => [
+			'release'         => '2025.03.0',
+			'title'           => 'Allow Force Pin Reset',
+			'description'     => 'Add Library setting to allow force pin reset',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ADD allowForcePinUpdate TINYINT(1) UNSIGNED DEFAULT 0 NOT NULL AFTER allowPinReset;",
+			],
+		],
+
 	];
 }

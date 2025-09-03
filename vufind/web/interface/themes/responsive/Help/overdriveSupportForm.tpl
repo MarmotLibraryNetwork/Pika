@@ -1,7 +1,7 @@
 <h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 <div class="col-tn-12">
 	<div class="alert alert-info">
-		Need help downloading a title or using the title on your device?  Please fill out this support form.
+		Need help downloading a title or using the title on your device?  Please fill out this support form. All fields marked <span class="required-input">*</span> are required.
 	</div>
 	<form id="overdriveSupport" action="/Help/OverDriveSupport" method="post">
 		<input type="hidden" name="submit" value="submitted">
@@ -14,7 +14,7 @@
 		{else}
 			<div class="form-group">
 				<label for="libraryCardNumber" class="control-label">Library Card Number: <span class="required-input">*</span></label>
-				<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" disabled="true" aria-disabled="true" size="20" value="{$user->barcode}">
+				<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" disabled="disabled" aria-disabled="true" size="20" value="{$user->barcode}">
 				<input type="hidden" name="homeLibrary" value="{$user->homeLocation}">
 			</div>
 		{/if}

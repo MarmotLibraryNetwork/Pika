@@ -68,7 +68,7 @@ Pika.Archive = (function(){
 			return {
 				"id": "pika-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
-				"debugMode": false,
+				"debugMode": Globals.debugViewer,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
 				"tileSize": 256,
 				"tileOverlap": 0,
@@ -488,6 +488,7 @@ Pika.Archive = (function(){
 				if (!$('#pika-openseadragon').hasClass('processed')) {
 					$('#pika-openseadragon').addClass('processed');
 					settings = Pika.Archive.openSeadragonViewerSettings();
+					console.log('Debug Mode', settings.debugMode);
 					settings.tileSources = new Array();
 					settings.tileSources.push(tile);
 					Pika.Archive.openSeaDragonViewer = new OpenSeadragon(settings);

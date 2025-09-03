@@ -1395,12 +1395,14 @@ class MarcRecord extends IndexRecord {
 			];
 		}
 
-		//Special Item-less Print Record Actions with url links, like KitKeeper Records
+		// Physical Record actions with URL links, used for external reservation URLs
 		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
-			//TODO: not sure what the best check is at this point
+			// Don't display Reserve action when the item isn't available
+			// Must also be non-holdable or the hold button will
+			// display instead (caused by empty($action) checked)
 			foreach ($relatedUrls as $relatedUrl){
 				$actions[] = [
-					'title'        => 'Reserve Online',
+					'title'        => translate('Reserve Online'),
 					'url'          => $relatedUrl['url'],
 					'requireLogin' => false,
 				];
@@ -1413,7 +1415,7 @@ class MarcRecord extends IndexRecord {
 	static $catalogDriver = null;
 
 	/**
-	 * @return Sierra|DriverInterface|HorizonAPI
+	 * @return Pika\PatronDrivers\Sierra|Pika\PatronDrivers\HorizonROA|Pika\PatronDrivers\Polaris|DriverInterface
 	 */
 	protected static function getCatalogDriver(){
 		if (MarcRecord::$catalogDriver == null){
@@ -2183,7 +2185,7 @@ class MarcRecord extends IndexRecord {
 	 * @return array|null
 	 */
 	public function loadPeriodicalInformation(){
-		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
+		/** @var \Pika\PatronDrivers\Marmot|Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
 		if ($catalogDriver->checkFunction('getIssueSummaries')){

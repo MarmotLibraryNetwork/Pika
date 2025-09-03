@@ -96,6 +96,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char    volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
+	private boolean isItemUrlSubfieldSet = false;
 	boolean suppressItemlessBibs;
 
 	private int numCharsToCreateFolderFrom;
@@ -172,6 +173,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
+			if (itemUrlSubfieldIndicator != ' '){
+				isItemUrlSubfieldSet = true;
+			}
 
 			formatSource              = indexingProfileRS.getString("formatSource");
 			formatDeterminationMethod = indexingProfileRS.getString("formatDeterminationMethod");
@@ -512,7 +516,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
-		String originalUrl = itemInfo.geteContentUrl();
+		String originalUrl = itemInfo.getItemUrl();
 		for (Scope scope: indexer.getScopes()){
 			Scope.InclusionResult result = scope.isItemPartOfScope(indexingProfileSource, location, null, audiences, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
@@ -637,7 +641,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
 		if (urlSubfield != null) {
 			//Item-level 856 (Gets exported into the itemUrlSubfield)
-			itemInfo.seteContentUrl(urlSubfield.getData().trim());
+			itemInfo.setItemUrl(urlSubfield.getData().trim());
 		} else {
 			loadEContentUrl(record, itemInfo, identifier);
 		}
@@ -778,6 +782,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 
+		// Check for Online Reservation URLs for physical items
+		if (isItemUrlSubfieldSet){
+			Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
+			if (urlSubfield != null) {
+				//Item-level 856 (Gets exported into the itemUrlSubfield)
+				itemInfo.setItemUrl(urlSubfield.getData().trim());
+			}
+		}
+
 		//This is done later so we don't need to do it here.
 		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 
@@ -820,7 +833,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
-		String originalUrl = itemInfo.geteContentUrl();
+		String originalUrl  = itemInfo.getItemUrl();
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){
@@ -868,7 +881,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HoldabilityInformation isHoldableUnscoped   = isItemHoldableUnscoped(itemInfo);
 		BookabilityInformation isBookableUnscoped   = isItemBookableUnscoped();
 		HomePickUpInformation  isHomePickUpUnscoped = isItemHomePickUpUnscoped();
-		String                 originalUrl          = itemInfo.geteContentUrl();
+		String                 originalUrl          = itemInfo.getItemUrl();
 		String                 primaryFormat        = recordInfo.getPrimaryFormat();
 		boolean oncePerRecord = false;
 		for (Scope curScope : indexer.getScopes()) {

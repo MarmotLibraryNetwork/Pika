@@ -41,7 +41,7 @@ class ItemDetails {
 	public bool $isOrderItem;
 	public bool $isEContent;
 	public $eContentSource;
-	public $eContentUrl;
+	public $itemUrl;
 	public $subFormat;
 	public $detailedStatus;
 	public $lastCheckinDate;
@@ -63,7 +63,7 @@ class ItemDetails {
 		$this->isOrderItem      = $itemDetailsArray[7] == '1' || $itemDetailsArray[7] == 'true';
 		$this->isEContent       = $itemDetailsArray[8] == '1' || $itemDetailsArray[8] == 'true';
 		$this->eContentSource   = $itemDetailsArray[9];
-		$this->eContentUrl      = $itemDetailsArray[10];
+		$this->itemUrl          = $itemDetailsArray[10]; // eContent Access URL for eContent items; or Online Reservation for Physical items
 		$this->detailedStatus   = $itemDetailsArray[11];
 		$this->lastCheckinDate  = $itemDetailsArray[12] ?? '';
 		$this->locationCode     = $itemDetailsArray[13] ?? '';
