@@ -1,4 +1,4 @@
-
+{strip}
 <div class="row">
 	<div id="header_library">
 		<div class="col-tn-4 col-xs-4 col-sm-3 col-md-8 col-lg-8">
@@ -38,7 +38,6 @@
 	</div>
 </div>
 
-{strip}
 	{if $topLinks}
 		{include file="top-links.tpl"}
 	{/if}
