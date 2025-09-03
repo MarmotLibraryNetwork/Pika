@@ -7977,7 +7977,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   min-height: 100px;
   padding-top: 0;
   background-color: #fff;
-  border-bottom: 8px solid #e9e0daeb eb;
+  border-bottom: 8px solid rgba(233, 224, 218, 0.92);
   margin-bottom: 0;
 }
 #header-logo {
@@ -8096,7 +8096,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #e9e0daeb eb;
+  background-color: rgba(233, 224, 218, 0.92);
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8133,7 +8133,7 @@ a .header-button:visited {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #e9e0daeb eb;
+  background-color: rgba(233, 224, 218, 0.92);
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8260,8 +8260,8 @@ a .header-button:visited {
   border: 2px solid #E15F15;
 }
 .home-page-search {
-  background-color: #e9e0daeb eb;
-  background: linear-gradient(to bottom, #e9e0daeb eb, #e9e0daeb eb);
+  background-color: rgba(233, 224, 218, 0.92);
+  background: linear-gradient(to bottom, rgba(233, 224, 218, 0.92), rgba(233, 224, 218, 0.92));
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8287,7 +8287,7 @@ a .header-button:visited {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #e9e0daeb eb;
+  background-color: rgba(233, 224, 218, 0.92);
   border: none;
   width: 90% !important;
 }
@@ -8302,8 +8302,8 @@ a .header-button:visited {
           text-decoration: underline dotted;
 }
 #horizontal-search-box {
-  background-color: #e9e0daeb eb;
-  background: linear-gradient(to bottom, #e9e0daeb eb, #e9e0daeb eb);
+  background-color: rgba(233, 224, 218, 0.92);
+  background: linear-gradient(to bottom, rgba(233, 224, 218, 0.92), rgba(233, 224, 218, 0.92));
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9900,8 +9900,8 @@ img.x-twit {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #e9e0daeb eb;
-  background: linear-gradient(to bottom, #e9e0daeb eb, #e9e0daeb eb);
+  background-color: rgba(233, 224, 218, 0.92);
+  background: linear-gradient(to bottom, rgba(233, 224, 218, 0.92), rgba(233, 224, 218, 0.92));
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
