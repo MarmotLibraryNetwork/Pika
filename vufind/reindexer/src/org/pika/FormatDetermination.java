@@ -521,7 +521,7 @@ public class FormatDetermination {
 		getFormatFromEdition(record, printFormats/*, identifier*/);
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
-		getFormatFromTitle(record, printFormats);
+		getFormatFromTitle(record, printFormats, identifier);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 
@@ -751,6 +751,7 @@ public class FormatDetermination {
 		}
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
+				logger.info("ComboPack determination in filterPrintFormats() for {}", identifier);
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 				return;
@@ -811,9 +812,9 @@ public class FormatDetermination {
 		if (printFormats.contains("CompactDisc") && printFormats.contains("MusicCD")){
 			printFormats.remove("CompactDisc");
 		}
-		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
-			//TODO: I wonder if this happens?
-			logger.info("Found music recording + CD in filter print formats");
+		if (printFormats.contains("MusicRecording") && (/*printFormats.contains("CD") ||*/ printFormats.contains("CompactDisc"))){
+			//This does occur on mln1 for 8 records
+			logger.info("Found music recording + CD in filter print formats on {}", identifier);
 			if (printFormats.contains("DVD")) {
 				// Probable Accompanying Material
 				printFormats.clear();
@@ -859,10 +860,10 @@ public class FormatDetermination {
 				printFormats.remove("CompactDisc");
 			}
 		}
-		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
-			//TODO: Likely obsolete - no determinations of CD
-			printFormats.remove("CD");
-		}
+//		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
+//			//TODO: Likely obsolete - no determinations of CD
+//			printFormats.remove("CD");
+//		}
 		if (printFormats.contains("MP3") && printFormats.contains("CompactDisc")){
 			printFormats.remove("MP3");
 		}
@@ -1006,7 +1007,7 @@ public class FormatDetermination {
 		return false;
 	}
 
-	private void getFormatFromTitle(Record record, Set<String> printFormats) {
+	private void getFormatFromTitle(Record record, Set<String> printFormats, RecordIdentifier identifier) {
 		String titleMedium = MarcUtil.getFirstFieldVal(record, "245h");
 		if (titleMedium != null){
 			titleMedium = titleMedium.toLowerCase();
@@ -1039,12 +1040,13 @@ public class FormatDetermination {
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
 			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
-				printFormats.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player) TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
+				logger.info("CDROM determination from 245h dvd rom phrase on {}", identifier);
+				printFormats.add("CDROM");
+				// TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player)
+				// TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
-			}
-			else if (titleMedium.contains("mp3"))
-			{
+			} else if (titleMedium.contains("mp3")) {
 				printFormats.add("MP3");
 			}
 
