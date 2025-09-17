@@ -79,9 +79,9 @@ public class SierraExportAPIMain {
 	private static PreparedStatement addNoteToExportLogStmt;
 //	private static String            exportPath;
 
-	private static boolean debug     = false;
-	private static int     minutesToProcessExport;
-	private static Date    startTime = new Date();
+	private static       boolean debug     = false;
+	private static       int     minutesToProcessExport;
+	private static final Date    startTime = new Date();
 
 	// Connector to Solr for deleting index entries
 	private static ConcurrentUpdateSolrClient updateServer;
@@ -1565,11 +1565,12 @@ public class SierraExportAPIMain {
 							logger.error("Error getting information about items {}", itemIds);
 						}
 					} else {
-						boolean   lookingForEContent = !indexingProfile.APIItemEContentExportFieldTag.isEmpty();
-						String    itemId             = "0"; // Initialize just to avoid having to check later
-						JSONArray entries            = itemIds.getJSONArray("entries");
+						boolean   lookingForItemURL = !indexingProfile.APIItemURLFieldTag.isEmpty();
+						String    itemId            = "0"; // Initialize just to avoid having to check later
+						JSONArray entries           = itemIds.getJSONArray("entries");
 						if (logger.isDebugEnabled()) {
-							logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
+							//logger.debug("fetching items for " + id + " elapsed time " + (new Date().getTime() - startTime) + "ms found " + entries.length());
+							logger.debug("fetching items for {} elapsed time {}ms, found {}", id, (new Date().getTime() - startTime), entries.length());
 						}
 						for (int i = 0; i < entries.length(); i++) {
 							JSONObject curItem     = entries.getJSONObject(i);
@@ -1652,12 +1653,12 @@ public class SierraExportAPIMain {
 								String        fieldTag                = curVarField.getString("fieldTag");
 								StringBuilder allFieldContent         = new StringBuilder();
 								JSONArray     subfields               = null;
-								boolean       isThisAnEContentItemURL = lookingForEContent && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
+								boolean       isThisAnItemURL = lookingForItemURL && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
 									for (int k = 0; k < subfields.length(); k++) {
 										JSONObject subfield = subfields.getJSONObject(k);
-										if (isThisAnEContentItemURL){
+										if (isThisAnItemURL){
 											if (subfield.has("tag") && subfield.getString("tag").equalsIgnoreCase("u")){
 												allFieldContent.append(subfield.getString("content"));
 												break;  //Only need the url
@@ -1698,7 +1699,7 @@ public class SierraExportAPIMain {
 									}
 								} else if (!indexingProfile.APIItemVolumeFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemVolumeFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.volume, allFieldContent.toString()));
-								} else if (!indexingProfile.APIItemURLFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemURLFieldTag)) {
+								} else if (isThisAnItemURL && fieldTag.equals(indexingProfile.APIItemURLFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
 								} else if (!indexingProfile.APIItemEContentExportFieldTag.isEmpty() && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
