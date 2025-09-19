@@ -252,6 +252,10 @@ class OverDrive_AJAX extends AJAXHandler {
 		}
 	}
 
+	/**
+	 * Generated OverDrive Freeze Hold form
+	 * @return array|void
+	 */
 	function getOverDriveFreezeHoldPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		if (!empty($user)){
@@ -259,33 +263,40 @@ class OverDrive_AJAX extends AJAXHandler {
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
 				$id = $_REQUEST['id'];
+				//TODO: format check
 				if (!empty($id)){
-					global $interface;
-					$interface->assign('overDriveId', $id);
-					$interface->assign('patronId', $patronId);
-					if ($user->overDriveEmail == 'undefined'){
-						$user->overDriveEmail = '';
-					}
-					$promptForEmail = false;
-					if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
-						$promptForEmail = true;
-					}
-					if (!empty($_REQUEST['thawDate'])){
-						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
+					$driver = OverDriveDriverFactory::getDriver();
+					if ($driver::validOverDriveIDString($id)){
+						global $interface;
+						$interface->assign('overDriveId', $id);
+						$interface->assign('patronId', $patronId);
+						if ($user->overDriveEmail == 'undefined'){
+							$user->overDriveEmail = '';
+						}
+						$promptForEmail = false;
+						if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
+							$promptForEmail = true;
+						}
+						if (!$promptForEmail){
+							// Go ahead with freeze action if we do not need to prompt for email address
+							$result                 = $driver->freezeOverDriveHold($id, $patron, $user->overDriveEmail);
+							$result['freezeAction'] = true; // This allows for the prompt to autoclose and the page to reload
+							return $result;
+						} else{
+							$interface->assign('overDriveEmail', $user->overDriveEmail);
+							$interface->assign('promptForEmail', $promptForEmail);
+							$title       = translate('Freeze Hold');// language customization
+							$promptTitle = "OverDrive $title Options";
+							return [
+								'title'   => $promptTitle,
+								'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
+								'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . $title . '" onclick="$(\'#overdriveFreezeHoldPromptsForm\').submit(); return false;">',
+							];
+						}
 					} else {
-						// Set a default selection of 7 days from now
-						$thawDate = date('m-d-Y', strtotime("+7 days"));
+						$this->logger->error("OverDrive freeze hold request with invalid overDrive ID string", [$id]);
+						return ['success' => false, 'message' => 'Cannot freeze OverDrive Hold. Invalid title ID.'];
 					}
-					$interface->assign('thawDate', $thawDate);
-					$interface->assign('overDriveEmail', $user->overDriveEmail);
-					$interface->assign('promptForEmail', $promptForEmail);
-					$title       = translate('Freeze Hold');// language customization
-					$promptTitle = "OverDrive $title Options";
-					return [
-						'title'   => $promptTitle,
-						'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
-						'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . $title . '" onclick="$(\'#overdriveFreezeHoldPromptsForm\').submit(); return false;">',
-					];
 				}
 			}else{
 				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to ' .translate("freeze"). ' titles for that user.'];
@@ -313,17 +324,16 @@ class OverDrive_AJAX extends AJAXHandler {
 					if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
 						$promptForEmail = true;
 					}
-					if (!empty($_REQUEST['thawDate'])){
-						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
-						if ($thawDate){
-							$interface->assign('thawDate', $thawDate);
-						}
-
-					}
+//					if (!empty($_REQUEST['thawDate'])){
+//						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
+//						if ($thawDate){
+//							$interface->assign('thawDate', $thawDate);
+//						}
+//					}
 					$interface->assign('overDriveEmail', $user->overDriveEmail);
 					$interface->assign('promptForEmail', $promptForEmail);
 					$title       = translate('Freeze Hold');// language customization
-					$promptTitle = "OverDrive Hold Options";
+					$promptTitle = 'OverDrive Hold Options';
 					return [
 						'title'   => $promptTitle,
 						'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
@@ -384,17 +394,17 @@ class OverDrive_AJAX extends AJAXHandler {
 					}
 
 					$daysFromNow = null;
-					if (!empty($_REQUEST['thawDate'])){
-						$thawDate = DateTime::createFromFormat('m-d-Y', $_REQUEST['thawDate']);
-						if ($thawDate){
-							$diff = $thawDate->diff(new DateTime(), true);
-							if ($diff->days !== false){ //Could be zero days
-								$daysFromNow = $diff->days;
-							}
-						}
-					}
+//					if (!empty($_REQUEST['thawDate'])){
+//						$thawDate = DateTime::createFromFormat('m-d-Y', $_REQUEST['thawDate']);
+//						if ($thawDate){
+//							$diff = $thawDate->diff(new DateTime(), true);
+//							if ($diff->days !== false){ //Could be zero days
+//								$daysFromNow = $diff->days;
+//							}
+//						}
+//					}
 					$driver = OverDriveDriverFactory::getDriver();
-					$result = $driver->freezeOverDriveHold($overDriveId, $patron, $_REQUEST['overDriveEmail'], $daysFromNow);
+					$result = $driver->freezeOverDriveHold($overDriveId, $patron, $_REQUEST['overDriveEmail']/*, $daysFromNow*/);
 					return $result;
 				}
 			}else{

@@ -27,8 +27,8 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_Holds extends MyAccount{
 	function launch(){
 		global $configArray,
-		       $interface,
-		       $library;
+					 $interface,
+					 $library;
 
 		$user = UserAccount::getLoggedInUser();
 
@@ -50,7 +50,7 @@ class MyAccount_Holds extends MyAccount{
 		$canChangePickupLocation         = ($ils != 'Koha');
 		$showPlacedColumn                = ($ils == 'Horizon' || $ils == 'Symphony' || !empty($configArray['OPAC']['showDatePlaced']));
 		if($ils === 'Polaris') $showPlacedColumn = false;
-        $interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
+		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 		$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
 		$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);

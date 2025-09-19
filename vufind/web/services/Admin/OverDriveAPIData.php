@@ -70,7 +70,7 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 
 					if (!empty($_REQUEST['id'])){
 						$overDriveId = trim(strip_tags(urldecode($_REQUEST['id'])));
-						if (preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{11}/i', $overDriveId)){ // Overdrive id is different from grouped work by the final group being 11 digits long instead of 12.)
+						if ($driver::validOverDriveIDString($overDriveId)){
 							global $interface;
 							$interface->assign('overDriveId', $overDriveId);
 							$productKey = $libraryInfo->collectionToken;
