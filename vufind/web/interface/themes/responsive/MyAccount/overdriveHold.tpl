@@ -148,7 +148,7 @@
 						{if $record.frozen}
 							{if $record.showUpdateHoldButton}
 								{* The Update hold button is only useful for changing the hold notification email now *}
-								<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}'{if $record.thawDate}, {$record.thawDate}{/if});" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
+								<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
 							{/if}
 							<button onclick="return Pika.OverDrive.thawOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
 						{else}
