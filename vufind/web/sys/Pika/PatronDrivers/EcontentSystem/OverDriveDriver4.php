@@ -62,6 +62,17 @@ class OverDriveDriver4 {
 	private $patronApi;
 	private array $defaultCurlOptions;
 
+	/**
+	 * Check that a string conforms to the format for OverDrive ID strings
+	 * @param string $overDriveID  The string to check
+	 * @return bool whether the sting is formatted correctly
+	 */
+	public static function validOverDriveIDString(string $overDriveID): bool {
+		return preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{11}/i', $overDriveID);
+		// Overdrive id is different from grouped work by the final group being 11 digits long
+		// instead of 12.
+	}
+
 	public function __construct(){
 		global $configArray;
 		$this->logger             = new Logger(__CLASS__);
@@ -731,6 +742,11 @@ class OverDriveDriver4 {
 					$hold['userId']      = $user->id;
 					$hold['available']   = isset($curTitle->actions->checkout);
 					if (!$forGetOverDriveCounts){
+						if ($user->promptForOverDriveEmail == 1 || strlen($user->overDriveEmail) == 0){
+							// The Update hold button is only useful for changing the hold notification email now
+							$hold['showUpdateHoldButton'] = true;
+						}
+
 //				if (!empty($curTitle->emailAddress)){
 //					$hold['notifyEmail'] = $curTitle->emailAddress;
 //				}
@@ -742,6 +758,9 @@ class OverDriveDriver4 {
 						$hold['holdQueuePosition'] = $curTitle->holdListPosition;
 						$hold['position']          = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
 						$hold['frozen']            = isset($curTitle->holdSuspension);
+						if (isset($curTitle->estimatedWaitDays)){
+							$hold['estimatedWaitDays'] = $curTitle->estimatedWaitDays;
+						}
 						if ($hold['available']){
 							$hold['expire'] = strtotime($curTitle->holdExpires);
 						}
@@ -865,21 +884,15 @@ class OverDriveDriver4 {
 	 * @param string $overDriveId
 	 * @param User $user
 	 * @param string|null $email
-	 * @param int|null $daysToSuspend
 	 * @return array (result, message)
 	 */
-	public function freezeOverDriveHold($overDriveId, User $user, $email = null, $daysToSuspend = null){
+	public function freezeOverDriveHold($overDriveId, User $user, $email = null){
 		$email               ??= $user->overDriveEmail;
 		$url                 = $this->patronApi . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
-		$isLimitedSuspension = is_numeric($daysToSuspend);
-		$suspensionType      = $isLimitedSuspension ? 'limited' : 'indefinite';
 		$params              = [
 			'emailAddress'   => trim($email),
-			'suspensionType' => $suspensionType,
+			'suspensionType' => 'indefinite', // TODO: this will no longer be needed at some point
 		];
-		if ($isLimitedSuspension){
-			$params['numberOfDays'] = $daysToSuspend;
-		}
 
 		$response = $this->_callPatronUrl($user, $url, $params);
 

@@ -182,9 +182,9 @@ Pika.OverDrive = (function(){
 		updateOverDriveHold: function(patronId, overDriveId, thawDate){
 			Pika.Account.ajaxLogin(function(){
 				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveUpdateHoldPrompts&patronId=" + patronId;
-				if (thawDate !== undefined){
+/*				if (thawDate !== undefined){
 					url += '&thawDate=' + thawDate;
-				}
+				}*/
 				$.getJSON(url, function (data) {
 					Pika.showMessageWithButtons(data.title, data.message, data.buttons);
 				}).fail(function(){
@@ -194,14 +194,16 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		freezeOverDriveHold: function(patronId, overDriveId, thawDate){
+		freezeOverDriveHold: function(patronId, overDriveId){
 			Pika.Account.ajaxLogin(function(){
 				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveFreezeHoldPrompts&patronId=" + patronId;
-				if (thawDate !== undefined){
-					url += '&thawDate=' + thawDate;
-				}
 				$.getJSON(url, function (data) {
-					Pika.showMessageWithButtons(data.title, data.message, data.buttons);
+					if (data.freezeAction){
+						// No prompt was needed; freeze action went ahead
+						Pika.showMessage(data.title, data.message, data.success, data.success);
+					} else{
+						Pika.showMessageWithButtons(data.title, data.message, data.buttons);
+					}
 				}).fail(function(){
 					Pika.showMessage("Error", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				});
@@ -214,7 +216,7 @@ Pika.OverDrive = (function(){
 					overDriveEmail = overDriveHoldPromptsForm.find("input[name=overDriveEmail]").val(),
 					overDriveId = overDriveHoldPromptsForm.find("input[name=overDriveId]").val(),
 					patronId = $("#patronId").val(),
-					thawDate = $("#thawDate").val(),
+					/*thawDate = $("#thawDate").val(),*/
 					rememberOverDriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverDriveEmail]").is(":checked") ? 1 : 0,
 					url = "/OverDrive/AJAX",
 					params = {
@@ -223,7 +225,7 @@ Pika.OverDrive = (function(){
 						overDriveId: overDriveId,
 						overDriveEmail: overDriveEmail,
 						rememberOverDriveEmail: rememberOverDriveEmail,
-						thawDate: thawDate
+						/*thawDate: thawDate*/
 					};
 			$.getJSON(url, params, function (data){
 				Pika.showMessage(data.title, data.message, data.success, data.success);

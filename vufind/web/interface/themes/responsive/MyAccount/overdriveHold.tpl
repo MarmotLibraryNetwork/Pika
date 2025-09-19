@@ -126,6 +126,16 @@
 								{$record.holdQueuePosition} out of {$record.holdQueueLength}
 							</div>
 						</div>
+						{if isset($record.estimatedWaitDays)}
+							<div class="row">
+								<div class="result-label col-tn-3">{translate text='Estimated Wait'}</div>
+								<div class="col-tn-9 result-value">
+									{if $record.estimatedWaitDays === 1}1 day{else}
+										{$record.estimatedWaitDays} days
+									{/if}
+								</div>
+							</div>
+						{/if}
 				{/if}
 				</div>
 
@@ -136,7 +146,10 @@
 							<button onclick="return Pika.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">Checkout</button>
 						{/if}
 						{if $record.frozen}
-							<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}'{if $record.thawDate}, {$record.thawDate}{/if});" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
+							{if $record.showUpdateHoldButton}
+								{* The Update hold button is only useful for changing the hold notification email now *}
+								<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}'{if $record.thawDate}, {$record.thawDate}{/if});" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
+							{/if}
 							<button onclick="return Pika.OverDrive.thawOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
 						{else}
 							{*We can freeze available OverDrive holds *}
