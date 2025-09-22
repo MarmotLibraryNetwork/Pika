@@ -32,7 +32,7 @@ class Circa_MigrateHolds extends Action {
 
 	function launch(){
 		set_time_limit(600);
-//		$this->createNewUsersFromBarCodeList();
+		$this->createNewUsersFromBarCodeList();
 //		$this->getBibIdFromItemBarcode();
 //		$this->getBibIdFromISBN();
 //		$this->processDeltaCharges();
@@ -42,7 +42,7 @@ class Circa_MigrateHolds extends Action {
 	}
 
 	function createNewUsersFromBarCodeList(){
-		$barCodes = [];
+		$barCodes = []; // Manually input barcodes here
 
 		echo '<pre>';
 		/** @var Pika\PatronDrivers\Sierra $sierra */
@@ -50,14 +50,15 @@ class Circa_MigrateHolds extends Action {
 		$sierra = CatalogFactory::getCatalogConnectionInstance();
 
 		foreach (array_unique($barCodes) as $barCode){
-			$user = new User();
+			$user          = new User();
 			$user->barcode = $barCode;
 			if (!$user->find()){
 				$user = $sierra->findNewUser($barCode);
 				if (!is_a($user, 'User')){
 					echo "Failed to create user for barcode $barCode\n";
 				}else{
-					echo "Barcode: $barCode, User id: {$user->id}\n";
+					echo "Barcode: $barCode, Pika User id: {$user->id}\n";
+					//TODO: write to a csv
 				}
 			}
 //			echo "'$barCode',\n";
@@ -81,7 +82,7 @@ class Circa_MigrateHolds extends Action {
 				if (!empty($solrDoc)){
 					$groupedWorkDriver = RecordDriverFactory::initRecordDriver($solrDoc);
 					if (!empty($groupedWorkDriver) && $groupedWorkDriver->isValid()){
-						$relatedRecords   = $groupedWorkDriver->getRelatedRecords();
+						$relatedRecords = $groupedWorkDriver->getRelatedRecords();
 						if (!empty($relatedRecords)){
 							$matchRecordFound = false;
 							require_once ROOT_DIR . '/RecordDrivers/Factory.php';
@@ -89,7 +90,7 @@ class Circa_MigrateHolds extends Action {
 								if ($relatedRecord['source'] == 'ils'){
 									/** @var MarcRecord $recordDriver */
 									$recordDriver = $relatedRecord['driver'];
-									$marcRecord = $recordDriver->getMarcRecord();
+									$marcRecord   = $recordDriver->getMarcRecord();
 
 									if ($marcRecord != false){
 										$itemTags = $marcRecord->getFields('989');
@@ -109,16 +110,16 @@ class Circa_MigrateHolds extends Action {
 								}
 							}
 							if (!$matchRecordFound){
-								echo "No match found for " . $itemBarcode;
+								echo 'No match found for ' . $itemBarcode;
 							}
 						} else {
-							echo "no related records for work " . $solrDoc['id'];
+							echo 'no related records for work ' . $solrDoc['id'];
 						}
 					}else{
-						echo "Found no match in index for " . $itemBarcode;
+						echo 'Found no match in index for ' . $itemBarcode;
 					}
 				}else{
-					echo "Found no match in index for " . $itemBarcode;
+					echo 'Found no match in index for ' . $itemBarcode;
 				}
 
 			}
@@ -149,21 +150,21 @@ class Circa_MigrateHolds extends Action {
 							$recordISBNs  = $recordDriver->getISBNs();
 							if (in_array($ISBN, $recordISBNs)){
 								if ($matchRecordFound) {
-									echo "Had match already Additional match : ";
+									echo 'Had match already Additional match : ';
 								}
 								$matchRecordFound = true;
-								echo $ISBN . "," . str_replace('ils:', '', $relatedRecord['id']) . "," . $relatedRecord['format'];
+								echo $ISBN . ',' . str_replace('ils:', '', $relatedRecord['id']) . "," . $relatedRecord['format'];
 							}
 						}
 					}
 					if (!$matchRecordFound){
-						echo "No match found for " . $ISBN;
+						echo 'No match found for ' . $ISBN;
 					}
 				}else{
-					echo "Found no match in index for " . $ISBN;
+					echo 'Found no match in index for ' . $ISBN;
 				}
 			}else{
-				echo "Found no match in index for " . $ISBN;
+				echo 'Found no match in index for ' . $ISBN;
 			}
 			echo "\n";
 		}
