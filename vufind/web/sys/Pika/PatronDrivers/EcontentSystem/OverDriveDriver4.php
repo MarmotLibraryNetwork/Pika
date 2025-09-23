@@ -30,6 +30,7 @@ use OverDriveRecordDriver;
 class OverDriveDriver4 {
 	const VERSION = 4;
 
+	private bool $offline = false;
 	private array $requirePin;
 	private array $ILSName = [];
 	private array $websiteId;
@@ -95,6 +96,9 @@ class OverDriveDriver4 {
 			//CURLOPT_HEADER         => true, // debugging only
 			//CURLOPT_VERBOSE        => true, // debugging only
 		];
+		if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+			$this->offline = true;
+		}
 	}
 
 	/**
@@ -115,29 +119,33 @@ class OverDriveDriver4 {
 	 * @return false|mixed|null
 	 */
 	private function _connectToAPI($forceNewConnection = false){
-		global $serverName;
-		$memCacheKey = 'overdrive_token' . $serverName;
-		$tokenData   = $this->cache->get($memCacheKey);
-		if (empty($tokenData) || $forceNewConnection){
-			$url     = 'https://oauth.overdrive.com/token';
-			$headers = $this->_authorizationHeaders($url);
-			if ($headers){
-				$curl      = $this->initCurlObject($headers);
-				$tokenData = $curl->post($url, 'grant_type=client_credentials');
-				if (isset($tokenData->access_token)){
-					$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
+		if (!$this->offline){
+			global $serverName;
+			$memCacheKey = 'overdrive_token' . $serverName;
+			$tokenData   = $this->cache->get($memCacheKey);
+			if (empty($tokenData) || $forceNewConnection){
+				$url     = 'https://oauth.overdrive.com/token';
+				$headers = $this->_authorizationHeaders($url);
+				if ($headers){
+					$curl      = $this->initCurlObject($headers);
+					$tokenData = $curl->post($url, 'grant_type=client_credentials');
+					if (isset($tokenData->access_token)){
+						$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
+					}else{
+						$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
+						// Connection Time out is potential issue so we include possible curl errors
+						return false;
+					}
 				}else{
-					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
-					// Connection Time out is potential issue so we include possible curl errors
+					// OverDrive is not configured
+					$this->logger->warning('Overdrive missing configuration.');
 					return false;
 				}
-			}else{
-				// OverDrive is not configured
-				$this->logger->warning('Overdrive missing configuration.');
-				return false;
 			}
+			return $tokenData;
+		}else{
+			return false; // Offline mode; Do not attempt connections
 		}
-		return $tokenData;
 	}
 
 	/**

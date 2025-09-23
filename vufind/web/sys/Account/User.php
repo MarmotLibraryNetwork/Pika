@@ -101,7 +101,7 @@ class User extends DB_DataObject {
 	private $numCheckedOutOverDrive = 0;
 	private $numHoldsOverDrive = 0;
 	private $numHoldsAvailableOverDrive = 0;
-	private $numHoldsRequestedOverDrive = 0;
+	private $numHoldsRequestedOverDrive = 0; //TODO not used?
 	private $numCheckedOutHoopla = 0;
 	public $numBookings;
 	public $notices;

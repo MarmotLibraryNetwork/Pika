@@ -306,6 +306,9 @@ class UInterface extends Smarty {
     if ($offlineMode){
       $systemMessage[] = "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>";
     }
+		if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+			$systemMessage[] = "<p class='alert alert-warning'><strong>Connectivity to OverDrive is currently limited.</strong>  Access to OverDrive account information and availability is limited.</p>";
+		}
     if (!empty($library->systemMessage)){
       $systemMessage[] = $library->systemMessage;
     }
