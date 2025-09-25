@@ -37,7 +37,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
+//	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
 		this.indexer = indexer;
@@ -577,7 +577,8 @@ abstract class MarcRecordProcessor {
 			char recordType = Character.toUpperCase(leader.charAt(6));
 			char bibLevel   = Character.toUpperCase(leader.charAt(7));
 			// Figure out what material type the record is
-			if (((recordType == 'A' || recordType == 'T') && (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M')) /* Books */
+			if (((recordType == 'A' || recordType == 'T') && (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M'))
+				/* Books */
 					) {
 				char literaryFormChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 16) {
@@ -666,7 +667,8 @@ abstract class MarcRecordProcessor {
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
+				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
+				// Union Catalog Committee decision 2025-09-24, code Poetry as literary Form 'Non-Fiction'
 				addToMapWithCount(literaryFormsFull, "Poetry");
 			}else if (subjectForm.equalsIgnoreCase("Humor")
 					|| subjectForm.equalsIgnoreCase("Comedy")
@@ -729,12 +731,13 @@ abstract class MarcRecordProcessor {
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
-			}else{
-				if (!unknownSubjectForms.contains(subjectForm)){
-					//logger.warn("Unknown subject form " + subjectForm);
-					unknownSubjectForms.add(subjectForm);
-				}
 			}
+//			else{
+//				if (!unknownSubjectForms.contains(subjectForm)){
+//					//logger.warn("Unknown subject form " + subjectForm);
+//					unknownSubjectForms.add(subjectForm);
+//				}
+//			}
 		}
 
 		//Check the subjects
