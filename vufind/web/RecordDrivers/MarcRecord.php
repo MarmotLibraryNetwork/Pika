@@ -2352,10 +2352,10 @@ class MarcRecord extends IndexRecord {
 		return $semanticData;
 	}
 
-	public function hasOpacFieldMessage(){
-		global $configArray;
-		return !empty($configArray['Catalog']['OpacMessageField']);
-	}
+//	public function hasOpacFieldMessage(){
+//		global $configArray;
+//		return !empty($configArray['Catalog']['OpacMessageField']);
+//	}
 
 	public function getOpacFieldMessage($itemId){
 		/** @var Memcache $memCache */
@@ -2366,7 +2366,7 @@ class MarcRecord extends IndexRecord {
 		if (!$opacMessage){
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
-			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
+			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield (typically r)
 			[$itemTag, $itemIdSubfield, $opacMessageSubfieldIndicator] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);

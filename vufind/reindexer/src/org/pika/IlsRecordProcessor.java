@@ -82,6 +82,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char lastYearCheckoutSubfield;
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
+	private char opacMessageSubfield;
 	boolean useICode2Suppression;
 	char    iCode2Subfield;
 	String  sierraRecordFixedFieldsTag;
@@ -210,8 +211,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			ytdCheckoutSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "yearToDateCheckouts");
 			lastYearCheckoutSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastYearCheckouts");
 			totalCheckoutSubfield    = getSubfieldIndicatorFromConfig(indexingProfileRS, "totalCheckouts");
-
-			iTypeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
+			opacMessageSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "opacMessage");
+			iTypeSubfield            = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
 				if (pattern != null && !pattern.isEmpty()) {
@@ -1183,7 +1184,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (shelfLocation == null || shelfLocation.isEmpty() || shelfLocation.equals("none")){
 			return "";
 		}else {
-			return translateValue("shelf_location", shelfLocation, identifier);
+			String shelfLocationTranslation = translateValue("shelf_location", shelfLocation, identifier);
+			if (opacMessageSubfield != ' ') {
+				String opacMessageCode = getItemSubfieldData(opacMessageSubfield, itemField);
+				if (opacMessageCode != null && !opacMessageCode.isEmpty() && !opacMessageCode.equals("-") && !opacMessageCode.equals(" ")){
+					String opacMessageTranslation = translateValue("opac_message", opacMessageCode, identifier);
+					if (opacMessageTranslation != null && !opacMessageTranslation.equals(opacMessageCode)){
+						// Do not use a code without a translation
+						shelfLocationTranslation = opacMessageTranslation + " " + shelfLocationTranslation;
+					}
+				}
+			}
+			return shelfLocationTranslation;
 		}
 	}
 

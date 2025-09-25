@@ -461,7 +461,7 @@ abstract class RecordInterface {
 
 	public abstract function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null);
 
-	public function hasOpacFieldMessage(){
-		return false;
-	}
+//	public function hasOpacFieldMessage(){
+//		return false;
+//	}
 }
