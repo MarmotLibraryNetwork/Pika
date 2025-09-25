@@ -1114,7 +1114,8 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if (editionData.contains("illustrated ed")) {
+					} else if (editionData.contains("illustrated ed") && !editionData.contains("newly illustrated") && !editionData.contains("reillustrated")) {
+						// Exclude "Newly Illustrated edition" & "Reillustrated edition"
 						result.add("IllustratedEdition");
 					} else if (findBluRay4KUltraBluRayComboPhrasesLowerCased(editionData)){
 						//Do combo check before single format check
