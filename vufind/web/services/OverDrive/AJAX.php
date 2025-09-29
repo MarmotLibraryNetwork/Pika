@@ -407,7 +407,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$id = $_REQUEST['id'];
 			if (empty($_REQUEST['formatType'])){
 				$recordDriver   = new \OverDriveRecordDriver($id);
-				$formats        = $recordDriver->getItems();
+				$formats        = $recordDriver->getSpecificTitleFormats();
 				$lendingPeriods = [];
 				$formatClass    = [];
 
@@ -571,7 +571,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
 				$interface->assign('titleAndAuthor', $titleAndAuthor);
 				$formats = [];
-				foreach ($recordDriver->getItems() as $format){
+				foreach ($recordDriver->getSpecificTitleFormats() as $format){
 					$formats[$format->textId] = $format->name;
 				}
 				$interface->assign('formats', $formats);
