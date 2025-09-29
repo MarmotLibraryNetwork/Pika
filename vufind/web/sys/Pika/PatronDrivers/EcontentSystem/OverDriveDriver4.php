@@ -110,6 +110,7 @@ class OverDriveDriver4 {
 	private function initCurlObject($headers = []){
 		$curl = new Curl();
 		$curl->setOpts($this->defaultCurlOptions);
+		$this->logger->debug("Init curl headers", $headers);
 		$curl->setHeaders($headers);
 		return $curl;
 	}
@@ -221,7 +222,7 @@ class OverDriveDriver4 {
 			return [
 				'Host'          => parse_url($url, PHP_URL_HOST),
 				'Authorization' => 'Basic ' . $requestAuth,
-				'Content-Type'  => ' application/x-www-form-urlencoded;charset=UTF-8',
+				'Content-Type'  => 'application/x-www-form-urlencoded;charset=UTF-8',
 			];
 		}
 		return false;
@@ -1158,6 +1159,7 @@ class OverDriveDriver4 {
 
 		$curl = new Curl();
 		$curl->setOpts($curlopts);
+		$this->logger->debug("Patron request headers", $headers);
 		$curl->setHeaders($headers);
 		$response = $curl->get($url);
 		$hData    = [];
