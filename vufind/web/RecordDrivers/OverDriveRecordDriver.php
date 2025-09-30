@@ -313,9 +313,14 @@ class OverDriveRecordDriver extends RecordInterface {
 //		return $items;
 //	}
 
-	public function getAccessUrl($crossRefId){
-		$websiteId = $this->getWebsiteId();
-		$url = "https://link.overdrive.com?websiteID=$websiteId&titleID=$crossRefId";
+	public function getAccessUrl($crossRefId = null) : string{
+		$crossRefId ??= $this->overDriveProduct->crossRefId;
+		if (empty($crossRefId)){
+			global $pikaLogger;
+			$pikaLogger->withName(__CLASS__)->error('No crossRefId provided for access url');
+		}
+		$websiteId  = $this->getWebsiteId();
+		$url        = "https://link.overdrive.com?websiteID=$websiteId&titleID=$crossRefId";
 		return $url;
 	}
 
@@ -1261,7 +1266,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($offline){
 			$label     = translate('overdrive_access_url_action');
 			$actions[] = [
-				'url'   => $this->getAccessUrl($this->overDriveProduct->crossRefId),
+				'url'   => $this->getAccessUrl(),
 				'title' => $label
 			];
 		}else{
@@ -1338,32 +1343,40 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * An Array of basic template information. Essentially determines whether or not to show place hold or check out buttons.
+	 * An Array of basic template information used for OverDrive Record Views.
+	 * Determines whether to show "place hold" or "check out" buttons, on an access url when
+	 * OverDrive is offline.
 	 * @return array
 	 */
 	public function getStatusSummary(){
 		$statusSummary   = [];
 		$availableCopies = 0;
 		$totalCopies     = 0;
-		$availabilities  = $this->getAvailability();
-		$isCopies        = count($availabilities) > 0;
-		if ($isCopies){
-			foreach ($availabilities as $curAvailability){
-				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies     += $curAvailability->copiesOwned;
+		$offline         = self::offline();
+		if (!$offline){
+			$availabilities = $this->getAvailability();
+			$isCopies       = count($availabilities) > 0;
+			if ($isCopies){
+				foreach ($availabilities as $curAvailability){
+					$availableCopies += $curAvailability->copiesAvailable;
+					$totalCopies     += $curAvailability->copiesOwned;
+				}
 			}
+
+			//Set status summary
+			if ($availableCopies > 0){
+				$statusSummary['status'] = 'Available from OverDrive';
+				$statusSummary['class']  = 'available';
+			}else{
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['class']  = 'checkedOut';
+			}
+		} else {
+			$isCopies = false;
+			$statusSummary['offline'] = true;
 		}
 
-		//Set status summary
-		if ($availableCopies > 0){
-			$statusSummary['status'] = 'Available from OverDrive';
-			$statusSummary['class']  = 'available';
-		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['class']  = 'checkedOut';
-		}
-
-		//Determine which buttons to show
+		// Determine which buttons to show
 		$statusSummary['showPlaceHold'] = $isCopies && $availableCopies == 0;
 		$statusSummary['showCheckout']  = $isCopies && $availableCopies > 0;
 

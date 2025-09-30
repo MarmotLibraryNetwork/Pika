@@ -51,10 +51,11 @@
 								{if $holdingsSummary.showPlaceHold}
 									{* Place hold link *}
 									<button class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.placeOverDriveHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold OverDrive"}</button>
-								{/if}
-								{if $holdingsSummary.showCheckout}
+								{elseif $holdingsSummary.showCheckout}
 									{* Checkout link *}
 									<button class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return Pika.OverDrive.checkOutOverDriveTitle('{$recordDriver->getUniqueID()}')">{translate text="Check Out OverDrive"}</button>
+								{elseif $holdingsSummary.offline}
+									<a href="{$recordDriver->getAccessUrl()}" class="btn btn-sm btn-primary">{translate text="overdrive_access_url_action"}</a>
 								{/if}
 							</div>
 						</div>

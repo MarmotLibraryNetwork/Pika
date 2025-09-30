@@ -654,7 +654,6 @@ class OverDrive_AJAX extends AJAXHandler {
 	}
 
 	function getOverDriveIssueCheckoutPrompt(){
-
 		global $interface;
 		$overdriveId         = $_REQUEST['overdriveId'];
 		$issue              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIMagazineIssues;
@@ -668,12 +667,21 @@ class OverDrive_AJAX extends AJAXHandler {
 				'description' => $issue->description,
 				'parentId'    => $issue->parentId,
 			]);
-
-			return [
-				'title'   => 'Checkout Magazine Issue',
-				'body'    => $interface->fetch('OverDrive/overdrive-magazine-issue-popup.tpl'),
-				'buttons' => "<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('$parentId','magazine-overdrive','$overdriveId')\">Checkout</button>"
-			];
+			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+			if (OverDriveRecordDriver::offline()){
+				$recordDriver = new OverDriveRecordDriver($issue->parentId, -1); // (Don't need to load grouped work)
+				return [
+					'title'   => 'View Magazine Issue',
+					'body'    => $interface->fetch('OverDrive/overdrive-magazine-issue-popup.tpl'),
+					'buttons' => '<a class="btn btn-primary" href="'. $recordDriver->getAccessUrl($issue->crossRefId) . '">'. translate('overdrive_access_url_action') . '</a>'
+				];
+			} else{
+				return [
+					'title'   => 'Checkout Magazine Issue',
+					'body'    => $interface->fetch('OverDrive/overdrive-magazine-issue-popup.tpl'),
+					'buttons' => "<button class='btn btn-primary' onclick=\"Pika.OverDrive.checkOutOverDriveTitle('$parentId','magazine-overdrive','$overdriveId')\">Checkout</button>"
+				];
+			}
 		} else {
 			return [
 				'title' => 'Checkout Magazine Issue',
