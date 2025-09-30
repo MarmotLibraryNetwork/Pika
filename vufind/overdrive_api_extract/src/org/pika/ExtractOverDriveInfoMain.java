@@ -82,7 +82,7 @@ public class ExtractOverDriveInfoMain {
 		}
 
 		Date currentTime = new Date();
-		logger.info(currentTime + ": Starting OverDrive Extract");
+		logger.info("Starting OverDrive Extract {}", currentTime);
 
 //		// Setup the MySQL driver
 //		try {
@@ -101,21 +101,21 @@ public class ExtractOverDriveInfoMain {
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
 		try {
 			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to pika database : " + e.getMessage());
+			logger.error("Could not connect to pika database : {}", e.getMessage());
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
 
 		//Connect to the database
 		String econtentConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
-		if (econtentConnectionInfo == null || econtentConnectionInfo.length() == 0) {
+		if (econtentConnectionInfo == null || econtentConnectionInfo.isEmpty()) {
 			logger.error("eContent Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
@@ -124,7 +124,7 @@ public class ExtractOverDriveInfoMain {
 		try {
 			econtentConn = DriverManager.getConnection(econtentConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to eContent database : " + e.getMessage());
+			logger.error("Could not connect to eContent database : {}", e.getMessage());
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 			return;
 		}
@@ -137,14 +137,28 @@ public class ExtractOverDriveInfoMain {
 
 		systemVariables = new PikaSystemVariables(logger, pikaConn);
 
-		ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-		extractor.extractOverDriveInfo(systemVariables, pikaConn, econtentConn, logEntry, doFullReload, individualIdToProcess);
+		if (PikaConfigIni.getBooleanIniValue("OverDrive", "offline")){
+			String note = "OverDrive Offline Mode is currently on. Pausing for 1 minute";
+			logger.info(note);
+			logEntry.addNote(note);
+			logEntry.saveResults();
+			try {
+				Thread.sleep(60000);
+			} catch (Exception e) {
+				logger.error("Sleep was interrupted while pausing in OverDrive Extract.");
+			}
+		} else {
+			// Normal operation
+			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
+			extractor.extractOverDriveInfo(systemVariables, pikaConn, econtentConn, logEntry, doFullReload, individualIdToProcess);
+		}
 
 		logEntry.setFinished();
-		logEntry.addNote("Finished OverDrive extraction");
+		String message = "Finished OverDrive extraction";
+		logEntry.addNote(message);
 		logEntry.saveResults();
 		if (logger.isInfoEnabled()) {
-			logger.info("Finished OverDrive extraction");
+			logger.info(message);
 			Date endTime     = new Date();
 			long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
 			logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
