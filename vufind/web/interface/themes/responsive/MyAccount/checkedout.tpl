@@ -5,7 +5,7 @@
 		{* Alternate Mobile MyAccount Menu *}
 		{include file="MyAccount/mobilePageHeader.tpl"}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
+		<span class="availableHoldsNoticePlaceHolder"></span>
 
 		<h1 role="heading" aria-level="1" class="h2">{translate text='Checked Out Titles'}</h1>
 
@@ -14,6 +14,10 @@
 		{if $offline}
 			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Checked Out Titles'|lower} at this time.</div>
 		{else}
+
+			{if $overDriveOfflineMode}
+				<p class="alert alert-warning"><strong>Access to OverDrive is currently limited.</strong> We are unable to retrieve information about your checked out OverDrive titles at this time.</p>
+			{/if}
 
 			{if $transList}
 {*				<form action="/MyAccount/CheckedOut" method="get">*}
@@ -68,7 +72,7 @@
 						{/foreach}
 					</div>
 
-					{if translate('CheckedOut_Econtent_notice')}
+					{if !$overDriveOfflineMode &&translate('CheckedOut_Econtent_notice')}
 							<br>
 						<p class="alert alert-info">
 							{translate text='CheckedOut_Econtent_notice'}

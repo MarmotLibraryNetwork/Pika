@@ -16,9 +16,14 @@
 		<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your holds at this time.</div>
 	{else}
 
-		<p id="overdrive_holds_inclusion_notice">
-			{translate text="Items on hold include titles in Overdrive."}
-		</p>
+		{if $overDriveOfflineMode}
+			<p class="alert alert-warning"><strong>Access to OverDrive is currently limited.</strong> We are unable to retrieve information about your OverDrive holds at this time.</p>
+		{else}
+			<p id="overdrive_holds_inclusion_notice">
+				{translate text="Items on hold include titles in Overdrive."}
+			</p>
+		{/if}
+
 
 		{foreach from=$recordList item=sectionData key=sectionKey}
 			<h2 class="h3">{if $sectionKey == 'available'}Holds Ready For Pickup{else}Pending Holds{/if}</h2>

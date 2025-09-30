@@ -79,15 +79,22 @@ class MyAccount_CheckedOut extends MyAccount{
 			}
 
 			if ($user) {
-				// Get My Transactions
+				$overDriveOfflineMode = false;
+				if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+					$interface->assign('overDriveOfflineMode', true);
+					$overDriveOfflineMode = true;
+				}
+
+
+					// Get My Transactions
 				$allCheckedOut = $user->getMyCheckouts();
 
 				//Do sorting now that we have all records
 				$curTransaction           = 0;
-				$hasOnlyEContentCheckOuts = true;
+				$hasOnlyEContentCheckOuts = !$overDriveOfflineMode; // When overdrive is offline, has only eContent check is unnecessary.
 				foreach ($allCheckedOut as $i => $curTitle) {
 					$curTransaction++;
-					if ($hasOnlyEContentCheckOuts && strpos($i, 'OverDrive') === false && strpos($i, 'Hoopla') === false) {
+					if ($hasOnlyEContentCheckOuts && !str_contains($i, 'OverDrive') && !str_contains($i, 'Hoopla')) {
 						$hasOnlyEContentCheckOuts = false;
 					}
 					$sortTitle = !empty($curTitle['title_sort']) ? $curTitle['title_sort'] : (empty($curTitle['title'])? $this::SORT_LAST_ALPHA : $curTitle['title']);
