@@ -110,7 +110,6 @@ class OverDriveDriver4 {
 	private function initCurlObject($headers = []){
 		$curl = new Curl();
 		$curl->setOpts($this->defaultCurlOptions);
-		$this->logger->debug("Init curl headers", $headers);
 		$curl->setHeaders($headers);
 		return $curl;
 	}
@@ -178,9 +177,9 @@ class OverDriveDriver4 {
 				if ($this->getRequirePin($user)){
 					$patronPin  = urlencode($user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode);
 					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-                }else{
+				}else{
 					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-                }
+				}
 
 				$url             = 'https://oauth-patron.overdrive.com/patrontoken';
 				$headers         = $this->_authorizationHeaders($url);
@@ -219,6 +218,7 @@ class OverDriveDriver4 {
 		global $configArray;
 		if (!empty($configArray['OverDrive']['clientKey']) && !empty($configArray['OverDrive']['clientSecret'])){
 			$requestAuth = base64_encode($configArray['OverDrive']['clientKey'] . ':' . $configArray['OverDrive']['clientSecret']);
+			//$this->logger->debug("OverDrive url $url , host : ". parse_url($url, PHP_URL_HOST));
 			return [
 				'Host'          => parse_url($url, PHP_URL_HOST),
 				'Authorization' => 'Basic ' . $requestAuth,
@@ -1159,7 +1159,6 @@ class OverDriveDriver4 {
 
 		$curl = new Curl();
 		$curl->setOpts($curlopts);
-		$this->logger->debug("Patron request headers", $headers);
 		$curl->setHeaders($headers);
 		$response = $curl->get($url);
 		$hData    = [];
