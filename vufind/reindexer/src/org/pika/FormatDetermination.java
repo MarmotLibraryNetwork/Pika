@@ -1097,6 +1097,11 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * Phrases to exclude from Illustrated Edition format determination
+	 */
+	private final Pattern illustratedEditionExceptions = Pattern.compile("newly illustrated|new illustrated|classic illustrated|reillustrated");
+
 	private void getFormatFromEdition(Record record, Set<String> result/*, RecordIdentifier identifier*/) {
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
@@ -1114,8 +1119,8 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if (editionData.contains("illustrated ed") && !editionData.contains("newly illustrated") && !editionData.contains("reillustrated")) {
-						// Exclude "Newly Illustrated edition" & "Reillustrated edition"
+					} else if (editionData.contains("illustrated ed") && !illustratedEditionExceptions.matcher(editionData).find()) {
+						// Exclude "Newly Illustrated edition", "New illustrated edition", "Classic illustrated edition" & "Reillustrated edition"
 						result.add("IllustratedEdition");
 					} else if (findBluRay4KUltraBluRayComboPhrasesLowerCased(editionData)){
 						//Do combo check before single format check
