@@ -1191,6 +1191,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					String opacMessageTranslation = translateValue("opac_message", opacMessageCode, identifier);
 					if (opacMessageTranslation != null && !opacMessageTranslation.equals(opacMessageCode)){
 						// Do not use a code without a translation
+						logger.debug("Item {} on record {} has opac message code {}", itemInfo.getItemIdentifier(), identifier, opacMessageCode);
 						shelfLocationTranslation = opacMessageTranslation + " " + shelfLocationTranslation;
 					}
 				}
