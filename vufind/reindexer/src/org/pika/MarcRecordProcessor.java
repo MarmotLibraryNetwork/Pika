@@ -611,7 +611,10 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
 
-		//Now get literary forms from the subjects, these don't need translation
+		//Now get literary forms from subject terms that line up with the literary form terms
+		//TODO: Matching subject terms should use the translation of equivalent literary_form code
+		// so that the translation map controls what value these terms add.
+		// (Its likely okay because the translated values are rarely different between sites)
 		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
 		HashMap<String, Integer> literaryFormsFull      = new HashMap<>();
 		//Check the subjects
@@ -667,8 +670,10 @@ abstract class MarcRecordProcessor {
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
+				String literaryFormTranslationForPoetry = indexer.translateSystemValue("literary_form", "P", identifier);
+				addToMapWithCount(literaryFormsWithCount, literaryFormTranslationForPoetry);
 				// Union Catalog Committee decision 2025-09-24, code Poetry as literary Form 'Non-Fiction'
+				// LION wants to keep their current translation 'Fiction'
 				addToMapWithCount(literaryFormsFull, "Poetry");
 			}else if (subjectForm.equalsIgnoreCase("Humor")
 					|| subjectForm.equalsIgnoreCase("Comedy")
@@ -742,6 +747,7 @@ abstract class MarcRecordProcessor {
 
 		//Check the subjects
 		Set<String> subjectGenreData = MarcUtil.getFieldList(record, "655a");
+		// 655 - Index Term-Genre/Form | a - Genre/form data or focus term
 		for(String subjectForm : subjectGenreData) {
 			subjectForm = Util.trimTrailingPunctuation(subjectForm).toLowerCase();
 			if (subjectForm.startsWith("instructional film")
