@@ -162,7 +162,7 @@ public class UserListProcessor {
 		long         listId       = allPublicListsRS.getLong("id");
 
 		long userId   = allPublicListsRS.getLong("user_id");
-		if (!fullReindex  && !userListsOnly) {
+		if (!fullReindex && !userListsOnly) {
 			int deleted  = allPublicListsRS.getInt("deleted");
 			int isPublic = allPublicListsRS.getInt("public");
 			if (deleted == 1 || isPublic == 0) {
@@ -181,18 +181,14 @@ public class UserListProcessor {
 				userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
 			} else {
 				//Don't know the owning library for some reason
-				if (logger.isInfoEnabled()) {
-					logger.info("Don't know library for user " + userId + ", owner of public list " + listId);
-				}
+				logger.info("Don't know library for user {}, owner of public list {}", userId, listId);
 				userListSolr.setOwningLibrary(-1);
 			}
 			if (locationCodesByHomeLocation.containsKey(patronHomeLibrary)) {
 				userListSolr.setOwningLocation(locationCodesByHomeLocation.get(patronHomeLibrary));
 			} else {
 				//Don't know the owning location
-				if (logger.isInfoEnabled()) {
-					logger.info("Don't know location for user " + userId + ", owner of public list " + listId);
-				}
+				logger.info("Don't know location for user {}, owner of public list {}", userId, listId);
 				userListSolr.setOwningLocation("");
 			}
 
@@ -212,11 +208,7 @@ public class UserListProcessor {
 				if (displayName != null && !displayName.isEmpty()) {
 					userListSolr.setAuthor(displayName);
 				} else {
-					if (logger.isDebugEnabled()) {
-						logger.debug("User " + userId + " owner of public list " + listId +
-										" does not have their display name set, falling back to first initial, last name"
-						);
-					}
+					logger.debug("User {} owner of public list {} does not have their display name set, falling back to first initial, last name", userId, listId);
 					String firstName = allPublicListsRS.getString("firstname");
 					String lastName  = allPublicListsRS.getString("lastname");
 					if (firstName == null) firstName = "";
@@ -237,6 +229,7 @@ public class UserListProcessor {
 						String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
 						if (!allTitlesRS.wasNull() && !groupedWorkId.isEmpty() && !groupedWorkId.contains(":")) {
 							// Skip archive object Ids
+							//TODO: since archive IDs are changing form, !groupedWorkId.contains(":") will not be a good check
 //						groupedWorkIds.append(groupedWorkId).append(',');
 
 							SolrQuery query = new SolrQuery();
@@ -248,12 +241,12 @@ public class UserListProcessor {
 								QueryResponse    response = solrServer.query(query);
 								SolrDocumentList results  = response.getResults();
 								//Should only ever get one response
-								if (results.size() >= 1) {
+								if (!results.isEmpty()) {
 									SolrDocument curWork = results.get(0);
 									userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title"), curWork.getFieldValue("author"));
 								}
 							} catch (Exception e) {
-								logger.error("User Lists: Error loading information about list entry title " + groupedWorkId, e);
+								logger.error("User Lists: Error loading information about list entry title {}", groupedWorkId, e);
 							}
 
 
