@@ -1,52 +1,64 @@
-@marmot-dark-orange: #D6430A; // https://webaim.org/resources/contrastchecker/?fcolor=D6430A&bcolor=FFFFFF
-//@marmot-light-orange: #EA7315;
-//@marmot-light-blue: #5891AA;
-@marmot-light-blue: #457D9C;  // 4.5 contrast against #FFF https://webaim.org/resources/contrastchecker/?fcolor=457D9C&bcolor=FFFFFF
-@marmot-dark-blue: #2D5D82;  // 7 contrast against #FFF https://webaim.org/resources/contrastchecker/?fcolor=2D5D82&bcolor=FFFFFF
+@brand-primary: #d8e1e6;
+@brand-primary-alternate: #f5f5f6;
+@brand-secondary: #adadc2;
+@brand-secondary-alternate: #d3d7dd;
+@brand-highlight: #a17f6c;
+@brand-highlight-alternate: #024d75;
+@brand-body-color: #212529;
+@brand-body-bg: @brand-primary-alternate;
 
-@marmot-main-menu-gray: #848484;
-@marmot-light-gray: #eee;
+// FONT DEFINITIONS
+@body-bg-resp: @brand-body-bg;
+@content-bg: @brand-body-bg;
+@body-text-color: @brand-body-color;
+@font-family-primary: "HelveticaNeue", "Helvetica", "Arial", sans-serif;
+@font-family-secondary: "Didot", serif;
+@font-family-sans-serif-resp:  @font-family-primary;
+@font-family-serif-resp:       @font-family-secondary;
+
+@horizontal-search-label-color: @brand-body-color;
+
+@home-page-browse-content-background-color: @brand-body-bg;
+@home-search-top-color: @brand-primary; //Top color for background gradient in header
+@home-search-bottom-color: @brand-primary;
+
+@sidebar-link-color: @brand-highlight-alternate;
+@menu-bar-background-color: @brand-secondary;
+@menu-bar-color: @brand-body-color;
+@menu-bar-selected-background-color: @brand-highlight-alternate;
+
+@header-bg-color: @brand-primary;
+
+@header-bottom-border-color: @brand-primary;
+@footer-top-border-color: @brand-secondary;
 
 
+@header-buttons-background-color : @brand-highlight;
 
-@home-search-top-color: @marmot-dark-blue; //Top color for background gradient in header
-@home-search-bottom-color: @marmot-light-blue;
+@btn-primary-bg: @brand-highlight-alternate;
 
-@sidebar-link-color: @marmot-light-blue;
-@menu-bar-background-color: @marmot-dark-blue;
-@menu-bar-selected-background-color: @marmot-dark-orange;
+@category1MainColor: @brand-body-bg;
+@categoryLineColor: @brand-body-bg;
+@categoryLineShadow: @brand-body-bg;
+@selectedCategoryBorderColor: @brand-body-bg;
 
-@header-bg-color: #fff;
-
-@header-bottom-border-color: @marmot-dark-blue;
-@footer-top-border-color: @marmot-dark-blue;
-
-
-@header-buttons-background-color : @marmot-dark-orange;
-
-@btn-primary-bg: @marmot-light-blue;
-
-@category1MainColor: #fff;
-@categoryLineColor: #fff;
-@categoryLineShadow: #fff;
-@selectedCategoryBorderColor: #fff;
-
-@browseCarouselControlBackgroundColor: #fff;
-@browseCarouselControlColor: @marmot-dark-orange;
+@browseCarouselControlBackgroundColor: @brand-body-bg;
+@browseCarouselControlColor: @brand-secondary;
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: @marmot-dark-orange;
+@selectedCategoryColor: @brand-highlight-alternate;
 @selectedSubCategoryBackgroundColor: @selectedCategoryColor;
 
 
-@browse-label-text-color: @marmot-dark-blue;
-@browse-category-text-color: @marmot-dark-blue;
-@selected-browse-label-search-color: @marmot-dark-blue;
+@browse-label-text-color: @brand-highlight-alternate;
+@browse-category-text-color: @brand-highlight-alternate;
+@selected-browse-label-search-color: @brand-highlight-alternate;
 @browse-category-font-size: 30px;
 
 // set opened accordions color
-@accordion-active-header-bg-color: @marmot-dark-orange;
+@accordion-active-header-bg-color: @brand-highlight;
 //@accordion-active-header-color: @accordion-header-color;
 //@accordion-active-header-shadow-color: #fff;
 
 @panel-border-radius: 0;
+@header-logo-max-height: 4em;
