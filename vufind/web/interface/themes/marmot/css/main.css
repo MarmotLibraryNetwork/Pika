@@ -10710,3 +10710,17 @@ a .header-button:hover {
 .result-head > div:nth-child(1) {
   color: #024d75;
 }
+.btn.btn-default {
+  border: 1px solid #d3d7dd;
+}
+#browse-category-carousel .browse-category.category1,
+#browse-category-carousel .browse-category.category2,
+#browse-category-carousel .browse-category.category3,
+#browse-category-carousel .browse-category.category4,
+#browse-category-carousel .browse-category.category5,
+#browse-category-carousel .browse-category.category6,
+#browse-category-carousel .browse-category.category7,
+#browse-category-carousel .browse-category.category8,
+#browse-category-carousel .browse-category.category9 {
+  border: none;
+}

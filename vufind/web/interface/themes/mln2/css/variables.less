@@ -1,46 +1,61 @@
-@mln2-dark-orange: #B56408;
-@mln2-dark-green: #3A500A;
-@mln2-light-gray: #CCC9C2;
-//@mln2-dark-gray: #858585;
-@mln2-dark-gray: #6C6C6C; // (5.25) // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=6C6C6C
-@mln2-light-blue: #95D3F9;
-@mln2-dark-blue: #24718B; // (5.51) // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=24718B
+@brand-primary: #d8e1e6;
+@brand-primary-alternate: #f5f5f6;
+@brand-secondary: #adadc2;
+@brand-secondary-alternate: #d3d7dd;
+@brand-highlight: #a17f6c;
+@brand-highlight-alternate: #024d75;
+@brand-body-color: #212529;
+@brand-body-bg: @brand-primary-alternate;
+
+// FONT DEFINITIONS
+@body-bg-resp: @brand-body-bg;
+@content-bg: @brand-body-bg;
+@body-text-color: @brand-body-color;
+@font-family-primary: "HelveticaNeue", "Helvetica", "Arial", sans-serif;
+@font-family-secondary: "Didot", serif;
+@font-family-sans-serif-resp:  @font-family-primary;
+@font-family-serif-resp:       @font-family-secondary;
+
+@horizontal-search-label-color: @brand-body-color;
 
 
 
-@home-search-top-color: @mln2-dark-green; //Top color for background gradient in header
-@home-search-bottom-color: @mln2-dark-green;
+@home-search-top-color: @brand-highlight; //Top color for background gradient in header
+@home-search-bottom-color: @brand-highlight;
 
-@sidebar-link-color: @mln2-dark-blue;
-@menu-bar-background-color: @mln2-dark-gray;
-@menu-bar-selected-background-color: @mln2-dark-blue;
+@sidebar-link-color: @brand-highlight-alternate;
+@menu-bar-background-color: @brand-highlight-alternate;
+@menu-bar-selected-background-color: @brand-highlight;
+@menu-bar-selected-color: #000;
+@header-bg-color: @brand-primary-alternate;
 
-@header-bg-color: #fff;
+@header-bottom-border-color: @brand-highlight;
+@footer-top-border-color: @brand-highlight;
 
-@header-bottom-border-color: @mln2-dark-green;
-@footer-top-border-color: @mln2-dark-green;
+@header-buttons-background-color : @brand-highlight-alternate;
 
-@header-buttons-background-color : @mln2-dark-green;
+@btn-primary-bg: @brand-highlight-alternate;
 
-@btn-primary-bg: @mln2-dark-blue;
+@category1MainColor: @brand-body-bg;
+@categoryLineColor: @brand-body-bg;
+@categoryLineShadow: @brand-body-bg;
+@selectedCategoryBorderColor: @brand-body-bg;
 
-@category1MainColor: #fff;
-@categoryLineColor: #fff;
-@categoryLineShadow: #fff;
-@selectedCategoryBorderColor: #fff;
-
-@browseCarouselControlBackgroundColor: #fff;
-@browseCarouselControlColor: @mln2-dark-orange;
+@browseCarouselControlBackgroundColor: #000;
+@browseCarouselControlColor: @brand-primary;
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: @mln2-dark-green;
+@selectedCategoryColor: @brand-highlight;
 @selectedSubCategoryBackgroundColor: @selectedCategoryColor;
 
 
-@browse-label-text-color: @mln2-dark-blue;
-@browse-category-text-color: @mln2-dark-blue;
-@selected-browse-label-search-color: @mln2-dark-blue;
+@browse-label-text-color: @brand-highlight-alternate;
+@browse-category-text-color: @brand-highlight-alternate;
+@selected-browse-label-search-color: @brand-highlight-alternate;
 @browse-category-font-size: 30px;
 
 // set opened accordions color
-@accordion-active-header-bg-color: @mln2-dark-blue;
+@accordion-active-header-bg-color: @brand-highlight-alternate;
+
+@panel-border-radius: 0;
+@header-logo-max-height: 4em;
