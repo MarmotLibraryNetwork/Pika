@@ -188,9 +188,14 @@ class FavoriteHandler {
 							$groupedWork = new GroupedWorkDriver($catalogResult);
 							if ($groupedWork->isValid){
 								// Need to re-sort in order to match list order
-								$key = array_search($this->favorites, $catalogResult['id']);
-								if ($key !== false){
-									$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+								try {
+									$key = array_search($catalogResult['id'], $this->favorites);
+									if ($key !== false){
+										$catalogResourceList[$key] = $interface->fetch($groupedWork->getBrowseResult());
+									}
+								} catch (Exception $e){
+									global $pikaLogger;
+									$pikaLogger->withName(__CLASS__)->error(__METHOD__ . ': ' .$e->getMessage());
 								}
 							}
 						}
