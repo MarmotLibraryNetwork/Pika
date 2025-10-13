@@ -121,7 +121,7 @@ public class LoanRuleDeterminer {
 		} catch (NumberFormatException e) {
 			logger.error("Error parsing value for Loan Rule Determiner row number " + this.rowNumber, e);
 		}
-		if (result.size() == 0) {
+		if (result.isEmpty()) {
 			logger.warn("No value(s) set for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
 		}
 		return result;

@@ -69,7 +69,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try {
-			String availableStatusString = indexingProfileRS.getString("availableStatuses");
+			String availableStatusString  = indexingProfileRS.getString("availableStatuses");
 			String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
 			String libraryUseOnlyStatuses = indexingProfileRS.getString("libraryUseOnlyStatuses");
 			if (availableStatusString != null && !availableStatusString.isEmpty()){
@@ -503,7 +503,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return dueDate == null || dueDate.isEmpty() || dueDate.trim().equals("-  -");
 	}
 
-	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
+	private final SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
 	private String getDisplayDueDate(String dueDate, RecordIdentifier identifier){
 		try {
 			Date dateAdded = dueDateFormatter.parse(dueDate);
