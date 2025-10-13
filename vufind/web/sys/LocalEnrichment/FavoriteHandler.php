@@ -195,7 +195,7 @@ class FavoriteHandler {
 									}
 								} catch (Exception $e){
 									global $pikaLogger;
-									$pikaLogger->withName(__CLASS__)->error(__METHOD__ . ': ' .$e->getMessage());
+									$pikaLogger->withName(__CLASS__)->error(__METHOD__ . ' (processing catalog items) : ' .$e->getMessage());
 								}
 							}
 						}
@@ -271,11 +271,16 @@ class FavoriteHandler {
 						$archiveSearchObject->setQueryIDs($this->archiveIds); // do solr search by Ids
 						$archiveResult = $archiveSearchObject->processSearch();
 						foreach ($archiveResult['response']['docs'] as $result){
-							/** @var IslandoraDriver $archiveWork */
-							$archiveWork = RecordDriverFactory::initRecordDriver($result);
-							$key         = array_search($result['PID'], $idsToFetch);
-							if ($key !== false){
-								$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+							try {
+								/** @var IslandoraDriver $archiveWork */
+								$archiveWork = RecordDriverFactory::initRecordDriver($result);
+								$key         = array_search($result['PID'], $this->archiveIds);
+								if ($key !== false){
+									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
+								}
+							} catch (Exception $e){
+								global $pikaLogger;
+								$pikaLogger->withName(__CLASS__)->error(__METHOD__ . ' (archive Ids processing) : ' .$e->getMessage());
 							}
 						}
 					}
