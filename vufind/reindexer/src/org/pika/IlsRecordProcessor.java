@@ -765,6 +765,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
+			if (itemInfo.getDetailedStatus().equals("On Order")){
+				itemInfo.setIsOrderItem();
+			}
 		}
 
 		if (formatSource.equals("item") && formatSubfield != ' '){
