@@ -765,8 +765,23 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
+
 			if (itemInfo.getDetailedStatus().equals("On Order")){
+				// Handling for dummy items being used as On Order items. e.g. mdhl for mln1
 				itemInfo.setIsOrderItem();
+
+				// If no call number is set, use standard ON ORDER
+				String callNumber = itemInfo.getCallNumber();
+				if (callNumber == null || callNumber.isEmpty()) {
+					itemInfo.setCallNumber("ON ORDER");
+					itemInfo.setSortableCallNumber("ON ORDER");
+				}
+
+				// If no collection is set, use the standards "On Order:
+				String collection = itemInfo.getCollection();
+				if (collection == null || collection.isEmpty()) {
+					itemInfo.setCollection("On Order");
+				}
 			}
 		}
 
