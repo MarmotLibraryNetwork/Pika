@@ -38,7 +38,17 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			return true;
 		}
 
-		@Override
+	/**
+	 * Make Sideloaded Physical Records not holdable.
+	 * @param itemInfo The item info object
+	 * @return that the title isn't holdable
+	 */
+	@Override
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo) {
+		return new HoldabilityInformation(false, new HashSet<>());
+	}
+
+	@Override
 		protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 			//For ILS Records, we can create multiple different records, one for print and order items,
 			//and one or more for ILS eContent items.
@@ -87,7 +97,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setDateAdded(dateAdded);
 
 			itemInfo.setLocationCode(indexingProfileSourceDisplayName);
-			//No iTypes for Side loaded eContent
+			//No iTypes for Side loaded content
 			//itemInfo.setITypeCode();
 			//itemInfo.setIType();
 
@@ -97,15 +107,14 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setItemIdentifier(identifier.getIdentifier());
 			itemInfo.setShelfLocation(indexingProfileSourceDisplayName);
 
-			//No Collection for Side loaded eContent
-			//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
-
-			//itemInfo.seteContentSource(indexingProfileSourceDisplayName);
-			//TODO: create External Source Facet?
+			//Set Physical Sideload name as the Collection facet value
+			itemInfo.setCollection(indexingProfileSourceDisplayName);
 
 			RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 			relatedRecord.addItem(itemInfo);
-			//loadEContentUrl(record, itemInfo, identifier);
+
+			// Set up link to external request page
+			loadEContentUrl(record, itemInfo, identifier);
 
 			loadPrintFormatInformation(relatedRecord, record);
 
@@ -114,4 +123,13 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			return relatedRecord;
 		}
 
+	@Override
+	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
+		return "Available Externally";
 	}
+
+	@Override
+	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
+		return "Available Externally";
+	}
+}
