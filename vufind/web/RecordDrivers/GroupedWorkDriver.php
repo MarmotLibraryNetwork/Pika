@@ -2664,13 +2664,14 @@ class GroupedWorkDriver extends RecordInterface {
 		'Coming Soon'           => 5,
 		'In Processing'         => 6,
 		'Checked Out'           => 7,
-		'Shelving'              => 8, // Shelving & Recently Returned are equivalent
-		'Recently Returned'     => 8,
-		'Library Use Only'      => 9,
-		'Available Online'      => 10,
-		'In Transit'            => 11,
-		'On Display'            => 12,
-		'On Shelf'              => 13,
+		'Available Externally'  => 8,
+		'Shelving'              => 9, // Shelving & Recently Returned are equivalent
+		'Recently Returned'     => 9,
+		'Library Use Only'      => 10,
+		'Available Online'      => 11,
+		'In Transit'            => 12,
+		'On Display'            => 13,
+		'On Shelf'              => 14,
 	];
 
 	/**

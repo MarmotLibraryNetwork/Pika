@@ -51,14 +51,18 @@ class TimeToReshelve extends DB_DataObject {
 			                           'values'   => [
 				                           // Any change here also needs made in GroupedWorkDriver::$statusRankings
 				                           'Currently Unavailable' => 'Currently Unavailable',
+				                           'Available to Order'    => 'Available to Order',
 				                           'On Order'              => 'On Order',
 				                           'Coming Soon'           => 'Coming Soon',
 				                           'In Processing'         => 'In Processing',
 				                           'Checked Out'           => 'Checked Out',
+				                           'Available Externally'  => 'Available Externally',
 				                           'Shelving'              => 'Shelving',
+				                           'Recently Returned'     => 'Recently Returned',
 				                           'Library Use Only'      => 'Library Use Only',
 				                           'Available Online'      => 'Available Online',
 				                           'In Transit'            => 'In Transit',
+				                           'On Display'            => 'On Display',
 				                           'On Shelf'              => 'On Shelf'
 			                           ]],
 		];
