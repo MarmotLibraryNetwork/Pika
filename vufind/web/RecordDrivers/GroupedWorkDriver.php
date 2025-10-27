@@ -3073,10 +3073,17 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}elseif (!empty($curItem->itemUrl)){
 				// Special Physical Records, like KitKeeper, that link to an external reservation system
+				// Also physical item sideloads
+				$url = $scopingDetails->localUrl ?? $curItem->itemUrl;
+				// Scope url overrides necessary for physical item sideloads
 				$relatedUrls[] = [
-					'url' => $curItem->itemUrl
+					'url' => $url
 				];
-				if (!$holdable & $available /*&& $status == 'On Shelf'*/){
+				if (!$holdable & $available && $status !== "Available Externally" /*&& $status == 'On Shelf'*/){
+					// Regular, available, not hold-able items with an item URL should be presumed as
+					// items intended to be reserved externally (not in the library circulation system).
+					// Exclude physical sideload items with the status check: $status !== "Available Externally"
+					// (which will also be available, not hold-able and have an item URL)
 					$status = translate('Available for Reservation');
 				}
 			}

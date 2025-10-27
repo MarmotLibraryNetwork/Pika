@@ -16,26 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class OnCampusAccessRecord extends SideLoadedRecord {
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
-		$actions = [];
-		//$title   = 'On-Campus Access Only';
-		$title   = 'Campus Use Only';
-		//$title   = translate('externalEcontent_url_action');
-		foreach ($relatedUrls as $urlInfo){
-			$alt = 'Available online from ' . $urlInfo['source'];
-			if (!empty($urlInfo['url'])){
-				$actions[] = [
-					'url'          => $urlInfo['url'],
-					'title'        => $title,
-					'requireLogin' => false,
-					'alt'          => $alt,
-				];
-			}
-		}
-
-		return $actions;
-	}
+class ColoStateBookClub extends ExternalRequestPhysicalItemsDriver
+{
 
 }

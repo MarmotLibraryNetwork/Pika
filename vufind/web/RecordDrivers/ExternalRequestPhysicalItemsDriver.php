@@ -16,15 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class OnCampusAccessRecord extends SideLoadedRecord {
+/*
+ * Abstract display driver for physical records that are sideloaded.
+ * Currently presuming the records should have a "Request Online" button to direct the user to
+ * an external site where the request can be made.
+ *
+ * Create a php class that extends this for your specific collection
+ * */
+abstract class ExternalRequestPhysicalItemsDriver extends MarcRecord
+{
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
 		$actions = [];
-		//$title   = 'On-Campus Access Only';
-		$title   = 'Campus Use Only';
 		//$title   = translate('externalEcontent_url_action');
+		/** @var Library $library */
+		global 	$library;
+		$title = 'Request Online';
+		$alt   = 'Available online from ' . $library->displayName;
 		foreach ($relatedUrls as $urlInfo){
-			$alt = 'Available online from ' . $urlInfo['source'];
 			if (!empty($urlInfo['url'])){
 				$actions[] = [
 					'url'          => $urlInfo['url'],
