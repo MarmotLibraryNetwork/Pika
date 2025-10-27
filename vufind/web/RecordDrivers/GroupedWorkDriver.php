@@ -1464,6 +1464,7 @@ class GroupedWorkDriver extends RecordInterface {
 					'availableLocally'     => false,
 					'availableOnline'      => false,
 					'availableHere'        => false,
+					'availableExternally'  => false,
 					'inLibraryUseOnly'     => false,
 					'allLibraryUseOnly'    => true,
 					'hideByDefault'        => false,
@@ -1477,6 +1478,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
 				$relatedManifestations[$currentManifestation]['availableHere'] = true;
+			}
+			if (!empty($curRecord['availableExternally'])){
+				$relatedManifestations[$currentManifestation]['availableExternally'] = true;
 			}
 			// Location Label field seems to be obsolete. pascal 2/26/2025
 //			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
@@ -2932,6 +2936,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'availableOnline'        => false,
 			'availableLocally'       => false,
 			'availableHere'          => false,
+			'availableExternally'    => false,
 			'inLibraryUseOnly'       => true,
 			'allLibraryUseOnly'      => true,
 			'isEContent'             => false,
@@ -3019,6 +3024,10 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
+			}
+			if ($status == "Available Externally"){
+				// Physical Sideloads
+				$relatedRecord['availableExternally'] = true;
 			}
 
 			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
