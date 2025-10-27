@@ -29,10 +29,16 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 	SideLoadedPhysicalRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 			super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 			if (formatSource.equals("item")){
-				logger.error("'item' is not a valid option for side loaded physical collection format determination");
+				logger.error("'item' is not a valid option for side loaded physical collection format determination. Using 'bib'");
+				formatSource = "bib";
 			}
 		}
 
+	/**
+	 * Make Sideloaded Physical Records always available
+	 * @param itemInfo The unused Item info object
+	 * @return true
+	 */
 		@Override
 		protected boolean isItemAvailable(ItemInfo itemInfo) {
 			return true;
@@ -40,7 +46,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 
 	/**
 	 * Make Sideloaded Physical Records not holdable.
-	 * @param itemInfo The item info object
+	 * @param itemInfo The unused item info object
 	 * @return that the title isn't holdable
 	 */
 	@Override
@@ -48,6 +54,14 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 		return new HoldabilityInformation(false, new HashSet<>());
 	}
 
+	/**
+	 * The primary difference for this method is calling to loadPhyiscalRecord() instead of loadEContentRecord();
+	 * And if there is no primary format found, Book will be used.
+	 * @param groupedWork          The Solr Document
+	 * @param record               MARC record
+	 * @param identifier           Record ID
+	 * @param loadedNovelistSeries whether the Novelist Series has been loaded
+	 */
 	@Override
 		protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 			//For ILS Records, we can create multiple different records, one for print and order items,
@@ -62,6 +76,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 				if (primaryFormat == null) {
 					logger.warn("No primary format found for {} record {}", indexingProfileSource, identifier);
 					primaryFormat = "Book"; // Default to Book
+					//TODO: Is BookClubKit a better default?
 				}
 
 				updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, loadedNovelistSeries);
@@ -123,11 +138,23 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			return relatedRecord;
 		}
 
+	/**
+	 * Set all statuses for Physical Sideloads to "Available Externally"
+	 * @param itemInfo   The Unused Item info object
+	 * @param identifier The record ID
+	 * @return "Available Externally"
+	 */
 	@Override
 	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		return "Available Externally";
 	}
 
+	/**
+	 * Set all statuses for Physical Sideloads to "Available Externally"
+	 * @param itemInfo   The Unused Item info object
+	 * @param identifier The record ID
+	 * @return "Available Externally"
+	 */
 	@Override
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
 		return "Available Externally";
