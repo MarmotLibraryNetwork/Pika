@@ -121,6 +121,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 
 			itemInfo.setItemIdentifier(identifier.getIdentifier());
 			itemInfo.setShelfLocation(indexingProfileSourceDisplayName);
+			//TODO: This gets excluded by location code checking I think
 
 			//Set Physical Sideload name as the Collection facet value
 			itemInfo.setCollection(indexingProfileSourceDisplayName);
