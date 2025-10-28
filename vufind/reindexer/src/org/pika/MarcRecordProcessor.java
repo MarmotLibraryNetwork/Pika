@@ -387,11 +387,21 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
+	/**
+	 * F&P Text Level Gradient.  This information should be a single letter, capitalized A through Z; and Z+ for High School/Adult
+	 *  <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
+	 *  
+	 * @param groupedWork  Solr Object
+	 * @param record       The MARC file
+	 * @param identifier   Record Identifier
+	 */
 	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudience : targetAudiences){
 			if (targetAudience.startsWith("Guided reading level: ")){
 				String fountasPinnellValue = targetAudience.replace("Guided reading level: ", "");
+				//TODO: parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
+				//TODO: parse ranges by dash character: "Q-R", "F-G"
 				fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
 				groupedWork.setFountasPinnell(fountasPinnellValue);
 				break;

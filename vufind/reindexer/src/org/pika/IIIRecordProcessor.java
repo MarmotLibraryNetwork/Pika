@@ -532,7 +532,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setDetailedStatus("On Order");
 		itemInfo.setCollection("On Order");
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
-		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
@@ -545,7 +544,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		if (isOrderItemValid(status)) {
 			recordInfo.addItem(itemInfo);
 			if (logger.isDebugEnabled()) {
-				logger.debug("Add order " + orderNumber + " to " + recordInfo.getFullIdentifier());
+				logger.debug("Add order {} to {}", orderNumber,recordInfo.getFullIdentifier());
 			}
 
 			//For On Order Items, increment popularity based on number of copies that are being purchased.

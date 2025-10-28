@@ -691,7 +691,7 @@ public class HooplaExportMain {
 	}
 
 
-	private static       StringBuffer     notes      = new StringBuffer();
+	private static final StringBuffer     notes      = new StringBuffer();
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static void addNoteToHooplaExportLog(String note) {

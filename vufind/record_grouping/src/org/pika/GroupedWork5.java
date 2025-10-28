@@ -39,7 +39,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	String groupingLanguage = "";
 
-	private static Logger logger = LogManager.getLogger(GroupedWork5.class);
+	private static final Logger logger = LogManager.getLogger(GroupedWork5.class);
 
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic|young)$");
 
@@ -110,7 +110,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		if (validCategories.matcher(groupingCategory).matches()) {
 			this.groupingCategory = groupingCategory;
 		} else {
-			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
+			logger.error("Invalid grouping category for {} : {}", identifier, groupingCategory);
 		}
 	}
 

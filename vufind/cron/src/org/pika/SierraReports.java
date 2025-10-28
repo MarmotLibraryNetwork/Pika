@@ -57,7 +57,7 @@ public class SierraReports implements IProcessHandler {
 			if (url.startsWith("\"")){
 				url = url.substring(1, url.length() - 1);
 			}
-			Connection sierraDNAConn = null;
+			Connection sierraDNAConn;
 			try{
 				//Open the connection to the database
 				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
@@ -119,7 +119,7 @@ public class SierraReports implements IProcessHandler {
 							CSVWriter patronReportCsvWriter = new CSVWriter(patronReportWriter)
 			) {
 				//Write headers
-				patronReportWriter.write("P Type,P Code 1, Patron Name, Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Stat,Address");
+				patronReportWriter.write("P Type,P Code 1,Patron Name,Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Stat,Address");
 				patronReportWriter.write("\r\n");
 				//Get a list of users that belong to that branch who have titles checked out or fines
 				patronsToProcessStmt.setString(1, curLibraryPrefix);
@@ -128,20 +128,23 @@ public class SierraReports implements IProcessHandler {
 					//Gather information about the patron
 					long     patronId    = patronsForSchoolRS.getLong("id");
 					String[] patronInfo  = new String[16];
-					String   lastName    = patronsForSchoolRS.getString("last_name");
-					String   firstName   = patronsForSchoolRS.getString("first_name");
-					String   middleName  = patronsForSchoolRS.getString("middle_name");
+					String   lastName    = patronsForSchoolRS.getString("last_name").trim();
+					String   firstName   = patronsForSchoolRS.getString("first_name").trim();
+					String   middleName  = patronsForSchoolRS.getString("middle_name").trim();
 					String   fullName    = lastName + ", " + firstName + " " + middleName;
-					String   fullAddress = patronsForSchoolRS.getString("addr1") + " " + patronsForSchoolRS.getString("city") + ", " + patronsForSchoolRS.getString("region") + " " + patronsForSchoolRS.getString("postal_code");
-					patronInfo[0]  = patronsForSchoolRS.getString("ptype_code");
-					patronInfo[1]  = patronsForSchoolRS.getString("pcode1");
-					patronInfo[2]  = fullName;
-					patronInfo[3]  = patronsForSchoolRS.getString("home_library_code");
-					patronInfo[4]  = patronsForSchoolRS.getString("barcode");
-					patronInfo[5]  = patronsForSchoolRS.getString("gradelvl");
-					patronInfo[6]  = patronsForSchoolRS.getString("homeroom");
-					patronInfo[7]  = patronsForSchoolRS.getString("owed_amt");
-					patronInfo[14] = fullAddress;
+					String   fullAddress = patronsForSchoolRS.getString("addr1")
+									+ " " + patronsForSchoolRS.getString("city") + ", "
+									+ patronsForSchoolRS.getString("region") + " "
+									+ patronsForSchoolRS.getString("postal_code");
+					patronInfo[0]  = patronsForSchoolRS.getString("ptype_code").trim();
+					patronInfo[1]  = patronsForSchoolRS.getString("pcode1").trim();
+					patronInfo[2]  = fullName.trim();
+					patronInfo[3]  = patronsForSchoolRS.getString("home_library_code").trim();
+					patronInfo[4]  = patronsForSchoolRS.getString("barcode").trim();
+					patronInfo[5]  = patronsForSchoolRS.getString("gradelvl").trim();
+					patronInfo[6]  = patronsForSchoolRS.getString("homeroom").trim();
+					patronInfo[7]  = patronsForSchoolRS.getString("owed_amt").trim();
+					patronInfo[14] = fullAddress.trim();
 
 					//Get a list of items that are checked out to each user
 					itemsOutStmt.setLong(1, patronId);
@@ -154,12 +157,12 @@ public class SierraReports implements IProcessHandler {
 						} else {
 							callNumber = callNumber.replaceAll("\\|\\w", "");
 						}
-						patronInfo[8]  = callNumber;
-						patronInfo[9]  = itemsOutRS.getString("title");
-						patronInfo[10] = itemsOutRS.getString("barcode");
-						patronInfo[11] = itemsOutRS.getString("location_code");
-						patronInfo[12] = itemsOutRS.getString("due_gmt");
-						patronInfo[13] = itemsOutRS.getString("item_status_code");
+						patronInfo[8]  = callNumber.trim();
+						patronInfo[9]  = itemsOutRS.getString("title").trim();
+						patronInfo[10] = itemsOutRS.getString("barcode").trim();
+						patronInfo[11] = itemsOutRS.getString("location_code").trim();
+						patronInfo[12] = itemsOutRS.getString("due_gmt").trim();
+						patronInfo[13] = itemsOutRS.getString("item_status_code").trim();
 						patronReportCsvWriter.writeNext(patronInfo);
 						patronInfo[7] = ""; //Only display amount owed on the first row
 						numItemsWritten++;

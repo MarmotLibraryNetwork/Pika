@@ -36,7 +36,7 @@ class Report_StudentReport extends Report_Report {
 		//Get a list of all reports the user has access to
 		$reportDir = $configArray['Site']['reportPath'];
 
-		$allowableLocationCodes = "";
+		$allowableLocationCodes = '';
 		if (UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRole('locationReports')){
 			$allowableLocationCodes = '.*';
 		}elseif (UserAccount::userHasRole('libraryAdmin') && UserAccount::userHasRole('locationReports')){
@@ -63,14 +63,14 @@ class Report_StudentReport extends Report_Report {
 
 		$selectedReport = isset($_REQUEST['selectedReport']) ? $availableReports[$_REQUEST['selectedReport']] : reset($availableReports);
 		$interface->assign('selectedReport', $selectedReport);
-		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] == 'overdue' : true;
+		$showOverdueOnly = !isset($_REQUEST['showOverdueOnly']) || $_REQUEST['showOverdueOnly'] == 'overdue';
 		$interface->assign('showOverdueOnly', $showOverdueOnly);
 		$now      = time();
 		$fileData = [];
 		if ($selectedReport){
 			$filemtime = date('Y-m-d H:i:s', filemtime($reportDir . '/' . $selectedReport));
 			$interface->assign('reportDateTime', $filemtime);
-			$fhnd = fopen($reportDir . '/' . $selectedReport, "r");
+			$fhnd = fopen($reportDir . '/' . $selectedReport, 'r');
 			if ($fhnd){
 				while (($data = fgetcsv($fhnd)) !== false){
 					$okToInclude = true;
@@ -86,8 +86,6 @@ class Report_StudentReport extends Report_Report {
 							array_pop($data);
 						}
 						$fileData[] = $data;
-
-
 					}
 				}
 				$interface->assign('reportData', $fileData);
@@ -101,16 +99,16 @@ class Report_StudentReport extends Report_Report {
 			foreach ($fileData as $row){
 				foreach ($row as $index => $cell){
 					if ($index != 0){
-						echo(",");
+						echo ',';
 					}
-					if (strpos($cell, ',') != false){
-						echo('"' . $cell . '"');
+					if (str_contains($cell, ',')){
+						echo '"' . $cell . '"';
 					}else{
-						echo($cell);
+						echo $cell;
 					}
 
 				}
-				echo("\r\n");
+				echo "\r\n";
 			}
 			exit;
 		}

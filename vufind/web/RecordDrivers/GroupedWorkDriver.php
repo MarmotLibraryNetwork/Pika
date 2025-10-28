@@ -1464,6 +1464,7 @@ class GroupedWorkDriver extends RecordInterface {
 					'availableLocally'     => false,
 					'availableOnline'      => false,
 					'availableHere'        => false,
+					'availableExternally'  => false,
 					'inLibraryUseOnly'     => false,
 					'allLibraryUseOnly'    => true,
 					'hideByDefault'        => false,
@@ -1477,6 +1478,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
 				$relatedManifestations[$currentManifestation]['availableHere'] = true;
+			}
+			if (!empty($curRecord['availableExternally'])){
+				$relatedManifestations[$currentManifestation]['availableExternally'] = true;
 			}
 			// Location Label field seems to be obsolete. pascal 2/26/2025
 //			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
@@ -2664,13 +2668,14 @@ class GroupedWorkDriver extends RecordInterface {
 		'Coming Soon'           => 5,
 		'In Processing'         => 6,
 		'Checked Out'           => 7,
-		'Shelving'              => 8, // Shelving & Recently Returned are equivalent
-		'Recently Returned'     => 8,
-		'Library Use Only'      => 9,
-		'Available Online'      => 10,
-		'In Transit'            => 11,
-		'On Display'            => 12,
-		'On Shelf'              => 13,
+		'Available Externally'  => 8,
+		'Shelving'              => 9, // Shelving & Recently Returned are equivalent
+		'Recently Returned'     => 9,
+		'Library Use Only'      => 10,
+		'Available Online'      => 11,
+		'In Transit'            => 12,
+		'On Display'            => 13,
+		'On Shelf'              => 14,
 	];
 
 	/**
@@ -2931,6 +2936,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'availableOnline'        => false,
 			'availableLocally'       => false,
 			'availableHere'          => false,
+			'availableExternally'    => false,
 			'inLibraryUseOnly'       => true,
 			'allLibraryUseOnly'      => true,
 			'isEContent'             => false,
@@ -3019,6 +3025,10 @@ class GroupedWorkDriver extends RecordInterface {
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
 			}
+			if ($status == "Available Externally"){
+				// Physical Sideloads
+				$relatedRecord['availableExternally'] = true;
+			}
 
 			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
 			$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
@@ -3072,10 +3082,17 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}elseif (!empty($curItem->itemUrl)){
 				// Special Physical Records, like KitKeeper, that link to an external reservation system
+				// Also physical item sideloads
+				$url = $scopingDetails->localUrl ?? $curItem->itemUrl;
+				// Scope url overrides necessary for physical item sideloads
 				$relatedUrls[] = [
-					'url' => $curItem->itemUrl
+					'url' => $url
 				];
-				if (!$holdable & $available /*&& $status == 'On Shelf'*/){
+				if (!$holdable & $available && $status !== "Available Externally" /*&& $status == 'On Shelf'*/){
+					// Regular, available, not hold-able items with an item URL should be presumed as
+					// items intended to be reserved externally (not in the library circulation system).
+					// Exclude physical sideload items with the status check: $status !== "Available Externally"
+					// (which will also be available, not hold-able and have an item URL)
 					$status = translate('Available for Reservation');
 				}
 			}

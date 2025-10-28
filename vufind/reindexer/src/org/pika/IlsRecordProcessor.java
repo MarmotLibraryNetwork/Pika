@@ -113,6 +113,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected char isItemHoldableSubfield;
 	protected String callnumberPipeRegex = "\\|\\w";
+	protected final Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
@@ -488,11 +489,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected boolean createAndAddOrderItem(RecordInfo recordInfo, DataField curOrderField, String location, int copies) {
 		ItemInfo itemInfo = new ItemInfo();
-		if (curOrderField.getSubfield('a') == null){
+		if (curOrderField.getSubfield(itemRecordNumberSubfieldIndicator) == null){
 			//Skip if we have no identifier
 			return false;
 		}
-		String orderNumber = curOrderField.getSubfield('a').getData();
+		String orderNumber = curOrderField.getSubfield(itemRecordNumberSubfieldIndicator).getData();
 		itemInfo.setLocationCode(location);
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(copies);
@@ -501,7 +502,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
-		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
 
@@ -765,6 +765,29 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
+
+			if (itemInfo.getDetailedStatus().equals("On Order")){
+				logger.info("Treating item {} as an On Order item", itemInfo.getItemIdentifier());
+				// Handling for dummy items being used as On Order items. e.g. mdhl for mln1
+				itemInfo.setIsOrderItem();
+
+				// If no call number is set, use standard ON ORDER
+				String callNumber = itemInfo.getCallNumber();
+				if (callNumber == null || callNumber.isEmpty()) {
+					itemInfo.setCallNumber("ON ORDER");
+					itemInfo.setSortableCallNumber("ON ORDER");
+				}
+
+				// If no collection is set, use the standards "On Order:
+				String collection = itemInfo.getCollection();
+				if (collection == null || collection.isEmpty()) {
+					itemInfo.setCollection("On Order");
+				}
+
+				// Set special handling for date Added
+				// (Since we don't know when the item will arrive, assume it will come tomorrow.)
+				itemInfo.setDateAdded(tomorrow);
+			}
 		}
 
 		if (formatSource.equals("item") && formatSubfield != ' '){
