@@ -26,6 +26,11 @@ import java.util.Date;
 import java.util.HashSet;
 
 public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
+
+	final protected String availableExternallyStatus = "Available by Request";
+	// This is also set in the default en.ini
+	// To use an alternate status translation extend this class.
+
 	SideLoadedPhysicalRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 			super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 			if (formatSource.equals("item")){
@@ -134,30 +139,30 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 
 			loadPrintFormatInformation(relatedRecord, record);
 
-			itemInfo.setDetailedStatus("Available Externally");
+			itemInfo.setDetailedStatus(availableExternallyStatus);
 
 			return relatedRecord;
 		}
 
 	/**
-	 * Set all statuses for Physical Sideloads to "Available Externally"
+	 * Set all statuses for Physical Sideloads to availableExternallyStatus
 	 * @param itemInfo   The Unused Item info object
 	 * @param identifier The record ID
-	 * @return "Available Externally"
+	 * @return availableExternallyStatus
 	 */
 	@Override
 	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
-		return "Available Externally";
+		return availableExternallyStatus;
 	}
 
 	/**
-	 * Set all statuses for Physical Sideloads to "Available Externally"
+	 * Set all statuses for Physical Sideloads to availableExternallyStatus
 	 * @param itemInfo   The Unused Item info object
 	 * @param identifier The record ID
-	 * @return "Available Externally"
+	 * @return availableExternallyStatus
 	 */
 	@Override
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
-		return "Available Externally";
+		return availableExternallyStatus;
 	}
 }

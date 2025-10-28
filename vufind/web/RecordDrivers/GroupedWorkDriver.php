@@ -2966,12 +2966,13 @@ class GroupedWorkDriver extends RecordInterface {
 		$timer->logTime('Setup base related record');
 		$memoryWatcher->logMemory('Setup base related record');
 
-		//Process the items for the record and add additional information as needed
-		$localShelfLocation   = null;
-		$libraryShelfLocation = null;
-		$localCallNumber      = null;
-		$libraryCallNumber    = null;
-		$relatedUrls          = [];
+		// Process the items for the record and add additional information as needed
+		$localShelfLocation        = null;
+		$libraryShelfLocation      = null;
+		$localCallNumber           = null;
+		$libraryCallNumber         = null;
+		$relatedUrls               = [];
+		$availableExternallyStatus = translate('availableExternallyStatus');
 
 		$recordHoldable     = false;
 		$recordBookable     = false;
@@ -3025,7 +3026,7 @@ class GroupedWorkDriver extends RecordInterface {
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
 			}
-			if ($status == "Available Externally"){
+			if ($status == $availableExternally){
 				// Physical Sideloads
 				$relatedRecord['availableExternally'] = true;
 			}
@@ -3088,10 +3089,10 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedUrls[] = [
 					'url' => $url
 				];
-				if (!$holdable & $available && $status !== "Available Externally" /*&& $status == 'On Shelf'*/){
+				if (!$holdable & $available && $status !== $availableExternally /*&& $status == 'On Shelf'*/){
 					// Regular, available, not hold-able items with an item URL should be presumed as
 					// items intended to be reserved externally (not in the library circulation system).
-					// Exclude physical sideload items with the status check: $status !== "Available Externally"
+					// Exclude physical sideload items with the status check: $status !== $availableExternally
 					// (which will also be available, not hold-able and have an item URL)
 					$status = translate('Available for Reservation');
 				}
