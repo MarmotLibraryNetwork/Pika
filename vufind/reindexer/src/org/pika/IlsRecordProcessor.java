@@ -767,6 +767,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
 
 			if (itemInfo.getDetailedStatus().equals("On Order")){
+				logger.info("Treating item {} as an On Order item", itemInfo.getItemIdentifier());
 				// Handling for dummy items being used as On Order items. e.g. mdhl for mln1
 				itemInfo.setIsOrderItem();
 
@@ -784,6 +785,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 
 				// Set special handling for date Added
+				// (Since we don't know when the item will arrive, assume it will come tomorrow.)
 				itemInfo.setDateAdded(tomorrow);
 			}
 		}
