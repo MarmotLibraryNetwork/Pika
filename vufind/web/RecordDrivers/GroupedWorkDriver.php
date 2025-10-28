@@ -2665,6 +2665,7 @@ class GroupedWorkDriver extends RecordInterface {
 		'In Processing'         => 6,
 		'Checked Out'           => 7,
 		'Available Externally'  => 8,
+		'Available by Request'  => 8, // Translation of "Available Externally" status
 		'Shelving'              => 9, // Shelving & Recently Returned are equivalent
 		'Recently Returned'     => 9,
 		'Library Use Only'      => 10,
