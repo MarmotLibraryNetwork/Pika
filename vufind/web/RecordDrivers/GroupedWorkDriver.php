@@ -3086,10 +3086,10 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedUrls[] = [
 					'url' => $url
 				];
-				if (!$holdable & $available && $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+				if (!$holdable & $available && str_starts_with($curItem->recordIdentifier, 'ils') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
 					// Regular, available, not hold-able items with an item URL should be presumed as
 					// items intended to be reserved externally (not in the library circulation system).
-					// Exclude physical sideload items with the status check: $status !== $availableExternally
+					// Exclude physical sideload items with the status check: str_starts_with($curItem->recordIdentifier, 'ils')
 					// (which will also be available, not hold-able and have an item URL)
 					$status = translate('Available for Reservation');
 				}
