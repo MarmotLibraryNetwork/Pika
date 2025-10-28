@@ -35,7 +35,7 @@
 	{elseif $statusInformation.availableOnline}
 		<div class="related-manifestation-shelf-status available">Available Online</div>
 	{elseif $statusInformation.availableExternally}
-		<div class="related-manifestation-shelf-status availableOther">Available Externally</div>
+		<div class="related-manifestation-shelf-status availableOther">{translate text="availableExternallyStatus"}</div>
 	{elseif $statusInformation.allLibraryUseOnly}
 		{if $isGlobalScope}
 			<div class="related-manifestation-shelf-status available">{translate text='On Shelf (library use only)'}</div>
