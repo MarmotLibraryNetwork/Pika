@@ -46,4 +46,16 @@ public class ColoStateBookClubGrouper extends MarcRecordGrouper{
 	protected String getBasicTitle(DataField field245) {
 		return super.getBasicTitle(field245).replace("(Colorado State Library Book Club Collection)", "");
 	}
+
+	/**
+	 * Override this function to do needed subtitle manipulations before doing the standard
+	 * grouping title normalizations.
+	 *
+	 * @param field245 MARC field for the title
+	 * @return The basic subtitle to begin standard title normalizations with
+	 */
+	@Override
+	protected String getBasicSubtitle(DataField field245) {
+		return super.getBasicSubtitle(field245).replace("(Colorado State Library Book Club Collection)", "");
+	}
 }
