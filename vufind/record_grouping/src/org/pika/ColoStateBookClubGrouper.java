@@ -24,6 +24,8 @@ import java.sql.Connection;
 
 public class ColoStateBookClubGrouper extends MarcRecordGrouper{
 
+	private final String phraseToRemove = "(Colorado State Library Book Club Collection)";
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -36,7 +38,7 @@ public class ColoStateBookClubGrouper extends MarcRecordGrouper{
 	}
 
 	/**
-	 * Remove "(Colorado State Library Book Club Collection)" from 245a before doing the standard
+	 * Remove phraseToRemove from 245a before doing the standard
 	 * grouping title normalizations.
 	 *
 	 * @param field245 MARC field for the title
@@ -44,11 +46,11 @@ public class ColoStateBookClubGrouper extends MarcRecordGrouper{
 	 */
 	@Override
 	protected String getBasicTitle(DataField field245) {
-		return super.getBasicTitle(field245).replace("(Colorado State Library Book Club Collection)", "");
+		return super.getBasicTitle(field245).replace(phraseToRemove, "");
 	}
 
 	/**
-	 * Override this function to do needed subtitle manipulations before doing the standard
+	 * Remove phraseToRemove from 245 subtitle fields before doing the standard
 	 * grouping title normalizations.
 	 *
 	 * @param field245 MARC field for the title
@@ -56,6 +58,6 @@ public class ColoStateBookClubGrouper extends MarcRecordGrouper{
 	 */
 	@Override
 	protected String getBasicSubtitle(DataField field245) {
-		return super.getBasicSubtitle(field245).replace("(Colorado State Library Book Club Collection)", "");
+		return super.getBasicSubtitle(field245).replace(phraseToRemove, "");
 	}
 }
