@@ -1433,10 +1433,10 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory('Finished loading related records');
 
 		// alter the status ranking array to use for comparison here
-		$statusRankings = [];
+		$statusRankingsLowerCase = [];
 		foreach (self::$statusRankings as $key => $value){
 			$key                  = strtolower($key);
-			$statusRankings[$key] = $value;
+			$statusRankingsLowerCase[$key] = $value;
 		}
 
 		//Group the records based on format
@@ -1473,23 +1473,20 @@ class GroupedWorkDriver extends RecordInterface {
 					'groupedStatus'        => ''
 				];
 			}
-			if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
+			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
+			if (!empty($curRecord['availableLocally'])){
 				$relatedManifestations[$currentManifestation]['availableLocally'] = true;
 			}
-			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
+			if (!empty($curRecord['availableHere'])){
 				$relatedManifestations[$currentManifestation]['availableHere'] = true;
 			}
 			if (!empty($curRecord['availableExternally'])){
 				$relatedManifestations[$currentManifestation]['availableExternally'] = true;
 			}
-			// Location Label field seems to be obsolete. pascal 2/26/2025
-//			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
-//				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
-//			}
-			if (isset($curRecord['availableOnline']) && $curRecord['availableOnline']){
+			if (!empty($curRecord['availableOnline'])){
 				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
 			}
-			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
+			if (!empty($curRecord['isEContent'])){
 				$relatedManifestations[$currentManifestation]['isEContent'] = true;
 
 				//Set Manifestation eContent Source
@@ -1509,7 +1506,6 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedManifestations[$currentManifestation]['allLibraryUseOnly'] = false;
 			}
 			if (!$relatedManifestations[$currentManifestation]['hasLocalItem'] && $curRecord['hasLocalItem']){
-//				$relatedManifestations[$currentManifestationFormat]['hasLocalItem'] = $curRecord['hasLocalItem'];
 				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
 			}
 			if ($curRecord['shelfLocation']){
@@ -1557,10 +1553,10 @@ class GroupedWorkDriver extends RecordInterface {
 				$manifestationCurrentGroupedStatus = $relatedManifestations[$currentManifestation]['groupedStatus'];
 
 				//Check to see if we have a better status here
-				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
+				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankingsLowerCase)){
 					if (empty($manifestationCurrentGroupedStatus)){
 						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Use the first one we find if we haven't set a grouped status yet
-					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($manifestationCurrentGroupedStatus)]){
+					}elseif ($statusRankingsLowerCase[strtolower($curRecord['groupedStatus'])] > $statusRankingsLowerCase[strtolower($manifestationCurrentGroupedStatus)]){
 						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Update to the better ranked status if we find a better ranked one
 					}
 					//Update the manifestation's grouped status elements
