@@ -1703,7 +1703,7 @@ class MarcRecord extends IndexRecord {
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
-			if (count($relatedRecords) > 1){
+			if (!empty($relatedRecords) && count($relatedRecords) > 1){
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$moreDetailsOptions['otherEditions'] = [
 					'label'         => 'Other Editions and Formats',
@@ -2273,7 +2273,7 @@ class MarcRecord extends IndexRecord {
 		}
 	return $return;
 	}
-	private function getLinks(){
+	protected function getLinks(){
 		$links      = [];
 		$marcRecord = $this->getMarcRecord();
 		if ($marcRecord){

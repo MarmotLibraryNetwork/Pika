@@ -16,7 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class ColoStateBookClub extends ExternalRequestPhysicalItemsDriver
-{
-
+class ColoStateBookClub extends ExternalRequestPhysicalItemsDriver {
+	/**
+	 * Avoid displaying additional links for this collection.
+	 * (Since the access link is just predetermined text to be used by URL replacement feature)
+	 * @return array
+	 */
+	protected function getLinks(){
+		return [];
+	}
 }
