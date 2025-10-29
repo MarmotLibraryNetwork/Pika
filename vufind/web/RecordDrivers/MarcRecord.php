@@ -1685,7 +1685,7 @@ class MarcRecord extends IndexRecord {
 		}
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
-		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		//$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
 		//TODO: this does get assigned already in Interface method loadDisplayOptions()
 
 		if ($library->show856LinksAsTab && count($links) > 0){
