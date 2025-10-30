@@ -3023,38 +3023,40 @@ class GroupedWorkDriver extends RecordInterface {
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
 			}
-			if ($status == $availableExternally){
+			if ($status == $availableExternallyStatus){
 				// Physical Sideloads
 				$relatedRecord['availableExternally'] = true;
-			}
+				// Skip holdable, bookable, homepickup-able calculations when we know it's a physical sideload
+			}else{
 
-			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
-			$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
-			if ($holdable){
-				// If this item is holdable, then treat the record as holdable when building action buttons
-				$recordHoldable = true;
-			}
+				// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
+				$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
+				if ($holdable){
+					// If this item is holdable, then treat the record as holdable when building action buttons
+					$recordHoldable = true;
+				}
 
-			// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
-			$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
-			if ($bookable){
-				// If this item is bookable, then treat the record as bookable when building action buttons
-				$recordBookable = true;
-			}
+				// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
+				$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
+				if ($bookable){
+					// If this item is bookable, then treat the record as bookable when building action buttons
+					$recordBookable = true;
+				}
 
 
-			global $configArray;
-			if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
-				if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
-					$recordIsHomePickUp                  = true;
-					$relatedRecord['hasAHomePickupItem'] = true;
-					// Any home pickup item for the record should turn on this flag
-					//$relatedRecord['homePickupLocations'][] = $locationCode;
-					$relatedRecord['homePickupLocations'][] = [
-						'location'   => $shelfLocation,
-						'callnumber' => $callNumber,
-						'status'     => $status,
-					];
+				global $configArray;
+				if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
+					if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
+						$recordIsHomePickUp                  = true;
+						$relatedRecord['hasAHomePickupItem'] = true;
+						// Any home pickup item for the record should turn on this flag
+						//$relatedRecord['homePickupLocations'][] = $locationCode;
+						$relatedRecord['homePickupLocations'][] = [
+							'location'   => $shelfLocation,
+							'callnumber' => $callNumber,
+							'status'     => $status,
+						];
+					}
 				}
 			}
 
