@@ -1,6 +1,6 @@
 # VS Code Configuration
 
-This directory contains workspace settings for Visual Studio Code. These files let the project share a consistent debugging experience across the team.
+This directory contains workspace settings for Visual Studio Code. These files let developers setup a debuging enviroment for VS Code when working in WSL on Windows.
 
 ## `launch.json`
 
