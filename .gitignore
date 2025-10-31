@@ -142,10 +142,6 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 *.sql
 *.tmpcss
 
-# Chris' VM   #
-###############
-sites/*.vm-server.net
-
 /package-lock.json
 
 
