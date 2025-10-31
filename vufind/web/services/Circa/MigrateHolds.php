@@ -32,6 +32,11 @@ class Circa_MigrateHolds extends Action {
 
 	function launch(){
 		set_time_limit(600);
+		// Clearview Migration
+		$this->createNewUsersFromBarCodeList();
+		$this->processClearviewHolds();
+
+		// Delta Migration
 //		$this->createNewUsersFromBarCodeList();
 //		$this->getBibIdFromItemBarcode();
 //		$this->getBibIdFromISBN();
@@ -42,7 +47,7 @@ class Circa_MigrateHolds extends Action {
 	}
 
 	function createNewUsersFromBarCodeList(){
-		$barCodes = [];
+		$barCodes = []; // Manually input barcodes here
 
 		echo '<pre>';
 		/** @var Pika\PatronDrivers\Sierra $sierra */
@@ -50,14 +55,15 @@ class Circa_MigrateHolds extends Action {
 		$sierra = CatalogFactory::getCatalogConnectionInstance();
 
 		foreach (array_unique($barCodes) as $barCode){
-			$user = new User();
+			$user          = new User();
 			$user->barcode = $barCode;
 			if (!$user->find()){
 				$user = $sierra->findNewUser($barCode);
 				if (!is_a($user, 'User')){
 					echo "Failed to create user for barcode $barCode\n";
 				}else{
-					echo "Barcode: $barCode, User id: {$user->id}\n";
+					echo "Barcode: $barCode, Pika User id: {$user->id}\n";
+					//TODO: write to a csv
 				}
 			}
 //			echo "'$barCode',\n";
@@ -81,7 +87,7 @@ class Circa_MigrateHolds extends Action {
 				if (!empty($solrDoc)){
 					$groupedWorkDriver = RecordDriverFactory::initRecordDriver($solrDoc);
 					if (!empty($groupedWorkDriver) && $groupedWorkDriver->isValid()){
-						$relatedRecords   = $groupedWorkDriver->getRelatedRecords();
+						$relatedRecords = $groupedWorkDriver->getRelatedRecords();
 						if (!empty($relatedRecords)){
 							$matchRecordFound = false;
 							require_once ROOT_DIR . '/RecordDrivers/Factory.php';
@@ -89,7 +95,7 @@ class Circa_MigrateHolds extends Action {
 								if ($relatedRecord['source'] == 'ils'){
 									/** @var MarcRecord $recordDriver */
 									$recordDriver = $relatedRecord['driver'];
-									$marcRecord = $recordDriver->getMarcRecord();
+									$marcRecord   = $recordDriver->getMarcRecord();
 
 									if ($marcRecord != false){
 										$itemTags = $marcRecord->getFields('989');
@@ -109,16 +115,16 @@ class Circa_MigrateHolds extends Action {
 								}
 							}
 							if (!$matchRecordFound){
-								echo "No match found for " . $itemBarcode;
+								echo 'No match found for ' . $itemBarcode;
 							}
 						} else {
-							echo "no related records for work " . $solrDoc['id'];
+							echo 'no related records for work ' . $solrDoc['id'];
 						}
 					}else{
-						echo "Found no match in index for " . $itemBarcode;
+						echo 'Found no match in index for ' . $itemBarcode;
 					}
 				}else{
-					echo "Found no match in index for " . $itemBarcode;
+					echo 'Found no match in index for ' . $itemBarcode;
 				}
 
 			}
@@ -149,21 +155,21 @@ class Circa_MigrateHolds extends Action {
 							$recordISBNs  = $recordDriver->getISBNs();
 							if (in_array($ISBN, $recordISBNs)){
 								if ($matchRecordFound) {
-									echo "Had match already Additional match : ";
+									echo 'Had match already Additional match : ';
 								}
 								$matchRecordFound = true;
-								echo $ISBN . "," . str_replace('ils:', '', $relatedRecord['id']) . "," . $relatedRecord['format'];
+								echo $ISBN . ',' . str_replace('ils:', '', $relatedRecord['id']) . "," . $relatedRecord['format'];
 							}
 						}
 					}
 					if (!$matchRecordFound){
-						echo "No match found for " . $ISBN;
+						echo 'No match found for ' . $ISBN;
 					}
 				}else{
-					echo "Found no match in index for " . $ISBN;
+					echo 'Found no match in index for ' . $ISBN;
 				}
 			}else{
-				echo "Found no match in index for " . $ISBN;
+				echo 'Found no match in index for ' . $ISBN;
 			}
 			echo "\n";
 		}
@@ -204,6 +210,131 @@ class Circa_MigrateHolds extends Action {
 			echo '<pre>';
 			while (($data = fgetcsv($handle, 0, "|")) !== false){
 				if (strpos($data[0], 'USER_ID')){
+					$userId = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'ITEM_ID')){
+					$itemBarcode = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+//				if (strpos($data[0], 'HOLD_EXPIRES_DATE')){
+//					$holdExpires = substr($data[1], 1);
+//				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode) /*&& !empty($holdExpires)*/){
+					$userIdAndBarcode[] = [$userId, $itemBarcode, $holdDate, $pickupCode];
+//					echo $userId . ", $itemBarcode\n";
+//					echo $userId . ", $itemBarcode, Expires: $holdExpires". ( $holdExpires != 'NEVER' && (int) $holdExpires < 20201201 ? ' expired' : '') .  "\n";
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
+					continue;
+				}
+			}
+		}
+		fclose($handle);
+
+		// Remove inactive entries
+		$userId = $holdDate = $pickupCode = $itemBarcode = null;
+		if (($handle = fopen("holdinactiveav.flat", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle, 0, "|")) !== false){
+				if (strpos($data[0], 'USER_ID')){
+					$userId = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'ITEM_ID')){
+					$itemBarcode = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode)){
+					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
+					continue;
+				}
+			}
+		}
+		fclose($handle);
+
+		// Remove inactive entries
+		$userId = $holdDate = $pickupCode = $itemBarcode = null;
+		if (($handle = fopen("holdinactivenotav.flat", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle, 0, "|")) !== false){
+				if (strpos($data[0], 'USER_ID')){
+					$userId = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'ITEM_ID')){
+					$itemBarcode = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode)){
+					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
+					continue;
+				}
+			}
+		}
+		fclose($handle);
+
+		$BibIdMatches = [];
+		if (($handle = fopen("temp-delta-hold-user-barcode-item-barcode-item-barcode-again-bidId-Match.csv", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle)) !== false){
+				$BibIdMatches[] = $data;
+			}
+		}
+		fclose($handle);
+
+		$pickupLocations = [
+			'CE' => 'dc',
+			'CR' => 'dr',
+			'DE' => 'dd',
+			'HO' => 'dh',
+			'PA' => 'dp',
+			'TS' => 'dh',
+		];
+
+//		$sortedArray = $userIdAndBarcode;
+//		usort($sortedArray, function ($a, $b){ return $a[2] <=> $b[2];});
+//		foreach ($sortedArray as $index => $anUserIdBarcode){
+		foreach ($userIdAndBarcode as $index => $anUserIdBarcode){
+			[$holdUser, $holdBarcode, $holdsHoldDate, $holdPickupCode] = $anUserIdBarcode;
+			foreach ($BibIdMatches as $data){
+				if ($holdUser == $data[0] && $holdBarcode == $data[1]){
+					echo "$holdUser, {$data[3]}, {$pickupLocations[$holdPickupCode]}\n";
+//					echo "$holdUser, {$data[3]}, $holdsHoldDate, {$pickupLocations[$holdPickupCode]}\n";
+					break;
+				}
+			}
+		}
+
+//		foreach ($userIdAndBarcode as $index => &$anUserIdBarcode){
+//			[$holdUser, $holdBarcode] = $anUserIdBarcode;
+//			echo "$holdUser, $holdBarcode\n";
+//		}
+
+		echo '</pre>';
+	}
+
+	function processClearviewHolds(){
+		$userIdAndBarcode = [];
+		$userId           = $itemBarcode = $holdDate = $pickupCode = $holdExpires = null;
+		// Process All holds file
+		if (($handle = fopen("all_holds.flat", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle, 0, "|")) !== false){
+				if (strpos($data[0], 'PatronId')){  // patron barcode would be better.
 					$userId = substr($data[1], 1);
 				}
 				if (strpos($data[0], 'ITEM_ID')){

@@ -163,7 +163,7 @@ class InclusionRule {
 			formatCache.put(format, isIncluded);
 		}
 		//Make sure not to cache marc tag determination
-		if (isIncluded && marcTagToMatch.length() > 0) {
+		if (isIncluded && !marcTagToMatch.isEmpty()) {
 			boolean hasMatch = false;
 			Set<String> marcValuesToCheck = MarcUtil.getFieldList(marcRecord, marcTagToMatch);
 			for (String marcValueToCheck : marcValuesToCheck) {
@@ -178,7 +178,7 @@ class InclusionRule {
 	}
 
 	String getLocalUrl(String url){
-		if (urlToMatch == null || urlToMatch.length() == 0 || urlReplacement == null || urlReplacement.length() == 0){
+		if (urlToMatch == null || urlToMatch.isEmpty() || urlReplacement == null || urlReplacement.isEmpty()){
 			return url;
 		}else{
 			return url.replaceFirst(urlToMatch, urlReplacement);

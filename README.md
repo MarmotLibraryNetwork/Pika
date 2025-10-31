@@ -13,7 +13,7 @@
 <!-- PROJECT LOGO -->
 
 <p align="center">
-  <a href="https://marmot.org/pika-discovery/about-pika">
+  <a href="https://marmot.org/pika">
     <img src="https://marmot.org/sites/default/files/pika_logo.png" alt=" Pika Logo">
   </a>
 

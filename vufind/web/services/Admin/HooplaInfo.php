@@ -114,7 +114,7 @@ class Admin_HooplaInfo extends Admin_Admin {
 					'success'          => $success,
 				]);
 
-				$response = $driver->getHooplaTitleInfo($hooplaLibraryId, $_REQUEST['hooplaId']);
+				$response    = $driver->getHooplaTitleInfo($hooplaLibraryId, $_REQUEST['hooplaId']);
 				$contentInfo = json_encode($response, JSON_PRETTY_PRINT);
 				$interface->assign([
 					'hooplaContentInfo' => $contentInfo,

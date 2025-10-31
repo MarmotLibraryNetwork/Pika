@@ -963,10 +963,10 @@ class CatalogConnection
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
 			if (!empty($recordDriver) && $recordDriver->isValid()){
-				if (strpos($recordDriver->getTitle(), 'WISCAT LOAN') !== false){
-					// only include the cover Northern Waters ILL loan reading history
-					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
-				} else{
+//				if (strpos($recordDriver->getTitle(), 'WISCAT LOAN') !== false){
+//					// only include the cover Northern Waters ILL loan reading history
+//					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+//				} else{
 					$historyEntry['ratingData']  = $recordDriver->getRatingData();
 					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
 					$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
@@ -974,7 +974,7 @@ class CatalogConnection
 					if (empty($historyEntry['title'])){
 						$historyEntry['title'] = $recordDriver->getTitle();
 					}
-				}
+//				}
 			}
 			//TODO: update history db entry with any missing information?
 

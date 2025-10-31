@@ -1395,12 +1395,14 @@ class MarcRecord extends IndexRecord {
 			];
 		}
 
-		//Special Item-less Print Record Actions with url links, like KitKeeper Records
+		// Physical Record actions with URL links, used for external reservation URLs
 		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
-			//TODO: not sure what the best check is at this point
+			// Don't display Reserve action when the item isn't available
+			// Must also be non-holdable or the hold button will
+			// display instead (caused by empty($action) checked)
 			foreach ($relatedUrls as $relatedUrl){
 				$actions[] = [
-					'title'        => 'Reserve Online',
+					'title'        => translate('Reserve Online'),
 					'url'          => $relatedUrl['url'],
 					'requireLogin' => false,
 				];
@@ -1413,7 +1415,7 @@ class MarcRecord extends IndexRecord {
 	static $catalogDriver = null;
 
 	/**
-	 * @return Sierra|DriverInterface|HorizonAPI
+	 * @return Pika\PatronDrivers\Sierra|Pika\PatronDrivers\HorizonROA|Pika\PatronDrivers\Polaris|DriverInterface
 	 */
 	protected static function getCatalogDriver(){
 		if (MarcRecord::$catalogDriver == null){
@@ -1683,7 +1685,7 @@ class MarcRecord extends IndexRecord {
 		}
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
-		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		//$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
 		//TODO: this does get assigned already in Interface method loadDisplayOptions()
 
 		if ($library->show856LinksAsTab && count($links) > 0){
@@ -1701,7 +1703,7 @@ class MarcRecord extends IndexRecord {
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
-			if (count($relatedRecords) > 1){
+			if (!empty($relatedRecords) && count($relatedRecords) > 1){
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$moreDetailsOptions['otherEditions'] = [
 					'label'         => 'Other Editions and Formats',
@@ -2183,7 +2185,7 @@ class MarcRecord extends IndexRecord {
 	 * @return array|null
 	 */
 	public function loadPeriodicalInformation(){
-		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
+		/** @var \Pika\PatronDrivers\Marmot|Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
 		if ($catalogDriver->checkFunction('getIssueSummaries')){
@@ -2271,7 +2273,7 @@ class MarcRecord extends IndexRecord {
 		}
 	return $return;
 	}
-	private function getLinks(){
+	protected function getLinks(){
 		$links      = [];
 		$marcRecord = $this->getMarcRecord();
 		if ($marcRecord){
@@ -2350,10 +2352,10 @@ class MarcRecord extends IndexRecord {
 		return $semanticData;
 	}
 
-	public function hasOpacFieldMessage(){
-		global $configArray;
-		return !empty($configArray['Catalog']['OpacMessageField']);
-	}
+//	public function hasOpacFieldMessage(){
+//		global $configArray;
+//		return !empty($configArray['Catalog']['OpacMessageField']);
+//	}
 
 	public function getOpacFieldMessage($itemId){
 		/** @var Memcache $memCache */
@@ -2364,7 +2366,7 @@ class MarcRecord extends IndexRecord {
 		if (!$opacMessage){
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
-			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
+			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield (typically r)
 			[$itemTag, $itemIdSubfield, $opacMessageSubfieldIndicator] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);

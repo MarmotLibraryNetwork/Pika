@@ -117,7 +117,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 						}
 						translationMaps.put(mapName, translationMap);
 					} catch (Exception e) {
-						logger.error("Error loading translation map " + mapName, e);
+						logger.error("Error loading translation map {}", mapName, e);
 					}
 				}
 			}

@@ -126,13 +126,13 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 		//Other editions if applicable (only if we aren't the only record!)
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
-		if (count($relatedRecords) > 1){
+		if (!empty($relatedRecords) && count($relatedRecords) > 1){
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
-			$moreDetailsOptions['otherEditions'] = array(
+			$moreDetailsOptions['otherEditions'] = [
 				'label'         => 'Other Editions and Formats',
 				'body'          => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
 				'hideByDefault' => false,
-			);
+			];
 		}
 
 		//Get copies for the record

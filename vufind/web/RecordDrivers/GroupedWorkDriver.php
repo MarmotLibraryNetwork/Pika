@@ -221,7 +221,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$publishers = $this->getPublishers();
 		$pubDates   = $this->getPublicationDates();
 		//$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
+		$details = [
 			'authors'  => $authors,
 			'title'    => $this->getTitleShort(),
 			'subtitle' => $this->getSubtitle(),
@@ -230,7 +230,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'pubDate'  => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition'  => $this->getEdition(),
 			'format'   => $this->getFormats()
-		);
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -1433,10 +1433,10 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory('Finished loading related records');
 
 		// alter the status ranking array to use for comparison here
-		$statusRankings = [];
+		$statusRankingsLowerCase = [];
 		foreach (self::$statusRankings as $key => $value){
 			$key                  = strtolower($key);
-			$statusRankings[$key] = $value;
+			$statusRankingsLowerCase[$key] = $value;
 		}
 
 		//Group the records based on format
@@ -1464,6 +1464,7 @@ class GroupedWorkDriver extends RecordInterface {
 					'availableLocally'     => false,
 					'availableOnline'      => false,
 					'availableHere'        => false,
+					'availableExternally'  => false,
 					'inLibraryUseOnly'     => false,
 					'allLibraryUseOnly'    => true,
 					'hideByDefault'        => false,
@@ -1472,20 +1473,20 @@ class GroupedWorkDriver extends RecordInterface {
 					'groupedStatus'        => ''
 				];
 			}
-			if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
+			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
+			if (!empty($curRecord['availableLocally'])){
 				$relatedManifestations[$currentManifestation]['availableLocally'] = true;
 			}
-			if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
+			if (!empty($curRecord['availableHere'])){
 				$relatedManifestations[$currentManifestation]['availableHere'] = true;
 			}
-			// Location Label field seems to be obsolete. pascal 2/26/2025
-//			if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
-//				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
-//			}
-			if (isset($curRecord['availableOnline']) && $curRecord['availableOnline']){
+			if (!empty($curRecord['availableExternally'])){
+				$relatedManifestations[$currentManifestation]['availableExternally'] = true;
+			}
+			if (!empty($curRecord['availableOnline'])){
 				$relatedManifestations[$currentManifestation]['availableOnline'] = true;
 			}
-			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
+			if (!empty($curRecord['isEContent'])){
 				$relatedManifestations[$currentManifestation]['isEContent'] = true;
 
 				//Set Manifestation eContent Source
@@ -1505,7 +1506,6 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedManifestations[$currentManifestation]['allLibraryUseOnly'] = false;
 			}
 			if (!$relatedManifestations[$currentManifestation]['hasLocalItem'] && $curRecord['hasLocalItem']){
-//				$relatedManifestations[$currentManifestationFormat]['hasLocalItem'] = $curRecord['hasLocalItem'];
 				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
 			}
 			if ($curRecord['shelfLocation']){
@@ -1553,10 +1553,10 @@ class GroupedWorkDriver extends RecordInterface {
 				$manifestationCurrentGroupedStatus = $relatedManifestations[$currentManifestation]['groupedStatus'];
 
 				//Check to see if we have a better status here
-				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
+				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankingsLowerCase)){
 					if (empty($manifestationCurrentGroupedStatus)){
 						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Use the first one we find if we haven't set a grouped status yet
-					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($manifestationCurrentGroupedStatus)]){
+					}elseif ($statusRankingsLowerCase[strtolower($curRecord['groupedStatus'])] > $statusRankingsLowerCase[strtolower($manifestationCurrentGroupedStatus)]){
 						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Update to the better ranked status if we find a better ranked one
 					}
 					//Update the manifestation's grouped status elements
@@ -2664,13 +2664,15 @@ class GroupedWorkDriver extends RecordInterface {
 		'Coming Soon'           => 5,
 		'In Processing'         => 6,
 		'Checked Out'           => 7,
-		'Shelving'              => 8, // Shelving & Recently Returned are equivalent
-		'Recently Returned'     => 8,
-		'Library Use Only'      => 9,
-		'Available Online'      => 10,
-		'In Transit'            => 11,
-		'On Display'            => 12,
-		'On Shelf'              => 13,
+		'Available Externally'  => 8,
+		'Available by Request'  => 8, // Translation of "Available Externally" status
+		'Shelving'              => 9, // Shelving & Recently Returned are equivalent
+		'Recently Returned'     => 9,
+		'Library Use Only'      => 10,
+		'Available Online'      => 11,
+		'In Transit'            => 12,
+		'On Display'            => 13,
+		'On Shelf'              => 14,
 	];
 
 	/**
@@ -2931,6 +2933,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'availableOnline'        => false,
 			'availableLocally'       => false,
 			'availableHere'          => false,
+			'availableExternally'    => false,
 			'inLibraryUseOnly'       => true,
 			'allLibraryUseOnly'      => true,
 			'isEContent'             => false,
@@ -2960,12 +2963,13 @@ class GroupedWorkDriver extends RecordInterface {
 		$timer->logTime('Setup base related record');
 		$memoryWatcher->logMemory('Setup base related record');
 
-		//Process the items for the record and add additional information as needed
-		$localShelfLocation   = null;
-		$libraryShelfLocation = null;
-		$localCallNumber      = null;
-		$libraryCallNumber    = null;
-		$relatedUrls          = [];
+		// Process the items for the record and add additional information as needed
+		$localShelfLocation        = null;
+		$libraryShelfLocation      = null;
+		$localCallNumber           = null;
+		$libraryCallNumber         = null;
+		$relatedUrls               = [];
+		$availableExternallyStatus = translate('availableExternallyStatus');
 
 		$recordHoldable     = false;
 		$recordBookable     = false;
@@ -2978,17 +2982,17 @@ class GroupedWorkDriver extends RecordInterface {
 			$itemId        = $curItem->itemIdentifier;
 			$shelfLocation = $curItem->shelfLocation;
 
-			if (!$forCovers){
-				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
-					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
-					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
-						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
-						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
-							$shelfLocation = "$opacMessageTranslation $shelfLocation";
-						}
-					}
-				}
-			}
+//			if (!$forCovers){
+//				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
+//					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
+//					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
+//						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
+//						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
+//							$shelfLocation = "$opacMessageTranslation $shelfLocation";
+//						}
+//					}
+//				}
+//			}
 
 			$scopeKey     = $curItem->recordIdentifier . ':' . $itemId;
 			$callNumber   = $curItem->callNumber;
@@ -3019,38 +3023,44 @@ class GroupedWorkDriver extends RecordInterface {
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
 			}
+			if ($status == $availableExternallyStatus){
+				// Physical Sideloads
+				$relatedRecord['availableExternally'] = true;
+				// Skip holdable, bookable, homepickup-able calculations when we know it's a physical sideload
+			}else{
 
-			// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
-			$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
-			if ($holdable){
-				// If this item is holdable, then treat the record as holdable when building action buttons
-				$recordHoldable = true;
-			}
+				// If holdable pTypes were calculated for this scope, determine if the record is holdable to the scope's pTypes
+				$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
+				if ($holdable){
+					// If this item is holdable, then treat the record as holdable when building action buttons
+					$recordHoldable = true;
+				}
 
-			// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
-			$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
-			if ($bookable){
-				// If this item is bookable, then treat the record as bookable when building action buttons
-				$recordBookable = true;
-			}
+				// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
+				$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
+				if ($bookable){
+					// If this item is bookable, then treat the record as bookable when building action buttons
+					$recordBookable = true;
+				}
 
 
-			global $configArray;
-			if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
-				if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
-					$recordIsHomePickUp                  = true;
-					$relatedRecord['hasAHomePickupItem'] = true;
-					// Any home pickup item for the record should turn on this flag
-					//$relatedRecord['homePickupLocations'][] = $locationCode;
-					$relatedRecord['homePickupLocations'][] = [
-						'location'   => $shelfLocation,
-						'callnumber' => $callNumber,
-						'status'     => $status,
-					];
+				global $configArray;
+				if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
+					if ($this->calculateForActionByPtype($activePTypes, $homePickUpPTypes, $isHomePickUp)){
+						$recordIsHomePickUp                  = true;
+						$relatedRecord['hasAHomePickupItem'] = true;
+						// Any home pickup item for the record should turn on this flag
+						//$relatedRecord['homePickupLocations'][] = $locationCode;
+						$relatedRecord['homePickupLocations'][] = [
+							'location'   => $shelfLocation,
+							'callnumber' => $callNumber,
+							'status'     => $status,
+						];
+					}
 				}
 			}
 
-			//Update the record with information from the item and from scoping.
+			// Update the record with information from the item and from scoping.
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
 				if (!empty($scopingDetails->localUrl)){
@@ -3061,7 +3071,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}else{
 					$relatedUrls[] = [
 						'source' => $curItem->eContentSource,
-						'url'    => $curItem->eContentUrl
+						'url'    => $curItem->itemUrl
 					];
 				}
 
@@ -3070,11 +3080,21 @@ class GroupedWorkDriver extends RecordInterface {
 				if (!$forCovers){
 					$relatedRecord['format'] = $relatedRecord['eContentSource'] . ' ' . $recordDetails->primaryFormat; // Break out eContent manifestations by the source of the eContent
 				}
-			}elseif (!empty($curItem->eContentUrl)){
-				// Special Physical Records, like KitKeeper
+			}elseif (!empty($curItem->itemUrl)){
+				// Special Physical Records, like KitKeeper, that link to an external reservation system
+				// Also physical item sideloads
+				$url = $scopingDetails->localUrl ?? $curItem->itemUrl;
+				// Scope url overrides necessary for physical item sideloads
 				$relatedUrls[] = [
-					'url' => $curItem->eContentUrl
+					'url' => $url
 				];
+				if (!$holdable & $available && str_starts_with($curItem->recordIdentifier, 'ils') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+					// Regular, available, not hold-able items with an item URL should be presumed as
+					// items intended to be reserved externally (not in the library circulation system).
+					// Exclude physical sideload items with the status check: str_starts_with($curItem->recordIdentifier, 'ils')
+					// (which will also be available, not hold-able and have an item URL)
+					$status = translate('Available for Reservation');
+				}
 			}
 
 			$displayByDefault = false;

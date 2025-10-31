@@ -122,7 +122,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 					loadItemCallNumber(record, null, itemInfo, identifier);
 
 					// Get the url for the action button display
-					itemInfo.seteContentUrl(url);
+					itemInfo.setItemUrl(url);
 
 					recordInfo.addItem(itemInfo);
 				}
@@ -173,7 +173,7 @@ class SacramentoRecordProcessor extends SierraRecordProcessor {
 					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
 					relatedRecord.setSubSource(indexingProfileSource);
 					relatedRecord.addItem(itemInfo);
-					itemInfo.seteContentUrl(url);
+					itemInfo.setItemUrl(url);
 
 					// Use the same format determination process for the econtent record (should just be the MatType)
 					loadPrintFormatInformation(relatedRecord, record);

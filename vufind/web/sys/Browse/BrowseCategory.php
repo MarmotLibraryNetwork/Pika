@@ -70,7 +70,7 @@ class BrowseCategory extends DB_DataObject{
 	}
 
 	public function __set($name, $value){
-		if ($name == 'subBrowseCategories') {
+		if ($name == 'subBrowseCategories'){
 			$this->subBrowseCategories = $value;
 		}else{
 			$this->data[$name] = $value;
@@ -96,7 +96,7 @@ class BrowseCategory extends DB_DataObject{
 	 */
 	public function update($dataObject = false){
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== false){
 			$this->saveSubBrowseCategories();
 			//delete any cached results for browse category
 			$this->deleteCachedBrowseCategoryResults();

@@ -997,7 +997,7 @@ class ListAPI extends AJAXHandler {
 		}
 		$api_key = $configArray['NYT_API']['books_API_key'];
 
-		$listName = 'names';
+		$listName = null; // When null, this will trigger the overview of lists of calls
 		if (!empty($_REQUEST['name']) && !is_array($_REQUEST['name'])){
 			$listName = trim($_REQUEST['name']);
 		}
@@ -1031,30 +1031,34 @@ class ListAPI extends AJAXHandler {
 		$pikaPassword = $configArray['NYT_API']['pika_password'];
 
 		if (empty($pikaUsername) || empty($pikaPassword)){
+			$error = 'Pika NY Times user not set';
+			$this->logger->error($error);
 			return [
 				'success' => false,
-				'message' => 'Pika NY Times user not set',
+				'message' => $error,
 			];
 		}
 
 		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
 		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)){
+			$error = 'Invalid Pika NY Times user';
+			$this->logger->error($error);
 			return [
 				'success' => false,
-				'message' => 'Invalid Pika NY Times user',
+				'message' => $error,
 			];
 		}
 
 		//Get from the API with a list of all the names
 		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
-		$availableLists = $nyt_api->getList('names');
+		$availableLists = $nyt_api->getLists();
 
 		//Get the human-readable title for our selected list
 		$selectedListTitle       = null;
 		$selectedListTitleShort  = null;
 		$selectedListDescription = null;
 		//Get the title and description for the selected list
-		foreach ($availableLists->results as $listInformation){
+		foreach ($availableLists->results->lists as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
 				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
 				$selectedListTitleShort  = $listInformation->display_name;
@@ -1063,9 +1067,11 @@ class ListAPI extends AJAXHandler {
 			}
 		}
 		if (empty($selectedListTitleShort)){
+			$message = "We did not find list '$selectedList' in The New York Times API";
+			$this->logger->error($message);
 			return [
 				'success' => false,
-				'message' => "We did not find list '$selectedList' in The New York Times API",
+				'message' => $message,
 			];
 		}
 
@@ -1094,9 +1100,11 @@ class ListAPI extends AJAXHandler {
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
 				];
 			}else{
+				$error = 'Could not create NYTimes list';
+				$this->logger->error($error);
 				return [
 					'success' => false,
-					'message' => 'Could not create list',
+					'message' => $error,
 				];
 			}
 
@@ -1123,7 +1131,8 @@ class ListAPI extends AJAXHandler {
 		//Get a list of titles from NYT API
 		$availableLists = $nyt_api->getList($selectedList);
 		$numTitlesAdded = 0;
-		$titleResults = $availableLists->results;
+		$titleResults   = $availableLists->results;
+		$this->logger->notice("Populating user list $listID for NYTimes bestseller list $selectedList");
 		foreach ($availableLists->results->books as $bookDetails){
 			$pikaID = null;
 			// go through each list item
@@ -1206,21 +1215,22 @@ class ListAPI extends AJAXHandler {
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}
 		}
+		$this->logger->notice($results['message']);
 
 		return $results;
 	}
 
 	/**
-	 * Creates or updates a user defined list from information obtained from the New York Times API
+	 * Creates or updates a user defined list from information obtained from the NPR Best Books site
 	 *
-	 * @param string|null $selectedList machine-readable name of the new york times list
+	 * @param string|null $selectedYear the selected year of NPR listing to update
 	 * @return array
 	 */
-	public function createUserListFromNPRBestBooks(string $selectedList = null){
+	public function createUserListFromNPRBestBooks(string $selectedYear = null){
 		global $configArray;
 
-		if ($selectedList == null){
-			$selectedList = $_REQUEST['listToUpdate'];
+		if ($selectedYear == null){
+			$selectedYear = $_REQUEST['listToUpdate'];
 		}
 
 		$pikaUsername = $configArray['NYT_API']['pika_username'];
@@ -1229,7 +1239,7 @@ class ListAPI extends AJAXHandler {
 		if (empty($pikaUsername) || empty($pikaPassword)){
 			return [
 				'success' => false,
-				'message' => 'Pika NY Times user not set',
+				'message' => 'Pika NY Times/NPR user not set',
 			];
 		}
 
@@ -1237,17 +1247,17 @@ class ListAPI extends AJAXHandler {
 		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)){
 			return [
 				'success' => false,
-				'message' => 'Invalid Pika NY Times user',
+				'message' => 'Invalid Pika NY Times/NPR user',
 			];
 		}
 
-		if (ctype_digit($selectedList) && $selectedList > 2012){
+		if (ctype_digit($selectedYear) && $selectedYear > 2012){
 
 			//Get a list of titles from NPR site
 			$nprBestBooks = new ExternalEnrichment\NPRBestBooks();
-			$nprBookList  = $nprBestBooks->getList($selectedList);
+			$nprBookList  = $nprBestBooks->getList($selectedYear);
 			if (!empty($nprBookList)){
-				$selectedListTitle = $nprBestBooks::NPRListTitlePrefix . " - $selectedList";
+				$selectedListTitle = $nprBestBooks::NPRListTitlePrefix . " - $selectedYear";
 
 				// Look for selected List
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';

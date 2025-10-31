@@ -69,7 +69,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try {
-			String availableStatusString = indexingProfileRS.getString("availableStatuses");
+			String availableStatusString  = indexingProfileRS.getString("availableStatuses");
 			String checkedOutStatuses     = indexingProfileRS.getString("checkedOutStatuses");
 			String libraryUseOnlyStatuses = indexingProfileRS.getString("libraryUseOnlyStatuses");
 			if (availableStatusString != null && !availableStatusString.isEmpty()){
@@ -503,7 +503,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return dueDate == null || dueDate.isEmpty() || dueDate.trim().equals("-  -");
 	}
 
-	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
+	private final SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
 	private String getDisplayDueDate(String dueDate, RecordIdentifier identifier){
 		try {
 			Date dateAdded = dueDateFormatter.parse(dueDate);
@@ -532,7 +532,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setDetailedStatus("On Order");
 		itemInfo.setCollection("On Order");
 		//Since we don't know when the item will arrive, assume it will come tomorrow.
-		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
@@ -545,7 +544,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		if (isOrderItemValid(status)) {
 			recordInfo.addItem(itemInfo);
 			if (logger.isDebugEnabled()) {
-				logger.debug("Add order " + orderNumber + " to " + recordInfo.getFullIdentifier());
+				logger.debug("Add order {} to {}", orderNumber,recordInfo.getFullIdentifier());
 			}
 
 			//For On Order Items, increment popularity based on number of copies that are being purchased.

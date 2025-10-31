@@ -82,6 +82,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char lastYearCheckoutSubfield;
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
+	private char opacMessageSubfield;
 	boolean useICode2Suppression;
 	char    iCode2Subfield;
 	String  sierraRecordFixedFieldsTag;
@@ -96,6 +97,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char    volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
+	private boolean isItemUrlSubfieldSet = false;
 	boolean suppressItemlessBibs;
 
 	private int numCharsToCreateFolderFrom;
@@ -111,6 +113,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected char isItemHoldableSubfield;
 	protected String callnumberPipeRegex = "\\|\\w";
+	protected final Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
@@ -172,6 +175,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
+			if (itemUrlSubfieldIndicator != ' '){
+				isItemUrlSubfieldSet = true;
+			}
 
 			formatSource              = indexingProfileRS.getString("formatSource");
 			formatDeterminationMethod = indexingProfileRS.getString("formatDeterminationMethod");
@@ -206,8 +212,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			ytdCheckoutSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "yearToDateCheckouts");
 			lastYearCheckoutSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastYearCheckouts");
 			totalCheckoutSubfield    = getSubfieldIndicatorFromConfig(indexingProfileRS, "totalCheckouts");
-
-			iTypeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
+			opacMessageSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "opacMessage");
+			iTypeSubfield            = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableITypes");
 				if (pattern != null && !pattern.isEmpty()) {
@@ -483,11 +489,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected boolean createAndAddOrderItem(RecordInfo recordInfo, DataField curOrderField, String location, int copies) {
 		ItemInfo itemInfo = new ItemInfo();
-		if (curOrderField.getSubfield('a') == null){
+		if (curOrderField.getSubfield(itemRecordNumberSubfieldIndicator) == null){
 			//Skip if we have no identifier
 			return false;
 		}
-		String orderNumber = curOrderField.getSubfield('a').getData();
+		String orderNumber = curOrderField.getSubfield(itemRecordNumberSubfieldIndicator).getData();
 		itemInfo.setLocationCode(location);
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(copies);
@@ -496,7 +502,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
-		Date tomorrow = Date.from(new Date().toInstant().plus(1, ChronoUnit.DAYS));
 		itemInfo.setDateAdded(tomorrow);
 		//Format and Format Category should be set at the record level, so we don't need to set them here.
 
@@ -512,7 +517,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
-		String originalUrl = itemInfo.geteContentUrl();
+		String originalUrl = itemInfo.getItemUrl();
 		for (Scope scope: indexer.getScopes()){
 			Scope.InclusionResult result = scope.isItemPartOfScope(indexingProfileSource, location, null, audiences, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
@@ -529,7 +534,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}else{
 						//Check to see if the scope is both a library and location scope
 						if (!scope.isLibraryScope()){
-							logger.warn("Location scope " + scope.getScopeName() + " does not have an associated library getting scope for order item " + itemInfo.getItemIdentifier() + " - " + itemInfo.getFullRecordIdentifier());
+							logger.warn("Location scope {} does not have an associated library while getting scope for order item {} - {}", scope.getScopeName(), itemInfo.getItemIdentifier(), itemInfo.getFullRecordIdentifier());
 							continue;
 						}
 					}
@@ -637,7 +642,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
 		if (urlSubfield != null) {
 			//Item-level 856 (Gets exported into the itemUrlSubfield)
-			itemInfo.seteContentUrl(urlSubfield.getData().trim());
+			itemInfo.setItemUrl(urlSubfield.getData().trim());
 		} else {
 			loadEContentUrl(record, itemInfo, identifier);
 		}
@@ -760,6 +765,29 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
 			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
+
+			if (itemInfo.getDetailedStatus().equals("On Order")){
+				logger.info("Treating item {} as an On Order item", itemInfo.getItemIdentifier());
+				// Handling for dummy items being used as On Order items. e.g. mdhl for mln1
+				itemInfo.setIsOrderItem();
+
+				// If no call number is set, use standard ON ORDER
+				String callNumber = itemInfo.getCallNumber();
+				if (callNumber == null || callNumber.isEmpty()) {
+					itemInfo.setCallNumber("ON ORDER");
+					itemInfo.setSortableCallNumber("ON ORDER");
+				}
+
+				// If no collection is set, use the standards "On Order:
+				String collection = itemInfo.getCollection();
+				if (collection == null || collection.isEmpty()) {
+					itemInfo.setCollection("On Order");
+				}
+
+				// Set special handling for date Added
+				// (Since we don't know when the item will arrive, assume it will come tomorrow.)
+				itemInfo.setDateAdded(tomorrow);
+			}
 		}
 
 		if (formatSource.equals("item") && formatSubfield != ' '){
@@ -775,6 +803,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				} catch (Exception e) {
 					logger.warn("Could not get boost for format {}", format);
 				}
+			}
+		}
+
+		// Check for Online Reservation URLs for physical items
+		if (isItemUrlSubfieldSet){
+			Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
+			if (urlSubfield != null) {
+				//Item-level 856 (Gets exported into the itemUrlSubfield)
+				itemInfo.setItemUrl(urlSubfield.getData().trim());
 			}
 		}
 
@@ -820,7 +857,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
-		String originalUrl = itemInfo.geteContentUrl();
+		String originalUrl  = itemInfo.getItemUrl();
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){
@@ -868,7 +905,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HoldabilityInformation isHoldableUnscoped   = isItemHoldableUnscoped(itemInfo);
 		BookabilityInformation isBookableUnscoped   = isItemBookableUnscoped();
 		HomePickUpInformation  isHomePickUpUnscoped = isItemHomePickUpUnscoped();
-		String                 originalUrl          = itemInfo.geteContentUrl();
+		String                 originalUrl          = itemInfo.getItemUrl();
 		String                 primaryFormat        = recordInfo.getPrimaryFormat();
 		boolean oncePerRecord = false;
 		for (Scope curScope : indexer.getScopes()) {
@@ -1170,7 +1207,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (shelfLocation == null || shelfLocation.isEmpty() || shelfLocation.equals("none")){
 			return "";
 		}else {
-			return translateValue("shelf_location", shelfLocation, identifier);
+			String shelfLocationTranslation = translateValue("shelf_location", shelfLocation, identifier);
+			if (opacMessageSubfield != ' ') {
+				String opacMessageCode = getItemSubfieldData(opacMessageSubfield, itemField);
+				if (opacMessageCode != null && !opacMessageCode.isEmpty() && !opacMessageCode.equals("-") && !opacMessageCode.equals(" ")){
+					String opacMessageTranslation = translateValue("opac_message", opacMessageCode, identifier);
+					if (opacMessageTranslation != null && !opacMessageTranslation.equals(opacMessageCode)){
+						// Do not use a code without a translation
+						logger.debug("Item {} on record {} has opac message code {}", itemInfo.getItemIdentifier(), identifier, opacMessageCode);
+						shelfLocationTranslation = opacMessageTranslation + " " + shelfLocationTranslation;
+					}
+				}
+			}
+			return shelfLocationTranslation;
 		}
 	}
 
@@ -1288,10 +1337,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				return true;
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
-				if (iTypesToSuppressPattern.matcher(iType).matches()){
-					if (logger.isDebugEnabled()) {
-						logger.debug("Item record is suppressed due to Itype " + iType);
-					}
+				if (iTypesToSuppressPattern.matcher(iType).matches()) {
+					logger.debug("Item record is suppressed due to Itype {}", iType);
 					return true;
 				}
 			}
@@ -1349,7 +1396,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		String translatedValue;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + indexingProfileSource);
+			logger.error("Unable to find translation map for {} in profile {}", mapName, indexingProfileSource);
 			translatedValue = value;
 		}else{
 			translatedValue = translationMap.translateValue(value, identifier, reportErrors);
@@ -1361,7 +1408,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + indexingProfileSource);
+			logger.error("Unable to find translation map for {} in profile {}", mapName, indexingProfileSource);
 //			if (values instanceof HashSet){
 //				translatedValues = (HashSet<String>)values;
 //			}else{

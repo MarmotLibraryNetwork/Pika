@@ -192,12 +192,12 @@ public class HooplaExportMain {
 			//Find a library id to get data from
 			String hooplaLibraryId = getHooplaLibraryId(pikaConn);
 			if (hooplaLibraryId == null) {
-				logger.error("No hoopla library id found");
+				logger.error("No hoopla library id found for single record extraction");
 				return false;
 			}
 			String accessToken = getAccessToken();
 			if (accessToken == null || accessToken.isEmpty()) {
-				logger.error("Failed to get an Access Token for the API.");
+				logger.error("Failed to get an Access Token for the API for single record extraction.");
 				return false;
 			}
 
@@ -224,7 +224,7 @@ public class HooplaExportMain {
 		} catch (NumberFormatException e) {
 			logger.error("Invalid Hoopla Record Id: {}", singleRecordToExport, e);
 		} catch (Exception e) {
-			logger.error("Error exporting hoopla data", e);
+			logger.error("Error exporting hoopla data for single record extraction {}", singleRecordToExport, e);
 		}
 		return false;
 	}
@@ -269,53 +269,56 @@ public class HooplaExportMain {
 			// Initial Call
 			int             numProcessed = 0;
 			URLPostResponse response     = getURL(url, accessToken);
-			JSONObject      responseJSON = new JSONObject(response.getMessage());
-			if (responseJSON.has("titles")) {
-				JSONArray responseTitles = responseJSON.getJSONArray("titles");
-				if (responseTitles != null && responseTitles.length() > 0) {
-					numProcessed += updateTitlesInDB(pikaConn, responseTitles);
-				} else {
-					logger.warn("Hoopla Extract call had no titles for updating: {}", url);
-					if (startTime != null) {
-						addNoteToHooplaExportLog("Hoopla had no updates since " + startTime);
-					} else if (doFullReload) {
-						addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
-						logger.error("Hoopla gave no information for a full Reload. {}", url);
-					}
-					// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point,
-					// so we expect there to be changes.
-					// Having this warning will give us a hint if there is something wrong with the data in the calls
-				}
-
-				// Addition Calls if needed
-				String startToken = null;
-				if (responseJSON.has("nextStartToken")) {
-					startToken = responseJSON.getString("nextStartToken");
-				}
-				while (startToken != null) {
-					url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
-					if (!doFullReload && startTime != null) {
-						url += "&startTime=" + startTime;
-					}
-					response     = getURL(url, accessToken);
-					responseJSON = new JSONObject(response.getMessage());
-					if (responseJSON.has("titles")) {
-						responseTitles = responseJSON.getJSONArray("titles");
-						if (responseTitles != null && responseTitles.length() > 0) {
-							numProcessed += updateTitlesInDB(pikaConn, responseTitles);
+			try {
+				JSONObject      responseJSON = new JSONObject(response.getMessage());
+				if (responseJSON.has("titles")) {
+					JSONArray responseTitles = responseJSON.getJSONArray("titles");
+					if (responseTitles != null && responseTitles.length() > 0) {
+						numProcessed += updateTitlesInDB(pikaConn, responseTitles);
+					} else {
+						logger.warn("Hoopla Extract call had no titles for updating: {}", url);
+						if (startTime != null) {
+							addNoteToHooplaExportLog("Hoopla had no updates since " + startTime);
+						} else if (doFullReload) {
+							addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
+							logger.error("Hoopla gave no information for a full Reload. {}", url);
 						}
+						// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point,
+						// so we expect there to be changes.
+						// Having this warning will give us a hint if there is something wrong with the data in the calls
 					}
+
+					// Addition Calls if needed
+					String startToken = null;
 					if (responseJSON.has("nextStartToken")) {
 						startToken = responseJSON.getString("nextStartToken");
-					} else {
-						startToken = null;
 					}
-					if (numProcessed % 10000 == 0) {
-						addNoteToHooplaExportLog("Processed " + numProcessed + " records from hoopla");
+					while (startToken != null) {
+						url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
+						if (!doFullReload && startTime != null) {
+							url += "&startTime=" + startTime;
+						}
+						response     = getURL(url, accessToken);
+						responseJSON = new JSONObject(response.getMessage());
+						if (responseJSON.has("titles")) {
+							responseTitles = responseJSON.getJSONArray("titles");
+							if (responseTitles != null && responseTitles.length() > 0) {
+								numProcessed += updateTitlesInDB(pikaConn, responseTitles);
+							}
+						}
+						if (responseJSON.has("nextStartToken")) {
+							startToken = responseJSON.getString("nextStartToken");
+						} else {
+							startToken = null;
+						}
+						if (numProcessed % 10000 == 0) {
+							addNoteToHooplaExportLog("Processed " + numProcessed + " records from hoopla");
+						}
 					}
+					addNoteToHooplaExportLog("Processed a total of " + numProcessed + " records from hoopla");
 				}
-				addNoteToHooplaExportLog("Processed a total of " + numProcessed + " records from hoopla");
-
+			} catch (JSONException e) {
+				logger.error("JSON error, response {}", response, e);
 			}
 		} catch (Exception e) {
 			logger.error("Error exporting hoopla data", e);
@@ -688,7 +691,7 @@ public class HooplaExportMain {
 	}
 
 
-	private static       StringBuffer     notes      = new StringBuffer();
+	private static final StringBuffer     notes      = new StringBuffer();
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static void addNoteToHooplaExportLog(String note) {

@@ -77,7 +77,7 @@ public class AddisonRecordProcessor extends SierraRecordProcessor {
 				itemInfo.setIType("eCollection");
 				itemInfo.setDetailedStatus("Available Online");
 
-				itemInfo.seteContentUrl(url);
+				itemInfo.setItemUrl(url);
 				itemInfo.setLocationCode(bibLocation);
 				itemInfo.seteContentSource(specifiedEcontentSource);
 

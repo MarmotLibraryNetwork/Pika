@@ -31,7 +31,7 @@ public class HorizonRecordProcessor extends IlsRecordProcessor{
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		try {
 			String pattern = indexingProfileRS.getString("availableStatuses");
-			if (pattern != null && pattern.length() > 0) {
+			if (pattern != null && !pattern.isEmpty()) {
 				availableStatusesPattern = Pattern.compile("^(" + pattern + ")$");
 			}
 		} catch (Exception e) {

@@ -59,7 +59,7 @@
 							|| ($module == 'MyAccount' && $action == 'MyList' && ($userListHasSearchFilters || !$listEditAllowed))
 							|| ($module == 'EBSCO' && $action == 'Results')
 							|| ($module == 'Union' && $action == 'CombinedResults')
-							|| ($module == 'Archive' && ($action == 'Results' || $action == 'RelatedEntities'))
+							|| ($module == 'Archive' && ($action == 'Results' || $action == 'RelatedEntities' || ($archiveOnlyInterface && $action == 'Home')))
 					    }
 								{* Treat Public Lists not owned by user as a Search Page rather than an MyAccount Page *}
 								{* Click Search Menu Bar Button *}

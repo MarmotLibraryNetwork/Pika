@@ -306,6 +306,9 @@ class UInterface extends Smarty {
     if ($offlineMode){
       $systemMessage[] = "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>";
     }
+		if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+			$systemMessage[] = "<p class='alert alert-warning'><strong>Connectivity to OverDrive is currently limited.</strong>  Access to OverDrive account information and availability is limited.</p>";
+		}
     if (!empty($library->systemMessage)){
       $systemMessage[] = $library->systemMessage;
     }
@@ -475,6 +478,7 @@ class UInterface extends Smarty {
 			$this->assign('showStandardReviews', $library->showStandardReviews);
 			$this->assign('showSimilarTitles', $library->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
+			$this->assign('archiveOnlyInterface', $library->archiveOnlyInterface);
 
 			if ($library->showLibraryHoursAndLocationsLink){
 				$this->assign('showLibraryHoursAndLocationsLink', true);
@@ -530,6 +534,8 @@ class UInterface extends Smarty {
 			$this->assign('showStaffView', 1);
 			$this->assign('showGoodReadsReviews', 1);
 			$this->assign('showStandardReviews', 1);
+			$this->assign('archiveOnlyInterface', 0);
+
 		}
 
 		// Location-level settings

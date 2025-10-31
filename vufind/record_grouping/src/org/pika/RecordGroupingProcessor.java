@@ -54,7 +54,6 @@ class RecordGroupingProcessor {
 	private int numGroupedWorksAdded = 0;
 
 	protected boolean fullRegrouping;
-	private long    startTime = new Date().getTime();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 
@@ -460,46 +459,70 @@ class RecordGroupingProcessor {
 	private void setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
-			String basicTitle = field245.getSubfield('a').getData();
-
-			char nonFilingCharacters = field245.getIndicator2();
-//			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
-			if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') { // Note: Don't need to change basic title when the non file character indicator is zero
-				int numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
-				if (numNonFilingCharacters < basicTitle.length()){
-					basicTitle = basicTitle.substring(numNonFilingCharacters);
-				}
-			}
-
-			//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
-			StringBuilder groupingSubtitle = new StringBuilder();
-			if (field245.getSubfield('b') != null) {
-				groupingSubtitle.append(field245.getSubfield('b').getData());
-			}
-
-			//Group volumes, seasons, etc. independently
-			for (Subfield subfield : field245.getSubfields('n')) {
-				if (subfield != null) {
-					String subtitlePiece = subfield.getData();
-					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
-						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-						groupingSubtitle.append(subtitlePiece);
-					}
-				}
-			}
-			for (Subfield subfield : field245.getSubfields('p')) {
-				if (subfield != null) {
-					String subtitlePiece = subfield.getData();
-					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
-						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-						groupingSubtitle.append(subtitlePiece);
-					}
-				}
-			}
-
-
-			workForTitle.setTitle(basicTitle, groupingSubtitle.toString());
+			String basicTitle       = getBasicTitle(field245);
+			String groupingSubtitle = getBasicSubtitle(field245);
+			workForTitle.setTitle(basicTitle, groupingSubtitle);
 		}
+	}
+
+	/**
+	 * Override this function to do needed title manipulations before doing the standard
+	 * grouping title normalizations.
+	 *
+	 * @param field245 MARC field for the title
+	 * @return The basic title to begin standard title normalizations with
+	 */
+	protected String getBasicTitle(DataField field245) {
+		String basicTitle          = field245.getSubfield('a').getData();
+		char   nonFilingCharacters = field245.getIndicator2();
+
+		//			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
+		if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') {
+			// Note: Don't need to change basic title when the non file character indicator is zero
+			int numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+			if (numNonFilingCharacters < basicTitle.length()) {
+				basicTitle = basicTitle.substring(numNonFilingCharacters);
+			}
+		}
+		return basicTitle;
+	}
+
+	/**
+	 * Override this function to do needed subtitle manipulations before doing the standard
+	 * grouping title normalizations.
+	 *
+	 * @param field245 MARC field for the title
+	 * @return The basic subtitle to begin standard title normalizations with
+	 */
+	protected String getBasicSubtitle(DataField field245) {
+		StringBuilder groupingSubtitle = new StringBuilder();
+
+		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc.)
+		if (field245.getSubfield('b') != null) {
+			groupingSubtitle.append(field245.getSubfield('b').getData());
+		}
+
+		//Group volumes, seasons, etc. independently
+		for (Subfield subfield : field245.getSubfields('n')) {
+			if (subfield != null) {
+				String subtitlePiece = subfield.getData();
+				if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+					if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+					groupingSubtitle.append(subtitlePiece);
+				}
+			}
+		}
+		for (Subfield subfield : field245.getSubfields('p')) {
+			if (subfield != null) {
+				String subtitlePiece = subfield.getData();
+				if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+					if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+					groupingSubtitle.append(subtitlePiece);
+				}
+			}
+
+		}
+		return groupingSubtitle.toString();
 	}
 
 	private long getExistingWork(String permanentId){
@@ -507,8 +530,7 @@ class RecordGroupingProcessor {
 			loadExistingGroupedWorksStmt.setString(1, permanentId);
 			ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery();
 			if (loadExistingGroupedWorksRS.next()){
-				long groupedWorkId = loadExistingGroupedWorksRS.getLong(1);
-				return groupedWorkId;
+				return loadExistingGroupedWorksRS.getLong(1);
 			}
 		} catch (SQLException e) {
 			logger.warn("Error looking up work id from permanent id: {}", permanentId, e);

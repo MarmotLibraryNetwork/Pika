@@ -302,6 +302,9 @@ public class RecordGrouperMain {
 					case "PolarisRecordGrouper":
 						recordGroupingProcessor = new PolarisRecordGrouper(pikaConn, curProfile, logger);
 						break;
+					case "ColoStateBookClubGrouper":
+						recordGroupingProcessor = new ColoStateBookClubGrouper(pikaConn, curProfile, logger);
+						break;
 					default:
 						logger.error("Unknown class for record grouping {}", curProfile.groupingClass);
 						continue;
@@ -1074,6 +1077,9 @@ public class RecordGrouperMain {
 							break;
 						case "PolarisRecordGrouper":
 							recordGroupingProcessor = new PolarisRecordGrouper(pikaConn, curProfile, logger);
+							break;
+						case "ColoStateBookClubGrouper":
+							recordGroupingProcessor = new ColoStateBookClubGrouper(pikaConn, curProfile, logger);
 							break;
 						default:
 							logger.error("Unknown class for record grouping " + curProfile.groupingClass);

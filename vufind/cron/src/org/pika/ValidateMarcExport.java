@@ -290,7 +290,8 @@ public class ValidateMarcExport implements IProcessHandler {
 		//Check to see if the record is an overdrive record
 		if (profile.isDoAutomaticEcontentSuppression()) {
 			if (profile.useEContentSubfield()) {
-				//TODO: this suppression calculation should be standardized with the re-indexing version, regrouping version; probably put in a function to easily share across them
+				//TODO: this suppression calculation should be standardized with the re-indexing version,
+				// regrouping version; probably put in a function to easily share across them
 				boolean allItemsSuppressed = true; //TODO: itemless bib suppression switch check??
 
 				List<DataField> itemFields = getDataFields(marcRecord, profile.getItemTag());

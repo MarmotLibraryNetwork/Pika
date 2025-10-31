@@ -32,20 +32,32 @@ class NYTApi {
 
 //	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/'; // old api url
 //	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v2/lists/';
-	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v3/lists/';
+//	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v3/lists/';
+	const BASE_URI = 'https://api.nytimes.com/svc/books/v3/lists/';
 	protected $api_key;
 
 	public function __construct($key){
 		$this->api_key = $key;
 	}
 
-	protected function buildUrl($list_name){
-		$url = self::BASE_URI . $list_name;
+	protected function buildUrl($listName = null): string{
+		$url = self::BASE_URI;
+		if (empty($listName)){
+			// Get all lists
+			$url .= 'overview.json';
+		} else {
+			$url .= '/current/' . $listName;
+		}
 		$url .= '?api-key=' . $this->api_key;
 		return $url;
 	}
 
-	public function getList($listName){
+	public function getLists(){
+		//return $this->getList('names'); // call for fetching lists prior to May 2025
+		return $this->getList();
+	}
+
+	public function getList($listName = null){
 		$url = $this->buildUrl($listName);
 
 		// array of request options
@@ -69,6 +81,15 @@ class NYTApi {
 		curl_setopt_array($curl, $curl_opts);
 		// Send the request & save response to $response
 		$response = curl_exec($curl);
+
+		if (!$response){
+			$error = curl_error($curl);
+			if (!empty($error)){
+				global $pikaLogger;
+				$logger = $pikaLogger->withName(__CLASS__);
+				$logger->error($error);
+			}
+		}
 		// Close request to clear up some resources
 		curl_close($curl);
 		// return response

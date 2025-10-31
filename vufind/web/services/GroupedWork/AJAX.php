@@ -1719,7 +1719,7 @@ function getSaveSeriesToListForm(){
 		$novelist      = NovelistFactory::getNovelist();
 		$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 		$seriesTitle   = $seriesInfo->seriesTitle;
-		$seriesTitles  = $seriesInfo->seriesTitles;
+		$seriesTitles  = $seriesInfo->seriesTitles ?? [];
 		$seriesEntries = [];
 		foreach ($seriesTitles as $seriesEntry){
 			$seriesEntries[$seriesEntry['volume']] = [

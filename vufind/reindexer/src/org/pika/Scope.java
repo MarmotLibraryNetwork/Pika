@@ -32,23 +32,23 @@ public class Scope implements Comparable<Scope>{
 	private String scopeName;
 	private String facetLabel;
 
-	private HashSet<Long> relatedNumericPTypes = new HashSet<>();
-	private boolean       includeOverDriveCollection;
+	private final HashSet<Long> relatedNumericPTypes = new HashSet<>();
+	private       boolean       includeOverDriveCollection;
 	private Long          libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
-	private boolean        isLibraryScope;
-	private HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
-	private boolean        isLocationScope;
+	private       boolean        isLibraryScope;
+	private final HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
+	private       boolean        isLocationScope;
 	private Long           locationId;
 	private Scope          libraryScope;
 
-	private boolean                restrictOwningLibraryAndLocationFacets;
+	private       boolean                restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
-	private HashSet<OwnershipRule> ownershipRules                            = new HashSet<>();
+	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
-	private HashSet<InclusionRule> inclusionRules                            = new HashSet<>();
-	private Long                   sharedOverdriveCollectionId;
+	private final HashSet<InclusionRule> inclusionRules = new HashSet<>();
+	private       Long                   sharedOverdriveCollectionId;
 	private boolean                includeOverDriveAdultCollection;
 	private boolean                includeOverDriveTeenCollection;
 	private boolean                includeOverDriveKidsCollection;
@@ -74,7 +74,7 @@ public class Scope implements Comparable<Scope>{
 	void setRelatedPTypes(String[] relatedPTypes) {
 		for (String relatedPType : relatedPTypes) {
 			relatedPType = relatedPType.trim();
-			if (relatedPType.length() > 0) {
+			if (!relatedPType.isEmpty()) {
 				try{
 					Long numericPType = Long.parseLong(relatedPType);
 					relatedNumericPTypes.add(numericPType);
@@ -262,7 +262,7 @@ public class Scope implements Comparable<Scope>{
 
 	void setAdditionalLocationsToShowAvailabilityFor(String additionalLocationsToShowAvailabilityFor) {
 		this.additionalLocationsToShowAvailabilityFor = additionalLocationsToShowAvailabilityFor;
-		if (additionalLocationsToShowAvailabilityFor.length() > 0){
+		if (!additionalLocationsToShowAvailabilityFor.isEmpty()){
 			additionalLocationsToShowAvailabilityForPattern = Pattern.compile(additionalLocationsToShowAvailabilityFor);
 		}
 	}

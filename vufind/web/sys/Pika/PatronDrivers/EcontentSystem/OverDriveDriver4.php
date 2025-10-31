@@ -30,6 +30,7 @@ use OverDriveRecordDriver;
 class OverDriveDriver4 {
 	const VERSION = 4;
 
+	private bool $offline = false;
 	private array $requirePin;
 	private array $ILSName = [];
 	private array $websiteId;
@@ -62,6 +63,17 @@ class OverDriveDriver4 {
 	private $patronApi;
 	private array $defaultCurlOptions;
 
+	/**
+	 * Check that a string conforms to the format for OverDrive ID strings
+	 * @param string $overDriveID  The string to check
+	 * @return bool whether the sting is formatted correctly
+	 */
+	public static function validOverDriveIDString(string $overDriveID): bool {
+		return preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{11}/i', $overDriveID);
+		// Overdrive id is different from grouped work by the final group being 11 digits long
+		// instead of 12.
+	}
+
 	public function __construct(){
 		global $configArray;
 		$this->logger             = new Logger(__CLASS__);
@@ -84,6 +96,9 @@ class OverDriveDriver4 {
 			//CURLOPT_HEADER         => true, // debugging only
 			//CURLOPT_VERBOSE        => true, // debugging only
 		];
+		if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+			$this->offline = true;
+		}
 	}
 
 	/**
@@ -104,29 +119,33 @@ class OverDriveDriver4 {
 	 * @return false|mixed|null
 	 */
 	private function _connectToAPI($forceNewConnection = false){
-		global $serverName;
-		$memCacheKey = 'overdrive_token' . $serverName;
-		$tokenData   = $this->cache->get($memCacheKey);
-		if (empty($tokenData) || $forceNewConnection){
-			$url     = 'https://oauth.overdrive.com/token';
-			$headers = $this->_authorizationHeaders($url);
-			if ($headers){
-				$curl      = $this->initCurlObject($headers);
-				$tokenData = $curl->post($url, 'grant_type=client_credentials');
-				if (isset($tokenData->access_token)){
-					$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
+		if (!$this->offline){
+			global $serverName;
+			$memCacheKey = 'overdrive_token' . $serverName;
+			$tokenData   = $this->cache->get($memCacheKey);
+			if (empty($tokenData) || $forceNewConnection){
+				$url     = 'https://oauth.overdrive.com/token';
+				$headers = $this->_authorizationHeaders($url);
+				if ($headers){
+					$curl      = $this->initCurlObject($headers);
+					$tokenData = $curl->post($url, 'grant_type=client_credentials');
+					if (isset($tokenData->access_token)){
+						$this->cache->set($memCacheKey, $tokenData, $tokenData->expires_in - 10);
+					}else{
+						$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
+						// Connection Time out is potential issue so we include possible curl errors
+						return false;
+					}
 				}else{
-					$this->logger->error('Failed to connect to the OverDrive API ', ['overdrive_connect_response' => $tokenData, 'CURL Error' => $curl->curlErrorMessage]);
-					// Connection Time out is potential issue so we include possible curl errors
+					// OverDrive is not configured
+					$this->logger->warning('Overdrive missing configuration.');
 					return false;
 				}
-			}else{
-				// OverDrive is not configured
-				$this->logger->warning('Overdrive missing configuration.');
-				return false;
 			}
+			return $tokenData;
+		}else{
+			return false; // Offline mode; Do not attempt connections
 		}
-		return $tokenData;
 	}
 
 	/**
@@ -135,58 +154,60 @@ class OverDriveDriver4 {
 	 * @return array|bool|mixed|string
 	 */
 	private function _connectToPatronAPI($user, $forceNewConnection = false){
-		$memCacheKey     = $this->cache->makePatronKey('overdrive_patron_token', $user->id);
-		$patronTokenData = $this->cache->get($memCacheKey);
-		if (empty($patronTokenData) || $forceNewConnection){
+		if (!$this->offline){
+			$memCacheKey     = $this->cache->makePatronKey('overdrive_patron_token', $user->id);
+			$patronTokenData = $this->cache->get($memCacheKey);
+			if (empty($patronTokenData) || $forceNewConnection){
 
-			$tokenData = $this->_connectToAPI($forceNewConnection);
-			if ($tokenData){
-				global $timer;
-				$timer->logTime('Connected to OverDrive API');
+				$tokenData = $this->_connectToAPI($forceNewConnection);
+				if ($tokenData){
+					global $timer;
+					$timer->logTime('Connected to OverDrive API');
 
-				$websiteId = $this->getWebSiteId($user);
-				if (!$websiteId){
-					return false;
-				}
+					$websiteId = $this->getWebSiteId($user);
+					if (!$websiteId){
+						return false;
+					}
 
-				$ILSName = $this->getILSName($user);
-				if (!$ILSName){
-					return false;
-				}
+					$ILSName = $this->getILSName($user);
+					if (!$ILSName){
+						return false;
+					}
 
-				$patronBarcode = $user->barcode;
-				if ($this->getRequirePin($user)){
-					$patronPin  = urlencode($user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode);
-					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-                }else{
-					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
-                }
+					$patronBarcode = $user->barcode;
+					if ($this->getRequirePin($user)){
+						$patronPin  = urlencode($user->getAccountProfile()->usingPins() ? $user->getPassword() : $user->barcode);
+						$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+					}else{
+						$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
+					}
 
-				$url             = 'https://oauth-patron.overdrive.com/patrontoken';
-				$headers         = $this->_authorizationHeaders($url);
-				$curl            = $this->initCurlObject($headers);
-				$patronTokenData = $curl->post($url, $postFields);
-				//$curlInfo        = $curl->getInfo(); // for debugging
-				$timer->logTime("Logged User {$user->id} into OverDrive API");
-				if (isset($patronTokenData->expires_in)){
-					$this->cache->set($memCacheKey, $patronTokenData, $patronTokenData->expires_in - 10);
-					return $patronTokenData;
-				}
-				if (isset($patronTokenData->error)){
-					if ($patronTokenData->error === 'unauthorized_client'){
-						global $configArray;
-						if ($configArray['System']['debug']){
+					$url             = 'https://oauth-patron.overdrive.com/patrontoken';
+					$headers         = $this->_authorizationHeaders($url);
+					$curl            = $this->initCurlObject($headers);
+					$patronTokenData = $curl->post($url, $postFields);
+					//$curlInfo        = $curl->getInfo(); // for debugging
+					$timer->logTime("Logged User {$user->id} into OverDrive API");
+					if (isset($patronTokenData->expires_in)){
+						$this->cache->set($memCacheKey, $patronTokenData, $patronTokenData->expires_in - 10);
+						return $patronTokenData;
+					}
+					if (isset($patronTokenData->error)){
+						if ($patronTokenData->error === 'unauthorized_client'){
+							global $configArray;
+							if ($configArray['System']['debug']){
+								$this->logger->error('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
+							}
+						}else{
 							$this->logger->error('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
 						}
-					}else{
-						$this->logger->error('Error connecting to OverDrive patron APIs', ['overdrive_error' => $patronTokenData]);
 					}
 				}
-
+				return false;
 			}
-			return false;
+			return $patronTokenData;
 		}
-		return $patronTokenData;
+		return false;
 	}
 
 	/**
@@ -199,10 +220,11 @@ class OverDriveDriver4 {
 		global $configArray;
 		if (!empty($configArray['OverDrive']['clientKey']) && !empty($configArray['OverDrive']['clientSecret'])){
 			$requestAuth = base64_encode($configArray['OverDrive']['clientKey'] . ':' . $configArray['OverDrive']['clientSecret']);
+			//$this->logger->debug("OverDrive url $url , host : ". parse_url($url, PHP_URL_HOST));
 			return [
 				'Host'          => parse_url($url, PHP_URL_HOST),
 				'Authorization' => 'Basic ' . $requestAuth,
-				'Content-Type'  => ' application/x-www-form-urlencoded;charset=UTF-8',
+				'Content-Type'  => 'application/x-www-form-urlencoded;charset=UTF-8',
 			];
 		}
 		return false;
@@ -731,6 +753,11 @@ class OverDriveDriver4 {
 					$hold['userId']      = $user->id;
 					$hold['available']   = isset($curTitle->actions->checkout);
 					if (!$forGetOverDriveCounts){
+						if ($user->promptForOverDriveEmail == 1 || strlen($user->overDriveEmail) == 0){
+							// The Update hold button is only useful for changing the hold notification email now
+							$hold['showUpdateHoldButton'] = true;
+						}
+
 //				if (!empty($curTitle->emailAddress)){
 //					$hold['notifyEmail'] = $curTitle->emailAddress;
 //				}
@@ -742,6 +769,9 @@ class OverDriveDriver4 {
 						$hold['holdQueuePosition'] = $curTitle->holdListPosition;
 						$hold['position']          = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
 						$hold['frozen']            = isset($curTitle->holdSuspension);
+						if (isset($curTitle->estimatedWaitDays)){
+							$hold['estimatedWaitDays'] = $curTitle->estimatedWaitDays;
+						}
 						if ($hold['available']){
 							$hold['expire'] = strtotime($curTitle->holdExpires);
 						}
@@ -865,21 +895,15 @@ class OverDriveDriver4 {
 	 * @param string $overDriveId
 	 * @param User $user
 	 * @param string|null $email
-	 * @param int|null $daysToSuspend
 	 * @return array (result, message)
 	 */
-	public function freezeOverDriveHold($overDriveId, User $user, $email = null, $daysToSuspend = null){
+	public function freezeOverDriveHold($overDriveId, User $user, $email = null){
 		$email               ??= $user->overDriveEmail;
 		$url                 = $this->patronApi . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
-		$isLimitedSuspension = is_numeric($daysToSuspend);
-		$suspensionType      = $isLimitedSuspension ? 'limited' : 'indefinite';
 		$params              = [
 			'emailAddress'   => trim($email),
-			'suspensionType' => $suspensionType,
+			'suspensionType' => 'indefinite', // TODO: this will no longer be needed at some point
 		];
-		if ($isLimitedSuspension){
-			$params['numberOfDays'] = $daysToSuspend;
-		}
 
 		$response = $this->_callPatronUrl($user, $url, $params);
 

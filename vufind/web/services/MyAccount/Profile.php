@@ -167,19 +167,27 @@ class MyAccount_Profile extends MyAccount {
 				exit();
 			}
 
-			$cache             = new Pika\Cache();
-			$cacheKey          = $cache->makePatronKey('overdrive_settings', $patronId);
-			$overDriveSettings = $cache->get($cacheKey);
-			if (empty($overDriveSettings)){
-				$overDriveDriver   = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
-				$overDriveSettings = $overDriveDriver->getUserOverDriveAccountSettings($patron);
+			$overDriveOfflineMode = false;
+			if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+				$interface->assign('overDriveOfflineMode', true);
+				$overDriveOfflineMode = true;
 			}
-			if (!empty($overDriveSettings)){
-				$notice         = translate('overdrive_account_preferences_notice');
-				$replacementUrl = $overDriveSettings['overDriveWebsite'] ?? '#';
-				$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice);// Insert the Overdrive URL into the notice
-				$interface->assign('overDrivePreferencesNotice', $notice);
-				$interface->assign('overDriveSettings', $overDriveSettings);
+
+			if (!$overDriveOfflineMode) {
+				$cache             = new Pika\Cache();
+				$cacheKey          = $cache->makePatronKey('overdrive_settings', $patronId);
+				$overDriveSettings = $cache->get($cacheKey);
+				if (empty($overDriveSettings)){
+					$overDriveDriver   = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+					$overDriveSettings = $overDriveDriver->getUserOverDriveAccountSettings($patron);
+				}
+				if (!empty($overDriveSettings)){
+					$notice         = translate('overdrive_account_preferences_notice');
+					$replacementUrl = $overDriveSettings['overDriveWebsite'] ?? '#';
+					$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice);// Insert the Overdrive URL into the notice
+					$interface->assign('overDrivePreferencesNotice', $notice);
+					$interface->assign('overDriveSettings', $overDriveSettings);
+				}
 			}
 
 			if (!empty($_SESSION['profileUpdateErrors'])) {

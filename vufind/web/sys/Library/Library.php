@@ -180,6 +180,7 @@ class Library extends DB_DataObject {
 	public $accessibilityEmail;
 
 	public $allowPinReset;
+	public bool $allowForcePinUpdate;
 	public $preventExpiredCardLogin;
 	public $showLibraryHoursAndLocationsLink;
 	public $showLibraryHoursNoticeOnAccountPages;
@@ -541,11 +542,12 @@ class Library extends DB_DataObject {
 					                   'helpLink' => 'https://marmot-support.atlassian.net/l/c/fqu5BzME', 'properties' => [
 															 // todo: [pins] revisit if we go with per library config.
 							/*'loginConfiguration'   => ['property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => ['barcode_pin' => 'Barcode and Pin', 'name_barcode' => 'Name and Barcode', 'account_profile_based' => 'Account Profile Based' ], 'description' => 'How to configure the prompts for this authentication profile', 'required' => true, 'hideInLists' => true, 'default' => 'account_profile_based',],*/
-							'showLoginButton'         => ['property' =>'showLoginButton', 'type' =>'checkbox', 'label' =>'Show Login Button', 'description' =>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1],
+							'showLoginButton'         => ['property' =>'showLoginButton',         'type' =>'checkbox', 'label' =>'Show Login Button', 'description' =>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1],
 							'preventExpiredCardLogin' => ['property' =>'preventExpiredCardLogin', 'type' =>'checkbox', 'label' =>'Prevent Login for Expired Cards', 'description' =>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0],
-							'loginFormUsernameLabel'  => ['property' =>'loginFormUsernameLabel', 'type' =>'text', 'label' =>'Login Form Username Label', 'description' =>'The label to show for the username when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Your Name'*/],
-							'loginFormPasswordLabel'  => ['property' =>'loginFormPasswordLabel', 'type' =>'text', 'label' =>'Login Form Password Label', 'description' =>'The label to show for the password when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Library Card Number'*/],
-							'hideResetPinLink'        => ['property' =>'hideResetPinLink', 'type' =>'checkbox', 'label' =>'Hide Email Reset '. translate('PIN') .' Link', 'description' =>'Disable the ability to send reset '. translate('pin') .' emails', 'hideInLists' => true, 'default' => 0],
+							'loginFormUsernameLabel'  => ['property' =>'loginFormUsernameLabel',  'type' =>'text',     'label' =>'Login Form Username Label', 'description' =>'The label to show for the username when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Your Name'*/],
+							'loginFormPasswordLabel'  => ['property' =>'loginFormPasswordLabel',  'type' =>'text',     'label' =>'Login Form Password Label', 'description' =>'The label to show for the password when logging in', 'size' =>'100', 'hideInLists' => true, /*'default' =>'Library Card Number'*/],
+							'hideResetPinLink'        => ['property' =>'hideResetPinLink',        'type' =>'checkbox', 'label' =>'Hide Email Reset '. translate('PIN') .' Link', 'description' =>'Disable the ability to send reset '. translate('pin') .' emails', 'hideInLists' => true, 'default' => 0],
+							'allowForcePinUpdate'     => ['property' =>'allowForcePinUpdate',     'type' =>'checkbox', 'label' =>'Allow Force Patron ' . translate('PIN') . ' Update (Sierra Only)', 'description' =>'Enable the ability to force patron '. translate('pin') .' update when a specified patron field is empty', 'hideInLists' => true, 'default' => 0],
 						]],
 					'selfRegistrationSection' => ['property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 					                              'helpLink' => 'https://marmot-support.atlassian.net/l/c/80ovqAL5', 'properties' => [
@@ -744,8 +746,8 @@ class Library extends DB_DataObject {
 				'helpLink'   => 'https://marmot-support.atlassian.net/l/c/VBdaXS4e',
 				'properties' => [
 					'showItsHere'                => ['property' => 'showItsHere', 'type' => 'checkbox', 'label' => 'Show It\'s Here', 'description' => 'Whether or not the holdings summary should show It\'s here based on IP and the currently logged in patron\'s location.', 'hideInLists' => true, 'default' => 1],
-					'showGroupedHoldCopiesCount' => ['property' => 'showGroupedHoldCopiesCount', 'type' => 'checkbox', 'label' => 'Show Hold and Copy Counts', 'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.', 'hideInLists' => true, 'default' => 1],
-					'showOnOrderCounts'          => ['property' => 'showOnOrderCounts', 'type' => 'checkbox', 'label' => 'Show On Order Counts', 'description' => 'Whether or not counts of Order Items should be shown .', 'hideInLists' => true, 'default' => 1],
+					'showGroupedHoldCopiesCount' => ['property' => 'showGroupedHoldCopiesCount', 'type' => 'checkbox', 'label' => 'Show Hold and Copy Counts for Format Manifestation in Search Results', 'description' => 'Whether or not the hold count and copies counts should be visible for grouped works when summarizing formats.', 'hideInLists' => true, 'default' => 1],
+					'showOnOrderCounts'          => ['property' => 'showOnOrderCounts', 'type' => 'checkbox', 'label' => 'Show On Order Counts in Search Results', 'description' => 'Whether or not counts of Order Items should be shown .', 'hideInLists' => true, 'default' => 1],
 				],
 			],
 
@@ -1532,22 +1534,7 @@ class Library extends DB_DataObject {
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
 		if ($this->archiveOnlyInterface ?? false){
-			$this->clearRecordsOwned();
-			$this->clearRecordsToInclude();
-			$this->clearHooplaSettings();
-			$this->enableArchive             = true;
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton           = false;
-			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews      = false;
-			$this->showStandardReviews       = false;
-			$this->preferSyndeticsSummary    = false;
-			$this->showSimilarAuthors        = false;
-			$this->showSimilarTitles         = false;
-			$this->showWikipediaContent      = false;
-			$this->showFavorites             = false;
-			$this->showRatings               = false;
-			$this->hideCommentsWithBadWords  = false;
+			$this->enableArchiveOnlyMode();
 		}
 		$ret = parent::update();
 		if ($ret !== false){
@@ -1588,6 +1575,33 @@ class Library extends DB_DataObject {
 	}
 
 	/**
+	 * Update all the appropriate settings for enacting an Archive Only interface
+	 * @return void
+	 */
+	private function enableArchiveOnlyMode() : void {
+		$this->clearRecordsOwned();
+		$this->clearRecordsToInclude();
+		$this->clearHooplaSettings();
+		$this->enableArchive             = true;
+		$this->enableOverdriveCollection = false;
+		$this->showLoginButton           = false;
+		$this->showAdvancedSearchbox     = false;
+		$this->enableCombinedResults     = false;
+		$this->defaultToCombinedResults  = false;
+		$this->repeatInOnlineCollection  = false;
+		$this->includeNovelistEnrichment = false;
+		$this->showGoodReadsReviews      = false;
+		$this->showStandardReviews       = false;
+		$this->preferSyndeticsSummary    = false;
+		$this->showSimilarAuthors        = false;
+		$this->showSimilarTitles         = false;
+		$this->showWikipediaContent      = false;
+		$this->showFavorites             = false;
+		$this->showRatings               = false;
+		$this->hideCommentsWithBadWords  = false;
+	}
+
+	/**
 	 * Override the insert functionality to save the related objects
 	 *
 	 * @see DB/DB_DataObject::insert()
@@ -1609,22 +1623,7 @@ class Library extends DB_DataObject {
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
 		if ($this->archiveOnlyInterface ?? false){
-			$this->clearRecordsOwned();
-			$this->clearRecordsToInclude();
-			$this->enableOverdriveCollection = false;
-			$this->showLoginButton = false;
-			$this->enableArchive = true;
-			$this->clearHooplaSettings();
-			$this->includeNovelistEnrichment = false;
-			$this->showGoodReadsReviews = false;
-			$this->showStandardReviews = false;
-			$this->preferSyndeticsSummary = false;
-			$this->showSimilarAuthors = false;
-			$this->showSimilarTitles = false;
-			$this->showWikipediaContent = false;
-			$this->showFavorites = false;
-			$this->showRatings = false;
-			$this->hideCommentsWithBadWords = false;
+			$this->enableArchiveOnlyMode();
 		}
 		$ret = parent::insert();
 		if ($ret !== false){

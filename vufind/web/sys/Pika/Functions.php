@@ -68,21 +68,20 @@ function recaptchaCheckAnswer($recaptchaResponse = false) {
 	global $configArray;
 	$logger = new Logger('reCaptcha');
 
-	if(!isset($configArray['ReCaptcha']['privateKey']) || empty($configArray['ReCaptcha']['privateKey'])) {
+	if (empty($configArray['ReCaptcha']['privateKey'])){
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
 
-	if(!$recaptchaResponse) {
-		if(!isset($_REQUEST["g-recaptcha-response"])) {
+	if (!$recaptchaResponse){
+		if (!isset($_REQUEST['g-recaptcha-response'])){
 			throw new \DomainException('No reCaptcha response found');
-		} else {
-			$recaptchaResponse = $_REQUEST["g-recaptcha-response"];
+		}else{
+			$recaptchaResponse = $_REQUEST['g-recaptcha-response'];
 		}
 	}
-	$remoteIp = $_SERVER["REMOTE_ADDR"];
-
+	$remoteIp  = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
 	$recaptcha = new ReCaptcha($configArray['ReCaptcha']['privateKey']);
-	$r = $recaptcha->verify($recaptchaResponse, $remoteIp);
+	$r         = $recaptcha->verify($recaptchaResponse, $remoteIp);
 	if ($r->isSuccess()) {
 		return true;
 	} else {

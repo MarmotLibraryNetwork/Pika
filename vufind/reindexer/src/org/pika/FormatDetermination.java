@@ -521,7 +521,7 @@ public class FormatDetermination {
 		getFormatFromEdition(record, printFormats/*, identifier*/);
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
-		getFormatFromTitle(record, printFormats);
+		getFormatFromTitle(record, printFormats, identifier);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 
@@ -611,6 +611,7 @@ public class FormatDetermination {
 		}
 
 		List<DataField> physicalDescriptions = record.getDataFields("300");
+		int formats = printFormats.size();
 		for (DataField physicalDescription : physicalDescriptions) {
 			if (physicalDescription != null) {
 				if (physicalDescription.getSubfield('e') != null) {
@@ -652,6 +653,10 @@ public class FormatDetermination {
 					}
 				}
 			}
+		}
+		if (printFormats.size() > formats + 1) {
+			logger.warn("More than one accompany material determination present : " + String.join(",", printFormats));
+
 		}
 	}
 
@@ -746,6 +751,7 @@ public class FormatDetermination {
 		}
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
+				logger.info("ComboPack determination in filterPrintFormats() for {}", identifier);
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 				return;
@@ -806,7 +812,9 @@ public class FormatDetermination {
 		if (printFormats.contains("CompactDisc") && printFormats.contains("MusicCD")){
 			printFormats.remove("CompactDisc");
 		}
-		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
+		if (printFormats.contains("MusicRecording") && (/*printFormats.contains("CD") ||*/ printFormats.contains("CompactDisc"))){
+			//This does occur on mln1 for 8 records
+			logger.info("Found music recording + CD in filter print formats on {}", identifier);
 			if (printFormats.contains("DVD")) {
 				// Probable Accompanying Material
 				printFormats.clear();
@@ -852,10 +860,10 @@ public class FormatDetermination {
 				printFormats.remove("CompactDisc");
 			}
 		}
-		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
-			//TODO: Likely obsolete - no determinations of CD
-			printFormats.remove("CD");
-		}
+//		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
+//			//TODO: Likely obsolete - no determinations of CD
+//			printFormats.remove("CD");
+//		}
 		if (printFormats.contains("MP3") && printFormats.contains("CompactDisc")){
 			printFormats.remove("MP3");
 		}
@@ -897,6 +905,9 @@ public class FormatDetermination {
 		}
 
 		// Video Game Things
+		if (printFormats.contains("NintendoSwitch") && printFormats.contains("NintendoSwitch2")){
+			printFormats.remove("NintendoSwitch");
+		}
 		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
 			printFormats.remove("Wii");
 		}
@@ -939,6 +950,7 @@ public class FormatDetermination {
 				|| printFormats.contains("PlayStation") || printFormats.contains("PlayStation3")
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
+				|| printFormats.contains("NintendoSwitch2")
 				|| printFormats.contains("NintendoSwitch")
 				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
 				|| printFormats.contains("WindowsGame")){
@@ -995,7 +1007,7 @@ public class FormatDetermination {
 		return false;
 	}
 
-	private void getFormatFromTitle(Record record, Set<String> printFormats) {
+	private void getFormatFromTitle(Record record, Set<String> printFormats, RecordIdentifier identifier) {
 		String titleMedium = MarcUtil.getFirstFieldVal(record, "245h");
 		if (titleMedium != null){
 			titleMedium = titleMedium.toLowerCase();
@@ -1028,12 +1040,13 @@ public class FormatDetermination {
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
 			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
-				printFormats.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player) TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
+				logger.info("CDROM determination from 245h dvd rom phrase on {}", identifier);
+				printFormats.add("CDROM");
+				// TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player)
+				// TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
-			}
-			else if (titleMedium.contains("mp3"))
-			{
+			} else if (titleMedium.contains("mp3")) {
 				printFormats.add("MP3");
 			}
 
@@ -1084,6 +1097,11 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * Phrases to exclude from Illustrated Edition format determination
+	 */
+	private final Pattern illustratedEditionExceptions = Pattern.compile("newly illustrated|new illustrated|classic illustrated|reillustrated");
+
 	private void getFormatFromEdition(Record record, Set<String> result/*, RecordIdentifier identifier*/) {
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
@@ -1101,7 +1119,8 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if (editionData.contains("illustrated ed")) {
+					} else if (editionData.contains("illustrated ed") && !illustratedEditionExceptions.matcher(editionData).find()) {
+						// Exclude "Newly Illustrated edition", "New illustrated edition", "Classic illustrated edition" & "Reillustrated edition"
 						result.add("IllustratedEdition");
 					} else if (findBluRay4KUltraBluRayComboPhrasesLowerCased(editionData)){
 						//Do combo check before single format check
@@ -1346,6 +1365,10 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * @param value lower-cased string to check for game system formats
+	 * @return videoGame format determination or null
+	 */
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
@@ -1362,7 +1385,7 @@ public class FormatDetermination {
 			return "XboxOne";
 		} else if ((value.contains("xbox 360") || value.contains("xbox360")) && !value.contains("compatible")) {
 			if (logger.isInfoEnabled() && value.contains("xbox live")){
-				logger.info("Potential xbox game format string contains 'xbox live': " + value);
+				logger.info("Potential xbox game format string contains 'xbox live': {}", value);
 			}
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
@@ -1375,12 +1398,12 @@ public class FormatDetermination {
 			return "PlayStation5";
 		} else if ((value.contains("playstation 4") ||value.contains("playstation4") || value.equals("ps4") || value.matches(".*[^a-z]ps4.*")) && isNotBluRayPlayerDescription(value)) {
 			if (value.contains("xbox live")){
-				logger.info("PS string mentioning xbox live :" + value);
+				logger.info("PS string mentioning xbox live : {}",  value);
 			}
 			return "PlayStation4";
-		} else if ((value.contains("playstation 3") ||value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
+		} else if ((value.contains("playstation 3") || value.contains("playstation3") || value.equals("ps3") || value.matches(".*[^a-z]ps3.*")) && isNotBluRayPlayerDescription(value)) {
 			if (value.contains("xbox live")){
-				logger.info("PS string mentioning xbox live :" + value);
+				logger.info("PS string mentioning xbox live : {}", value);
 			}
 			return "PlayStation3";
 		} else if (value.replaceAll("playstation (plus|network)", "").contains("playstation") && isNotBluRayPlayerDescription(value)) {
@@ -1393,6 +1416,8 @@ public class FormatDetermination {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch 2")) {
+			return "NintendoSwitch2";
 		} else if (value.contains("nintendo switch")) {
 			return "NintendoSwitch";
 		} else if (value.contains("nintendo ds")) {

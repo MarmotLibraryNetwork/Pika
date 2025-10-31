@@ -30,11 +30,11 @@ import java.util.LinkedHashSet;
 public class UserListSolr {
 	private final GroupedWorkIndexer groupedWorkIndexer;
 	private       long               id;
-	private       HashSet<String>    relatedRecordIds          = new HashSet<>();
+	private final HashSet<String>    relatedRecordIds          = new HashSet<>();
 	private       String             author;
 	private       String             title;
-	private       HashSet<String>    contents                  = new HashSet<>();
-	private       HashSet<String>    scopes                    = new HashSet<>();
+	private final HashSet<String>    contents                  = new HashSet<>();
+	private final HashSet<String>    scopes                    = new HashSet<>();
 	private       String             description;
 	private       long               numTitles                 = 0;
 	private       long               created;
@@ -49,6 +49,7 @@ public class UserListSolr {
 	public SolrInputDocument getSolrDocument() {
 		SolrInputDocument doc = new SolrInputDocument();
 		doc.addField("id", "list" + id);
+		doc.addField("alternate_ids", id);
 		doc.addField("recordtype", "list");
 
 		doc.addField("title", title);

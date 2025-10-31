@@ -482,28 +482,13 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
-						// Only econtent and on order items ??
+						// Only eContent and on order items ??
 						formats.add(curItem.getFormat());
 					}else {
 						formats = curRecord.getFormats();
 					}
 					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
-					HashSet<String> formatCategories = new HashSet<>();
-					if (curItem.getFormatCategory() != null) {
-						// Only eContent and on order items ??
-						formatCategories.add(curItem.getFormatCategory());
-					}else {
-						formatCategories = curRecord.getFormatCategories();
-					}
-					//eAudiobooks are considered both Audiobooks and eBooks by some people
-					if (formats.contains("eAudiobook")){
-						formatCategories.add("eBook");
-					}
-					if (formats.contains("VOX Books") || formats.contains("WonderBook")){
-						formatCategories.add("Books");
-						formatCategories.add("Audio Books");
-					}
-					addUniqueFieldValues(doc, "format_category_" + curScopeName, formatCategories);
+					addUniqueFieldValues(doc, "format_category_" + curScopeName, getFormatCategories(curRecord, curItem, formats));
 
 					// Add_languages
 					addUniqueFieldValues(doc, "language_" + curScopeName, curRecord.getLanguages());
@@ -580,6 +565,25 @@ public class GroupedWorkSolr implements Cloneable {
 				doc.addField("local_time_since_added_" + curScopeName, Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
+	}
+
+	private static HashSet<String> getFormatCategories(RecordInfo curRecord, ItemInfo curItem, HashSet<String> formats) {
+		HashSet<String> formatCategories = new HashSet<>();
+		if (curItem.getFormatCategory() != null) {
+			// Only eContent and on order items ??
+			formatCategories.add(curItem.getFormatCategory());
+		}else {
+			formatCategories = curRecord.getFormatCategories();
+		}
+		//eAudiobooks are considered both Audiobooks and eBooks by some people
+		if (formats.contains("eAudiobook")){
+			formatCategories.add("eBook");
+		}
+		if (formats.contains("VOX Books") || formats.contains("WonderBook")){
+			formatCategories.add("Books");
+			formatCategories.add("Audio Books");
+		}
+		return formatCategories;
 	}
 
 	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(SolrInputDocument doc, RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo curScope) {

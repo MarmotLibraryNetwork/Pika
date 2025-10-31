@@ -184,7 +184,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		return '';
 	}
 
-	private array $detailedContributors = array();
+	private array $detailedContributors = [];
 
 	/**
 	 * Get an array of creators and roles
@@ -248,6 +248,19 @@ class OverDriveRecordDriver extends RecordInterface {
 		// TODO: Implement getExportFormats() method.
 	}
 
+	private static bool|null $offline = null;
+	static function offline(){
+		if (is_null(self::$offline)){
+			global $configArray;
+			if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+				self::$offline = true;
+			} else {
+				self::$offline = false;
+			}
+		}
+		return self::$offline;
+	}
+
 	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display holdings extracted from the base record
@@ -258,36 +271,80 @@ class OverDriveRecordDriver extends RecordInterface {
 	 *
 	 * @return  Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats[]  An Array of Formats with link information included
 	 */
-	public function getHoldings(){
-		$items            = $this->getItems();
-		$availability     = $this->getAvailability();
-		$addCheckoutLink  = false;
-		$addPlaceHoldLink = false;
-		foreach ($availability as $availableFrom){
-			if ($availableFrom->copiesAvailable > 0){
-				$addCheckoutLink = true;
-			}else{
-				$addPlaceHoldLink = true;
-			}
-		}
-		foreach ($items as &$item){
-			//Add links as needed
-			$item->links = [];
-			if ($addCheckoutLink){
-				$item->links[] = [
-					'onclick' => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}', '{$item->textId}');",
-					'text'    => 'Check Out ' . $item->name,
-				];
-			}elseif ($addPlaceHoldLink){
-				$item->links[] = [
-					'onclick' => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
-					'text'    => 'Place Hold ' . $item->name,
-				];
-			}
-		}
+//	public function getHoldings(){
+//		$items   = $this->getItems();
+//			//TODO: I don't think any of code below is used at all. pascal 9-25-2025
+////		$offline = self::offline();
+////		if ($offline){
+////			$label     = translate('overdrive_access_url_action');
+////			foreach ($items as &$item){
+////				$item->links[] = [
+////					'url'  => $this->getAccessUrl($this->overDriveProduct->crossRefId),
+////					'text' => $label
+////				];
+////			}
+////		}else{
+////			$availability     = $this->getAvailability();
+////			$addCheckoutLink  = false;
+////			$addPlaceHoldLink = false;
+////			foreach ($availability as $availableFrom){
+////				if ($availableFrom->copiesAvailable > 0){
+////					$addCheckoutLink = true;
+////				}else{
+////					$addPlaceHoldLink = true;
+////				}
+////			}
+////			foreach ($items as &$item){
+////				//Add links as needed
+////				if ($addCheckoutLink){
+////					$item->links[] = [
+////						'onclick' => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}', '{$item->textId}');",
+////						'text'    => 'Check Out ' . $item->name,
+////					];
+////				}elseif ($addPlaceHoldLink){
+////					$item->links[] = [
+////						'onclick' => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
+////						'text'    => 'Place Hold ' . $item->name,
+////					];
+////				}
+////			}
+////		}
+//
+//		return $items;
+//	}
 
-		return $items;
+	public function getAccessUrl($crossRefId = null) : string{
+		$crossRefId ??= $this->overDriveProduct->crossRefId;
+		if (empty($crossRefId)){
+			global $pikaLogger;
+			$pikaLogger->withName(__CLASS__)->error('No crossRefId provided for access url');
+		}
+		$websiteId  = $this->getWebsiteId();
+		$url        = "https://link.overdrive.com?websiteID=$websiteId&titleID=$crossRefId";
+		return $url;
 	}
+
+	/**
+	 * @return mixed|string The OverDrive website Id of the current interface's library
+	 */
+	public function getWebsiteId(){
+		global $configArray;
+		$patronWebsiteIdSetting = $configArray['OverDrive']['patronWebsiteId'];
+		if (strpos($patronWebsiteIdSetting, ',') > 0){
+			//Multiple Overdrive Accounts
+			global $library;
+			$patronWebsiteIds            = explode(',', $patronWebsiteIdSetting);
+			$overdriveSharedCollectionId = $library->sharedOverdriveCollection;
+			// Shared collection Id numbers are negative and based on the order accountIds of $configArray['OverDrive']['accountId']
+			// (patron website ids need to have the same matching order)
+			$indexOfSiteToUse           = abs($overdriveSharedCollectionId) - 1;
+			$websiteId = $patronWebsiteIds[$indexOfSiteToUse];
+		}else{
+			$websiteId = $patronWebsiteIdSetting;
+		}
+		return $websiteId;
+	}
+
 	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display issues extracted from the base record
@@ -827,7 +884,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getFormats(){
 		$formats = [];
-		foreach ($this->getItems() as $item){
+		foreach ($this->getSpecificTitleFormats() as $item){
 			$formats[] = $item->name;
 		}
 		return $formats;
@@ -836,20 +893,23 @@ class OverDriveRecordDriver extends RecordInterface {
 	/**
 	 * @return Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats[]
 	 */
-	public function getItems(){
+	public function getSpecificTitleFormats(){
 		if ($this->items == null){
 			$overDriveFormats = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
 			$this->items      = [];
 			if ($this->valid){
 				$overDriveFormats->productId = $this->overDriveProduct->id;
-				$overDriveFormats->find();
-				while ($overDriveFormats->fetch()){
-					$this->items[] = clone $overDriveFormats;
+				if ($overDriveFormats->find()){
+					while ($overDriveFormats->fetch()){
+						$this->items[] = clone $overDriveFormats;
+					}
+				} else {
+					global $pikaLogger;
+					$pikaLogger->withName(__CLASS__)->error("Failed to find overDriveFormats for OverDrive product id {$this->overDriveProduct->id}");
 				}
 			}
-
-			global $timer;
-			$timer->logTime("Finished getItems for OverDrive record {$this->overDriveProduct->id}");
+//			global $timer;
+//			$timer->logTime("Finished getItems for OverDrive record {$this->overDriveProduct->id}");
 		}
 		return $this->items;
 	}
@@ -911,7 +971,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		//Load overDrive Title Holdings information from the driver
 
 		/** @var OverDriveAPIProductFormats[] $overDriveTitleHoldings */
-		$overDriveTitleHoldings = $this->getHoldings();
+		$overDriveTitleHoldings = $this->getSpecificTitleFormats();
 
 		$scopedAvailability     = $this->getScopedAvailability();
 		$interface->assign('overDriveTitleHoldings', $overDriveTitleHoldings);
@@ -940,7 +1000,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		];
 		//Other editions if applicable (only if we aren't the only record!)
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
-		if (count($relatedRecords) > 1){
+		if (!empty($relatedRecords) && count($relatedRecords) > 1){
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
 			$moreDetailsOptions['otherEditions'] = [
 				'label'         => 'Other Editions and Formats',
@@ -1158,7 +1218,7 @@ class OverDriveRecordDriver extends RecordInterface {
 				 $params['rft.au'] = $this->getPrimaryAuthor();
 				 break;
 				 */
-				$issns = $this->getISSNs();
+				$issns = $this->getISSNs(); //TODO: not implemented on this driver
 				if (count($issns) > 0){
 					$params['rft.issn'] = $issns[0];
 				}
@@ -1202,18 +1262,27 @@ class OverDriveRecordDriver extends RecordInterface {
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
 		$actions = [];
-		if ($isAvailable){
+		$offline = self::offline();
+		if ($offline){
+			$label     = translate('overdrive_access_url_action');
 			$actions[] = [
-				'title'        => 'Check Out OverDrive',
-				'onclick'      => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->id}');",
-				'requireLogin' => false,
+				'url'   => $this->getAccessUrl(),
+				'title' => $label
 			];
 		}else{
-			$actions[] = [
-				'title'        => 'Place Hold OverDrive',
-				'onclick'      => "return Pika.OverDrive.placeOverDriveHold('{$this->id}');",
-				'requireLogin' => false,
-			];
+			if ($isAvailable){
+				$actions[] = [
+					'title'        => 'Check Out OverDrive',
+					'onclick'      => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->id}');",
+					'requireLogin' => false,
+				];
+			}else{
+				$actions[] = [
+					'title'        => 'Place Hold OverDrive',
+					'onclick'      => "return Pika.OverDrive.placeOverDriveHold('{$this->id}');",
+					'requireLogin' => false,
+				];
+			}
 		}
 		return $actions;
 	}
@@ -1274,32 +1343,40 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * An Array of basic template information. Essentially determines whether or not to show place hold or check out buttons.
+	 * An Array of basic template information used for OverDrive Record Views.
+	 * Determines whether to show "place hold" or "check out" buttons, on an access url when
+	 * OverDrive is offline.
 	 * @return array
 	 */
 	public function getStatusSummary(){
 		$statusSummary   = [];
 		$availableCopies = 0;
 		$totalCopies     = 0;
-		$availabilities  = $this->getAvailability();
-		$isCopies        = count($availabilities) > 0;
-		if ($isCopies){
-			foreach ($availabilities as $curAvailability){
-				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies     += $curAvailability->copiesOwned;
+		$offline         = self::offline();
+		if (!$offline){
+			$availabilities = $this->getAvailability();
+			$isCopies       = count($availabilities) > 0;
+			if ($isCopies){
+				foreach ($availabilities as $curAvailability){
+					$availableCopies += $curAvailability->copiesAvailable;
+					$totalCopies     += $curAvailability->copiesOwned;
+				}
 			}
+
+			//Set status summary
+			if ($availableCopies > 0){
+				$statusSummary['status'] = 'Available from OverDrive';
+				$statusSummary['class']  = 'available';
+			}else{
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['class']  = 'checkedOut';
+			}
+		} else {
+			$isCopies = false;
+			$statusSummary['offline'] = true;
 		}
 
-		//Set status summary
-		if ($availableCopies > 0){
-			$statusSummary['status'] = 'Available from OverDrive';
-			$statusSummary['class']  = 'available';
-		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['class']  = 'checkedOut';
-		}
-
-		//Determine which buttons to show
+		// Determine which buttons to show
 		$statusSummary['showPlaceHold'] = $isCopies && $availableCopies == 0;
 		$statusSummary['showCheckout']  = $isCopies && $availableCopies > 0;
 

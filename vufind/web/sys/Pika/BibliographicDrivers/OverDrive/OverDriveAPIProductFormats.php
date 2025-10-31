@@ -39,6 +39,8 @@ class OverDriveAPIProductFormats extends \DB_DataObject {
 	public $sampleSource_2;
 	public $sampleUrl_2;
 
+	public array $links = []; // Links are set in OverDriveRecordDriver method getHoldings()
+
 	private const FORMAT_CLASS = [
 		'audiobook' => 'Audiobook',
 		'ebook'     => 'eBook',
