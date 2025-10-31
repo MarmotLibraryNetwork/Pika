@@ -516,8 +516,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void loadScopeInfoForOrderItem(String location, String format, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
-		boolean hasSystemBasedShelfLocation = false;
-		String originalUrl = itemInfo.getItemUrl();
+		boolean hasSystemBasedShelfLocation   = false;
+		String  originalUrl                   = itemInfo.getItemUrl();
 		for (Scope scope: indexer.getScopes()){
 			Scope.InclusionResult result = scope.isItemPartOfScope(indexingProfileSource, location, null, audiences, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
