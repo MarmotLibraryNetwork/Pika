@@ -24,21 +24,12 @@ import java.util.HashSet;
  * Time: 8:56 AM
  */
 public class LexileTitle {
-	private String          title;
-	private String          author;
-	private String          lexileCode;
-	private int             lexileScore = -1;
-	private String          series;
-	private HashSet<String> awards      = new HashSet<>();
-	private String          description;
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
+	private       String          title;
+	private       String          author;
+	private       String          lexileCode;
+	private       int             lexileScore = -1;
+	private       String          series;
+	private final HashSet<String> awards      = new HashSet<>();
 
 	public String getTitle() {
 		return title;
@@ -74,7 +65,9 @@ public class LexileTitle {
 			try {
 				value = Integer.parseInt(lexileScore);
 			} catch (NumberFormatException e) {
+				//TODO ought to log the error
 				value = Integer.parseInt(lexileScore.replaceAll("[^0-9]", ""));
+				// Strip out non-numeral text; if there is a parse error again, let that throw
 			}
 			this.lexileScore = value;
 		}
@@ -95,10 +88,20 @@ public class LexileTitle {
 	public void setAwards(String awards) {
 		//Remove anything in quotes
 		if (awards != null && !awards.isEmpty()) {
-			awards = awards.replaceAll("\\(.*?\\)", "");
-			String[] individualAwards = awards.split(",");
-			for (String individualAward : individualAwards) {
-				this.awards.add(individualAward.trim());
+			//awards = awards.replaceAll("\\(.*?\\)", "");
+			// Remove text within parentheses
+
+			awards = awards.replaceAll("[\\[\\]\"]", "");
+			//Remove brackets & double quote marks
+			for (String individualAward : awards.split(", ")) {
+				if (individualAward.startsWith("'") && individualAward.endsWith("'")) {
+					// Remove surrounding single quotes
+					individualAward = individualAward.substring(1, individualAward.length() - 1);
+				}
+				this.awards.add(individualAward.trim().replaceAll(" {2}", " "));
+				// clean up double spaces, e.g. 'Robert F. Sibert Informational  Book Award'
+				// (Because this.awards is a hashset, it will automatically prevent duplicate entries from
+				// being added.)
 			}
 		}
 	}
