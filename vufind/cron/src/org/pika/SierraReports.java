@@ -170,10 +170,12 @@ public class SierraReports implements IProcessHandler {
 						int       numItemsWritten = 0;
 						while (itemsOutRS.next()) {
 							String callNumber = itemsOutRS.getString("callnumber");
+							String barcode    = itemsOutRS.getString("barcode");
 							callNumber = callNumber == null ? "" : callNumber.replaceAll("\\|\\w", "").trim();
+							barcode    = barcode == null ? "" : barcode.trim();
 							patronInfo[8]  = callNumber;
 							patronInfo[9]  = itemsOutRS.getString("title").trim();
-							patronInfo[10] = itemsOutRS.getString("barcode").trim();
+							patronInfo[10] = barcode;
 							patronInfo[11] = itemsOutRS.getString("location_code").trim();
 							patronInfo[12] = itemsOutRS.getString("due_gmt").trim();
 							patronInfo[13] = itemsOutRS.getString("item_status_code").trim();
