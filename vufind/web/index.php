@@ -244,8 +244,13 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }elseif (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-	require_once $actionFile;
+	if(file_exists($actionFile)) {
+		require_once $actionFile;
+	} else {	
+		PEAR_Singleton::raiseError(new PEAR_Error("Action file doesn't exist."));
+	}
 	$moduleActionClass = "{$module}_{$action}";
+	$nameSpaceClass = "\\" . $module . "\\" . $action;
 	if (class_exists($moduleActionClass, false)) {
 		$timer->logTime('Start launch of action');
 		/** @var Action $service */
@@ -258,7 +263,13 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 		$service = new $action();
 		$service->launch();
 		$timer->logTime('Finish launch of action');
-	}else{
+	} elseif (class_exists($nameSpaceClass)) {
+		$timer->logTime('Start launch of action');
+		/** @var Action $service */
+		$service = new $nameSpaceClass();
+		$service->launch();
+		$timer->logTime('Finish launch of action');
+	} else {
 		PEAR_Singleton::raiseError(new PEAR_Error('Unknown Action'));
 	}
 } else {
