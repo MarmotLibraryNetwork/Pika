@@ -127,14 +127,15 @@ public class SierraReports implements IProcessHandler {
 				while (patronsForSchoolRS.next()) {
 					//Gather information about the patron
 					try {
-						long     patronId    = patronsForSchoolRS.getLong("id");
+						long     patronId   = patronsForSchoolRS.getLong("id");
 						String[] patronInfo = new String[16];
 						String   lastName   = patronsForSchoolRS.getString("last_name").trim();
 						String   firstName  = patronsForSchoolRS.getString("first_name").trim();
 						String   middleName = patronsForSchoolRS.getString("middle_name").trim();
 						String   fullName   = lastName + ", " + firstName + " " + middleName;
 						String   homeroom   = patronsForSchoolRS.getString("homeroom");
-						String fullAddress  = patronsForSchoolRS.getString("addr1")
+						String   gradeLevel = patronsForSchoolRS.getString("gradelvl");
+						String  fullAddress = patronsForSchoolRS.getString("addr1")
 										+ " " + patronsForSchoolRS.getString("city") + ", "
 										+ patronsForSchoolRS.getString("region") + " "
 										+ patronsForSchoolRS.getString("postal_code");
@@ -143,7 +144,7 @@ public class SierraReports implements IProcessHandler {
 						patronInfo[2]  = fullName.trim();
 						patronInfo[3]  = patronsForSchoolRS.getString("home_library_code").trim();
 						patronInfo[4]  = patronsForSchoolRS.getString("barcode").trim();
-						patronInfo[5]  = patronsForSchoolRS.getString("gradelvl").trim();
+						patronInfo[5]  = gradeLevel.trim();
 						patronInfo[6]  = homeroom.trim();
 						patronInfo[7]  = patronsForSchoolRS.getString("owed_amt").trim();
 						patronInfo[14] = fullAddress.trim();
