@@ -17,15 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
-
 namespace Archive2;
 
-class Audio extends ArchiveObject
+require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+
+class Video extends ArchiveObject
 {
 
     public function launch()
     {
-        // TODO: Implement launch() method.
+        global $interface;
+		//global $configArray;
+
+        $interface->assign('showExploreMore', true);
+
+		// Display Page
+		$this->display('video.tpl');
     }
 }

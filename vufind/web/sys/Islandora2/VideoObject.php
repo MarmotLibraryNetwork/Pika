@@ -17,15 +17,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+namespace Islandora2;
 
-namespace Archive2;
+require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
-class Audio extends ArchiveObject
+class VideoObject extends I2Object
 {
-
-    public function launch()
+    public static function supports(array $node): bool
     {
-        // TODO: Implement launch() method.
+        if (self::bundleMatches($node, ['video'])) {
+            return true;
+        }
+
+        if (self::mimeStartsWith($node, 'video/')) {
+            return true;
+        }
+
+        // Islandora often stores streaming video as application/x-mpegURL etc.
+        if (self::mimeMatches($node, ['application/x-mpegurl', 'application/vnd.apple.mpegurl'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getMediaType(): string
+    {
+        return 'video';
     }
 }

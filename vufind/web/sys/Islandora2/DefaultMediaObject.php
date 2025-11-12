@@ -17,15 +17,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+namespace Islandora2;
 
-namespace Archive2;
+require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
-class Audio extends ArchiveObject
+/**
+ * Fallback media object returned when no specialised handler is available.
+ */
+class DefaultMediaObject extends I2Object
 {
-
-    public function launch()
+    public static function supports(array $node): bool
     {
-        // TODO: Implement launch() method.
+        return true;
+    }
+
+    public function getMediaType(): string
+    {
+        return 'generic';
+    }
+
+    public function getMediaTypeLabel(): string
+    {
+        $bundle = self::extractBundle($this->node) ?? 'Item';
+        return ucfirst($bundle);
     }
 }

@@ -17,15 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+namespace Islandora2;
 
-namespace Archive2;
+require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
-class Audio extends ArchiveObject
+class PdfObject extends I2Object
 {
-
-    public function launch()
+    public static function supports(array $node): bool
     {
-        // TODO: Implement launch() method.
+        if (self::bundleMatches($node, ['pdf'])) {
+            return true;
+        }
+
+        if (self::mimeMatches($node, ['application/pdf'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getMediaType(): string
+    {
+        return 'pdf';
     }
 }
