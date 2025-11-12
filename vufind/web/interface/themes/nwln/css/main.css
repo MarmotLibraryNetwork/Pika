@@ -9555,10 +9555,6 @@ img.x-twit {
   font-size: 13px;
   font-weight: bold;
 }
-.img-responsive.thumbnail.exhibit-thumbnail {
-  float: left;
-  max-height: 250px;
-}
 .result {
   border-bottom: 2px solid #d5d6da;
   padding: 10px 0 15px;
@@ -10487,6 +10483,10 @@ img.x-twit {
 #video-player {
   display: block;
   width: 100%;
+}
+.img-responsive.thumbnail.exhibit-thumbnail {
+  float: left;
+  max-height: 250px;
 }
 .help-icon {
   color: blue;
