@@ -139,6 +139,9 @@ public class SierraReports implements IProcessHandler {
 										+ " " + patronsForSchoolRS.getString("city") + ", "
 										+ patronsForSchoolRS.getString("region") + " "
 										+ patronsForSchoolRS.getString("postal_code");
+						if (gradeLevel == null){
+							gradeLevel = "";
+						}
 						patronInfo[0]  = patronsForSchoolRS.getString("ptype_code").trim();
 						patronInfo[1]  = patronsForSchoolRS.getString("pcode1").trim();
 						patronInfo[2]  = fullName.trim();
@@ -176,7 +179,7 @@ public class SierraReports implements IProcessHandler {
 						}
 					} catch (Exception e) {
 						// Aiming to catch null exceptions
-						logger.error("Error processing patron info", e);
+						logger.error("Error processing patron, {}", patronsForSchoolRS, e);
 					}
 				}
 			}
