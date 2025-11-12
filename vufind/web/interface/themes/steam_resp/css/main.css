@@ -10754,7 +10754,8 @@ a.btn.btn-sm.btn-default {
 /****Digital Archive Display****/
 /*Moves the TWW Jacket image to the right so that the TOC flow better*/
 .img-responsive.thumbnail.exhibit-thumbnail {
-  float: right;
+  float: left;
+  max-height: 250px;
 }
 /*Gets the text in the description to align with the title on a Collection Homepage*/
 .lead.row {
