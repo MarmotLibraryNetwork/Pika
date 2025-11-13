@@ -138,6 +138,7 @@ public class SierraReports implements IProcessHandler {
 						String   city       = patronsForSchoolRS.getString("city");
 						String   region     = patronsForSchoolRS.getString("region");
 						String   postalCode = patronsForSchoolRS.getString("postal_code");
+						String   owedAmount = patronsForSchoolRS.getString("owed_amt");
 						StringBuilder fullAddress = new StringBuilder();
 						if (address != null){
 							fullAddress.append(fullAddress).append(" ");
@@ -153,6 +154,14 @@ public class SierraReports implements IProcessHandler {
 						}
 						gradeLevel = gradeLevel == null ? "" : gradeLevel.trim();
 						homeroom   = homeroom == null ? "" : homeroom.trim();
+						if (owedAmount == null){
+							owedAmount = "";
+						} else if (owedAmount.length() > 4){
+							// owedAmount, when populated, is formatted as number with 6 digits beyond the decimal point
+							// e.g. "35.000000"
+							owedAmount = owedAmount.substring(0, owedAmount.length() - 4);
+							// trim to 2 digits decimal numbers
+						}
 						patronInfo[0]  = patronsForSchoolRS.getString("ptype_code").trim();
 						patronInfo[1]  = patronsForSchoolRS.getString("pcode1").trim();
 						patronInfo[2]  = fullName.trim();
@@ -160,7 +169,7 @@ public class SierraReports implements IProcessHandler {
 						patronInfo[4]  = patronsForSchoolRS.getString("barcode").trim();
 						patronInfo[5]  = gradeLevel;
 						patronInfo[6]  = homeroom;
-						patronInfo[7]  = patronsForSchoolRS.getString("owed_amt").trim();
+						patronInfo[7]  = owedAmount;
 						patronInfo[14] = fullAddress.toString().trim();
 
 						//Get a list of items that are checked out to each user
