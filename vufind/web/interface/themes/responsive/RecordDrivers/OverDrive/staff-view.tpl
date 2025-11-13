@@ -6,6 +6,10 @@
 		</div>
 	</div>
 	<div class="row">
+		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
+		<div class="col-xs-9 result-value">{$id}</div>
+	</div>
+	<div class="row">
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 				Work</a>

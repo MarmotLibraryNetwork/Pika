@@ -6,6 +6,10 @@
 			{$recordDriver->getPermanentId()}
 		</div>
 	</div>
+	<div class="row">
+		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
+		<div class="col-xs-9 result-value">{$id}</div>
+	</div>
 
 	<div class="row">
 		<div class="col-xs-12">
