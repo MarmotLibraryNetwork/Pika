@@ -118,7 +118,7 @@ public class SierraReports implements IProcessHandler {
 							CSVWriter patronReportCsvWriter = new CSVWriter(patronReportWriter)
 			) {
 				//Write headers
-				patronReportWriter.write("P Type,P Code 1,Patron Name,Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Stat,Address");
+				patronReportWriter.write("P Type,P Code 1,Patron Name,Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Status Code,Address");
 				patronReportWriter.write("\r\n");
 				//Get a list of users that belong to that branch who have titles checked out or fines
 				patronsToProcessStmt.setString(1, curLibraryPrefix);
