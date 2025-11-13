@@ -1474,6 +1474,7 @@ public class GroupedWorkIndexer {
 				}
 				lexileDataMatches++;
 				if (fullReindex && logger.isDebugEnabled()) {
+					logger.debug("Lexile match for {} with score {} using isbn {}", lexileTitle.getTitle(), lexileTitle.getLexileScore(), isbn);
 					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
 					String       groupTitle           = groupedWork.getTitle();
 					final String groupWorkPermanentId = groupedWork.getId();
