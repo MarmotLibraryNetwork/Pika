@@ -38,15 +38,14 @@ import java.sql.*;
 public class SierraReports implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private Logger logger;
-	private String ils;
+
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Sierra Reports");
 		processLog.saveToDatabase(pikaConn, logger);
 		String reportsPath = PikaConfigIni.getIniValue("Site", "reportPath");
-
-		ils = PikaConfigIni.getIniValue("Catalog", "ils");
+		String ils         = PikaConfigIni.getIniValue("Catalog", "ils");
 		if (!ils.equalsIgnoreCase("Sierra")){
 			processLog.addNote("ILS is not Sierra, quiting");
 		}else{
@@ -61,7 +60,7 @@ public class SierraReports implements IProcessHandler {
 			try{
 				//Open the connection to the database
 				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
-					// Use specific user name and password when the are issues with special characters
+					// Use specific username and password when the are issues with special characters
 					if (sierraDBUser.startsWith("\"")){
 						sierraDBUser = sierraDBUser.substring(1, sierraDBUser.length() - 1);
 					}
