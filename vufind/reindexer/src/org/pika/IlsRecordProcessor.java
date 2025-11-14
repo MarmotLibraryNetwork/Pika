@@ -447,6 +447,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				String itemIdentifier = curItem.getItemIdentifier();
 				if (itemIdentifier != null && !itemIdentifier.isEmpty()) {
 					groupedWork.addAlternateId(itemIdentifier);
+					if (itemIdentifier.startsWith(".")){
+						// add version without leading . dot for Sierra system item Ids that start with ".i"
+						groupedWork.addAlternateId(itemIdentifier.substring(1));
+					}
 				}
 			}
 
