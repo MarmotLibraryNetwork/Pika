@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -25,6 +26,14 @@ namespace Islandora2;
 interface MediaObjectInterface
 {
     /**
+     * Return the Islandora node id.
+     *
+     *
+     * @return int
+     */
+    public function getNodeId(): ?int;
+
+    /**
      * Return the Islandora node payload backing the object.
      *
      * The data should be the unmodified response from the Islandora JSON endpoint
@@ -32,21 +41,28 @@ interface MediaObjectInterface
      *
      * @return array
      */
-    public function getNode(): array;
+    public function getRawNode(): array;
 
     /**
      * Normalised identifier for the object media type (e.g. image, video, pdf).
      *
      * @return string
      */
-    public function getMediaType(): string;
+    public function getObjectModel(): string;
 
     /**
      * Return a human readable label for the media type.
      *
      * @return string
      */
-    public function getMediaTypeLabel(): string;
+    public function getObjectModelLabel(): string;
+
+    /**
+     * Return media attached to media object
+     * 
+     * @return array|null
+     */
+    public function getMedia(): ?array;
 
     /**
      * Convenience accessor for the primary derivative or file.
@@ -64,4 +80,5 @@ interface MediaObjectInterface
      * @return bool
      */
     public static function supports(array $node): bool;
+
 }
