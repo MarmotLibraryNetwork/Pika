@@ -515,6 +515,12 @@ var Pika = (function(){
 				} else arguments.callee.haslocalStorage = false;
 			}
 			return arguments.callee.haslocalStorage;
+		},
+
+		copyText: function (elementId){
+			var element = document.getElementById(elementId);
+			navigator.clipboard.writeText(element.textContent);
+			/*writeText is only available in https mode */
 		}
 	}
 

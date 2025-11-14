@@ -27,7 +27,11 @@
 <table class="table-striped table table-condensed notranslate">
 	<tr>
 		<th>Grouped Work ID</th>
-		<td>{$recordDriver->getPermanentId()}</td>
+		<td><span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
+			{if $userIsStaff}
+				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+			{/if}
+		</td>
 	</tr>
 	{foreach from=$groupedWorkDetails key='field' item='value'}
 	<tr>
