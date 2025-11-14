@@ -25,19 +25,50 @@ use Pika\Logger;
  * Base class for concrete Islandora 2 media objects.
  *
  * The class provides shared helpers for subclasses and keeps a reference
- * to the raw node payload returned by the Islandora 2 JSON endpoint.
+ * to the raw node payload returned by the Islandora 2 Pika-JSON endpoint.
  */
 abstract class I2Object implements MediaObjectInterface
 {
     protected Logger $logger;
-    protected array $node;
+    protected array $rawNode;
+    protected array $nodeWithoutFieldPrefix;
 
+    /**
+     * Determine if the subclass can represent the supplied Islandora node.
+     *
+     * @param array $node
+     * @return bool
+     */
     abstract public static function supports(array $node): bool;
 
+    /**
+     * @param array       $node   Raw Islandora node payload.
+     * @param Logger|null $logger Optional logger override for testing.
+     */
     final public function __construct(array $node, ?Logger $logger = null)
     {
-        $this->node = $this->normaliseNode($node);
+        $this->rawNode = $node;
+        $this->nodeWithoutFieldPrefix = $this->removeFieldPrefix($node);
         $this->logger = $logger ?? new Logger(static::class);
+    }
+
+    /**
+     * Magic property accessor that proxies to the node without the "field_" prefix.
+     *
+     * Example: accessing `$object->title` will read from `field_title` within the
+     * Islandora node payload if it exists.
+     *
+     * @param string $name
+     * @return mixed|null
+     */
+    public function __get(string $name)
+    {
+        $nodeWithoutFieldPrefix = $this->getNodeWithoutFieldPrefix();
+        if (array_key_exists($name, $nodeWithoutFieldPrefix)) {
+            return $nodeWithoutFieldPrefix[$name];
+        }
+
+        return null;
     }
 
     /**
@@ -46,39 +77,104 @@ abstract class I2Object implements MediaObjectInterface
      * @param array $node
      * @return array
      */
-    protected function normaliseNode(array $node): array
+    protected function normalizeNode(array $node): array
     {
         return $node;
     }
 
-    public function getNode(): array
+    /**
+     * Retrieve the stored Islandora node payload.
+     *
+     * @param bool $withoutFieldPrefix When true (default) removes leading "field_" prefixes.
+     * @return array
+     */
+    public function getNode(bool $withoutFieldPrefix = true): array
     {
-        return $this->node;
+        if ($withoutFieldPrefix) {
+            return $this->getNodeWithoutFieldPrefix();
+        }
+        return $this->getRawNode();
+    }
+
+    /**
+     * Return the untouched Islandora node as provided by the API.
+     *
+     * @return array
+     */
+    public function getRawNode(): array
+    {
+        return $this->rawNode;
+    }
+
+    /**
+     * Return node payload with "field_" stripped from all keys.
+     *
+     * @return array
+     */
+    public function getNodeWithoutFieldPrefix(): array
+    {
+        return $this->nodeWithoutFieldPrefix;
+    }
+
+    /**
+     * Resolve the Islandora object model string from the node.
+     *
+     * @return string
+     */
+    public function getObjectModel(): string
+    {
+        return static::getObjectModelFromNode($this->rawNode) ?? '';
     }
 
     /**
      * Some subclasses may want a richer label; the default keeps things simple.
+     *
+     * @return string
      */
-    public function getMediaTypeLabel(): string
+    public function getObjectModelLabel(): string
     {
-        return ucfirst($this->getMediaType());
+        return ucfirst($this->getObjectModel());
     }
 
+    /**
+     * Attempt to return the primary media file/derivative metadata.
+     *
+     * @return array|null
+     */
     public function getPrimaryFile(): ?array
     {
-        $field = $this->getMediaFileField();
-        if ($field === null) {
-            return null;
+        $primary_media = [];
+        $media = $this->getMedia();
+        foreach($media as $m) {
+            $media_use = strtolower($m['media_use']['name']);
+            if($media_use === 'origninal file') {
+                $primary_media[] = $m;
+            }
+        }
+        if(!empty($primary_media)) {
+            return $primary_media;
+        }
+        return null;
+    }
+
+    /**
+     * Return the media associacted with media object.
+     * 
+     * @param $withoutFieldPrefix bool Remove field_ prefix from array keys.
+     * @return array|null
+     */
+    public function getMedia(bool $withoutFieldPrefix = true): ?array
+    {
+        $media = null;
+        if($withoutFieldPrefix) {
+            $media = $this->nodeWithoutFieldPrefix['media'];
+        } else {
+            $media = $this->nodeWithoutFieldPrefix['media'];
         }
 
-        if (isset($field['uri']) || isset($field['target_id'])) {
-            return $field;
+        if(is_array($media) && !empty($media)) {
+            return $media;
         }
-
-        if (isset($field[0]) && is_array($field[0])) {
-            return $field[0];
-        }
-
         return null;
     }
 
@@ -89,17 +185,18 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getNodeId(): ?int
     {
-        if (isset($this->node['id']) && is_numeric($this->node['id'])) {
-            return (int)$this->node['id'];
-        }
-
-        if (isset($this->node['data']['id']) && is_numeric($this->node['data']['id'])) {
-            return (int)$this->node['data']['id'];
+        if (isset($this->rawNode['nid']) && is_numeric($this->rawNode['nid'])) {
+            return (int)$this->rawNode['id'];
         }
 
         return null;
     }
 
+    /**
+     * Retrieve the logger used by the media object.
+     *
+     * @return Logger
+     */
     protected function getLogger(): Logger
     {
         return $this->logger;
@@ -114,7 +211,7 @@ abstract class I2Object implements MediaObjectInterface
     protected function extractFirstString(array $paths): ?string
     {
         foreach ($paths as $path) {
-            $value = $this->resolvePath($this->node, $path);
+            $value = $this->resolvePath($this->rawNode, $path);
             if ($value !== null) {
                 return $value;
             }
@@ -149,15 +246,17 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Locate the media file field regardless of how Islandora structured the response.
+     *
      * @return array|null
      */
     protected function getMediaFileField(): ?array
     {
         $candidates = [
-            $this->node['attributes']['field_media_file'] ?? null,
-            $this->node['data']['attributes']['field_media_file'] ?? null,
-            $this->node['attributes']['file'] ?? null,
-            $this->node['data']['attributes']['file'] ?? null,
+            $this->rawNode['attributes']['field_media_file'] ?? null,
+            $this->rawNode['data']['attributes']['field_media_file'] ?? null,
+            $this->rawNode['attributes']['file'] ?? null,
+            $this->rawNode['data']['attributes']['file'] ?? null,
         ];
 
         foreach ($candidates as $candidate) {
@@ -167,6 +266,32 @@ abstract class I2Object implements MediaObjectInterface
         }
 
         return null;
+    }
+
+    /**
+     * Remove the "field_" prefix from every string key within the payload.
+     *
+     * @param array $payload
+     * @return array
+     */
+    protected function removeFieldPrefix(array $payload): array
+    {
+        $result = [];
+
+        foreach ($payload as $key => $value) {
+            $normalisedKey = $key;
+            if (is_string($key) && strncmp($key, 'field_', 6) === 0) {
+                $normalisedKey = substr($key, 6);
+            }
+
+            if (is_array($value)) {
+                $value = $this->removeFieldPrefix($value);
+            }
+
+            $result[$normalisedKey] = $value;
+        }
+
+        return $result;
     }
 
     /**
@@ -195,130 +320,37 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Attempt to normalise the bundle name used by Islandora.
+     * Resolve the Islandora media type from the raw node.
      *
      * @param array $node
-     * @return string|null
+     * @return string|null Lower-cased model value or null when unavailable.
      */
-    protected static function extractBundle(array $node): ?string
+    protected static function getObjectModelFromNode(array $node): ?string
     {
-        $candidates = [
-            ['data', 'type'],
-            ['type'],
-            ['attributes', 'type'],
-            ['data', 'attributes', 'type'],
-            ['data', 'attributes', 'bundle'],
-            ['attributes', 'bundle'],
-        ];
-
-        foreach ($candidates as $candidate) {
-            $value = self::readString($node, $candidate);
-            if ($value !== null) {
-                return strtolower((string)$value);
-            }
-        }
-
-        return null;
+        return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
     }
 
     /**
-     * Attempt to gather mime types referenced by the node.
-     *
-     * @param array $node
-     * @return array<int, string>
-     */
-    protected static function extractMimeTypes(array $node): array
-    {
-        $paths = [
-            ['data', 'attributes', 'mime_type'],
-            ['data', 'attributes', 'field_mime_type'],
-            ['attributes', 'field_mime_type'],
-            ['attributes', 'mime_type'],
-            ['relationships', 'field_media_file', 'data', 'meta', 'mime_type'],
-        ];
-
-        $result = [];
-        foreach ($paths as $path) {
-            $value = self::readString($node, $path);
-            if ($value !== null) {
-                $result[] = strtolower($value);
-            }
-        }
-
-        // Inline files array (when multiple derivatives are present).
-        $mediaField = $node['attributes']['field_media_file'] ?? $node['data']['attributes']['field_media_file'] ?? null;
-        if (is_array($mediaField)) {
-            foreach ($mediaField as $item) {
-                if (isset($item['mime_type']) && is_string($item['mime_type'])) {
-                    $result[] = strtolower($item['mime_type']);
-                }
-            }
-        }
-
-        return array_values(array_unique($result));
-    }
-
-    /**
-     * Check if the node bundle matches any candidate.
+     * Convenience helper for subclasses checking media types.
      *
      * @param array $node
      * @param array<int, string> $candidates
      * @return bool
      */
-    protected static function bundleMatches(array $node, array $candidates): bool
+    protected static function mediaTypeIn(array $node, array $candidates): bool
     {
-        $bundle = self::extractBundle($node);
-        if ($bundle === null) {
+        $mediaType = self::getObjectModelFromNode($node);
+        if ($mediaType === null) {
             return false;
         }
 
+        $mediaType = strtolower($mediaType);
         foreach ($candidates as $candidate) {
-            $needle = strtolower($candidate);
-            if ($bundle === $needle || strpos($bundle, $needle) !== false) {
+            if ($mediaType === strtolower($candidate)) {
                 return true;
             }
         }
-        return false;
-    }
 
-    /**
-     * Check if any mime type starts with the given prefix.
-     *
-     * @param array $node
-     * @param string $prefix
-     * @return bool
-     */
-    protected static function mimeStartsWith(array $node, string $prefix): bool
-    {
-        $prefix = strtolower($prefix);
-        $length = strlen($prefix);
-        foreach (self::extractMimeTypes($node) as $mime) {
-            if (strncmp($mime, $prefix, $length) === 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if any mime type matches one of the provided values.
-     *
-     * @param array $node
-     * @param array<int, string> $candidates
-     * @return bool
-     */
-    protected static function mimeMatches(array $node, array $candidates): bool
-    {
-        $types = self::extractMimeTypes($node);
-        if ($types === []) {
-            return false;
-        }
-        $normalised = array_map('strtolower', $candidates);
-        foreach ($types as $mime) {
-            if (in_array($mime, $normalised, true)) {
-                return true;
-            }
-        }
         return false;
     }
 }
