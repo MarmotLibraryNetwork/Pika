@@ -73,7 +73,7 @@
 		<div class="related-manifestation-shelf-status availableOther">
 			{* This should only happen when there is a single item on the bib, which is a local item,
 			 and currently has shelving/recently returned status override *}
-			{$statusInformation.groupedStatus}{*{include file='GroupedWork/homePickupbutton.tpl'} I don't know if the homePickupbutton should apply here. pascal 11/14/25 *}
+			{$statusInformation.groupedStatus} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
 	{else}.b12441314
 		<div class="related-manifestation-shelf-status checked_out">
