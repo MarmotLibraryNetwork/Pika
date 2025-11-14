@@ -126,20 +126,24 @@ public class SierraReports implements IProcessHandler {
 				while (patronsForSchoolRS.next()) {
 					//Gather information about the patron
 					try {
-						long     patronId   = patronsForSchoolRS.getLong("id");
-						String[] patronInfo = new String[16];
-						String   lastName   = patronsForSchoolRS.getString("last_name").trim();
-						String   firstName  = patronsForSchoolRS.getString("first_name").trim();
-						String   middleName = patronsForSchoolRS.getString("middle_name").trim();
-						String   fullName   = lastName + ", " + firstName + " " + middleName;
-						String   homeroom   = patronsForSchoolRS.getString("homeroom");
-						String   gradeLevel = patronsForSchoolRS.getString("gradelvl");
-						String   address    = patronsForSchoolRS.getString("addr1");
-						String   city       = patronsForSchoolRS.getString("city");
-						String   region     = patronsForSchoolRS.getString("region");
-						String   postalCode = patronsForSchoolRS.getString("postal_code");
-						String   owedAmount = patronsForSchoolRS.getString("owed_amt");
-						StringBuilder fullAddress = new StringBuilder();
+						long          patronId        = patronsForSchoolRS.getLong("id");
+						String[]      patronInfo      = new String[16];
+						String        ptypeCode       = patronsForSchoolRS.getString("ptype_code");
+						String        pcode1          = patronsForSchoolRS.getString("pcode1");
+						String        lastName        = patronsForSchoolRS.getString("last_name").trim();
+						String        firstName       = patronsForSchoolRS.getString("first_name").trim();
+						String        middleName      = patronsForSchoolRS.getString("middle_name").trim();
+						String        fullName        = lastName + ", " + firstName + " " + middleName;
+						String        homeLibraryCode = patronsForSchoolRS.getString("home_library_code");
+						String        patronBarcode   = patronsForSchoolRS.getString("barcode");
+						String        homeroom        = patronsForSchoolRS.getString("homeroom");
+						String        gradeLevel      = patronsForSchoolRS.getString("gradelvl");
+						String        address         = patronsForSchoolRS.getString("addr1");
+						String        city            = patronsForSchoolRS.getString("city");
+						String        region          = patronsForSchoolRS.getString("region");
+						String        postalCode      = patronsForSchoolRS.getString("postal_code");
+						String        owedAmount      = patronsForSchoolRS.getString("owed_amt");
+						StringBuilder fullAddress     = new StringBuilder();
 						if (address != null){
 							fullAddress.append(fullAddress).append(" ");
 						}
@@ -152,8 +156,12 @@ public class SierraReports implements IProcessHandler {
 						if (postalCode != null){
 							fullAddress.append(postalCode);
 						}
-						gradeLevel = gradeLevel == null ? "" : gradeLevel.trim();
-						homeroom   = homeroom == null ? "" : homeroom.trim();
+						ptypeCode       = ptypeCode == null       ? "" : ptypeCode.trim();
+						pcode1          = pcode1 == null          ? "" : pcode1.trim();
+						patronBarcode   = patronBarcode == null   ? "" : patronBarcode.trim();
+						gradeLevel      = gradeLevel == null      ? "" : gradeLevel.trim();
+						homeroom        = homeroom == null        ? "" : homeroom.trim();
+						homeLibraryCode = homeLibraryCode == null ? "" : homeLibraryCode.trim();
 						if (owedAmount == null){
 							owedAmount = "";
 						} else if (owedAmount.length() > 4){
@@ -162,11 +170,11 @@ public class SierraReports implements IProcessHandler {
 							owedAmount = owedAmount.substring(0, owedAmount.length() - 4);
 							// trim to 2 digits decimal numbers
 						}
-						patronInfo[0]  = patronsForSchoolRS.getString("ptype_code").trim();
-						patronInfo[1]  = patronsForSchoolRS.getString("pcode1").trim();
+						patronInfo[0]  = ptypeCode;
+						patronInfo[1]  = pcode1;
 						patronInfo[2]  = fullName.trim();
-						patronInfo[3]  = patronsForSchoolRS.getString("home_library_code").trim();
-						patronInfo[4]  = patronsForSchoolRS.getString("barcode").trim();
+						patronInfo[3]  = homeLibraryCode;
+						patronInfo[4]  = patronBarcode;
 						patronInfo[5]  = gradeLevel;
 						patronInfo[6]  = homeroom;
 						patronInfo[7]  = owedAmount;
