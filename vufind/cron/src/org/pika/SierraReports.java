@@ -177,18 +177,27 @@ public class SierraReports implements IProcessHandler {
 						ResultSet itemsOutRS      = itemsOutStmt.executeQuery();
 						int       numItemsWritten = 0;
 						while (itemsOutRS.next()) {
-							String callNumber = itemsOutRS.getString("callnumber");
-							String barcode    = itemsOutRS.getString("barcode");
-							callNumber = callNumber == null ? "" : callNumber.replaceAll("\\|\\w", "").trim();
-							barcode    = barcode == null ? "" : barcode.trim();
+							String callNumber     = itemsOutRS.getString("callnumber");
+							String barcode        = itemsOutRS.getString("barcode");
+							String dueDate        = itemsOutRS.getString("due_gmt");
+							String title          = itemsOutRS.getString("title");
+							String locationCode   = itemsOutRS.getString("location_code");
+							String itemStatusCode = itemsOutRS.getString("item_status_code");
+							callNumber     = callNumber == null ?     "" : callNumber.replaceAll("\\|\\w", "").trim();
+							title          = title == null ?          "" : title.trim();
+							barcode        = barcode == null ?        "" : barcode.trim();
+							locationCode   = locationCode == null ?   "" : locationCode.trim();
+							dueDate        = dueDate == null ?        "" : dueDate.replaceAll("04:00:00.0", "").trim();
+							// Remove unwanted timestamp portion, which appears to always be "04:00:00.0"
+							itemStatusCode = itemStatusCode == null ? "" : itemStatusCode.trim();
 							patronInfo[8]  = callNumber;
-							patronInfo[9]  = itemsOutRS.getString("title").trim();
+							patronInfo[9]  = title;
 							patronInfo[10] = barcode;
-							patronInfo[11] = itemsOutRS.getString("location_code").trim();
-							patronInfo[12] = itemsOutRS.getString("due_gmt").trim();
-							patronInfo[13] = itemsOutRS.getString("item_status_code").trim();
+							patronInfo[11] = locationCode;
+							patronInfo[12] = dueDate;
+							patronInfo[13] = itemStatusCode.trim();
 							patronReportCsvWriter.writeNext(patronInfo);
-							patronInfo[7] = ""; //Only display amount owed on the first row
+							patronInfo[7] = ""; // Only display amount owed on the first row
 							numItemsWritten++;
 						}
 						if (numItemsWritten == 0) {
