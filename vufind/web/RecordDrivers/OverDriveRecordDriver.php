@@ -1033,6 +1033,10 @@ class OverDriveRecordDriver extends RecordInterface {
 		];
 
 		if ($interface->getVariable('showStaffView')){
+			$user        = UserAccount::getLoggedInUser();
+			$userIsStaff = $user && $user->isStaff();
+			$interface->assign('userIsStaff', $userIsStaff);
+
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),
