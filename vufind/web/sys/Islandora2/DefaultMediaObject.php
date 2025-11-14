@@ -31,14 +31,25 @@ class DefaultMediaObject extends I2Object
         return true;
     }
 
-    public function getMediaType(): string
+    public function getObjectType(): string
     {
         return 'generic';
     }
 
-    public function getMediaTypeLabel(): string
+    public function getObjectTypeLabel(): string
     {
-        $bundle = self::extractBundle($this->node) ?? 'Item';
-        return ucfirst($bundle);
+        $type = $this->getObjectType();
+        if ($type === '' || $type === 'generic') {
+            return 'Item';
+        }
+
+        return ucfirst($type);
     }
+
+    public function getTitle(): string
+    {
+        return '';
+    }
+
+    
 }

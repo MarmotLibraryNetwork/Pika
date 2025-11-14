@@ -23,20 +23,16 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
 class ImageObject extends I2Object
 {
-    public static function supports(array $node): bool
+    public static function supports(array $node): bool 
     {
-        if (self::bundleMatches($node, ['image'])) {
-            return true;
-        }
-
-        if (self::mimeStartsWith($node, 'image/')) {
+        if (self::mediaTypeIn($node, ['image'])) {
             return true;
         }
 
         return false;
     }
 
-    public function getMediaType(): string
+    public function getObjectType(): string
     {
         return 'image';
     }

@@ -23,28 +23,17 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
 class DocumentObject extends I2Object
 {
-    private const MIME_PREFIXES = [
-        'application/msword',
-        'application/vnd',
-        'text/',
-    ];
 
     public static function supports(array $node): bool
     {
-        if (self::bundleMatches($node, ['document', 'text'])) {
+        if (self::mediaTypeIn($node, ['document', 'text'])) {
             return true;
-        }
-
-        foreach (self::MIME_PREFIXES as $prefix) {
-            if (self::mimeStartsWith($node, $prefix)) {
-                return true;
-            }
         }
 
         return false;
     }
 
-    public function getMediaType(): string
+    public function getObjectType(): string
     {
         return 'document';
     }

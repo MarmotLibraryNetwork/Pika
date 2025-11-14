@@ -25,18 +25,14 @@ class PdfObject extends I2Object
 {
     public static function supports(array $node): bool
     {
-        if (self::bundleMatches($node, ['pdf'])) {
+        if (self::mediaTypeIn($node, ['pdf'])) {
             return true;
         }
-
-        if (self::mimeMatches($node, ['application/pdf'])) {
-            return true;
-        }
-
+        
         return false;
     }
 
-    public function getMediaType(): string
+    public function getObjectType(): string
     {
         return 'pdf';
     }

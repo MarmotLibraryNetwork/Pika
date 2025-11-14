@@ -25,23 +25,14 @@ class VideoObject extends I2Object
 {
     public static function supports(array $node): bool
     {
-        if (self::bundleMatches($node, ['video'])) {
-            return true;
-        }
-
-        if (self::mimeStartsWith($node, 'video/')) {
-            return true;
-        }
-
-        // Islandora often stores streaming video as application/x-mpegURL etc.
-        if (self::mimeMatches($node, ['application/x-mpegurl', 'application/vnd.apple.mpegurl'])) {
+        if (self::mediaTypeIn($node, ['video'])) {
             return true;
         }
 
         return false;
     }
 
-    public function getMediaType(): string
+    public function getObjectType(): string
     {
         return 'video';
     }
