@@ -2,8 +2,8 @@
 {if $recordDriver}
 	<div class="row">
 		<div class="result-label col-xs-3">Grouped Work ID: </div>
-		<div id="groupedWorkIdCol" class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
-			{$recordDriver->getPermanentId()}
+		<div class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
+			<span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 		</div>
 		{if $userIsStaff}
 			<div class="col-xs-2">
