@@ -75,7 +75,7 @@
 			 and currently has shelving/recently returned status override *}
 			{$statusInformation.groupedStatus} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
-	{else}.b12441314
+	{else}
 		<div class="related-manifestation-shelf-status checked_out">
 			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
