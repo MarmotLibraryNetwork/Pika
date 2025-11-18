@@ -19,8 +19,10 @@
 
 namespace Islandora2;
 
-use Pika\Logger;
+require_once ROOT_DIR . 'web/sys/Islandora2/I2Media.php';
 
+use Pika\Logger;
+use Islandora2\I2Media;
 /**
  * Base class for concrete Islandora 2 media objects.
  *
@@ -53,9 +55,9 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Magic property accessor that proxies to the node without the "field_" prefix.
+     * Magic property accessor that proxies to the node with or without the "field_" prefix.
      *
-     * Example: accessing `$object->title` will read from `field_title` within the
+     * [TODO: fix example]Example: accessing `$object->title` will read from `field_title` within the
      * Islandora node payload if it exists.
      *
      * @param string $name
@@ -63,9 +65,10 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function __get(string $name)
     {
-        $nodeWithoutFieldPrefix = $this->getNodeWithoutFieldPrefix();
-        if (array_key_exists($name, $nodeWithoutFieldPrefix)) {
-            return $nodeWithoutFieldPrefix[$name];
+        if (array_key_exists($name, $this->nodeWithoutFieldPrefix)) {
+            return $this->nodeWithoutFieldPrefix[$name];
+        } elseif (array_key_exists($name, $this->rawNode)) {   
+            return $this->rawNode[$name];
         }
 
         return null;
@@ -158,24 +161,23 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return the media associacted with media object.
+     * Return the media as associacted with this item as objects.
      * 
      * @param $withoutFieldPrefix bool Remove field_ prefix from array keys.
      * @return array|null
      */
-    public function getMedia(bool $withoutFieldPrefix = true): ?array
+    public function getMedia(): ?array
     {
-        $media = null;
-        if($withoutFieldPrefix) {
-            $media = $this->nodeWithoutFieldPrefix['media'];
-        } else {
-            $media = $this->nodeWithoutFieldPrefix['media'];
-        }
+        return $this->loadMedia();
+    }
 
-        if(is_array($media) && !empty($media)) {
-            return $media;
+    private function loadMedia() {
+        $rawMedia = $this->nodeWithoutFieldPrefix['media'];
+        $media = [];
+        foreach($rawMedia as $m) {
+            $meida[] = new I2Media($m);
         }
-        return null;
+        return $media;
     }
 
     /**
@@ -186,7 +188,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getNodeId(): ?int
     {
         if (isset($this->rawNode['nid']) && is_numeric($this->rawNode['nid'])) {
-            return (int)$this->rawNode['id'];
+            return (int)$this->rawNode['nid'];
         }
 
         return null;
@@ -203,82 +205,16 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Helper for subclasses that need to fish strings out of a nested array.
+     * Remove the "field_" prefix from every string key within the array.
      *
-     * @param array $paths
-     * @return string|null
-     */
-    protected function extractFirstString(array $paths): ?string
-    {
-        foreach ($paths as $path) {
-            $value = $this->resolvePath($this->rawNode, $path);
-            if ($value !== null) {
-                return $value;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Resolve a dotted path within an array payload.
-     *
-     * @param array $source
-     * @param array $path
-     * @return mixed|null
-     */
-    protected function resolvePath(array $source, array $path)
-    {
-        $cursor = $source;
-        foreach ($path as $segment) {
-            if (!is_array($cursor) || !array_key_exists($segment, $cursor)) {
-                return null;
-            }
-            $cursor = $cursor[$segment];
-        }
-        if (is_string($cursor)) {
-            return $cursor;
-        }
-        if (is_scalar($cursor)) {
-            return (string)$cursor;
-        }
-
-        return null;
-    }
-
-    /**
-     * Locate the media file field regardless of how Islandora structured the response.
-     *
-     * @return array|null
-     */
-    protected function getMediaFileField(): ?array
-    {
-        $candidates = [
-            $this->rawNode['attributes']['field_media_file'] ?? null,
-            $this->rawNode['data']['attributes']['field_media_file'] ?? null,
-            $this->rawNode['attributes']['file'] ?? null,
-            $this->rawNode['data']['attributes']['file'] ?? null,
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (is_array($candidate)) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Remove the "field_" prefix from every string key within the payload.
-     *
-     * @param array $payload
+     * @param array $ar
      * @return array
      */
-    protected function removeFieldPrefix(array $payload): array
+    protected function removeFieldPrefix(array $ar): array
     {
         $result = [];
 
-        foreach ($payload as $key => $value) {
+        foreach ($ar as $key => $value) {
             $normalisedKey = $key;
             if (is_string($key) && strncmp($key, 'field_', 6) === 0) {
                 $normalisedKey = substr($key, 6);
@@ -292,42 +228,6 @@ abstract class I2Object implements MediaObjectInterface
         }
 
         return $result;
-    }
-
-    /**
-     * Static helper for subclasses to read nested strings during type resolution.
-     *
-     * @param array $source
-     * @param array $path
-     * @return string|null
-     */
-    protected static function readString(array $source, array $path): ?string
-    {
-        $cursor = $source;
-        foreach ($path as $segment) {
-            if (!is_array($cursor) || !array_key_exists($segment, $cursor)) {
-                return null;
-            }
-            $cursor = $cursor[$segment];
-        }
-        if (is_string($cursor)) {
-            return $cursor;
-        }
-        if (is_scalar($cursor)) {
-            return (string)$cursor;
-        }
-        return null;
-    }
-
-    /**
-     * Resolve the Islandora media type from the raw node.
-     *
-     * @param array $node
-     * @return string|null Lower-cased model value or null when unavailable.
-     */
-    protected static function getObjectModelFromNode(array $node): ?string
-    {
-        return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
     }
 
     /**
@@ -353,4 +253,16 @@ abstract class I2Object implements MediaObjectInterface
 
         return false;
     }
+
+    /**
+     * Resolve the Islandora media type from the raw node.
+     *
+     * @param array $node
+     * @return string|null Lower-cased model value or null when unavailable.
+     */
+    protected static function getObjectModelFromNode(array $node): ?string
+    {
+        return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
+    }
+
 }
