@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -732,7 +731,7 @@ function setUpSearchDisplayOptions($module, $action){
 		$interface->assign('showBreadcrumbs', 0);
 	}else{
 		$interface->assign('showBreadcrumbs', 1);
-		if (!empty($library) && $library->useHomeLinkInBreadcrumbs){
+		if (!empty($library) && $library->useHomeLinkInBreadcrumbs && $library->homeLink != 'default'){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
