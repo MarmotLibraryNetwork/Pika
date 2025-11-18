@@ -690,6 +690,7 @@ public class GroupedWorkSolr implements Cloneable {
 						Scope otherScopeDetails = otherScope.getScope();
 						if (!otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().isEmpty()){
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
+								// Uses the library and location additionalLocationsToShowAvailabilityFor setting
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 								if (curScope.isAvailable()) {
