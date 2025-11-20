@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1755,7 +1754,7 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($selectedFormatCategories && !in_array($manifestation['formatCategory'], $selectedFormatCategories)){
 				if (($manifestation['format'] == 'eAudiobook') && (in_array('eBook', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is a special case where the format is in 2 categories
-				}elseif (in_array($manifestation['format'], ['VOX Books', "WonderBook"]) && (in_array('Books', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
+				}elseif (in_array($manifestation['format'], ['Read-Along Book', 'VOX Book', 'VOX Books', 'WonderBook']) && (in_array('Books', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is another special case where the format is in 2 categories
 				}else{
 					$manifestation['hideByDefault'] = true;
