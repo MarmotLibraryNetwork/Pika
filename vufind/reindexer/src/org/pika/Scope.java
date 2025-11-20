@@ -216,8 +216,8 @@ public class Scope implements Comparable<Scope>{
 		return libraryScope;
 	}
 
-	boolean isRestrictOwningLibraryAndLocationFacets() {
-		return restrictOwningLibraryAndLocationFacets;
+	boolean isNotRestrictOwningLibraryAndLocationFacets() {
+		return !restrictOwningLibraryAndLocationFacets;
 	}
 
 	void setRestrictOwningLibraryAndLocationFacets(boolean restrictOwningLibraryAndLocationFacets) {
@@ -299,8 +299,8 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllRecordsInDateAddedFacets = includeAllRecordsInDateAddedFacets;
 	}
 
-	boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
-		return baseAvailabilityToggleOnLocalHoldingsOnly;
+	boolean isNotBaseAvailabilityToggleOnLocalHoldingsOnly() {
+		return !baseAvailabilityToggleOnLocalHoldingsOnly;
 	}
 
 	void setBaseAvailabilityToggleOnLocalHoldingsOnly(boolean baseAvailabilityToggleOnLocalHoldingsOnly) {

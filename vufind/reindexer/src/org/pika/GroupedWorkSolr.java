@@ -540,7 +540,7 @@ public class GroupedWorkSolr implements Cloneable {
 					if (curItem.isEContent()) {
 						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, Util.trimTrailingPunctuation(curItem.geteContentSource()));
 					}
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
+					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isNotRestrictOwningLibraryAndLocationFacets()) {
 						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
 						setSingleValuedFieldValue(doc, "callnumber_sort_" + curScopeName, curItem.getSortableCallNumber());
 					}
@@ -598,7 +598,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (curScope.isLibraryOwned()){
 			if (curScopeDetails.isLocationScope()){
-				if (!curScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()){
+				if (curScopeDetails.isNotBaseAvailabilityToggleOnLocalHoldingsOnly()){
 					addLibraryOwnership = true;
 					availabilityToggleValues.add("Entire Collection");
 				}
@@ -670,7 +670,7 @@ public class GroupedWorkSolr implements Cloneable {
 							if (!otherScope.equals(curScope)) {
 								Scope otherScopeDetails = otherScope.getScope();
 								if (otherScopeDetails.isLocationScope() && otherScopeDetails.getLibraryScope() != null && curScopeDetails.getLibraryScope().equals(otherScopeDetails.getLibraryScope())) {
-									if (!otherScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									if (otherScopeDetails.isNotBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 									}
 									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
@@ -706,8 +706,8 @@ public class GroupedWorkSolr implements Cloneable {
 			//finally add to any scopes where we show all owning locations
 			for (String scopeToShowAllName : curScopingInfo.keySet()){
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
-					if (!scopeToShowAll.getScope().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+				if (scopeToShowAll.getScope().isNotRestrictOwningLibraryAndLocationFacets()){
+					if (scopeToShowAll.getScope().isNotBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
 					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
@@ -732,7 +732,7 @@ public class GroupedWorkSolr implements Cloneable {
 			//finally add to any scopes where we show all owning libraries
 			for (String scopeToShowAllName : curScopingInfo.keySet()){
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
+				if (scopeToShowAll.getScope().isNotRestrictOwningLibraryAndLocationFacets()){
 					addUniqueFieldValue(doc, "owning_library_" + scopeToShowAll.getScope().getScopeName(), owningLibraryValue);
 				}
 			}
