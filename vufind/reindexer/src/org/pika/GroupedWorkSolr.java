@@ -1830,6 +1830,10 @@ public class GroupedWorkSolr implements Cloneable {
 		this.lexileScore = lexileScore;
 	}
 
+	int getLexileScore(){
+		return this.lexileScore;
+	}
+
 	void setLexileCode(String lexileCode) {
 		this.lexileCode = lexileCode;
 	}

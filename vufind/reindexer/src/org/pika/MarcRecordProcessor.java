@@ -37,6 +37,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>\\w{2})?(?<score>\\d+)L$");
 //	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
@@ -336,8 +337,7 @@ abstract class MarcRecordProcessor {
 		loadBibCallNumbers(groupedWork, record, identifier);
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
-		loadFountasPinnell(groupedWork, record, identifier);
-		groupedWork.addMpaaRating(getMpaaRating(record));
+		loadTargetAudienceNotes(groupedWork, record, identifier);
 		//Do not load ar data from MARC since we now get it directly from Renaissance Learning
 		/*groupedWork.setAcceleratedReaderInterestLevel(getAcceleratedReaderInterestLevel(record));
 		groupedWork.setAcceleratedReaderReadingLevel(getAcceleratedReaderReadingLevel(record));
@@ -384,28 +384,6 @@ abstract class MarcRecordProcessor {
 			// a - Series statement
 
 			// https://www.loc.gov/marc/bibliographic/bd490.html
-		}
-	}
-
-	/**
-	 * F&P Text Level Gradient.  This information should be a single letter, capitalized A through Z; and Z+ for High School/Adult
-	 *  <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
-	 *  
-	 * @param groupedWork  Solr Object
-	 * @param record       The MARC file
-	 * @param identifier   Record Identifier
-	 */
-	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
-		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
-		for (String targetAudience : targetAudiences){
-			if (targetAudience.startsWith("Guided reading level: ")){
-				String fountasPinnellValue = targetAudience.replace("Guided reading level: ", "");
-				//TODO: parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
-				//TODO: parse ranges by dash character: "Q-R", "F-G"
-				fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
-				groupedWork.setFountasPinnell(fountasPinnellValue);
-				break;
-			}
 		}
 	}
 
@@ -483,45 +461,141 @@ abstract class MarcRecordProcessor {
 		return null;
 	}
 
-	private String getMpaaRating(Record record) {
-		String val = MarcUtil.getFirstFieldVal(record, "521a");
-
-		if (val != null) {
-			if (mpaaNotRatedRegex.matcher(val).matches()) {
-				return "Not Rated";
-			}
-			try {
-				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
-				if (mpaaMatcher1.find()) {
-					// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
-					// " Rated " + getId());
-					return mpaaMatcher1.group(1) + " Rated";
-				} else {
-					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
-					if (mpaaMatcher2.find()) {
-						// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-						// + " Rated " + getId());
-						return mpaaMatcher2.group(1) + " Rated";
-					} else {
-						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
-						if (mpaaMatcher3.find()) {
-							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-							// + " Rated " + getId());
-							return mpaaMatcher3.group(1) + " Rated";
-						} else {
-
-							return null;
+	/**
+	 * Run through all MARC 521 tag Target Audience Notes to populate any applicable facets:
+	 * MPAA Rating
+	 * Lexile Score
+	 * Fountas and Pinnell Level
+	 * @param groupedWork  Solr Object
+	 * @param record       The MARC file
+	 * @param identifier   Record Identifier
+	 */
+	private void loadTargetAudienceNotes(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier){
+		Set<String> targetAudienceNotes = MarcUtil.getFieldList(record, "521a");
+		for (String targetAudienceNote : targetAudienceNotes){
+			if (targetAudienceNote != null && !targetAudienceNote.isEmpty()){
+				// Process Fountas and Pinnell Text Level Gradient information
+				// <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
+				if (targetAudienceNote.startsWith("Guided reading level: ")){
+					String fountasPinnellValue = targetAudienceNote.replace("Guided reading level: ", "");
+					if(fountasPinnellValue.contains(";")){
+						// parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
+						String[] split = fountasPinnellValue.split(";", 2);
+						fountasPinnellValue = split[0];
+					}
+					//TODO: parse ranges by dash character: "Q-R", "F-G"
+					fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
+					groupedWork.setFountasPinnell(fountasPinnellValue);
+				} else if (lexileScorePattern.matcher(targetAudienceNote).matches()){
+					// Process Lexile Score Target Audience Notes
+					try {
+						int     currentLexileScore = groupedWork.getLexileScore();
+						Matcher lexileMatcher      = lexileScorePattern.matcher(targetAudienceNote);
+						String  lexileRawScore     = lexileMatcher.group("score");
+						String  lexileCode         = lexileMatcher.group("code");
+						int     lexileScore        = Integer.parseInt(lexileRawScore);
+						groupedWork.setLexileScore(lexileScore);
+						if (currentLexileScore != -1 && lexileScore != currentLexileScore){
+							logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
 						}
+						if (lexileCode != null && !lexileCode.isEmpty()){
+							groupedWork.setLexileCode(indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
+						}
+					} catch (Exception e){
+						logger.error("Error parsing lexile score from target audience note '{}' on {}", targetAudienceNote, identifier, e);
+					}
+				} else {
+					// Process MPAA Rating Notes
+					if (mpaaNotRatedRegex.matcher(targetAudienceNote).matches()) {
+						groupedWork.addMpaaRating("Not Rated");
+					}
+					try {
+						Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(targetAudienceNote);
+						if (mpaaMatcher1.find()) {
+							// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
+							// " Rated " + getId());
+							groupedWork.addMpaaRating(mpaaMatcher1.group(1) + " Rated");
+						} else {
+							Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(targetAudienceNote);
+							if (mpaaMatcher2.find()) {
+								// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+								// + " Rated " + getId());
+								groupedWork.addMpaaRating(mpaaMatcher2.group(1) + " Rated");
+							} else {
+								Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(targetAudienceNote);
+								if (mpaaMatcher3.find()) {
+									// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+									// + " Rated " + getId());
+									groupedWork.addMpaaRating(mpaaMatcher3.group(1) + " Rated");
+								}
+							}
+						}
+					} catch (PatternSyntaxException e) {
+						// Syntax error in the regular expression
+						logger.error("MPAA Rating regex Pattern syntax error", e);
 					}
 				}
-			} catch (PatternSyntaxException ex) {
-				// Syntax error in the regular expression
-				return null;
 			}
-		} else {
-			return null;
+
 		}
 	}
+
+//	/**
+//	 * F&P Text Level Gradient.  This information should be a single letter, capitalized A through Z; and Z+ for High School/Adult
+//	 *  <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
+//	 *
+//	 * @param groupedWork  Solr Object
+//	 * @param record       The MARC file
+//	 * @param identifier   Record Identifier
+//	 */
+//	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+//		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
+//		for (String targetAudience : targetAudiences){
+//			if (targetAudience.startsWith("Guided reading level: ")){
+//				String fountasPinnellValue = targetAudience.replace("Guided reading level: ", "");
+//				//TODO: parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
+//				//TODO: parse ranges by dash character: "Q-R", "F-G"
+//				fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
+//				groupedWork.setFountasPinnell(fountasPinnellValue);
+//				break;
+//			}
+//		}
+//	}
+//
+//	private String getMpaaRating(Record record) {
+//		String val = MarcUtil.getFirstFieldVal(record, "521a");
+//
+//		if (val != null) {
+//			if (mpaaNotRatedRegex.matcher(val).matches()) {
+//				return "Not Rated";
+//			}
+//			try {
+//				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
+//				if (mpaaMatcher1.find()) {
+//					// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
+//					// " Rated " + getId());
+//					return mpaaMatcher1.group(1) + " Rated";
+//				} else {
+//					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
+//					if (mpaaMatcher2.find()) {
+//						// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+//						// + " Rated " + getId());
+//						return mpaaMatcher2.group(1) + " Rated";
+//					} else {
+//						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
+//						if (mpaaMatcher3.find()) {
+//							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+//							// + " Rated " + getId());
+//							return mpaaMatcher3.group(1) + " Rated";
+//						}
+//					}
+//				}
+//			} catch (PatternSyntaxException ex) {
+//				// Syntax error in the regular expression
+//			}
+//		}
+//		return null;
+//	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
