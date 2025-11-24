@@ -37,7 +37,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>\\w{2})?(?<score>\\d+)L$");
+	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>[a-zA-Z]{2})?(?<score>\\d+)L$");
 //	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
@@ -474,6 +474,7 @@ abstract class MarcRecordProcessor {
 		Set<String> targetAudienceNotes = MarcUtil.getFieldList(record, "521a");
 		for (String targetAudienceNote : targetAudienceNotes){
 			if (targetAudienceNote != null && !targetAudienceNote.isEmpty()){
+				Matcher lexileMatcher = lexileScorePattern.matcher(targetAudienceNote);
 				// Process Fountas and Pinnell Text Level Gradient information
 				// <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
 				if (targetAudienceNote.startsWith("Guided reading level: ")){
@@ -486,11 +487,10 @@ abstract class MarcRecordProcessor {
 					//TODO: parse ranges by dash character: "Q-R", "F-G"
 					fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
 					groupedWork.setFountasPinnell(fountasPinnellValue);
-				} else if (lexileScorePattern.matcher(targetAudienceNote).matches()){
+				} else if (lexileMatcher.matches()){
 					// Process Lexile Score Target Audience Notes
 					try {
 						int     currentLexileScore = groupedWork.getLexileScore();
-						Matcher lexileMatcher      = lexileScorePattern.matcher(targetAudienceNote);
 						String  lexileRawScore     = lexileMatcher.group("score");
 						String  lexileCode         = lexileMatcher.group("code");
 						int     lexileScore        = Integer.parseInt(lexileRawScore);
