@@ -53,7 +53,6 @@ class ArchiveObject extends \Action
         if($pika_usage === 'yes') {
             $can_view = true;
         }
-
         $interface->assign('canView', $can_view);
 
         // Language
@@ -64,13 +63,7 @@ class ArchiveObject extends \Action
         $interface->assign('language', $language);
         
         // Title
-        $title = '';
-        if($this->mediaObject->display_title && $this->mediaObject->display_title != '') {
-            $title = $this->mediaObject->display_title;
-        } elseif ($this->mediaObject->title && $this->mediaObject->title != '') {
-            $title = $this->mediaObject->title;
-        }
-        
+        $title = $this->mediaObject->getTitle();
         $interface->assign('title', $title);
 
         // Description
@@ -80,13 +73,8 @@ class ArchiveObject extends \Action
         } elseif ($this->mediaObject->field_description && $this->mediaObject->field_description != '') {
             $description = $this->mediaObject->field_description;
         }
-        
         $interface->assign('description', $description);
 
-        // 
-
-        // Display Page
-        $this->display('video.tpl', $title);
     }
 
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') 
