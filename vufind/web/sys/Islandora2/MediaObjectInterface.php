@@ -58,7 +58,7 @@ interface MediaObjectInterface
     public function getObjectModelLabel(): string;
 
     /**
-     * Return media attached to media object
+     * Return media associated with media object
      * 
      * @return array|null
      */

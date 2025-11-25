@@ -73,6 +73,7 @@ class I2ObjectFactory
 
         // Built-in registrations; class names added in step three.
         self::registerType('image', ImageObject::class);
+        self::registerType('audio', ImageObject::class);
         self::registerType('video', VideoObject::class);
         self::registerType('pdf', PdfObject::class);
         self::registerType('document', DocumentObject::class);
