@@ -67,14 +67,12 @@ class ArchiveObject extends \Action
         $interface->assign('title', $title);
 
         // Description
-        $description = '';
-        if ($this->mediaObject->field_description_long && $this->mediaObject->field_description_long != '') {
-            $description = $this->mediaObject->field_description_long;
-        } elseif ($this->mediaObject->field_description && $this->mediaObject->field_description != '') {
-            $description = $this->mediaObject->field_description;
-        }
+        $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : '' ;
         $interface->assign('description', $description);
 
+        $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : '';
+        $interface->assign('physical_description', $extent);
+        
     }
 
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') 
