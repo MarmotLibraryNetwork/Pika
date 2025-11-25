@@ -8,10 +8,10 @@
 
 		{if $canView}
 			<video width="100%" controls poster="{$posterUrl}" id="video-player">
-				<source src="{$videoUrl}" type="video/mp4">
+				<source src="{$videoUrl}" type="{$videoMime}">
 				{if count($captions) >= 1}
 					{foreach from=$captions item=i}
-						<track kind="captions" src="{$i.fileUrl}" label="{$i.title}" />
+						<track kind="captions" src="{$i.fileUrl}" label="{$i.language}" />
 					{/foreach}
 				
 				{/if}
