@@ -19,10 +19,15 @@
 
 namespace Islandora2;
 
+use CaptionsandTranscriptTraits;
+
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/CaptionAndTranscriptTraits.php';
 
 class VideoObject extends I2Object
 {
+    use CaptionsandTranscriptTraits;
+
     public static function supports(array $node): bool
     {
         if (self::mediaTypeIn($node, ['video'])) {
@@ -36,4 +41,39 @@ class VideoObject extends I2Object
     {
         return 'video';
     }
+
+    /**
+     * Get the primary video media
+     */
+    public function getVideo() {
+        $media = $this->getMedia();
+        foreach($media as $m) {
+            if($m->bundle === 'video' && $m->use === 'Original File') {
+                return $m;
+            }
+        }
+        return null;
+    }
+
+    public function getVideoPoster() {
+        $media = $this->getMedia();
+        // Possible to have more than one "poster" image attached
+        $images = [];
+        foreach($media as $m) {
+            if($m->bundle === 'image' && $m->use === 'Thumbnail Image') {
+                $images[] = $m;
+            }
+        }
+        if(empty($images)) {
+            return null;
+        }
+        if(count($images) === 1) {
+            return $images[0];
+        }
+        // If more than 1 thumbnail, get the newest
+        $sorted = $this->sortMediaByCreatedDate($images);
+        // Return the newest image
+        return $sorted[0];
+    }
+    
 }
