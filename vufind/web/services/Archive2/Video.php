@@ -32,6 +32,9 @@ class Video extends ArchiveObject
         $video = $this->mediaObject->getVideo();
         $interface->assign('videoUrl', $video->fileUrl);
 
+        $videoMime = $video->mime;
+        $interface->assign('videoMime', $videoMime);
+
         $poster = $this->mediaObject->getVideoPoster();
         $interface->assign('posterUrl', $poster->fileUrl);
 
@@ -42,6 +45,7 @@ class Video extends ArchiveObject
        
         $transcripts = $this->mediaObject->getTranscripts();
         $interface->assign('transcripts', $transcripts);
+        
         parent::launch();
 
         $title = $this->mediaObject->getTitle();
