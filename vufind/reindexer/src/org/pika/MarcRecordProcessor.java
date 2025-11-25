@@ -37,7 +37,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>[a-zA-Z]{2})?(?<score>\\d+)L$");
+	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>[a-zA-Z]{2})?(?<score>-?\\d+)L$");
 //	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
@@ -486,7 +486,7 @@ abstract class MarcRecordProcessor {
 					}
 					//TODO: parse ranges by dash character: "Q-R", "F-G"
 					fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
-					groupedWork.setFountasPinnell(fountasPinnellValue);
+					groupedWork.setFountasPinnell(indexer.translateSystemValue("fountas_pinnel", fountasPinnellValue, identifier));
 				} else if (lexileMatcher.matches()){
 					// Process Lexile Score Target Audience Notes
 					try {
@@ -495,8 +495,13 @@ abstract class MarcRecordProcessor {
 						String  lexileCode         = lexileMatcher.group("code");
 						int     lexileScore        = Integer.parseInt(lexileRawScore);
 						groupedWork.setLexileScore(lexileScore);
-						if (currentLexileScore != -1 && lexileScore != currentLexileScore){
-							logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+						if (currentLexileScore != -1) {
+							if (lexileScore != currentLexileScore) {
+								logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+							}
+							if (lexileScore < 0){
+								logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
+							}
 						}
 						if (lexileCode != null && !lexileCode.isEmpty()){
 							groupedWork.setLexileCode(indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));

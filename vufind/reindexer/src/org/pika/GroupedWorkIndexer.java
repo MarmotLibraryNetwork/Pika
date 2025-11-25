@@ -703,6 +703,9 @@ public class GroupedWorkIndexer {
 							titleInfo.setTitle(lexileFields[0]);
 							titleInfo.setAuthor(lexileFields[1]);
 							try {
+//								if (lexileFields[4].contains("-")){
+//									logger.warn("Found negative score {} for {}, {}", lexileFields[4], lexileFields[0], isbn);
+//								}
 								titleInfo.setLexileScore(lexileFields[4]);
 							} catch (NumberFormatException e) {
 								logger.error("Failed to parse lexile score {} with isbn {}", lexileFields[4], isbn, e);
