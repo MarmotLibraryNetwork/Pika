@@ -497,7 +497,11 @@ abstract class MarcRecordProcessor {
 						groupedWork.setLexileScore(lexileScore);
 						if (currentLexileScore != -1) {
 							if (lexileScore != currentLexileScore) {
-								logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+								if (fullReindex) {
+									logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+								} else {
+									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+								}
 							}
 							if (lexileScore < 0){
 								logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
