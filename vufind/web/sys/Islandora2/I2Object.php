@@ -19,10 +19,11 @@
 
 namespace Islandora2;
 
-require_once ROOT_DIR . 'web/sys/Islandora2/I2Media.php';
+require_once ROOT_DIR . '/sys/Islandora2/I2Media.php';
 
 use Pika\Logger;
 use Islandora2\I2Media;
+
 /**
  * Base class for concrete Islandora 2 media objects.
  *
@@ -34,6 +35,7 @@ abstract class I2Object implements MediaObjectInterface
     protected Logger $logger;
     protected array $rawNode;
     protected array $nodeWithoutFieldPrefix;
+    protected array $media = [];
 
     /**
      * Determine if the subclass can represent the supplied Islandora node.
@@ -56,9 +58,6 @@ abstract class I2Object implements MediaObjectInterface
 
     /**
      * Magic property accessor that proxies to the node with or without the "field_" prefix.
-     *
-     * [TODO: fix example]Example: accessing `$object->title` will read from `field_title` within the
-     * Islandora node payload if it exists.
      *
      * @param string $name
      * @return mixed|null
@@ -160,24 +159,45 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    public function getDescription(): ?string 
+    {
+       if(isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
+            return $this->nodeWithoutFieldPrefix['description_long'];
+        } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
+            return $this->nodeWithoutFieldPrefix['description'];
+        }
+        return null;
+    }
+
+    public function getTitle(): ?string 
+    {
+        if(isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
+            return $this->nodeWithoutFieldPrefix['display_title'];
+        } elseif (isset($this->nodeWithoutFieldPrefix['title']) && $this->nodeWithoutFieldPrefix['title'] !== '') {
+            return htmlentities($this->nodeWithoutFieldPrefix['title']);
+        }
+        return null;
+    }
+
+    public function getLanguage(): ?string {
+        if(isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
+            return $this->nodeWithoutFieldPrefix['language']['name'];
+        }
+        return null;
+    }
+
     /**
      * Return the media as associacted with this item as objects.
      * 
-     * @param $withoutFieldPrefix bool Remove field_ prefix from array keys.
-     * @return array|null
+     * @return array Returns an empty array if no media is present
      */
-    public function getMedia(): ?array
+    public function getMedia(): array
     {
-        return $this->loadMedia();
-    }
-
-    private function loadMedia() {
-        $rawMedia = $this->nodeWithoutFieldPrefix['media'];
-        $media = [];
-        foreach($rawMedia as $m) {
-            $meida[] = new I2Media($m);
+        if(!empty($this->media)) {
+            return $this->media;
         }
-        return $media;
+
+        return $this->loadMedia();
     }
 
     /**
@@ -252,6 +272,35 @@ abstract class I2Object implements MediaObjectInterface
         }
 
         return false;
+    }
+
+    /**
+     * Sort media objects by created date
+     * @param I2Media[] $mediaItems
+     * @return I2Media[]
+     */
+    public function sortMediaByCreatedDate(array $mediaItems): array
+    {
+        usort($mediaItems, static function (I2Media $a, I2Media $b): int {
+            return $b->created <=> $a->created;
+        });
+
+        return $mediaItems;
+    }
+
+    /**
+     * Find media associated with node and return as array of objects
+     * 
+     * @return array 
+     */
+    private function loadMedia():array {
+        $rawMedia = $this->nodeWithoutFieldPrefix['media'];
+        $media = [];
+        foreach($rawMedia as $m) {
+            $media[] = new I2Media($m);
+        }
+        $this->media = $media;
+        return $media;
     }
 
     /**
