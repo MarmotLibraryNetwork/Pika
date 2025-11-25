@@ -20,6 +20,9 @@
 
 namespace Islandora2;
 
+require_once ROOT_DIR . '/sys/Language/Language.php';
+
+use Language;
 use Pika\Logger;
 
 /**
@@ -32,25 +35,38 @@ class I2Media
 {
     protected Logger $logger;
     protected array $rawMedia;
+    public string $title;
     public string $bundle;
-    public string $type;
+    public string $use;
     public string $mime;
     public string $fileUrl;
     public string $thumbnailUrl;
     public string $thumbnailMime;
+    public string $language;
+    public string $langCode;
+    public int $created;
 
     /**
       * @param array       $media   Islandora media extracted from JSON.
       */
-    final public function __construct(array $media)
+    public function __construct(array $media)
     {
-        $this->logger = new Logger(__CLASS__);
+        $this->logger = new Logger(__CLASS__); 
         $this->rawMedia = $media;
+        $this->title = isset($media['title']) ? $media['title'] : '';
         $this->bundle = isset($media['bundle']) ? $media['bundle'] : '';
-        $this->type = isset($media['media_use']['name']) ? $media['media_use']['name'] : '';
+        $this->use = isset($media['media_use']['name']) ? $media['media_use']['name'] : '';
         $this->mime = isset($media['mime_type']) ? $media['mime_type'] : '';
-        $this->fileUrl = isset($media['mime_type']) ? $media['mime_type'] : '';
-        $this->thumbnailUrl = isset($media['mime_type']) ? $media['mime_type'] : '';
+        $this->thumbnailUrl = isset($media['thumbnail']['url']) ? $media['thumbnail']['url'] : '';
+        $this->created = isset($media['created']) ? (int)$media['created'] : 0;
+        $fileUrl = $this->extractFileUrl();
+        $this->fileUrl = ($fileUrl !== null) ? $fileUrl : '';
+        $this->langCode = isset($media['langcode']) ? $media['langcode'] : '';
+        if($this->langCode !== '') {
+            $language = Language::getLanguage($this->langCode);
+        }
+        
+        
     }
 
     public function __get($name)
