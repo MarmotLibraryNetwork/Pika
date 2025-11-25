@@ -21,17 +21,37 @@ namespace Archive2;
 
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
+
 class Video extends ArchiveObject
 {
 
     public function launch()
     {
         global $interface;
-		//global $configArray;
+        
+        $video = $this->mediaObject->getVideo();
+        $interface->assign('videoUrl', $video->fileUrl);
 
-        $interface->assign('showExploreMore', true);
+        $poster = $this->mediaObject->getVideoPoster();
+        $interface->assign('posterUrl', $poster->fileUrl);
 
-		// Display Page
-		$this->display('video.tpl');
+        $captions = $this->mediaObject->getCaptions();
+        // cast to an array
+        $captionsArray = json_decode(json_encode($captions), true);
+        $interface->assign('captions', $captionsArray);
+       
+        $transcripts = $this->mediaObject->getTranscripts();
+        $interface->assign('transcripts', $transcripts);
+        parent::launch();
+
+        $title = $this->mediaObject->getTitle();
+        $this->display('video.tpl', $title);
     }
+
+    public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
+    {
+        return parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
+    }
+
+   
 }
