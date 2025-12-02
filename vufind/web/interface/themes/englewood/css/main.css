@@ -10627,6 +10627,7 @@ a .header-button:hover {
 a .header-button {
   font-weight: 600;
   font-size: 18px;
+  border: 1px solid #e47f26;
 }
 a .header-button:hover {
   text-decoration-thickness: 5px;
