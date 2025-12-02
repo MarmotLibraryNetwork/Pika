@@ -34,23 +34,24 @@ import java.util.*;
  * Time: 9:14 AM
  */
 public class OverDriveProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger             logger;
-	private boolean            fullReindex;
-	private boolean            hasSharedAdvantageAccount = false;
-	private PreparedStatement  getProductInfoStmt;
-	private PreparedStatement  getNumCopiesStmt;
-	private PreparedStatement  getProductMetadataStmt;
-	private PreparedStatement  getProductAvailabilityStmt;
-	private PreparedStatement  getProductFormatsStmt;
-	private PreparedStatement  getProductLanguagesStmt;
-	private PreparedStatement  getProductSubjectsStmt;
-	private PreparedStatement  getProductIdentifiersStmt;
-	private PreparedStatement  getMagazineIssueIdentifiersStmt;
+	private final GroupedWorkIndexer indexer;
+	private final Logger             logger;
+	private final boolean            fullReindex;
+	private       boolean            hasSharedAdvantageAccount = false;
+	private       PreparedStatement  getProductInfoStmt;
+	private       PreparedStatement  getNumCopiesStmt;
+	private       PreparedStatement  getProductMetadataStmt;
+	private       PreparedStatement  getProductAvailabilityStmt;
+	private       PreparedStatement  getProductFormatsStmt;
+	private       PreparedStatement  getProductLanguagesStmt;
+	private       PreparedStatement  getProductSubjectsStmt;
+	private       PreparedStatement  getProductIdentifiersStmt;
+	private       PreparedStatement  getMagazineIssueIdentifiersStmt;
 
 	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex, String serverName) {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
+		this.fullReindex = fullReindex; //TODO: this parameter could be removed and use this.fullReindex = indexer.fullReindex
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 		String sharedAdvantageAccounts = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
 		if (sharedAdvantageAccounts != null && !sharedAdvantageAccounts.isEmpty()){
@@ -87,7 +88,7 @@ public class OverDriveProcessor {
 
 					if (productRS.getInt("deleted") == 1) {
 						if (logger.isInfoEnabled()) {
-							logger.info("Not processing deleted overdrive product " + title + " - " + identifier);
+							logger.info("Not processing deleted overdrive product {} - {}", title, identifier);
 						}
 						indexer.overDriveRecordsSkipped.add(identifier);
 
@@ -226,9 +227,9 @@ public class OverDriveProcessor {
 										}
 									}
 								} catch (ParseException e) {
-									logger.warn("Error parsing date added for Overdrive " + productId, e);
+									logger.warn("Error parsing date added for Overdrive {}", productId, e);
 								} catch (JSONException e) {
-									logger.warn("Error loading date added for Overdrive " + productId, e);
+									logger.warn("Error loading date added for Overdrive {}", productId, e);
 								}
 								if (dateAdded == null) {
 									dateAdded = new Date(productRS.getLong("dateAdded") * 1000);
@@ -596,7 +597,7 @@ public class OverDriveProcessor {
 				groupedWork.addPublisher(publisher);
 				returnMetadata.put("publisher", publisher);
 				//Currently the overdrive extract only saves years; otherwise the date is left blank.
-				//This will be an problem for magazines
+				//This will be a problem for magazines
 				String publicationDate = metadataRS.getString("publishDate");
 				groupedWork.addPublicationDate(publicationDate);
 				returnMetadata.put("publicationDate", publicationDate);
@@ -622,6 +623,30 @@ public class OverDriveProcessor {
 							if (jsonData.has("publishDateText")){
 								String publishDate = jsonData.getString("publishDateText").replace(" 12:00AM", "");
 								returnMetadata.put("publishDateMagazine", publishDate);
+							}
+						}
+						if (jsonData.has("lexileScore")){
+							try {
+								int currentLexileScore = groupedWork.getLexileScore();
+								int lexileScore        = jsonData.getInt("lexileScore");
+								logger.debug("Lexile Score {} from OverDrive data for title {}", lexileScore, productId);
+								if (lexileScore < 0){
+									logger.debug("Found negative Lexile score {} on OverDrive title {}", lexileScore, productId);
+								}
+								if (currentLexileScore != -1){
+									if (lexileScore != currentLexileScore) {
+										if (fullReindex) {
+											logger.warn("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
+										} else {
+											logger.info("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
+										}
+									}
+								}
+								groupedWork.setLexileScore(lexileScore);
+							} catch (JSONException e) {
+								if (fullReindex) {
+									logger.error("Error getting OverDrive title {} lexile score", productId);
+								}
 							}
 						}
 //						if (jsonData.has("ATOS")) {

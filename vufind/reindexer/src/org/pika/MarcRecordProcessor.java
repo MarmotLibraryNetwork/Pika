@@ -495,6 +495,10 @@ abstract class MarcRecordProcessor {
 						String  lexileCode         = lexileMatcher.group("code");
 						int     lexileScore        = Integer.parseInt(lexileRawScore);
 						groupedWork.setLexileScore(lexileScore);
+						logger.debug("Lexile Score {} from MARC data for title {}", lexileScore, identifier);
+						if (lexileScore < 0){
+							logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
+						}
 						if (currentLexileScore != -1) {
 							if (lexileScore != currentLexileScore) {
 								if (fullReindex) {
@@ -502,9 +506,6 @@ abstract class MarcRecordProcessor {
 								} else {
 									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
 								}
-							}
-							if (lexileScore < 0){
-								logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
 							}
 						}
 						if (lexileCode != null && !lexileCode.isEmpty()){

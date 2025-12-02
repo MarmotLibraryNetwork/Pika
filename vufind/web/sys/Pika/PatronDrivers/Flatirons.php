@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -139,7 +138,8 @@ class Flatirons extends Sierra
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			'type'         => 'tel',
+			//'type'         => 'tel', // Confirmed iPhones don't allow dashes on type telephone (at least IOS 18.7.1) 12/1/2025
+			'type'         => 'text',
 			'label'        => 'Phone Number (xxx-xxx-xxxx)',
 			'description'  => 'Phone Number',
 			'maxLength'    => 16,
@@ -209,7 +209,7 @@ class Flatirons extends Sierra
 				'type'            => 'pin',
 				'label'           => $PIN,
 				//'description'     => "Please set a $PIN. <br>Your $PIN must be at least 4 characters long. Do not repeat a number or letter more than two times in a row (<kbd>1112</kbd> or <kbd>zeee</kbd> will not work). Do not repeat the same two numbers or letters in a row (<kbd>1212</kbd> or <kbd>bebe</kbd> will not work).",
-				'showDescription' => true,
+				//'showDescription' => true,
 				'maxLength'       => 10,
 				'required'        => true
 			];
