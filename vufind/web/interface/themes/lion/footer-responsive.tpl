@@ -13,7 +13,7 @@
 					<img src="/interface/themes/lion/images/lion_logo.png" alt="Member of Libraries Online Incorporated" style="max-width: 100%; max-height:130px; margin-left:20px; margin-right:20px">
 				</a>
 				{if $showPikaLogo}
-					<a href="http://marmot.org/pika-discovery/about-pika" title="Proud Pika Partner">
+					<a href="http://marmot.org/pika" title="Proud Pika Partner">
 						<img id="footer-pika-logo" src="{img filename='pika-logo.png'}" alt="Proud Pika Partner" style="max-width: 100%; max-height: 80px;">
 					</a>
 				{/if}

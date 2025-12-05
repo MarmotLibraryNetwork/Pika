@@ -32,35 +32,35 @@ public class Scope implements Comparable<Scope>{
 	private String scopeName;
 	private String facetLabel;
 
-	private HashSet<Long> relatedNumericPTypes = new HashSet<>();
-	private boolean       includeOverDriveCollection;
-	private Long          libraryId;
+	private final HashSet<Long> relatedNumericPTypes = new HashSet<>();
+	private       boolean       includeOverDriveCollection;
+	private       Long          libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
-	private boolean        isLibraryScope;
-	private HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
-	private boolean        isLocationScope;
-	private Long           locationId;
-	private Scope          libraryScope;
+	private       boolean        isLibraryScope;
+	private final HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
+	private       boolean        isLocationScope;
+	private       Long           locationId;
+	private       Scope          libraryScope;
 
-	private boolean                restrictOwningLibraryAndLocationFacets;
+	private       boolean                restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
-	private HashSet<OwnershipRule> ownershipRules                            = new HashSet<>();
+	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
-	private HashSet<InclusionRule> inclusionRules                            = new HashSet<>();
-	private Long                   sharedOverdriveCollectionId;
-	private boolean                includeOverDriveAdultCollection;
-	private boolean                includeOverDriveTeenCollection;
-	private boolean                includeOverDriveKidsCollection;
-	private int                    publicListsToInclude;
-	private String                 additionalLocationsToShowAvailabilityFor;
-	private Pattern                additionalLocationsToShowAvailabilityForPattern;
-	private boolean                includeAllLibraryBranchesInFacets; //Only applies to location scopes
-	private boolean                includeAllRecordsInShelvingFacets;
-	private boolean                includeAllRecordsInDateAddedFacets;
-	private boolean                includeOnOrderRecordsInDateAddedFacetValues;
-	private boolean                baseAvailabilityToggleOnLocalHoldingsOnly = false;
-	private boolean                includeOnlineMaterialsInAvailableToggle   = true;
+	private final HashSet<InclusionRule> inclusionRules                            = new HashSet<>();
+	private       Long                   sharedOverdriveCollectionId;
+	private       boolean                includeOverDriveAdultCollection;
+	private       boolean                includeOverDriveTeenCollection;
+	private       boolean                includeOverDriveKidsCollection;
+	private       int                    publicListsToInclude;
+	private       String                 additionalLocationsToShowAvailabilityFor;
+	private       Pattern                additionalLocationsToShowAvailabilityForPattern;
+	private       boolean                includeAllLibraryBranchesInFacets; //Only applies to location scopes
+	private       boolean                includeAllRecordsInShelvingFacets;
+	private       boolean                includeAllRecordsInDateAddedFacets;
+	private       boolean                includeOnOrderRecordsInDateAddedFacetValues;
+	private       boolean                baseAvailabilityToggleOnLocalHoldingsOnly = false;
+	private       boolean                includeOnlineMaterialsInAvailableToggle   = true;
 
 	String getScopeName() {
 		return scopeName;
@@ -74,7 +74,7 @@ public class Scope implements Comparable<Scope>{
 	void setRelatedPTypes(String[] relatedPTypes) {
 		for (String relatedPType : relatedPTypes) {
 			relatedPType = relatedPType.trim();
-			if (relatedPType.length() > 0) {
+			if (!relatedPType.isEmpty()) {
 				try{
 					Long numericPType = Long.parseLong(relatedPType);
 					relatedNumericPTypes.add(numericPType);
@@ -95,7 +95,7 @@ public class Scope implements Comparable<Scope>{
 	 *
 	 * @param indexingProfileSourceName The type of record being checked based on profile
 	 * @param locationCode              The location code for the item.  Set to blank if location codes
-	 * @return Whether or not the item is included within the scope
+	 * @return Whether the item is included within the scope
 	 */
 	InclusionResult isItemPartOfScope(@NotNull String indexingProfileSourceName, @NotNull String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl) {
 		if (locationCode == null) {
@@ -216,8 +216,8 @@ public class Scope implements Comparable<Scope>{
 		return libraryScope;
 	}
 
-	boolean isRestrictOwningLibraryAndLocationFacets() {
-		return restrictOwningLibraryAndLocationFacets;
+	boolean isNotRestrictOwningLibraryAndLocationFacets() {
+		return !restrictOwningLibraryAndLocationFacets;
 	}
 
 	void setRestrictOwningLibraryAndLocationFacets(boolean restrictOwningLibraryAndLocationFacets) {
@@ -262,7 +262,7 @@ public class Scope implements Comparable<Scope>{
 
 	void setAdditionalLocationsToShowAvailabilityFor(String additionalLocationsToShowAvailabilityFor) {
 		this.additionalLocationsToShowAvailabilityFor = additionalLocationsToShowAvailabilityFor;
-		if (additionalLocationsToShowAvailabilityFor.length() > 0){
+		if (!additionalLocationsToShowAvailabilityFor.isEmpty()){
 			additionalLocationsToShowAvailabilityForPattern = Pattern.compile(additionalLocationsToShowAvailabilityFor);
 		}
 	}
@@ -299,8 +299,8 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllRecordsInDateAddedFacets = includeAllRecordsInDateAddedFacets;
 	}
 
-	boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
-		return baseAvailabilityToggleOnLocalHoldingsOnly;
+	boolean isNotBaseAvailabilityToggleOnLocalHoldingsOnly() {
+		return !baseAvailabilityToggleOnLocalHoldingsOnly;
 	}
 
 	void setBaseAvailabilityToggleOnLocalHoldingsOnly(boolean baseAvailabilityToggleOnLocalHoldingsOnly) {
@@ -339,7 +339,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeOnOrderRecordsInDateAddedFacetValues = includeOnOrderRecordsInDateAddedFacetValues;
 	}
 
-	class InclusionResult{
+	static class InclusionResult{
 		boolean isIncluded;
 		String localUrl;
 

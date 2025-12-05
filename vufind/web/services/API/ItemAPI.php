@@ -487,7 +487,7 @@ class ItemAPI extends AJAXHandler {
 				return $returnData;
 			}elseif ($driver instanceof OverDriveRecordDriver){
 				/** @var OverDriveRecordDriver $driver */
-				$copies = count($driver->getItems());
+				$copies = count($driver->getSpecificTitleFormats());
 				$holds  = $driver->getNumHolds();
 				return [
 					'copies' => $copies,

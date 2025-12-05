@@ -37,7 +37,8 @@ abstract class MarcRecordProcessor {
 	private static final Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
+	private static final Pattern            lexileScorePattern  = Pattern.compile("(?<code>[a-zA-Z]{2})?(?<score>-?\\d+)L$");
+//	private final        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
 		this.indexer = indexer;
@@ -336,8 +337,7 @@ abstract class MarcRecordProcessor {
 		loadBibCallNumbers(groupedWork, record, identifier);
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
-		loadFountasPinnell(groupedWork, record, identifier);
-		groupedWork.addMpaaRating(getMpaaRating(record));
+		loadTargetAudienceNotes(groupedWork, record, identifier);
 		//Do not load ar data from MARC since we now get it directly from Renaissance Learning
 		/*groupedWork.setAcceleratedReaderInterestLevel(getAcceleratedReaderInterestLevel(record));
 		groupedWork.setAcceleratedReaderReadingLevel(getAcceleratedReaderReadingLevel(record));
@@ -384,18 +384,6 @@ abstract class MarcRecordProcessor {
 			// a - Series statement
 
 			// https://www.loc.gov/marc/bibliographic/bd490.html
-		}
-	}
-
-	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
-		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
-		for (String targetAudience : targetAudiences){
-			if (targetAudience.startsWith("Guided reading level: ")){
-				String fountasPinnellValue = targetAudience.replace("Guided reading level: ", "");
-				fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
-				groupedWork.setFountasPinnell(fountasPinnellValue);
-				break;
-			}
 		}
 	}
 
@@ -473,45 +461,151 @@ abstract class MarcRecordProcessor {
 		return null;
 	}
 
-	private String getMpaaRating(Record record) {
-		String val = MarcUtil.getFirstFieldVal(record, "521a");
-
-		if (val != null) {
-			if (mpaaNotRatedRegex.matcher(val).matches()) {
-				return "Not Rated";
-			}
-			try {
-				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
-				if (mpaaMatcher1.find()) {
-					// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
-					// " Rated " + getId());
-					return mpaaMatcher1.group(1) + " Rated";
-				} else {
-					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
-					if (mpaaMatcher2.find()) {
-						// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-						// + " Rated " + getId());
-						return mpaaMatcher2.group(1) + " Rated";
-					} else {
-						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
-						if (mpaaMatcher3.find()) {
-							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-							// + " Rated " + getId());
-							return mpaaMatcher3.group(1) + " Rated";
-						} else {
-
-							return null;
+	/**
+	 * Run through all MARC 521 tag Target Audience Notes to populate any applicable facets:
+	 * MPAA Rating
+	 * Lexile Score
+	 * Fountas and Pinnell Level
+	 * @param groupedWork  Solr Object
+	 * @param record       The MARC file
+	 * @param identifier   Record Identifier
+	 */
+	private void loadTargetAudienceNotes(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier){
+		Set<String> targetAudienceNotes = MarcUtil.getFieldList(record, "521a");
+		for (String targetAudienceNote : targetAudienceNotes){
+			if (targetAudienceNote != null && !targetAudienceNote.isEmpty()){
+				Matcher lexileMatcher = lexileScorePattern.matcher(targetAudienceNote);
+				// Process Fountas and Pinnell Text Level Gradient information
+				// <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
+				if (targetAudienceNote.startsWith("Guided reading level: ")){
+					String fountasPinnellValue = targetAudienceNote.replace("Guided reading level: ", "");
+					if(fountasPinnellValue.contains(";")){
+						// parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
+						String[] split = fountasPinnellValue.split(";", 2);
+						fountasPinnellValue = split[0];
+					}
+					//TODO: parse ranges by dash character: "Q-R", "F-G"
+					fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
+					groupedWork.setFountasPinnell(indexer.translateSystemValue("fountas_pinnel", fountasPinnellValue, identifier));
+				} else if (lexileMatcher.matches()){
+					// Process Lexile Score Target Audience Notes
+					try {
+						int     currentLexileScore = groupedWork.getLexileScore();
+						String  lexileRawScore     = lexileMatcher.group("score");
+						String  lexileCode         = lexileMatcher.group("code");
+						int     lexileScore        = Integer.parseInt(lexileRawScore);
+						groupedWork.setLexileScore(lexileScore);
+						logger.debug("Lexile Score {} from MARC data for title {}", lexileScore, identifier);
+						if (lexileScore < 0){
+							logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
 						}
+						if (currentLexileScore != -1) {
+							if (lexileScore != currentLexileScore) {
+								if (fullReindex) {
+									logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+								} else {
+									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+								}
+							}
+						}
+						if (lexileCode != null && !lexileCode.isEmpty()){
+							groupedWork.setLexileCode(indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
+						}
+					} catch (Exception e){
+						logger.error("Error parsing lexile score from target audience note '{}' on {}", targetAudienceNote, identifier, e);
+					}
+				} else {
+					// Process MPAA Rating Notes
+					if (mpaaNotRatedRegex.matcher(targetAudienceNote).matches()) {
+						groupedWork.addMpaaRating("Not Rated");
+					}
+					try {
+						Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(targetAudienceNote);
+						if (mpaaMatcher1.find()) {
+							// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
+							// " Rated " + getId());
+							groupedWork.addMpaaRating(mpaaMatcher1.group(1) + " Rated");
+						} else {
+							Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(targetAudienceNote);
+							if (mpaaMatcher2.find()) {
+								// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+								// + " Rated " + getId());
+								groupedWork.addMpaaRating(mpaaMatcher2.group(1) + " Rated");
+							} else {
+								Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(targetAudienceNote);
+								if (mpaaMatcher3.find()) {
+									// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+									// + " Rated " + getId());
+									groupedWork.addMpaaRating(mpaaMatcher3.group(1) + " Rated");
+								}
+							}
+						}
+					} catch (PatternSyntaxException e) {
+						// Syntax error in the regular expression
+						logger.error("MPAA Rating regex Pattern syntax error", e);
 					}
 				}
-			} catch (PatternSyntaxException ex) {
-				// Syntax error in the regular expression
-				return null;
 			}
-		} else {
-			return null;
+
 		}
 	}
+
+//	/**
+//	 * F&P Text Level Gradient.  This information should be a single letter, capitalized A through Z; and Z+ for High School/Adult
+//	 *  <a href="https://www.fountasandpinnell.com/textlevelgradient/">Text Level Gradient</a>
+//	 *
+//	 * @param groupedWork  Solr Object
+//	 * @param record       The MARC file
+//	 * @param identifier   Record Identifier
+//	 */
+//	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
+//		Set<String> targetAudiences = MarcUtil.getFieldList(record, "521a");
+//		for (String targetAudience : targetAudiences){
+//			if (targetAudience.startsWith("Guided reading level: ")){
+//				String fountasPinnellValue = targetAudience.replace("Guided reading level: ", "");
+//				//TODO: parse out text after semicolons :  "O; LEXILE: 620L" ,  "N; LEXILE: 690L"
+//				//TODO: parse ranges by dash character: "Q-R", "F-G"
+//				fountasPinnellValue = fountasPinnellValue.replace(".", "").toUpperCase();
+//				groupedWork.setFountasPinnell(fountasPinnellValue);
+//				break;
+//			}
+//		}
+//	}
+//
+//	private String getMpaaRating(Record record) {
+//		String val = MarcUtil.getFirstFieldVal(record, "521a");
+//
+//		if (val != null) {
+//			if (mpaaNotRatedRegex.matcher(val).matches()) {
+//				return "Not Rated";
+//			}
+//			try {
+//				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
+//				if (mpaaMatcher1.find()) {
+//					// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
+//					// " Rated " + getId());
+//					return mpaaMatcher1.group(1) + " Rated";
+//				} else {
+//					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
+//					if (mpaaMatcher2.find()) {
+//						// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+//						// + " Rated " + getId());
+//						return mpaaMatcher2.group(1) + " Rated";
+//					} else {
+//						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
+//						if (mpaaMatcher3.find()) {
+//							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+//							// + " Rated " + getId());
+//							return mpaaMatcher3.group(1) + " Rated";
+//						}
+//					}
+//				}
+//			} catch (PatternSyntaxException ex) {
+//				// Syntax error in the regular expression
+//			}
+//		}
+//		return null;
+//	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
@@ -577,7 +671,8 @@ abstract class MarcRecordProcessor {
 			char recordType = Character.toUpperCase(leader.charAt(6));
 			char bibLevel   = Character.toUpperCase(leader.charAt(7));
 			// Figure out what material type the record is
-			if (((recordType == 'A' || recordType == 'T') && (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M')) /* Books */
+			if (((recordType == 'A' || recordType == 'T') && (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M'))
+				/* Books */
 					) {
 				char literaryFormChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 16) {
@@ -610,7 +705,10 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
 
-		//Now get literary forms from the subjects, these don't need translation
+		//Now get literary forms from subject terms that line up with the literary form terms
+		//TODO: Matching subject terms should use the translation of equivalent literary_form code
+		// so that the translation map controls what value these terms add.
+		// (Its likely okay because the translated values are rarely different between sites)
 		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
 		HashMap<String, Integer> literaryFormsFull      = new HashMap<>();
 		//Check the subjects
@@ -666,7 +764,10 @@ abstract class MarcRecordProcessor {
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
+				String literaryFormTranslationForPoetry = indexer.translateSystemValue("literary_form", "P", identifier);
+				addToMapWithCount(literaryFormsWithCount, literaryFormTranslationForPoetry);
+				// Union Catalog Committee decision 2025-09-24, code Poetry as literary Form 'Non-Fiction'
+				// LION wants to keep their current translation 'Fiction'
 				addToMapWithCount(literaryFormsFull, "Poetry");
 			}else if (subjectForm.equalsIgnoreCase("Humor")
 					|| subjectForm.equalsIgnoreCase("Comedy")
@@ -729,16 +830,18 @@ abstract class MarcRecordProcessor {
 					) {
 				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Non Fiction");
-			}else{
-				if (!unknownSubjectForms.contains(subjectForm)){
-					//logger.warn("Unknown subject form " + subjectForm);
-					unknownSubjectForms.add(subjectForm);
-				}
 			}
+//			else{
+//				if (!unknownSubjectForms.contains(subjectForm)){
+//					//logger.warn("Unknown subject form " + subjectForm);
+//					unknownSubjectForms.add(subjectForm);
+//				}
+//			}
 		}
 
 		//Check the subjects
 		Set<String> subjectGenreData = MarcUtil.getFieldList(record, "655a");
+		// 655 - Index Term-Genre/Form | a - Genre/form data or focus term
 		for(String subjectForm : subjectGenreData) {
 			subjectForm = Util.trimTrailingPunctuation(subjectForm).toLowerCase();
 			if (subjectForm.startsWith("instructional film")

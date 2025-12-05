@@ -34,6 +34,8 @@
 		{/if}
 	{elseif $statusInformation.availableOnline}
 		<div class="related-manifestation-shelf-status available">Available Online</div>
+	{elseif $statusInformation.availableExternally}
+		<div class="related-manifestation-shelf-status availableOther">{translate text="availableExternallyStatus"}</div>
 	{elseif $statusInformation.allLibraryUseOnly}
 		{if $isGlobalScope}
 			<div class="related-manifestation-shelf-status available">{translate text='On Shelf (library use only)'}</div>
@@ -47,7 +49,13 @@
 			{/if}
 		{/if}
 	{elseif $statusInformation.available && $statusInformation.hasLocalItem}
-		<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{if $statusInformation.localShelvingItem}
+			{*When the most available local item has grouped item status 'Shelving' or 'Recently Return',
+			display that status over 'Checked Out' *}
+			<div class="related-manifestation-shelf-status availableOther">{$statusInformation.localShelvingStatus}/Available Elsewhere {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{else}
+			<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{/if}
 	{elseif $statusInformation.available}
 		{if $isGlobalScope}
 			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
@@ -60,6 +68,12 @@
 	{elseif $statusInformation.isAvailableToOrder}
 		<div class="related-manifestation-shelf-status isAvailableToOrder">
 				{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
+		</div>
+	{elseif $statusInformation.localShelvingItem}
+		<div class="related-manifestation-shelf-status availableOther">
+			{* This should only happen when there is a single item on the bib, which is a local item,
+			 and currently has shelving/recently returned status override *}
+			{$statusInformation.groupedStatus} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
 	{else}
 		<div class="related-manifestation-shelf-status checked_out">

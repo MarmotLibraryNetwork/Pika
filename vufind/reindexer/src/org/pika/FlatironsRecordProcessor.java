@@ -267,21 +267,21 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 	 */
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
-		HashSet<String> targetAudiences = new HashSet<>();
+		HashSet<String> targetAudienceCodes = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
 			String locationCode = printItem.getLocationCode();
 			if (locationCode.length() > 2) {
 				// MLN2 location codes longer than 2 characters have valid trailing target audience characters
 				if (!printItem.isOrderItem() || !locationCode.equals("none")) { // don't use order record fake location "none"
 					String lastCharacter = locationCode.substring(locationCode.length() - 1);
-					targetAudiences.add(lastCharacter);
+					targetAudienceCodes.add(lastCharacter);
 				}
 			}
 		}
 
-		final HashSet<String> target_audiences = translateCollection("target_audience", targetAudiences, identifier);
-		groupedWork.addTargetAudiences(target_audiences);
-		groupedWork.addTargetAudiencesFull(target_audiences);
+		final HashSet<String> targetAudiences = translateCollection("target_audience", targetAudienceCodes, identifier);
+		groupedWork.addTargetAudiences(targetAudiences);
+		groupedWork.addTargetAudiencesFull(targetAudiences);
 	}
 
 	private class IsRecordEContent {

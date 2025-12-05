@@ -39,23 +39,17 @@
 							<thead>
 								<tr>
 									{foreach from=$dataRow item=dataCell name=dataCol}
-
-											<th>{$dataCell}</th>
-
+										<th>{$dataCell}</th>
 									{/foreach}
 								</tr>
-
 							</thead>
-
 						{else}
 							{if $smarty.foreach.studentData.index == 1}
 								<tbody>
 							{/if}
 							<tr>
 								{foreach from=$dataRow item=dataCell}
-
 									<td>{$dataCell}</td>
-
 								{/foreach}
 							</tr>
 						{/if}
@@ -65,7 +59,7 @@
 
 			<script>
 				{literal}
-				$(document).ready(function(){
+				$(function(){
 					$('.table').DataTable({
 
 						columnDefs: [{orderable: false, targets: [0,1,3,5,6,11,13]}],
@@ -98,7 +92,7 @@
 			</script>
 			{/if}
 		{else}
-        {include file="MyAccount/loginRequired.tpl"}
+			{include file="MyAccount/loginRequired.tpl"}
 		{/if}
 	</div>
 {/strip}

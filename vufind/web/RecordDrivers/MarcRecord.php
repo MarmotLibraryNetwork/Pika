@@ -1685,7 +1685,7 @@ class MarcRecord extends IndexRecord {
 		}
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
-		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		//$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
 		//TODO: this does get assigned already in Interface method loadDisplayOptions()
 
 		if ($library->show856LinksAsTab && count($links) > 0){
@@ -1703,7 +1703,7 @@ class MarcRecord extends IndexRecord {
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
-			if (count($relatedRecords) > 1){
+			if (!empty($relatedRecords) && count($relatedRecords) > 1){
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$moreDetailsOptions['otherEditions'] = [
 					'label'         => 'Other Editions and Formats',
@@ -2273,7 +2273,7 @@ class MarcRecord extends IndexRecord {
 		}
 	return $return;
 	}
-	private function getLinks(){
+	protected function getLinks(){
 		$links      = [];
 		$marcRecord = $this->getMarcRecord();
 		if ($marcRecord){
@@ -2352,10 +2352,10 @@ class MarcRecord extends IndexRecord {
 		return $semanticData;
 	}
 
-	public function hasOpacFieldMessage(){
-		global $configArray;
-		return !empty($configArray['Catalog']['OpacMessageField']);
-	}
+//	public function hasOpacFieldMessage(){
+//		global $configArray;
+//		return !empty($configArray['Catalog']['OpacMessageField']);
+//	}
 
 	public function getOpacFieldMessage($itemId){
 		/** @var Memcache $memCache */
@@ -2366,7 +2366,7 @@ class MarcRecord extends IndexRecord {
 		if (!$opacMessage){
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
-			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
+			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield (typically r)
 			[$itemTag, $itemIdSubfield, $opacMessageSubfieldIndicator] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);

@@ -7,12 +7,15 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
+		<h1 role="heading" aria-level="1" class="h2">{translate text="Search History"}</h1>
+
 		{if !$noHistory}
 			{if $saved}
-				<h1 role="heading" aria-level="1" class="h2">{translate text="history_saved_searches"}</h1>
+				<h2 class="h3">{translate text="history_saved_searches"}</h2>
 				<table class="table table-bordered table-striped">
 					<tr>
 						<th>{translate text="history_id"}</th>
+						{*<th>user id</th> debuggin only*}
 						<th>{translate text="history_time"}</th>
 						<th>{translate text="history_search"}</th>
 						<th>{translate text="history_limits"}</th>
@@ -23,6 +26,7 @@
 					{foreach item=info from=$saved name=historyLoop}
 					<tr>
 						<td>{$info.id}</td>
+						{*<td>{$info.userId}</td> debugging only*}
 						<td>{$info.time}</td>
 						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="history_empty_search"}{else}{$info.description|escape}{/if}</a></td>
 						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
@@ -42,6 +46,7 @@
 				<table class="table table-bordered table-striped">
 					<tr>
 						<th>{translate text="history_time"}</th>
+						{*<th>user id</th> debugging only*}
 						<th>{translate text="history_search"}</th>
 						<th>{translate text="history_limits"}</th>
 						<th>{translate text="history_search_source"}</th>
@@ -51,6 +56,7 @@
 					{foreach item=info from=$links name=historyLoop}
 					<tr>
 							<td>{$info.time}</td>
+							{*<td>{$info.userId}</td> debugging only*}
 							<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="history_empty_search"}{else}{$info.description|escape}{/if}</a></td>
 							<td>
 							{foreach from=$info.filters item=filters key=field}

@@ -2069,8 +2069,8 @@ class ExtractOverDriveInfo {
 		if (i < accountIds.size()) {
 			String accountId   = accountIds.get(i);
 			return overDriveProductsKeys.get(accountId);
-		} else if (logger.isDebugEnabled()) {
-			logger.debug("Shared Collection ID '" + sharedCollectionId.toString() + "' doesn't have a matching Overdrive Account Id. Failed to get corresponding Products key.");
+		} else {
+			logger.debug("Shared Collection ID '{}' doesn't have a matching Overdrive Account Id. Failed to get corresponding Products key.", sharedCollectionId);
 		}
 		return "";
 	}

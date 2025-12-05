@@ -37,7 +37,7 @@ class Admin_OverDriveAPIData extends Admin_Admin {
 				if ($libraryInfo){
 					if (empty($_REQUEST['id'])){
 						$contents    .= "<h3>Main - {$libraryInfo->name}</h3>";
-						$contents    .= "<p>Shared Collection Id : $sharedCollectionId</p>";
+						$contents    .= "<p>Pika Shared Collection Id : $sharedCollectionId</p>";
 						$contents    .= "Website: <a href='{$libraryInfo->links->dlrHomepage->href}'>{$libraryInfo->links->dlrHomepage->href}</a>";
 						$productInfo = $driver->getProductsInAccount($libraryInfo->collectionToken, null, 0, 1);
 						if (!empty($productInfo->totalItems)){

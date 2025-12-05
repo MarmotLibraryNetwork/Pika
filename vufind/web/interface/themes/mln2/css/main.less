@@ -1,3 +1,20 @@
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2025  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // Core variables and mixins
 @import (reference) "../../responsive/css/variables.less";
 @import (reference) "variables";
@@ -5,12 +22,8 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color);
 
-
-
-// Browse Category customizations based on AnyThink
-
+.header-login-button-mixin(@header-buttons-background-color, #fff);
 
 #anythink-browse-label(@browse-label-text-color);
 
@@ -20,18 +33,55 @@
 
 #anythink-selected-browse-label(@browse-label-text-color);
 
-
-.panel {
-  border: none;
-  border-radius: 0;
+#header-logo {
+  padding: 0;
+  margin-top: 1.5em;
 }
 
-.panel-group .panel {
-  border-radius: 0;
+
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+.btn.btn-default {
+  border: 1px solid @brand-secondary-alternate;
 }
 
+#account-link-accordion .active {
+  .panel-title {
+    color: @accordion-header-color;
+    text-shadow: 1px 1px @accordion-header-shadow-color;
+  }
+  a:hover {
+    text-decoration-color: @accordion-header-color;
+  }
+}
+
+#browse-label{
+  background: @brand-body-bg;
+}
+
+// Keep library sidebar links accordion headings the same as active
+#link-accordion .active .panel-title {
+  color: @accordion-header-color;
+  text-shadow: 1px 1px @accordion-header-shadow-color;
+}
 
 .sidebar-button {
   padding: 7px 0;
 }
 
+#keepFiltersSwitchLabel,#advancedSearchLink{
+  color: @brand-body-color;
+}
+
+.formatCategoryLabel{
+  color: #000;
+}
+
+.result-head > div:nth-child(1){
+  color: @brand-highlight-alternate;
+}
+
+#browse-category-carousel .browse-category.category1, #browse-category-carousel .browse-category.category2, #browse-category-carousel .browse-category.category3, #browse-category-carousel .browse-category.category4, #browse-category-carousel .browse-category.category5, #browse-category-carousel .browse-category.category6, #browse-category-carousel .browse-category.category7, #browse-category-carousel .browse-category.category8, #browse-category-carousel .browse-category.category9{
+  border:none;
+}

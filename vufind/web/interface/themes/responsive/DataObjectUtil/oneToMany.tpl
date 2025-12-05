@@ -52,7 +52,7 @@
 									{assign var=subPropName value=$subProperty.property}
 									{assign var=subPropValue value=$subObject->$subPropName}
 									{foreach from=$subProperty.values item=propertyName name="checkboxList"}
-										<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if} id="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>
+										<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName|escape:'quotes'}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if} id="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>
 									{/foreach}
 								</div>
 							</td>
@@ -173,11 +173,11 @@
 					{elseif $subProperty.type=='number'}
 						newRow += "<input type='number' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' value='{if $subProperty.default}{$subProperty.default}{/if}' aria-label='{$subProperty.label}' class='form-control{if $subProperty.required == true} required{/if}'{if $subProperty.max} max='{$subProperty.max}'{/if}{if $subProperty.min} min='{$subProperty.min}'{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>";
 					{elseif $subProperty.type=='checkbox'}
-						newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' {if $subProperty.default == 1}checked='checked'{/if}>";
+						newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]'{if $subProperty.default == 1} checked='checked'{/if}>";
 					{else}
 						newRow += "<select name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' id='{$propName}{$subPropName}_" + numAdditional{$propName} +"' class='form-control{if $subProperty.required == true} required{/if}'>";
 						{foreach from=$subProperty.values item=propertyName key=propertyValue}
-							newRow += "<option value='{$propertyValue}' {if $subProperty.default == $propertyValue}selected='selected'{/if}>{$propertyName}</option>";
+							newRow += "<option value='{$propertyValue}'{if $subProperty.default == $propertyValue} selected='selected'{/if}>{$propertyName|escape}</option>";
 						{/foreach}
 						newRow += "</select>";
 					{/if}
@@ -190,7 +190,7 @@
 					{assign var=subPropName value=$subProperty.property}
 					{assign var=subPropValue value=$subObject->$subPropName}
 					{foreach from=$subProperty.values item=propertyName name="checkboxList"}
-					newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName}" id="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>';
+					newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName|escape:'quotes'}" id="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>';
 					{/foreach}
 					newRow += '</div>';
 					newRow += '</td>';

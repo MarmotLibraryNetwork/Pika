@@ -339,7 +339,7 @@
 					{include file="MyAccount/userName.tpl"}
 
 					{*OverDrive Options*}
-					{if $profile->isValidForOverDrive()}
+					{if !$overDriveOfflineMode && $profile->isValidForOverDrive()}
 						<div class="panel active">
 							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
 								<div class="panel-heading">

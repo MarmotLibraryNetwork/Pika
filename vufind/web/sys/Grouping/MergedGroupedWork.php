@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -115,7 +114,7 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 			if ($destination_check->find()){
 				$validationResults = [
 					'validatedOk' => false,
-					'errors'      => ["The source {$this->sourceGroupedWorkId} is a destination work for another manual merging entry. A Destination work can not be the source work in another manual merging."],
+					'errors'      => ["The source {$this->sourceGroupedWorkId} is a destination work for another manual merging entry. A Destination work cannot be the source work in another manual merging."],
 				];
 			}
 		}

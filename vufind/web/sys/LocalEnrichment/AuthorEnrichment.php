@@ -33,16 +33,15 @@ class AuthorEnrichment  extends DB_DataObject{
 	public $wikipediaUrl;
 
 	static function getObjectStructure(){
-		$structure = array(
-			array(
+		$structure = [
+			[
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the enrichment information',
 				'storeDb'     => true,
 				'primaryKey'  => true,
-			),
-			array(
+			], [
 				'property'    => 'authorName',
 				'type'        => 'text',
 				'size'        => '255',
@@ -51,16 +50,14 @@ class AuthorEnrichment  extends DB_DataObject{
 				'description' => 'The name of the author including any dates',
 				'storeDb'     => true,
 				'required'    => true,
-			),
-			array(
+			], [
 				'property'    => 'hideWikipedia',
 				'type'        => 'checkbox',
 				'label'       => 'Hide Wikipedia Information',
 				'description' => 'Check to not show Wikipedia data for this author',
 				'storeDb'     => true,
 				'required'    => false,
-			),
-			array(
+			], [
 				'property'    => 'wikipediaUrl',
 				'type'        => 'text',
 				'size'        => '255',
@@ -69,8 +66,8 @@ class AuthorEnrichment  extends DB_DataObject{
 				'description' => 'The URL to load Wikipedia data from.',
 				'storeDb'     => true,
 				'required'    => false,
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 

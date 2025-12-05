@@ -88,7 +88,6 @@ class OverDrive_Home extends Action{
 				$title .=  $recordDriver->getSubtitle();
 			}
 			$this->display('view.tpl', $title);
-
 		}
 	}
 

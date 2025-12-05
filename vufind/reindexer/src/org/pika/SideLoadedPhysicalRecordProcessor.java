@@ -26,19 +26,48 @@ import java.util.Date;
 import java.util.HashSet;
 
 public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
+
+	final protected String availableExternallyStatus = "Available by Request";
+	// This is also set in the default en.ini
+	// To use an alternate status translation extend this class.
+
 	SideLoadedPhysicalRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 			super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 			if (formatSource.equals("item")){
-				logger.error("'item' is not a valid option for side loaded physical collection format determination");
+				logger.error("'item' is not a valid option for side loaded physical collection format determination. Using 'bib'");
+				formatSource = "bib";
 			}
 		}
 
+	/**
+	 * Make Sideloaded Physical Records always available
+	 * @param itemInfo The unused Item info object
+	 * @return true
+	 */
 		@Override
 		protected boolean isItemAvailable(ItemInfo itemInfo) {
 			return true;
 		}
 
-		@Override
+	/**
+	 * Make Sideloaded Physical Records not holdable.
+	 * @param itemInfo The unused item info object
+	 * @return that the title isn't holdable
+	 */
+	@Override
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo) {
+		return new HoldabilityInformation(false, new HashSet<>());
+	}
+
+	/**
+	 * The primary difference for this method is calling to loadPhyiscalRecord() instead of loadEContentRecord();
+	 * And if there is no primary format found, Book will be used.
+	 * @param groupedWork          The Solr Document
+	 * @param record               MARC record
+	 * @param identifier           Record ID
+	 * @param loadedNovelistSeries whether the Novelist Series has been loaded
+	 */
+	@Override
 		protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, boolean loadedNovelistSeries) {
 			//For ILS Records, we can create multiple different records, one for print and order items,
 			//and one or more for ILS eContent items.
@@ -52,6 +81,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 				if (primaryFormat == null) {
 					logger.warn("No primary format found for {} record {}", indexingProfileSource, identifier);
 					primaryFormat = "Book"; // Default to Book
+					//TODO: Is BookClubKit a better default?
 				}
 
 				updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, loadedNovelistSeries);
@@ -87,7 +117,7 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setDateAdded(dateAdded);
 
 			itemInfo.setLocationCode(indexingProfileSourceDisplayName);
-			//No iTypes for Side loaded eContent
+			//No iTypes for Side loaded content
 			//itemInfo.setITypeCode();
 			//itemInfo.setIType();
 
@@ -96,22 +126,43 @@ public class SideLoadedPhysicalRecordProcessor extends IlsRecordProcessor{
 
 			itemInfo.setItemIdentifier(identifier.getIdentifier());
 			itemInfo.setShelfLocation(indexingProfileSourceDisplayName);
+			//TODO: This gets excluded by location code checking I think
 
-			//No Collection for Side loaded eContent
-			//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
-
-			//itemInfo.seteContentSource(indexingProfileSourceDisplayName);
-			//TODO: create External Source Facet?
+			//Set Physical Sideload name as the Collection facet value
+			itemInfo.setCollection(indexingProfileSourceDisplayName);
 
 			RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 			relatedRecord.addItem(itemInfo);
-			//loadEContentUrl(record, itemInfo, identifier);
+
+			// Set up link to external request page
+			loadEContentUrl(record, itemInfo, identifier);
 
 			loadPrintFormatInformation(relatedRecord, record);
 
-			itemInfo.setDetailedStatus("Available Externally");
+			itemInfo.setDetailedStatus(availableExternallyStatus);
 
 			return relatedRecord;
 		}
 
+	/**
+	 * Set all statuses for Physical Sideloads to availableExternallyStatus
+	 * @param itemInfo   The Unused Item info object
+	 * @param identifier The record ID
+	 * @return availableExternallyStatus
+	 */
+	@Override
+	protected String getDisplayStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
+		return availableExternallyStatus;
 	}
+
+	/**
+	 * Set all statuses for Physical Sideloads to availableExternallyStatus
+	 * @param itemInfo   The Unused Item info object
+	 * @param identifier The record ID
+	 * @return availableExternallyStatus
+	 */
+	@Override
+	protected String getDisplayGroupedStatus(ItemInfo itemInfo, RecordIdentifier identifier) {
+		return availableExternallyStatus;
+	}
+}

@@ -521,7 +521,7 @@ public class FormatDetermination {
 		getFormatFromEdition(record, printFormats/*, identifier*/);
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
-		getFormatFromTitle(record, printFormats);
+		getFormatFromTitle(record, printFormats, identifier);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 
@@ -611,6 +611,7 @@ public class FormatDetermination {
 		}
 
 		List<DataField> physicalDescriptions = record.getDataFields("300");
+		int formats = printFormats.size();
 		for (DataField physicalDescription : physicalDescriptions) {
 			if (physicalDescription != null) {
 				if (physicalDescription.getSubfield('e') != null) {
@@ -652,6 +653,10 @@ public class FormatDetermination {
 					}
 				}
 			}
+		}
+		if (printFormats.size() > formats + 1) {
+			logger.warn("More than one accompany material determination present : " + String.join(",", printFormats));
+
 		}
 	}
 
@@ -695,7 +700,7 @@ public class FormatDetermination {
 		}
 
 		// Read-Along things
-		if (hasOverRidingFormat("VoxBooks", printFormats)) {
+		if (hasOverRidingFormat("VoxBook", printFormats)) {
 			return;
 		}
 
@@ -746,6 +751,7 @@ public class FormatDetermination {
 		}
 		if (printFormats.contains("DVD") || printFormats.contains("Blu-ray")) {
 			if (isComboPack(record)) {
+				logger.info("ComboPack determination in filterPrintFormats() for {}", identifier);
 				printFormats.clear();
 				printFormats.add("DVDBlu-rayCombo");
 				return;
@@ -806,7 +812,9 @@ public class FormatDetermination {
 		if (printFormats.contains("CompactDisc") && printFormats.contains("MusicCD")){
 			printFormats.remove("CompactDisc");
 		}
-		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc"))){
+		if (printFormats.contains("MusicRecording") && (/*printFormats.contains("CD") ||*/ printFormats.contains("CompactDisc"))){
+			//This does occur on mln1 for 8 records
+			logger.info("Found music recording + CD in filter print formats on {}", identifier);
 			if (printFormats.contains("DVD")) {
 				// Probable Accompanying Material
 				printFormats.clear();
@@ -852,10 +860,10 @@ public class FormatDetermination {
 				printFormats.remove("CompactDisc");
 			}
 		}
-		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
-			//TODO: Likely obsolete - no determinations of CD
-			printFormats.remove("CD");
-		}
+//		if (printFormats.contains("CD") && printFormats.contains("SoundDisc")){
+//			//TODO: Likely obsolete - no determinations of CD
+//			printFormats.remove("CD");
+//		}
 		if (printFormats.contains("MP3") && printFormats.contains("CompactDisc")){
 			printFormats.remove("MP3");
 		}
@@ -999,7 +1007,7 @@ public class FormatDetermination {
 		return false;
 	}
 
-	private void getFormatFromTitle(Record record, Set<String> printFormats) {
+	private void getFormatFromTitle(Record record, Set<String> printFormats, RecordIdentifier identifier) {
 		String titleMedium = MarcUtil.getFirstFieldVal(record, "245h");
 		if (titleMedium != null){
 			titleMedium = titleMedium.toLowerCase();
@@ -1032,12 +1040,13 @@ public class FormatDetermination {
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
 			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
-				printFormats.add("CDROM"); //TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player) TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
+				logger.info("CDROM determination from 245h dvd rom phrase on {}", identifier);
+				printFormats.add("CDROM");
+				// TODO: should be determined as format dvd-rom (wouldn't work in cd-rom player)
+				// TODO: add exclusion check for CD ROM eg. "CD-ROM or DVD-ROM drive"
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
-			}
-			else if (titleMedium.contains("mp3"))
-			{
+			} else if (titleMedium.contains("mp3")) {
 				printFormats.add("MP3");
 			}
 
@@ -1088,6 +1097,11 @@ public class FormatDetermination {
 		}
 	}
 
+	/**
+	 * Phrases to exclude from Illustrated Edition format determination
+	 */
+	private final Pattern illustratedEditionExceptions = Pattern.compile("newly illustrated|new illustrated|classic illustrated|reillustrated");
+
 	private void getFormatFromEdition(Record record, Set<String> result/*, RecordIdentifier identifier*/) {
 		List<DataField> editions = record.getDataFields("250");
 		for (DataField edition : editions) {
@@ -1105,7 +1119,8 @@ public class FormatDetermination {
 						result.add("WonderBook");
 					} else if (editionData.contains("board book")) {
 						result.add("BoardBook");
-					} else if (editionData.contains("illustrated ed")) {
+					} else if (editionData.contains("illustrated ed") && !illustratedEditionExceptions.matcher(editionData).find()) {
+						// Exclude "Newly Illustrated edition", "New illustrated edition", "Classic illustrated edition" & "Reillustrated edition"
 						result.add("IllustratedEdition");
 					} else if (findBluRay4KUltraBluRayComboPhrasesLowerCased(editionData)){
 						//Do combo check before single format check
@@ -1183,7 +1198,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
-							result.add("VoxBooks");
+							result.add("VoxBook");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
@@ -1280,7 +1295,7 @@ public class FormatDetermination {
 				if (noteField.getSubfield('a') != null) {
 					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
 					if (noteValue.contains("vox book") || noteValue.contains("vox audio")) {
-						result.add("VoxBooks");
+						result.add("VoxBook");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
 					} else if (noteValue.contains("playaway launchpad")) {

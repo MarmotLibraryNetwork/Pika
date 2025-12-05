@@ -76,7 +76,7 @@
 						<hr class="menu">
 						<div class="myAccountLink{if $pageTemplate=="profile.tpl"} active{/if}"><a href="/MyAccount/Profile">Account Settings</a></div>
 						{* Only highlight saved searches as active if user is logged in: *}
-						<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='history_saved_searches'}</a></div>
+						<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History'}</a></div>
 						{if $allowMasqueradeMode && !$masqueradeMode}
 							{if $canMasquerade}
 								<hr class="menu">

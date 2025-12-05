@@ -482,28 +482,13 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
-						// Only econtent and on order items ??
+						// Only eContent and on order items ??
 						formats.add(curItem.getFormat());
 					}else {
 						formats = curRecord.getFormats();
 					}
 					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
-					HashSet<String> formatCategories = new HashSet<>();
-					if (curItem.getFormatCategory() != null) {
-						// Only eContent and on order items ??
-						formatCategories.add(curItem.getFormatCategory());
-					}else {
-						formatCategories = curRecord.getFormatCategories();
-					}
-					//eAudiobooks are considered both Audiobooks and eBooks by some people
-					if (formats.contains("eAudiobook")){
-						formatCategories.add("eBook");
-					}
-					if (formats.contains("VOX Books") || formats.contains("WonderBook")){
-						formatCategories.add("Books");
-						formatCategories.add("Audio Books");
-					}
-					addUniqueFieldValues(doc, "format_category_" + curScopeName, formatCategories);
+					addUniqueFieldValues(doc, "format_category_" + curScopeName, getFormatCategories(curRecord, curItem, formats));
 
 					// Add_languages
 					addUniqueFieldValues(doc, "language_" + curScopeName, curRecord.getLanguages());
@@ -555,7 +540,7 @@ public class GroupedWorkSolr implements Cloneable {
 					if (curItem.isEContent()) {
 						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, Util.trimTrailingPunctuation(curItem.geteContentSource()));
 					}
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
+					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isNotRestrictOwningLibraryAndLocationFacets()) {
 						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
 						setSingleValuedFieldValue(doc, "callnumber_sort_" + curScopeName, curItem.getSortableCallNumber());
 					}
@@ -582,6 +567,25 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	private static HashSet<String> getFormatCategories(RecordInfo curRecord, ItemInfo curItem, HashSet<String> formats) {
+		HashSet<String> formatCategories = new HashSet<>();
+		if (curItem.getFormatCategory() != null) {
+			// Only eContent and on order items ??
+			formatCategories.add(curItem.getFormatCategory());
+		}else {
+			formatCategories = curRecord.getFormatCategories();
+		}
+		//eAudiobooks are considered both Audiobooks and eBooks by some people
+		if (formats.contains("eAudiobook")){
+			formatCategories.add("eBook");
+		}
+		if (formats.contains("VOX Books") || formats.contains("WonderBook")){
+			formatCategories.add("Books");
+			formatCategories.add("Audio Books");
+		}
+		return formatCategories;
+	}
+
 	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(SolrInputDocument doc, RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo curScope) {
 		boolean         addLocationOwnership     = false;
 		boolean         addLibraryOwnership      = false;
@@ -594,7 +598,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (curScope.isLibraryOwned()){
 			if (curScopeDetails.isLocationScope()){
-				if (!curScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()){
+				if (curScopeDetails.isNotBaseAvailabilityToggleOnLocalHoldingsOnly()){
 					addLibraryOwnership = true;
 					availabilityToggleValues.add("Entire Collection");
 				}
@@ -666,7 +670,7 @@ public class GroupedWorkSolr implements Cloneable {
 							if (!otherScope.equals(curScope)) {
 								Scope otherScopeDetails = otherScope.getScope();
 								if (otherScopeDetails.isLocationScope() && otherScopeDetails.getLibraryScope() != null && curScopeDetails.getLibraryScope().equals(otherScopeDetails.getLibraryScope())) {
-									if (!otherScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									if (otherScopeDetails.isNotBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 									}
 									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
@@ -686,6 +690,7 @@ public class GroupedWorkSolr implements Cloneable {
 						Scope otherScopeDetails = otherScope.getScope();
 						if (!otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().isEmpty()){
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
+								// Uses the library and location additionalLocationsToShowAvailabilityFor setting
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationFacetLabel);
 								if (curScope.isAvailable()) {
@@ -701,8 +706,8 @@ public class GroupedWorkSolr implements Cloneable {
 			//finally add to any scopes where we show all owning locations
 			for (String scopeToShowAllName : curScopingInfo.keySet()){
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
-					if (!scopeToShowAll.getScope().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+				if (scopeToShowAll.getScope().isNotRestrictOwningLibraryAndLocationFacets()){
+					if (scopeToShowAll.getScope().isNotBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
 					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationFacetLabel);
@@ -727,7 +732,7 @@ public class GroupedWorkSolr implements Cloneable {
 			//finally add to any scopes where we show all owning libraries
 			for (String scopeToShowAllName : curScopingInfo.keySet()){
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
+				if (scopeToShowAll.getScope().isNotRestrictOwningLibraryAndLocationFacets()){
 					addUniqueFieldValue(doc, "owning_library_" + scopeToShowAll.getScope().getScopeName(), owningLibraryValue);
 				}
 			}
@@ -1823,6 +1828,10 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void setLexileScore(int lexileScore) {
 		this.lexileScore = lexileScore;
+	}
+
+	int getLexileScore(){
+		return this.lexileScore;
 	}
 
 	void setLexileCode(String lexileCode) {

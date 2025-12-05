@@ -13,7 +13,7 @@
 					<img src="/interface/themes/bemis/images/littleton_logo.png" alt="The City of Littleton, CO." style="max-width: 100%; max-height:140px; margin-left:20px; margin-right:20px">
 				</a>
 				{if $showPikaLogo}
-					<a href="http://marmot.org/pika-discovery/about-pika" title="Proud Pika Partner">
+					<a href="http://marmot.org/pika" title="Proud Pika Partner">
 						<img id="footer-pika-logo" src="{img filename='pika-logo.png'}" alt="Proud Pika Partner" style="max-width: 100%; max-height: 80px;">
 					</a>
 				{/if}

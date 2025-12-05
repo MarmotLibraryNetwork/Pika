@@ -182,8 +182,12 @@ class MyAccount_Holds extends MyAccount{
 			$interface->assign('offlineHolds', $offlineHolds);
 		}
 
+		if (!empty($configArray['OverDrive']['offline']) && $configArray['OverDrive']['offline'] !== 'false'){
+			$interface->assign('overDriveOfflineMode', true);
+		}
 
-		// Set up explanation blurb for My Holds page
+
+			// Set up explanation blurb for My Holds page
 		if (!$library->showDetailedHoldNoticeInformation){
 			$notification_method = '';
 		}else{

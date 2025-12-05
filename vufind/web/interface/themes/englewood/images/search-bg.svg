@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1920 130" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-105,-450.562)">
+        <g>
+            <g transform="matrix(1,0,0,0.606397,0,228.378)">
+                <path d="M105,515.765L105,366.401L2025,366.401L2025,515.765C2025,562.625 1573.48,580.223 1043.01,580.223C512.54,580.223 105,562.625 105,515.765Z" style="fill:rgb(1,62,90);"/>
+            </g>
+            <g id="Search_Service_Finder_Overlay_Background_Shape-2" transform="matrix(1,0,0,0.272842,-5749,1641.24)">
+                <path d="M5854,-4032.04L5854,-4364L7774,-4364L7774,-4032.04C7774,-3927.89 7322.48,-3888.78 6792.01,-3888.78C6261.54,-3888.78 5854,-3927.89 5854,-4032.04Z" style="fill:rgb(1,62,90);fill-opacity:0;fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

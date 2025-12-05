@@ -6,26 +6,46 @@
 @import "../../responsive/css/responsive_base.less";
 
 #header-container {
-  background-image: url('/interface/themes/englewood/images/header_background.png');
-  @media (min-width: 999px) {
-    background-repeat: round;
-    /* background image is only 998px long */
-  }
+  background: @englewood-dark-pink;
+}
+
+#horizontal-search-wrapper {
+  background-image: url('/interface/themes/englewood/images/search-bg.svg');
+  background-position-x: center;
+  background-position-y: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+
 }
 
 #header-logo {
-  background-color: rgba(255, 255, 255, 0.75);
-  border-radius: 0.5em;
-  margin-top: 20px;
-  padding: 5px;
+  margin-top: 22px;
+  width: 200px;
 }
 
-.header-login-button-mixin(rgba(255, 255, 255, 0.75), @home-page-login-color);
+a#advancedSearchLink{
+  color: white;
+}
+.header-login-button-mixin(transparent, #fff);
+
+.loginOptions > a, .logoutOptions a {
+  text-decoration: none;
+}
+
 a .header-button {
-  font-weight: bolder;
+  font-weight: 600;
+  font-size: 18px;
+  border: 1px solid @englewood-light-orange;
 
   &:hover {
-    box-shadow: 2px 2px 5px darkgrey;
+    text-decoration-thickness: 5px;
+    text-decoration-color: @englewood-light-green;
+    text-underline-offset: 10px;
+    background: transparent;
+    box-shadow:none;
+  }
+  &:focus {
+    text-decoration: none;
   }
 }
 
@@ -40,7 +60,7 @@ a .header-button {
 
 .hide-selected-browse-label-background;
 
-#sacramento-browse-category(@selectedCategoryColor, @browse-category-font-size, 90px, @border-gray, @theme-primary-color);
+#sacramento-browse-category(@selectedCategoryColor, @browse-category-font-size, 90px, #bbb, @englewood-light-green);
 
 #sacramento-browse-category-pickers(@browseCarouselControlColor, 90px, 75px);
 
@@ -80,8 +100,8 @@ a .header-button {
 
 .btn-primary {
   &:hover {
-    background-color: @theme-primary-color-light;
-    border-color: @theme-primary-color-light;
+    background-color: @englewood-light-blue;
+    border-color: @englewood-dark-blue;
   }
 }
 
@@ -93,4 +113,6 @@ a .header-button {
   }
 }
 
-.sacramento-sidebar-button;
+.facetTitle, .exploreMoreTitle, .active .exploreMoreTitle{
+  text-shadow: 1px 1px black;
+}

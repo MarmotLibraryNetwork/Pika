@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -176,6 +175,16 @@ function getIndexingUpdates(): array{
 					'NintendoSwitch2', 'Video Games')
 					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
 					'NintendoSwitch2', '4')"
+			],
+		],
+
+		'2025.04.0_change_voxbook' => [
+			'release'         => '2025.04.0',
+			'title'           => 'Change Format Value to VoxBook',
+			'description'     => 'Change format value to VoxBook in translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"UPDATE `translation_map_values` SET `value` = 'VoxBook' WHERE `value` = 'VoxBooks';"
 			],
 		],
 
