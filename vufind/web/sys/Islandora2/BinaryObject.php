@@ -21,20 +21,19 @@ namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
-class DocumentObject extends I2Object
+class BinaryObject extends I2Object
 {
-
     public static function supports(array $node): bool
     {
-        if (self::mediaTypeIn($node, ['document', 'text'])) {
+        if (self::mediaTypeIn($node, ['binary'])) {
             return true;
         }
-
+        
         return false;
     }
 
     public function getObjectType(): string
     {
-        return 'document';
+        return 'binary';
     }
 }

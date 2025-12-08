@@ -44,6 +44,7 @@ class VideoObject extends I2Object
 
     /**
      * Get the primary video media
+     * 
      */
     public function getVideo() {
         $media = $this->getMedia();

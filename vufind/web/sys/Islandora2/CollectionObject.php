@@ -21,11 +21,11 @@ namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
-class PdfObject extends I2Object
+class CollectionObject extends I2Object
 {
     public static function supports(array $node): bool
     {
-        if (self::mediaTypeIn($node, ['pdf'])) {
+        if (self::mediaTypeIn($node, ['collection'])) {
             return true;
         }
         
@@ -34,6 +34,6 @@ class PdfObject extends I2Object
 
     public function getObjectType(): string
     {
-        return 'pdf';
+        return 'collection';
     }
 }
