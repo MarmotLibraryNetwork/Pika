@@ -143,18 +143,52 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return array|null
      */
-    public function getPrimaryFile(): ?array
+    public function getOriginalMedia(): ?array
     {
-        $primary_media = [];
         $media = $this->getMedia();
         foreach($media as $m) {
-            $media_use = strtolower($m['media_use']['name']);
-            if($media_use === 'origninal file') {
-                $primary_media[] = $m;
+            if($m->useIs('original file')) {
+                return $m;
             }
         }
-        if(!empty($primary_media)) {
-            return $primary_media;
+        return null;
+    }
+
+    public function getThumbnail() {
+        $media = $this->getMedia();
+        $thumbnails = [];
+        foreach($media as $m) {
+            if($m->useIs('thumbnail image')) {
+                $thumbnails[] = $m;
+            }
+        }
+        if(empty($thumbnails)) {
+            return null;
+        }
+        $sorted = $this->sortMediaByCreatedDate($thumbnails);
+        return $sorted[0];
+    }
+
+    public function getThumbnails() {
+        $media = $this->getMedia();
+        $thumbnails = [];
+        foreach($media as $m) {
+            if($m->useIs('thumbnail image')) {
+                $thumbnails[] = $m;
+            }
+        }
+        if(empty($thumbnails)) {
+            return null;
+        }
+        return $thumbnails;
+    }
+
+    public function getServiceFile() {
+        $media = $this->getMedia();
+        foreach($media as $m) {
+            if($m->useIs('service file')) {
+                return $m;
+            }
         }
         return null;
     }
@@ -184,6 +218,11 @@ abstract class I2Object implements MediaObjectInterface
             return $this->nodeWithoutFieldPrefix['language']['name'];
         }
         return null;
+    }
+
+    public function getSubjects(): ?array {
+        $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
+        return $subjects;
     }
 
     /**
@@ -311,7 +350,12 @@ abstract class I2Object implements MediaObjectInterface
      */
     protected static function getObjectModelFromNode(array $node): ?string
     {
-        return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
+        if(array_key_exists('tid', $node['field_model'])) {
+            return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
+        } elseif (array_key_exists('tid', $node['field_model'][0])){
+            return isset($node['field_model'][0]['name']) ? strtolower($node['field_model'][0]['name']) : null;
+        }
+        return null;
     }
 
 }
