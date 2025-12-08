@@ -69,7 +69,7 @@ interface MediaObjectInterface
      *
      * @return array|null
      */
-    public function getPrimaryFile(): ?array;
+    public function getOriginalMedia(): ?array;
 
     /**
      * Optional hook for classes to report whether they are able to represent
