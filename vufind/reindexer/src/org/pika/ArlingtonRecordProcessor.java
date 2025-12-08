@@ -217,7 +217,7 @@ class ArlingtonRecordProcessor extends SierraRecordProcessor {
 			//Get the url
 			String url = MarcUtil.getFirstFieldVal(record, "856u");
 
-			if (url != null && !url.toLowerCase().contains("lib.overdrive.com")){
+			if (url != null && !url.toLowerCase().contains("overdrive.com")){
 				//Get the econtent source
 				String urlLower = url.toLowerCase();
 				String econtentSource;
