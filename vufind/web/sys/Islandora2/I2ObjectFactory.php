@@ -73,10 +73,16 @@ class I2ObjectFactory
 
         // Built-in registrations; class names added in step three.
         self::registerType('image', ImageObject::class);
-        self::registerType('audio', ImageObject::class);
+        self::registerType('audio', AudioObject::class);
         self::registerType('video', VideoObject::class);
-        self::registerType('pdf', PdfObject::class);
-        self::registerType('document', DocumentObject::class);
+        self::registerType('digital document', DigitalDocumentObject::class);
+        self::registerType('binary', BinaryObject::class);
+        self::registerType('collection', CollectionObject::class);
+        self::registerType('compound object', CompoundObjectObject::class);
+        self::registerType('newspaper', NewspaperObject::class);
+        self::registerType('paged content', PagedContentObject::class);
+        self::registerType('page', PageObject::class);
+        self::registerType('publication issue', PublicationIssueObject::class);
         self::registerType('default', DefaultMediaObject::class);
     }
 
