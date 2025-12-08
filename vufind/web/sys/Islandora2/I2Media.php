@@ -78,6 +78,12 @@ class I2Media
         return null;
     }
 
+    public function useIs($use) {
+        $use = strtolower($use);
+        $thisUse = strtolower($this->use);
+        return $use === $thisUse;
+    }
+
     private function extractFileUrl() {
         $file = null;
         switch ($this->bundle) {
