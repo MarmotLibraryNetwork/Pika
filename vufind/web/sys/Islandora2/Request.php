@@ -72,7 +72,7 @@ class Request
         try {
             $response = $curl->get($url);
             /* Error checks */
-            if (method_exists($curl, 'isCurlError') && $curl->isCurlError()) {
+            if ($curl->isCurlError()) {
                 $this->logger->error('Curl error while fetching Islandora node.', [
                     'nodeId' => $nodeId,
                     'code'   => $curl->getCurlErrorCode(),
@@ -81,7 +81,7 @@ class Request
                 return null;
             }
 
-            if (method_exists($curl, 'isError') && $curl->isError()) {
+            if ($curl->isError()) {
                 $this->logger->warning('HTTP error returned by Islandora2 API.', [
                     'nodeId' => $nodeId,
                     'code'   => $curl->getHttpStatusCode(),
@@ -89,27 +89,36 @@ class Request
                 return null;
             }
 
-            if (method_exists($curl, 'getHttpStatusCode')) {
-                $statusCode = $curl->getHttpStatusCode();
-                if ($statusCode !== 200) {
-                    $this->logger->warning('Unexpected HTTP status when fetching Islandora node.', [
-                        'nodeId' => $nodeId,
-                        'code'   => $statusCode,
-                    ]);
-                    return null;
-                }
-            }
 
+            $statusCode = $curl->getHttpStatusCode();
+            if ($statusCode !== 200) {
+                $this->logger->warning('Unexpected HTTP status when fetching Islandora node.', [
+                    'nodeId' => $nodeId,
+                    'code'   => $statusCode,
+                ]);
+                return null;
+            }
+            
             /* Load the JSON payload */
             $body = null;
-            if (method_exists($curl, 'getRawResponse')) {
-                $body = $curl->getRawResponse();
-            }
-            if ($body === null && method_exists($curl, 'getResponse')) {
+            
+            $body = $curl->response;
+
+            if ($body === null) {
                 $body = $curl->getResponse();
             }
+
+            if ($body === null) {
+                $body = $curl->getRawResponse();
+            }
+
             if ($body === null && $response !== null) {
                 $body = $response;
+            }
+
+            $rawStringBody = is_string($body) ? $body : $curl->getRawResponse();
+            if (!$this->validateContentLength($curl, $rawStringBody, (int)$nodeId)) {
+                return null;
             }
 
             if (is_array($body)) {
@@ -155,4 +164,66 @@ class Request
         }
     }
 
+    /**
+     * Validate that the Content-Length header, when set, matches the body we received.
+     */
+    private function validateContentLength(Curl $curl, ?string $body, int $nodeId): bool
+    {
+        $expected = $this->getContentLengthHeader($curl);
+        if ($expected === null || $expected < 0) {
+            return true;
+        }
+
+        if ($body === null) {
+            $this->logger->error('Islandora2 API declared response length but body is missing.', [
+                'nodeId' => $nodeId,
+                'expectedLength' => $expected,
+            ]);
+            return false;
+        }
+
+        $actual = strlen($body);
+        if ($actual !== $expected) {
+            $this->logger->error('Islandora2 API response length mismatch.', [
+                'nodeId' => $nodeId,
+                'expectedLength' => $expected,
+                'actualLength' => $actual,
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Extract the Content-Length header from the Curl response headers.
+     */
+    private function getContentLengthHeader(Curl $curl): ?int
+    {
+        if (!method_exists($curl, 'getResponseHeaders')) {
+            return null;
+        }
+
+        $headers = $curl->getResponseHeaders();
+
+        // if (!is_array($headers)) {
+        //     return null;
+        // }
+
+        foreach ($headers as $name => $value) {
+            if (strcasecmp((string)$name, 'Content-Length') !== 0) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $value = end($value);
+            }
+
+            if (is_numeric($value)) {
+                return (int)$value;
+            }
+        }
+
+        return null;
+    }
 }
