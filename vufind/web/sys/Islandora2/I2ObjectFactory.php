@@ -23,11 +23,17 @@ use Pika\Logger;
 
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
-require_once ROOT_DIR . '/sys/Islandora2/ImageObject.php';
-require_once ROOT_DIR . '/sys/Islandora2/VideoObject.php';
-require_once ROOT_DIR . '/sys/Islandora2/PdfObject.php';
-require_once ROOT_DIR . '/sys/Islandora2/DocumentObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/AudioObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/BinaryObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/CompoundObjectObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/DefaultMediaObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/DigitalDocumentObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/ImageObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/NewspaperObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/PagedContentObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/PublicationIssueObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/VideoObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 
 /**
