@@ -416,6 +416,8 @@ class SearchSources {
 	 * needs to be parsed out by the library setting for the OverDrive shared
 	 * Collection number (-1,-2,etc.)
 	 *
+	 * In the configuration file, URLs needs to be separated by the comma (,) character
+	 *
 	 * @param Library $library Library to look up URL for
 	 * @return mixed|string    OverDrive URL to use
 	 */
@@ -430,7 +432,7 @@ class SearchSources {
 			// convert to positive number; subtract one to use an array index
 		}
 		global $configArray;
-		$overDriveUrls = explode(';', $configArray['OverDrive']['url']);
+		$overDriveUrls = explode(',', $configArray['OverDrive']['url']);
 		if (array_key_exists($arrayIndex, $overDriveUrls)){
 			return $overDriveUrls[$arrayIndex];
 		} else {
