@@ -363,7 +363,7 @@ class OverDriveDriver4 {
 	 * @param User $user
 	 * @param string $url
 	 * @param array|null $postParams
-	 * @param bool $put Whether or not to do an HTTP PUT request
+	 * @param bool $put Whether to do an HTTP PUT request
 	 * @return bool|mixed
 	 */
 	public function _callPatronUrl(User $user, $url, $postParams = null, $put = false){
