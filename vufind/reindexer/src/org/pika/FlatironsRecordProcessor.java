@@ -108,9 +108,11 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 							itemInfo.setItemUrl(url);
 						}
 
-						//Determine eContent Source
+						// Determine eContent Source
 						itemInfo.seteContentSource("eContent");
-						if (url.contains("ebrary.com")) {
+						if (url.contains("brainfuse.com")){
+							itemInfo.seteContentSource("brainfuse");
+						} else if (url.contains("ebrary.com")) {
 							itemInfo.seteContentSource("ebrary");
 						} else if (url.contains("gutenberg.org")) {
 							itemInfo.seteContentSource("Project Gutenberg");
