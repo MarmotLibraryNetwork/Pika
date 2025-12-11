@@ -296,7 +296,7 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		loadLexileData();
+		//loadLexileData();
 		loadAcceleratedReaderData();
 
 		if (fullReindex){
@@ -656,24 +656,29 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	/**
+	 * Processing the tsv file received directly from Metametrics
+	 */
 	private void loadLexileData() {
 		String lexileExportPath        = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
 		String lexileSpanishExportPath = PikaConfigIni.getIniValue("Reindex", "lexileSpanishExportPath");
 		try {
 			File lexileData = new File(lexileExportPath);
 			if (lexileData.exists()) {
-				logger.info("Starting to read english lexile data");
+				logger.warn("Starting to read english lexile data");
 				parseLexileFile("English", lexileData, lexileInformation);
-			} else if (fullReindex) {
-				logger.warn("Lexile English data file not found : {}", lexileExportPath);
 			}
+//			else if (fullReindex) {
+//				logger.warn("Lexile English data file not found : {}", lexileExportPath);
+//			}
 			lexileData = new File(lexileSpanishExportPath);
 			if (lexileData.exists()) {
-				logger.info("Starting to read spanish lexile data");
+				logger.warn("Starting to read spanish lexile data");
 				parseLexileFile("Spanish", lexileData, lexileInformationSpanish);
-			} else if (fullReindex) {
-				logger.warn("Lexile Spanish data file not found : {}", lexileExportPath);
 			}
+//			else if (fullReindex) {
+//				logger.warn("Lexile Spanish data file not found : {}", lexileExportPath);
+//			}
 		} catch (Exception e) {
 			logger.error("Error loading lexile file",  e);
 		}
