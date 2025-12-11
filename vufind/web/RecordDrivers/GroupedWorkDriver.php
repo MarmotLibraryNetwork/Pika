@@ -3106,7 +3106,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}elseif (!empty($curItem->itemUrl)){
 				// Special Physical Records, like KitKeeper, that link to an external reservation system
 				// Also physical item sideloads
-				$url = $scopingDetails->localUrl ?? $curItem->itemUrl;
+				$url = !empty($scopingDetails->localUrl) ? $scopingDetails->localUrl : $curItem->itemUrl;
 				// Scope url overrides necessary for physical item sideloads
 				$relatedUrls[] = [
 					'url' => $url
