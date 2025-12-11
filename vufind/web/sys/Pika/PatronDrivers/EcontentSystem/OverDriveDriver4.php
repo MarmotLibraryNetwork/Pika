@@ -367,6 +367,7 @@ class OverDriveDriver4 {
 	 * @return bool|mixed
 	 */
 	public function _callPatronUrl(User $user, $url, $postParams = null, $put = false){
+		$this->logger->debug("Calling OverDrive PatronUrl: $url");
 		$tokenData = $this->_connectToPatronAPI($user);
 		if ($tokenData){
 			$headers = $this->_patronRequestHeaders($tokenData, $url);
@@ -386,6 +387,7 @@ class OverDriveDriver4 {
 				$returnVal = $curl->get($url);
 			}
 			//$curlInfo = $curl->getInfo(); // for debugging
+			$this->logger->debug("Patron URL returned: $curl->rawResponse");
 
 			if (empty($returnVal)){
 				return $curl->httpStatusCode === 204; // Code 204 is success
