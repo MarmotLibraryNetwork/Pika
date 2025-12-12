@@ -5027,7 +5027,7 @@ a.list-group-item.active:focus .list-group-item-text {
 }
 .panel-default > .panel-heading {
   color: #333333;
-  background-color: #f5f5f5;
+  background-color: #6663ac;
   border-color: #ddd;
 }
 .panel-default > .panel-heading + .panel-collapse .panel-body {
