@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+namespace Archive2;
 
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
-
-namespace Archive2;
 
 /* Responsible for displaying video from Islandora2 */
 class Audio extends ArchiveObject
@@ -27,6 +26,29 @@ class Audio extends ArchiveObject
 
     public function launch()
     {
-        // TODO: Implement launch() method.
+        global $interface;
+        
+        $audio = $this->mediaObject->getAudio();
+        $interface->assign('audioUrl', $audio->fileUrl);
+
+        $videoMime = $audio->mime;
+        $interface->assign('audioMime', $videoMime);
+
+        $thumb = $this->mediaObject->getThumbnail();
+        $interface->assign('videoThumbnailUrl', $thumb->fileUrl);
+
+        $captions = $this->mediaObject->getCaptions();
+        // cast to an array
+        $captionsArray = json_decode(json_encode($captions), true);
+        $interface->assign('captions', $captionsArray);
+       
+        $transcripts = $this->mediaObject->getTranscripts();
+        $interface->assign('transcripts', $transcripts);
+        
+        parent::launch();
+
+        $title = $this->mediaObject->getTitle();
+        return parent::display('audio.tpl', $title, 'Search/home-sidebar.tpl');
     }
+
 }
