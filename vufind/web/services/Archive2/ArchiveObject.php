@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -30,7 +29,7 @@ use Islandora2\MediaObjectInterface;
 class ArchiveObject extends \Action
 {
     protected ?MediaObjectInterface $mediaObject = null;
-    /** */
+    /** node ID */
     protected int $nid;
 
 
@@ -55,23 +54,26 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
-    public function launch()
-    {
-        global $interface;
+	public function launch()
+	{
+		global $interface;
 
         $interface->assign('showExploreMore', true);
+        $interface->assign('debug_archive_object', true);
 
-		//Expose every field from the Islandora node (with "field_" removed) to the templates.
+		// Expose every field from the Islandora node (with "field_" removed) to the templates.
 		$nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
 		foreach ($nodeData as $field => $value){
 			$interface->assign($field, $value);
 		}
+        
+        // Media
 		$interface->assign('media', $nodeData['media'] ?? []);
+        
+        // Overrides
+        // Dates
 		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
 		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
-
-        // nid
-        $interface->assign('nid', $this->mediaObject->nid);
 
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
@@ -96,7 +98,8 @@ class ArchiveObject extends \Action
         $interface->assign('subtitle', $subtitle);
 
         // Summary
-        $summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
+        // TODO: I am here
+        //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
@@ -168,10 +171,28 @@ class ArchiveObject extends \Action
         $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
         $interface->assign('local_identifer', $localIdentifier);
 
-        // Record Information
         
 
     }
+
+	private function formatDisplayDate($value): ?string {
+		if ($value === null || $value === '') {
+			return null;
+		}
+
+		try {
+			if (is_numeric($value)) {
+				$date = new \DateTimeImmutable('@' . (int)$value);
+			}else{
+				$date = new \DateTimeImmutable((string)$value);
+			}
+		}catch (\Exception $e){
+			return null;
+		}
+
+		$date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+		return $date->format('m/d/Y h:i a');
+	}
 
     protected function canCurrentUserDownload(): bool {
         //$user = \UserAccount::getLoggedInUser();
