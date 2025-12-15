@@ -40,9 +40,10 @@ class I2Media
     public string $use = '';
     public string $mime = '';
     public string $fileUrl = '';
+    public string $filePath = '';
     public string $thumbnailUrl = '';
     public string $thumbnailMime = '';
-    public string $language = '';
+    public string $langName = '';
     public string $langCode = '';
     public int $created;
 
@@ -63,9 +64,9 @@ class I2Media
         $this->fileUrl = ($fileUrl !== null) ? $fileUrl : '';
         $this->langCode = isset($media['langcode']) ? $media['langcode'] : '';
         if($this->langCode !== '') {
-            $language = Language::getLanguage($this->langCode);
-            if($language && $language !== '') {
-                $this->language = $language;
+            $langName = Language::getLanguage($this->langCode);
+            if($langName && $langName !== '') {
+                $this->langName = $langName;
             }
         }  
     }
