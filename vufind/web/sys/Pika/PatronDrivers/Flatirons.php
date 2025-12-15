@@ -138,8 +138,8 @@ class Flatirons extends Sierra
 		];
 		$fields[] = [
 			'property'     => 'primaryphone',
-			//'type'         => 'tel', // Confirmed iPhones don't allow dashes on type telephone (at least IOS 18.7.1) 12/1/2025
-			'type'         => 'text',
+			'type'         => 'tel', // Confirmed iPhones don't allow dashes on type telephone (at least IOS 18.7.1)
+			//'type'         => 'text', // CJ has added javascript to autopopulate the dashes, which will get the user around the iphone problem (See D-5229)
 			'label'        => 'Phone Number (xxx-xxx-xxxx)',
 			'description'  => 'Phone Number',
 			'maxLength'    => 16,
