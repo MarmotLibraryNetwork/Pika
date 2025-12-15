@@ -35,10 +35,16 @@ trait CaptionsandTranscriptTraits {
 
         $captions = [];
         foreach ($media as $m) {
-            if ($m->use === 'Caption' && $m->mime === 'text/vtt') {
+            if (($m->use === 'Caption' || $m->use === 'Subtitle') && $m->mime === 'text/vtt') {
                 $captions[] = $m;
             }
         }
+
+        foreach($captions as $caption) {
+            $path = parse_url($caption->fileUrl, PHP_URL_PATH);
+            $caption->filePath = $path;
+        }
+
         return $captions;
     }
 
