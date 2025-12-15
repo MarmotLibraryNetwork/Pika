@@ -46,6 +46,7 @@ class Archive_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondThemselves = [
 		'getVtt',
+		'fetchVtt',
 	];
 
 	function getRelatedObjectsForExhibit(){
@@ -914,10 +915,63 @@ class Archive_AJAX extends AJAXHandler {
 			}
 		}else{
 			//TODO: log error
-			echo ''; //TODO Echo an httpd error code?
+			echo ''; 
 
 		}
 
+	}
+
+	
+	/**
+	 * Fetch vtt files using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchVTT() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$path = urldecode($_REQUEST['path']);
+		
+		if(!$path) {
+			# TODO: log error
+			return '';
+		}
+
+		$url = $url . $path;
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => 'pikaArchive',
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: text/vtt');
+		echo $response;
 	}
 
 	public function getAdditionalRelatedObjects(){
