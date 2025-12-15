@@ -61,6 +61,15 @@ class ArchiveObject extends \Action
 
         $interface->assign('showExploreMore', true);
 
+		//Expose every field from the Islandora node (with "field_" removed) to the templates.
+		$nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+		foreach ($nodeData as $field => $value){
+			$interface->assign($field, $value);
+		}
+		$interface->assign('media', $nodeData['media'] ?? []);
+		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
+		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+
         // nid
         $interface->assign('nid', $this->mediaObject->nid);
 
@@ -87,7 +96,7 @@ class ArchiveObject extends \Action
         $interface->assign('subtitle', $subtitle);
 
         // Summary
-        $summary = ($this->mediaObject->library['name'] !== null) ? $this->mediaObject->library['name'] : null;
+        $summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
