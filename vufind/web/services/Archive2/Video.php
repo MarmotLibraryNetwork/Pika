@@ -49,13 +49,7 @@ class Video extends ArchiveObject
         parent::launch();
 
         $title = $this->mediaObject->getTitle();
-        $this->display('video.tpl', $title);
+        return parent::display('video.tpl', $title, 'Search/home-sidebar.tpl');
     }
-
-    public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
-    {
-        return parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
-    }
-
    
 }
