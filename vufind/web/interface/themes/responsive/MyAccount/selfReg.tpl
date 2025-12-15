@@ -156,11 +156,17 @@
 	{/if}
 	{* Pin Validation for CarlX, Sirsi, MLN1, MLN2, and Sacramento *}
 	{literal}
+	$('input#primaryphone').on("keydown", function(event){
+		if (!/[0-9]/.test(event.key) && event.key != 'Backspace' && event.key != 'Tab' && event.key != 'ArrowLeft' && event.key != 'ArrowRight'){
+			event.preventDefault();
+		}
+	});
 	$('input#primaryphone').on("keyup", function(event){
 		if (event.key != 'Backspace' && (this.value.length === 3 || this.value.length=== 7)){
 			this.value+='-';
 		}
 	});
+
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
 		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}});
