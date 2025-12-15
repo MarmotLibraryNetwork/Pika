@@ -1473,7 +1473,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 					// Local Shelving status display for format manifestation level
 					'anyRecordHasStatusBetterThanShelving' => false,
-					'localShelvingItem' => false,
+					'localShelvingItem'                    => false,
 				];
 			}
 			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
@@ -2969,6 +2969,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'holdable'               => false,
 			'itemSummary'            => [],
 			'groupedStatus'          => 'Currently Unavailable',
+			'anyLocalStatusBetterThanShelving' => false,
 			'source'                 => $source,
 			'actions'                => [],
 			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
