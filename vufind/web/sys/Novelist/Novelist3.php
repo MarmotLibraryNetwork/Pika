@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -60,7 +59,7 @@ class Novelist3{
 	}
 
 	public function getRawNovelistJSON($isbn){
-		global $timer;
+		//global $timer;
 		$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 		try{
 			//Get the JSON from the service
@@ -68,13 +67,13 @@ class Novelist3{
 			$curl->setDefaultDecoder('json_decode');
 			$data = $curl->get($requestUrl);
 			if ($curl->isError()) {
-				$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				$message = 'URL : '. $requestUrl . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 
 				$this->logger->warning($message);
 				//No enrichment for this isbn, go to the next one
 
 			}
-			$timer->logTime("Made call to Novelist to get info for: $isbn");
+			//$timer->logTime("Made call to Novelist to get info for: $isbn");
 			return $data;
 
 		}catch (Exception $e) {
