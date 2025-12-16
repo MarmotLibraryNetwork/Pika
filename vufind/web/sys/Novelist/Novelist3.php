@@ -67,8 +67,7 @@ class Novelist3{
 			$curl->setDefaultDecoder('json_decode');
 			$data = $curl->get($requestUrl);
 			if ($curl->isError()) {
-				//$message = 'URL : '. $requestUrl . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-				$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 
 				$this->logger->warning($message);
 				//No enrichment for this isbn, go to the next one
@@ -173,7 +172,7 @@ class Novelist3{
 						$curl->setDefaultDecoder('json_decode');
 						$data = $curl->get($requestUrl);
 						if ($curl->isError()) {
-							$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+							$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 							$this->logger->warning($message);
 							//No enrichment for this isbn, go to the next one
 							continue;
@@ -284,7 +283,7 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
@@ -423,7 +422,7 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -514,14 +513,14 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
 
 					global $timer;
-					$timer->logTime("Made call to Novelist for enrichment information");
+					$timer->logTime('Made call to Novelist for enrichment information');
 
 					//Related ISBNs
 					if (!empty($data->FeatureContent)){
@@ -539,7 +538,6 @@ class Novelist3{
 						break;
 					}
 				}catch (Exception $e) {
-
 					$this->logger->error("Error fetching data from NoveList $e");
 					if (isset($response)){
 						$this->logger->debug($response);
@@ -619,7 +617,7 @@ class Novelist3{
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
 						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
