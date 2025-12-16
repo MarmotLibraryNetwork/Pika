@@ -67,7 +67,8 @@ class Novelist3{
 			$curl->setDefaultDecoder('json_decode');
 			$data = $curl->get($requestUrl);
 			if ($curl->isError()) {
-				$message = 'URL : '. $requestUrl . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				//$message = 'URL : '. $requestUrl . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 
 				$this->logger->warning($message);
 				//No enrichment for this isbn, go to the next one
@@ -172,7 +173,7 @@ class Novelist3{
 						$curl->setDefaultDecoder('json_decode');
 						$data = $curl->get($requestUrl);
 						if ($curl->isError()) {
-							$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+							$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 							$this->logger->warning($message);
 							//No enrichment for this isbn, go to the next one
 							continue;
@@ -282,7 +283,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
@@ -306,7 +308,7 @@ class Novelist3{
 							}else{
 
 								//log the incorrect ISBN
-								$this->logger->warning("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings");
+								$this->logger->warning('Novelist ISBN for record ' . $groupedRecordId . ' does not match local holdings');
 								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$groupedWorkDriver = new GroupedWorkDriver($groupedRecordId);
@@ -420,7 +422,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -510,7 +513,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -614,8 +618,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
