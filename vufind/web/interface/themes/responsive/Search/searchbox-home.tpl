@@ -1,4 +1,8 @@
 {strip}
+{assign var="archiveOnly" value=false}
+	{if $searchSources|@count == 1 && array_key_exists('islandora', $searchSources)}
+		{assign var="archiveOnly" value=true}
+	{/if}
 <search id="home-page-search" class="home-page-search row"{if $displaySidebarMenu} style="display: none"{/if}>
 	<div class="col-tn-12">
 		<div class="row">
@@ -125,7 +129,11 @@
 			<div class="row text-center">
 				<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
 					{if $searchSources|@count == 1}
+						{if $archiveOnly}
+							<input type="hidden" name="searchSource" value="islandora">
+						{else}
 						<input type="hidden" name="searchSource" value="{$searchSource}">
+							{/if}
 					{else}
 					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-control">
 						{foreach from=$searchSources item=searchOption key=searchKey}
