@@ -137,14 +137,15 @@ class Flatirons extends Sierra
 			'autocomplete' => 'postal-code',
 		];
 		$fields[] = [
-			'property'     => 'primaryphone',
-			'type'         => 'tel', // Confirmed iPhones don't allow dashes on type telephone (at least IOS 18.7.1)
-			//'type'         => 'text', // CJ has added javascript to autopopulate the dashes, which will get the user around the iphone problem (See D-5229)
-			'label'        => 'Phone Number (xxx-xxx-xxxx)',
-			'description'  => 'Phone Number',
-			'maxLength'    => 16,
-			'required'     => true,
-			'autocomplete' => 'tel-national',
+			'property'      => 'primaryphone',
+			//'type'         => 'tel', // Confirmed iPhones don't allow dashes on type telephone (at least IOS 18.7.1) See D-5229
+			'type'          => 'text',
+			'label'         => 'Phone Number (xxx-xxx-xxxx)',
+			'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+			'description'   => 'Phone Number',
+			'maxLength'     => 16,
+			'required'      => true,
+			'autocomplete'  => 'tel-national',
 		];
 		$fields[] = [
 			'property'     => 'email',

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -633,13 +632,14 @@ class Sacramento extends Sierra {
 			'autocomplete' => 'postal-code',
 		];
 		$fields[] = [
-			'property'     => 'primaryphone',
-			'type'         => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'integer': 'tel',
-			'label'        => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
-			'maxLength'    => (isset($library->subdomain) && $library->subdomain == "folsom") ? 10 : 20,
-			'description'  => (isset($library->subdomain) && $library->subdomain == "folsom") ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
-			'required'     => (isset($library->subdomain) && $library->subdomain == "folsom"), // require phone for folsom
-			'autocomplete' => 'tel-national',
+			'property'      => 'primaryphone',
+			'type'          => (isset($library->subdomain) && $library->subdomain == 'folsom') ? 'integer': 'text',
+			'label'         => (isset($library->subdomain) && $library->subdomain == 'folsom') ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
+			'maxLength'     => (isset($library->subdomain) && $library->subdomain == 'folsom') ? 10 : 20,
+			'description'   => (isset($library->subdomain) && $library->subdomain == 'folsom') ? 'Phone (xxxxxxxxx)':'Phone (xxx-xxx-xxxx)',
+			'simplePhoneUS' => (isset($library->subdomain) && $library->subdomain == 'folsom'),
+			'required'      => (isset($library->subdomain) && $library->subdomain == 'folsom'), // require phone for folsom
+			'autocomplete'  => 'tel-national',
 		];
 		$fields[] = [
 			'property'     => 'email',
@@ -647,7 +647,7 @@ class Sacramento extends Sierra {
 			'label'        => 'E-Mail',
 			'description'  => 'E-Mail',
 			'maxLength'    => 128,
-			'required'     => (isset($library->subdomain) && $library->subdomain == "folsom"), // require email for folsom
+			'required'     => (isset($library->subdomain) && $library->subdomain == 'folsom'), // require email for folsom
 			'autocomplete' => 'email',
 		];
 		$fields[] = [
