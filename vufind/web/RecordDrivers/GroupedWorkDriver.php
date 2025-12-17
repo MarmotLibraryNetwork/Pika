@@ -3511,6 +3511,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'eVideo':
 			case 'VHS':
 			case 'Video':
+			case '4K Ultra HD Blu-ray':
 				return 'Movie';
 
 			case 'Map':
@@ -3519,6 +3520,8 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Nintendo 3DS':
 			case 'Nintendo Wii':
 			case 'Nintendo Wii U':
+			case 'Nintendo Switch':
+			case 'Nintendo Switch 2':
 			case 'PlayStation':
 			case 'PlayStation 3':
 			case 'PlayStation 4':
@@ -3542,6 +3545,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Book':
 			case 'Large Print':
 			case 'Manuscript':
+			case 'Illustrated Edition':
 				return 'Hardcover';
 
 			case 'Audio':
@@ -3562,7 +3566,10 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->notice("No schema.org book format set for $pikaFormat");
+				$this->logger->notice('No schema.org book format set for ' . $pikaFormat);
+			case 'Book Club Kit':
+			case 'Read-Along Book':
+			case 'Newspaper':
 				return '';
 		}
 	}

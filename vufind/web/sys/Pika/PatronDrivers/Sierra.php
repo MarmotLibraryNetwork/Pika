@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1616,23 +1615,26 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		];
 
 		$fields[] = [
-			'property'     => 'primaryphone',
-			'type'         => 'tel',
-			'label'        => 'Primary phone (XXX-XXX-XXXX)',
-			'description'  => 'Your primary phone number.',
-			'maxLength'    => 20,
-			'required'     => false,
-			'autocomplete' => 'tel-national',
+			'property'      => 'primaryphone',
+			//'type'         => 'tel', // input telephone doesn't allow dashes on iPhones. See D-5229
+			'type'          => 'text',
+			'label'         => 'Primary phone (XXX-XXX-XXXX)',
+			'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+			'description'   => 'Your primary phone number.',
+			'maxLength'     => 20,
+			'required'      => false,
+			'autocomplete'  => 'tel-national',
 		];
 
 		if ($library && $library->showWorkPhoneInProfile){
 			$fields[] = [
-				'property'    => 'altphone',
-				'type'        => 'text',
-				'label'       => 'Work phone (XXX-XXX-XXXX)',
-				'description' => 'Work Phone',
-				'maxLength'   => 40,
-				'required'    => true
+				'property'      => 'altphone',
+				'type'          => 'text',
+				'label'         => 'Work phone (XXX-XXX-XXXX)',
+				'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+				'description'   => 'Work Phone',
+				'maxLength'     => 40,
+				'required'      => true
 			];
 		}
 

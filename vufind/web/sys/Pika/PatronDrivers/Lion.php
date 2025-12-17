@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -111,13 +110,15 @@ class Lion extends Sierra {
 			'autocomplete' => 'email',
 		];
 		$fields[] = [
-			'property'     => 'primaryphone',
-			'type'         => 'tel',
-			'label'        => 'Phone Number (XXX-XXX-XXXX)',
-			'description'  => 'Phone Number',
-			'maxLength'    => 12,
-			'required'     => true,
-			'autocomplete' => 'tel-national',
+			'property'      => 'primaryphone',
+			//'type'         => 'tel', // input telephone doesn't allow dashes on iPhones. See D-5229
+			'type'          => 'text',
+			'label'         => 'Phone Number (XXX-XXX-XXXX)',
+			'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+			'description'   => 'Phone Number',
+			'maxLength'     => 12,
+			'required'      => true,
+			'autocomplete'  => 'tel-national',
 		];
 		$fields[] = [
 			'property'     => 'address',

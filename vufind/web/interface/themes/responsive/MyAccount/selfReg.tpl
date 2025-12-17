@@ -156,13 +156,9 @@
 	{/if}
 	{* Pin Validation for CarlX, Sirsi, MLN1, MLN2, and Sacramento *}
 	{literal}
-	$('input#primaryphone').on("keyup", function(event){
-		if (event.key != 'Backspace' && (this.value.length === 3 || this.value.length=== 7)){
-			this.value+='-';
-		}
-	});
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
+		$('#primaryphone.simplePhoneUS').rules('add', {simplePhoneUS:true});
 		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}});
 		$('#pin').rules('add', {maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}});
 		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
