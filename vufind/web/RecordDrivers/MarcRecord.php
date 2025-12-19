@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1396,10 +1395,12 @@ class MarcRecord extends IndexRecord {
 		}
 
 		// Physical Record actions with URL links, used for external reservation URLs
-		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
+		if (empty($actions) && !empty($relatedUrls) && !$isHoldable /* && $isAvailable*/){
 			// Don't display Reserve action when the item isn't available
 			// Must also be non-holdable or the hold button will
 			// display instead (caused by empty($action) checked)
+			// Replacing isAvailable check with not isHoldable, because these items can
+			// check out, and will be unavailable when checked out. Pascal 12/9/2025
 			foreach ($relatedUrls as $relatedUrl){
 				$actions[] = [
 					'title'        => translate('Reserve Online'),
