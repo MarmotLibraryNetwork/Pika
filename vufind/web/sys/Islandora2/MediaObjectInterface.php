@@ -69,7 +69,7 @@ interface MediaObjectInterface
      *
      * @return array|null
      */
-    public function getOriginalMedia(): ?array;
+    public function getOriginalMedia(): ?I2Media;
 
     /**
      * Optional hook for classes to report whether they are able to represent
