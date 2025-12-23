@@ -143,7 +143,7 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return array|null
      */
-    public function getOriginalMedia(): ?array
+    public function getOriginalMedia(): ?I2Media
     {
         $media = $this->getMedia();
         foreach($media as $m) {
