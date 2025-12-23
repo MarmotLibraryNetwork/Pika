@@ -47,6 +47,8 @@ class Archive_AJAX extends AJAXHandler {
 	protected $methodsThatRespondThemselves = [
 		'getVtt',
 		'fetchVtt',
+		'fetchManifest',
+		'fetchCantaloupeMaifest',
 	];
 
 	function getRelatedObjectsForExhibit(){
@@ -971,6 +973,105 @@ class Archive_AJAX extends AJAXHandler {
 			return '';
 		}
 		header('Content-Type: text/vtt');
+		echo $response;
+	}
+
+	/**
+	 * Fetch manifet files using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchManifest() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$nid = $_REQUEST['nid'];
+		
+		if(!$nid) {
+			# TODO: log error
+			return '';
+		}
+
+		$url = $url . "/node/" . $nid . "/manifest";
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => 'pikaArchive',
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: application/ld+json');
+		echo $response;
+	}
+
+	/**
+	 * Fetch manifet files from Caneloupe server using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchCantaloupeMaifest() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$serviceFileUrl = urlencode(urldecode($_REQUEST['sf']));
+
+		$url = $url . "/cantaloupe/iiif/2/" . $serviceFileUrl;
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => 'pikaArchive',
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: application/json;charset=utf-8');
 		echo $response;
 	}
 
