@@ -48,8 +48,10 @@ class Video extends ArchiveObject
         
         parent::launch();
 
+        $interface->assign('viewer', 'video');
+
         $title = $this->mediaObject->getTitle();
-        return parent::display('video.tpl', $title, 'Search/home-sidebar.tpl');
+        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
    
 }

@@ -47,8 +47,10 @@ class Audio extends ArchiveObject
         
         parent::launch();
 
+        $interface->assign('object_viewer', 'audio');
+
         $title = $this->mediaObject->getTitle();
-        return parent::display('audio.tpl', $title, 'Search/home-sidebar.tpl');
+        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }
