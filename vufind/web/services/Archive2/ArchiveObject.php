@@ -82,11 +82,11 @@ class ArchiveObject extends \Action
         $interface->assign('can_download', $this->canCurrentUserDownload());
 
         // Language
-        $language = null;
+        $languageName = null;
         if ($this->mediaObject->language['name'] && $this->mediaObject->language['name'] != '') {
-            $language = $this->mediaObject->language['name'];
+            $languageName = $this->mediaObject->language['name'];
         }
-        $interface->assign('language', $language);
+        $interface->assign('languageName', $languageName);
 
         // Titles
         $title = ($this->mediaObject->getTitle() !== null) ? $this->mediaObject->getTitle() : null;
@@ -98,7 +98,7 @@ class ArchiveObject extends \Action
         $interface->assign('subtitle', $subtitle);
 
         // Summary
-        // TODO: I am here
+        // TODO: Make a summary 
         //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
@@ -120,14 +120,14 @@ class ArchiveObject extends \Action
         $interface->assign('physical_description', $extent);
 
         // Library
-        $library = ($this->mediaObject->library['name'] !== null) ? $this->mediaObject->library['name'] : null;
-        $interface->assign('library', $library);
+        $libraryName = ($this->mediaObject->library['name'] !== null) ? $this->mediaObject->library['name'] : null;
+        $interface->assign('library_name', $libraryName);
         $libraryTid = ($this->mediaObject->library['tid'] !== null) ? $this->mediaObject->library['tid'] : null;
         $interface->assign('library_tid', $libraryTid);
         $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
         $interface->assign('library_url', $libraryUrl);
         $libraryNamespace = ($this->mediaObject->library['namespace'] !== null) ? $this->mediaObject->library['namespace'] : null;
-        $interface->assign('library_url', $libraryNamespace);
+        $interface->assign('library_namespace', $libraryNamespace);
 
         // Location
         $locatedAt = ($this->mediaObject->located_at !== null) ? $this->mediaObject->located_at : null;
