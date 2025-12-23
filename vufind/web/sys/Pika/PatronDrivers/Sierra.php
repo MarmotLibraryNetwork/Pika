@@ -1472,6 +1472,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$this->logger->warning('Failed to self register patron', [$this->apiLastError]);
 			if (!empty($this->apiLastErrorForPatron)){
 				$result['message'] = $this->apiLastErrorForPatron;
+			} else {
+				$result['message'] = 'Self Registration failed';
 			}
 			return $result;
 		}
@@ -1480,7 +1482,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
 		}
 
-		$this->logger->debug('Success self registering patron : ' . $barcode);
+		$this->logger->info('Success self registering patron : ' . $barcode);
 		return ['success' => true, 'barcode' => $barcode];
 	}
 
