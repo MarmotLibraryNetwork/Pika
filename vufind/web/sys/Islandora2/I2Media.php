@@ -100,6 +100,10 @@ class I2Media
             case 'file':
                 $file = isset($this->rawMedia['media_file']['url']) ? $this->rawMedia['media_file']['url'] : null;
                 break;
+            case 'document':
+                $file = isset($this->rawMedia['media_file']['url']) ? $this->rawMedia['media_document']['url'] : null;
+                break;
+
         }
         return $file;
     }
