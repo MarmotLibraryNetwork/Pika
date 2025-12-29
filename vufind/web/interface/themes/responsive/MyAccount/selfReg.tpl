@@ -156,7 +156,6 @@
 	{/if}
 	{* Pin Validation for CarlX, Sirsi, MLN1, MLN2, and Sacramento *}
 	{literal}
-
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
 		$('#primaryphone.simplePhoneUS').rules('add', {simplePhoneUS:true});
