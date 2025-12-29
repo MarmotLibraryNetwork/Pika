@@ -1334,7 +1334,7 @@
 		return false;
 	}, "The specified vehicle identification number (VIN) is invalid." );
 
-	/* Marmot created addtional Validation Methods */
+	/* Marmot created additional Validation Methods */
 
 	$.validator.addMethod( "zipcodeUS", function( value, element ) {
 		return this.optional( element ) || /^\d{5}(-\d{4})?$/.test( value );
