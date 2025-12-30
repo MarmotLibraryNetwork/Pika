@@ -165,6 +165,7 @@
 		{/literal}
 		{if $selfRegStateRegex && $selfRegStateMessage}
 		{* Add state validation *}
+		{* Validator has a "pattern" rule that can be fed an regex test. There error message is "Invalid format" *}
 		jQuery.validator.addMethod("stateCheck", function(value, element) {ldelim}
 			return this.optional( element ) || {$selfRegStateRegex}.test( value );
 			{rdelim}, '{$selfRegStateMessage}');
