@@ -336,10 +336,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}catch (FileNotFoundException fe){
-			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
+			logger.warn("Could not find MARC record at {} for {}", individualFilename, identifier);
 			updateLastExtractTimeForRecord(identifier.getIdentifier());
 		} catch (Exception e) {
-			logger.error("Error reading data from ils file " + individualFilename, e);
+			logger.error("Error reading data from ils file {}", individualFilename, e);
 		}
 		return record;
 	}
