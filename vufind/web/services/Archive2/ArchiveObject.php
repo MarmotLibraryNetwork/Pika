@@ -83,7 +83,7 @@ class ArchiveObject extends \Action
 
         // Language
         $languageName = null;
-        if ($this->mediaObject->language['name'] && $this->mediaObject->language['name'] != '') {
+        if ($this->mediaObject->language && $this->mediaObject->language != '') {
             $languageName = $this->mediaObject->language['name'];
         }
         $interface->assign('languageName', $languageName);
