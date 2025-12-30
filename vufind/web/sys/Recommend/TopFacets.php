@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -107,6 +106,26 @@ class TopFacets implements RecommendationInterface {
 		}
 	}
 
+	CONST VALID_FORMAT_CATEGORIES = [
+		'Books',
+		'eBook',
+		'Audio Books',
+		'eAudio',
+		'Music',
+		'Movies',
+		'Video Games',
+	];
+
+	CONST FORMAT_CATEGORY_SORTING_ORDER = [
+		'Books'       => 1,
+		'eBook'       => 2,
+		'Audio Books' => 3,
+		'eAudio'      => 4,
+		'Music'       => 5,
+		'Movies'      => 6,
+		'Video Games' => 7,
+	];
+
 	/* process
 	 *
 	 * Called after the SearchObject has performed its main search.  This may be
@@ -124,32 +143,26 @@ class TopFacets implements RecommendationInterface {
 		$facetList = $this->searchObject->getFacetList($this->facets, false);
 		foreach ($facetList as $facetSetKey => $facetSet){
 			if (stripos($facetSetKey, 'category') !== false){
-				$validCategories = [
-					'Books',
-					'eBook',
-					'Audio Books',
-					'eAudio',
-					'Music',
-					'Movies',
-					'Video Games',
-				];
+				// Format Category Top Facet handling
 
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet){
-					if (in_array($facetKey, $validCategories)){
+					if (in_array($facetKey, self::VALID_FORMAT_CATEGORIES)){
 						$formatIconImageBaseFileName = strtolower(str_replace(' ', '', $facet['value']));
-						$facet['imageName']          = $formatIconImageBaseFileName . ".png";
-						$facet['imageNameSelected']  = $formatIconImageBaseFileName . "_selected.png";
+						$facet['imageName']          = $formatIconImageBaseFileName . '.png';
+						$facet['imageNameSelected']  = $formatIconImageBaseFileName . '_selected.png';
 						$facetSet['list'][$facetKey] = $facet;
 					}else{
 						unset($facetSet['list'][$facetKey]);
 					}
 				}
 
-				uksort($facetSet['list'], "format_category_comparator");
+				//uksort($facetSet['list'], 'format_category_comparator');
+				uksort($facetSet['list'], fn ($a, $b) => self::FORMAT_CATEGORY_SORTING_ORDER[$a] <=> self::FORMAT_CATEGORY_SORTING_ORDER[$b]);
 
 				$facetList[$facetSetKey] = $facetSet;
 			}elseif (stripos($facetSetKey, 'availability_toggle') !== false){
+				// Availability Toggle Top Facet handling
 
 				$numSelected = 0;
 				foreach ($facetSet['list'] as $facetKey => $facet){
@@ -165,6 +178,7 @@ class TopFacets implements RecommendationInterface {
 				$searchLibrary                 = Library::getSearchLibrary(null);
 				$searchLocation                = Location::getSearchLocation(null);
 
+				// Build Toggle Option Labels
 				if ($searchLocation){
 					$superScopeLabel      = $searchLocation->availabilityToggleLabelSuperScope;
 					$localLabel           = $searchLocation->availabilityToggleLabelLocal;
@@ -249,18 +263,18 @@ class TopFacets implements RecommendationInterface {
 	}
 }
 
-function format_category_comparator($a, $b){
-	$formatCategorySortOrder = [
-		'Books'       => 1,
-		'eBook'       => 2,
-		'Audio Books' => 3,
-		'eAudio'      => 4,
-		'Music'       => 5,
-		'Movies'      => 6,
-		'Video Games' => 7,
-	];
-
-	$a = $formatCategorySortOrder[$a];
-	$b = $formatCategorySortOrder[$b];
-	return $a <=> $b;
-};
+//function format_category_comparator($a, $b){
+//	$formatCategorySortOrder = [
+//		'Books'       => 1,
+//		'eBook'       => 2,
+//		'Audio Books' => 3,
+//		'eAudio'      => 4,
+//		'Music'       => 5,
+//		'Movies'      => 6,
+//		'Video Games' => 7,
+//	];
+//
+//	$a = $formatCategorySortOrder[$a];
+//	$b = $formatCategorySortOrder[$b];
+//	return $a <=> $b;
+//}
