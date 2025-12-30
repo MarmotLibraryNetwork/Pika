@@ -27,12 +27,18 @@ class DigitalDocument extends ArchiveObject
     public function launch()
     {
         global $interface;
+        global $configArray;
         
-        parent::launch();
+        parent::launch(); 
 
         $pdf = $this->mediaObject->getOriginalMedia();
         $interface->assign('pdf_url', $pdf->fileUrl);
 
+        $iframeSrc = $configArray['Islandora2']['url'] ?? '';
+        //TODO: catch error for empty url
+        $iframeSrc = rtrim($iframeSrc, '/') . "/libraries/pdf.js/web/viewer.html?file=" . urlencode($pdf->fileUrl);
+        $interface->assign('iframe_src', $iframeSrc);
+        
         $interface->assign('viewer', 'pdfjs');
 
         $title = $this->mediaObject->getTitle();
