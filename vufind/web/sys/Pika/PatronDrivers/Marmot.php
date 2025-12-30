@@ -920,7 +920,7 @@ class Marmot extends Sierra {
 
 	/**
 	 * Classic OPAC scope for legacy screen scraping calls
-	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
+	 * @param bool $checkLibraryRestrictions  Whether to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
 	 * @return mixed|string
 	 */
 	protected function getLibrarySierraScope($checkLibraryRestrictions = false){
