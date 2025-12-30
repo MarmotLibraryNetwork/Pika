@@ -101,7 +101,7 @@ class I2Media
                 $file = isset($this->rawMedia['media_file']['url']) ? $this->rawMedia['media_file']['url'] : null;
                 break;
             case 'document':
-                $file = isset($this->rawMedia['media_file']['url']) ? $this->rawMedia['media_document']['url'] : null;
+                $file = isset($this->rawMedia['media_document']['url']) ? $this->rawMedia['media_document']['url'] : null;
                 break;
 
         }
