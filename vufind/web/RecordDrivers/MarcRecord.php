@@ -2181,7 +2181,8 @@ class MarcRecord extends IndexRecord {
 	}
 
 	/**
-	 * Load additional information for issues of periodicals. Currently only goes into effect for Marmot
+	 * Load additional information for issues of periodicals.
+	 * Currently only goes into effect for Marmot.
 	 *
 	 * @return array|null
 	 */
@@ -2189,7 +2190,7 @@ class MarcRecord extends IndexRecord {
 		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
-		if ($catalogDriver->checkFunction('getIssueSummaries')){
+		if (method_exists($catalogDriver, 'getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
 			if (!is_array($issueSummaries)){
 				return [];
