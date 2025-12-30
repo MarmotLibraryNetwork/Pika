@@ -838,9 +838,9 @@ class ExtractOverDriveInfo {
 					String mainProductUrl  = libraryInfo.getJSONObject("links").getJSONObject("products").getString("href");
 					loadProductsFromUrl(mainLibraryName, mainProductUrl, sharedCollection);
 					if (logger.isInfoEnabled()) {
-						logger.info("Loaded " + overDriveTitles.size() + " overdrive titles in shared collection " + sharedCollection);
+						logger.info("Loaded {} overdrive titles in shared collection {}", overDriveTitles.size(), sharedCollection);
 					}
-					//Get a list of advantage collections
+					// Get a list of advantage collections
 					if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
 						WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
 						if (webServiceResponse.getResponseCode() == 200) {
@@ -868,8 +868,8 @@ class ExtractOverDriveInfo {
 												results.addNote(advantageWebServiceResponse.getError());
 											}
 										}
-									} else if (logger.isInfoEnabled()) {
-										logger.info("Skipping advantage account " + advantageName + " because it does not have a Pika library or is not enabled for OverDrive");
+									} else {
+										logger.info("Skipping advantage account {} because it does not have a Pika library or is not enabled for OverDrive", advantageName);
 									}
 								}
 							}
@@ -895,13 +895,20 @@ class ExtractOverDriveInfo {
 				}
 			} else {
 				results.addNote("Unable to load library information for library " + accountId);
-				if (libraryInfoResponse.getError() != null) {
-					results.addNote(libraryInfoResponse.getError());
+				String errorMsg = libraryInfoResponse.getError();
+				if (errorMsg != null) {
+					results.addNote(errorMsg);
+					if (errorMsg.equals("The service is unavailable.")){
+						// Delay when we get an unavailable service message
+						try {
+							Thread.sleep(30000);
+						} catch (Exception e) {
+							logger.error("Sleep was interrupted while pausing in OverDrive Extract.");
+						}
+					}
 				}
 				results.incrementErrors();
-				if (logger.isInfoEnabled()) {
-					logger.info("Error loading overdrive titles " + libraryInfoResponse.getError());
-				}
+				logger.info("Error loading overdrive titles {}", errorMsg);
 				return false;
 			}
 		}
