@@ -629,25 +629,15 @@ public class OverDriveProcessor {
 						}
 						if (jsonData.has("lexileScore")){
 							try {
-								//int currentLexileScore = groupedWork.getLexileScore();
-								int lexileScore        = jsonData.getInt("lexileScore");
-								logger.debug("Lexile Score {} from OverDrive data for title {}", lexileScore, productId);
+								int lexileScore = jsonData.getInt("lexileScore");
+								logger.debug("Lexile Score '{}' from OverDrive data for title {}", lexileScore, productId);
 //								if (lexileScore < 0){
 //									logger.debug("Found negative Lexile score {} on OverDrive title {}", lexileScore, productId);
-//								}
-//								if (currentLexileScore != -1){
-//									if (lexileScore != currentLexileScore) {
-//										if (fullReindex) {
-//											logger.warn("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
-//										} else {
-//											logger.info("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
-//										}
-//									}
 //								}
 								groupedWork.setLexileScore(lexileScore);
 							} catch (JSONException e) {
 								if (fullReindex) {
-									logger.error("Error getting OverDrive title {} lexile score", productId);
+									logger.error("Error getting OverDrive title {} lexile score", productId, e);
 								}
 							}
 						}
