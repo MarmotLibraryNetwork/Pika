@@ -83,6 +83,7 @@ public class GroupedWorkSolr implements Cloneable {
 //	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
+	private HashMap<Integer, Integer> rawLexileScores         = new HashMap<>();
 	private String                   lexileCode               = "";
 	private String                   fountasPinnell           = "";
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
@@ -347,7 +348,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Awards and ratings
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
-		doc.addField("lexile_score", lexileScore);
+		doc.addField("lexile_score", getLexileScore());
 		if (!lexileCode.isEmpty()) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
@@ -1827,15 +1828,28 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setLexileScore(int lexileScore) {
-		this.lexileScore = lexileScore;
+		if (this.rawLexileScores.containsKey(lexileScore)){
+			int numMatches = this.rawLexileScores.get(lexileScore);
+			this.rawLexileScores.put(lexileScore, ++numMatches);
+		} else {
+			this.rawLexileScores.put(lexileScore, 1);
+		}
 	}
 
 	int getLexileScore(){
+		if (!rawLexileScores.isEmpty()) {
+			Optional<Map.Entry<Integer, Integer>> maxEntry = rawLexileScores.entrySet().stream().max(Map.Entry.comparingByValue());
+			this.lexileScore = maxEntry.get().getKey();
+		}
 		return this.lexileScore;
 	}
 
 	void setLexileCode(String lexileCode) {
 		this.lexileCode = lexileCode;
+	}
+
+	String getLexileCode(){
+		return lexileCode;
 	}
 
 	void setFountasPinnell(String fountasPinnell){
