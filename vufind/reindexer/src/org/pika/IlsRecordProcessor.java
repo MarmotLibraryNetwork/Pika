@@ -381,7 +381,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			// Let's first look for the print/order record
 			RecordInfo recordInfo = groupedWork.addRelatedRecord(identifier);
 			if (logger.isDebugEnabled()) {
-				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
+				logger.debug("Added record for {} work now has {} records", identifier, groupedWork.getNumRecords());
 			}
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 			loadOnOrderItems(groupedWork, recordInfo, record);
