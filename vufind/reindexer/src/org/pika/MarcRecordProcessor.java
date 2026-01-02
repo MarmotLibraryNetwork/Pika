@@ -490,24 +490,28 @@ abstract class MarcRecordProcessor {
 				} else if (lexileMatcher.matches()){
 					// Process Lexile Score Target Audience Notes
 					try {
-						int     currentLexileScore = groupedWork.getLexileScore();
+						//int     currentLexileScore = groupedWork.getLexileScore();
 						String  lexileRawScore     = lexileMatcher.group("score");
 						String  lexileCode         = lexileMatcher.group("code");
+						String  currentLexileCode  = groupedWork.getLexileCode();
 						int     lexileScore        = Integer.parseInt(lexileRawScore);
 						groupedWork.setLexileScore(lexileScore);
 						logger.debug("Lexile Score {} from MARC data for title {}", lexileScore, identifier);
 						if (lexileScore < 0){
 							logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
 						}
-						if (currentLexileScore != -1) {
-							if (lexileScore != currentLexileScore) {
-								if (fullReindex) {
-									logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
-								} else {
-									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
-								}
-							}
+						if (currentLexileCode != null && !currentLexileCode.isEmpty() && !currentLexileCode.equalsIgnoreCase(lexileCode)){
+							logger.warn("Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
 						}
+//						if (currentLexileScore != -1) {
+//							if (lexileScore != currentLexileScore) {
+//								if (fullReindex) {
+//									logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+//								} else {
+//									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
+//								}
+//							}
+//						}
 						if (lexileCode != null && !lexileCode.isEmpty()){
 							groupedWork.setLexileCode(indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
 						}
