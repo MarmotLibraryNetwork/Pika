@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -2710,7 +2710,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null){
 		return [];
 	}
 
@@ -3004,6 +3004,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
+			$isExternalReservationItem = false;
+
 			$itemId        = $curItem->itemIdentifier;
 			$shelfLocation = $curItem->shelfLocation;
 
@@ -3115,17 +3117,18 @@ class GroupedWorkDriver extends RecordInterface {
 					'url' => $url
 				];
 				if (!$holdable && str_starts_with($curItem->recordIdentifier, 'ils') && ($available || $groupedStatus == 'Checked Out') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+					$isExternalReservationItem = true;
 					// Regular, available, not hold-able items with an item URL should be presumed as
 					// items intended to be reserved externally (not in the library circulation system).
 					// Checked Out is the exceptional status to the $available check.  (Using Grouped Status, since detailed status give due date.)
 
 					// Exclude physical sideload items with the status check: str_starts_with($curItem->recordIdentifier, 'ils')
 					// (which will also be available, not hold-able and have an item URL)
-					$reservatePhrase = translate('Available for Reservation');
+					$reservationPhrase = translate('Available for Reservation');
 					if ($groupedStatus == 'Checked Out'){
-						$status .= '; ' . $reservatePhrase;
+						$status .= '; ' . $reservationPhrase;
 					} else {
-						$status = $reservatePhrase;
+						$status = $reservationPhrase;
 					}
 				}
 			}
@@ -3269,6 +3272,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'itemId'             => $itemId
 			];
 			if (!$forCovers){
+				// This looks like this is only for ILS eContent bibs; (maybe even just MLN1 ILS eContent)
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : [];
 			}
 
@@ -3314,7 +3318,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 		if (!$forCovers){
 			$recordAvailable          = $relatedRecord['availableLocally'] || $relatedRecord['availableOnline'];
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $relatedUrls/*, $volumeData*/) : [];
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $isExternalReservationItem, $relatedUrls/*, $volumeData*/) : [];
 
 			if ($anyLocalShelving && !$anyLocalStatusBetterThanShelving){
 				// display override status when the most available local item is being shelved

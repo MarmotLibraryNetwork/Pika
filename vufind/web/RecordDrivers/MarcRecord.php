@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1303,7 +1303,7 @@ class MarcRecord extends IndexRecord {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null, $volumeData = null){
 		$actions = [];
 		global $interface;
 		global $library;
@@ -1395,7 +1395,7 @@ class MarcRecord extends IndexRecord {
 		}
 
 		// Physical Record actions with URL links, used for external reservation URLs
-		if (empty($actions) && !empty($relatedUrls) && !$isHoldable /* && $isAvailable*/){
+		if (empty($actions) && !empty($relatedUrls) && $isExternalReservationItem){
 			// Don't display Reserve action when the item isn't available
 			// Must also be non-holdable or the hold button will
 			// display instead (caused by empty($action) checked)
