@@ -186,7 +186,8 @@ public class OverDriveProcessor {
 													// e.g. Book One, Book 14.5, Book I
 													//TODO: does the "Series Series" duplication need to removed after a first attempt?
 													if (fullReindex && sortTitle.contains("Series Book")) {
-														logger.warn("{} : Failed to remove series info from OverDrive sort title '{}'", identifier, sortTitle);
+														//Note: there are quite a few of these.
+														logger.info("{} : Failed to remove series info from OverDrive sort title '{}'", identifier, sortTitle);
 													}
 												} else {
 													sortTitle = title; // The sort title will likely just contain the series statement as well
