@@ -489,30 +489,22 @@ abstract class MarcRecordProcessor {
 					groupedWork.setFountasPinnell(indexer.translateSystemValue("fountas_pinnel", fountasPinnellValue, identifier));
 				} else if (lexileMatcher.matches()){
 					// Process Lexile Score Target Audience Notes
+					String lexileRawScore = lexileMatcher.group("score");
 					try {
-						int     currentLexileScore = groupedWork.getLexileScore();
-						String  lexileRawScore     = lexileMatcher.group("score");
-						String  lexileCode         = lexileMatcher.group("code");
-						int     lexileScore        = Integer.parseInt(lexileRawScore);
+						String lexileCode        = lexileMatcher.group("code");
+						int    lexileScore       = Integer.parseInt(lexileRawScore);
 						groupedWork.setLexileScore(lexileScore);
 						logger.debug("Lexile Score {} from MARC data for title {}", lexileScore, identifier);
-						if (lexileScore < 0){
-							logger.debug("Found negative Lexile score {} on {}", lexileScore, identifier);
-						}
-						if (currentLexileScore != -1) {
-							if (lexileScore != currentLexileScore) {
-								if (fullReindex) {
-									logger.warn("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
-								} else {
-									logger.info("Record {} has a different lexile score {} than previously set value {}", identifier, lexileScore, currentLexileScore);
-								}
-							}
-						}
 						if (lexileCode != null && !lexileCode.isEmpty()){
-							groupedWork.setLexileCode(indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
+							String codeTranslation   = indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId());
+							String currentLexileCode = groupedWork.getLexileCode();
+							if (currentLexileCode != null && !currentLexileCode.isEmpty() && !currentLexileCode.equalsIgnoreCase(codeTranslation)){
+								logger.warn("Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
+							}
+							groupedWork.setLexileCode(codeTranslation);
 						}
 					} catch (Exception e){
-						logger.error("Error parsing lexile score from target audience note '{}' on {}", targetAudienceNote, identifier, e);
+						logger.error("Error parsing lexile score '{}' from target audience note '{}' on {}", lexileRawScore, targetAudienceNote, identifier, e);
 					}
 				} else {
 					// Process MPAA Rating Notes

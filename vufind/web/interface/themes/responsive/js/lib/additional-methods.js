@@ -1334,12 +1334,19 @@
 		return false;
 	}, "The specified vehicle identification number (VIN) is invalid." );
 
+	/* Marmot created additional Validation Methods */
+
 	$.validator.addMethod( "zipcodeUS", function( value, element ) {
 		return this.optional( element ) || /^\d{5}(-\d{4})?$/.test( value );
 	}, "The specified US ZIP Code is invalid" );
 
+	$.validator.addMethod( "simplePhoneUS", function( value, element ) {
+		return this.optional( element ) || /^\d{3}-\d{3}-\d{4}$/.test( value );
+	}, "The phone number format is invalid" );
+
+	// Sacramento zipcode range
 	$.validator.addMethod( "ziprange", function( value, element ) {
-		return this.optional( element ) || /^90[2-5]\d\{2\}-\d{4}$/.test( value );
+		return this.optional( element ) || /^90[2-5]\d{2}-\d{4}$/.test( value );
 	}, "Your ZIP-code must be in the range 902xx-xxxx to 905xx-xxxx" );
 	return $;
 }));

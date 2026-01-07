@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -72,8 +71,8 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		return $actions;
 	}
 
-	function getRecordActions($isAvailable = null, $isHoldable = null, $isBookable = null, $isHomePickupRecord = null, $relatedUrls = null, $volumeData = null){
-		return $this->getActions();
+	function getRecordActions($isAvailable = null, $isHoldable = null, $isBookable = null, $isHomePickupRecord = null, $isExternalReservationItem = false, $relatedUrls = null, $volumeData = null){
+			return $this->getActions();
 	}
 
 	public function getRecordActionsFromIndex(){

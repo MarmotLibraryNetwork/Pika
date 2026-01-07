@@ -83,6 +83,7 @@ public class GroupedWorkSolr implements Cloneable {
 //	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
 	private int                      lexileScore              = -1;
+	private HashMap<Integer, Integer> rawLexileScores         = new HashMap<>();
 	private String                   lexileCode               = "";
 	private String                   fountasPinnell           = "";
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
@@ -180,6 +181,8 @@ public class GroupedWorkSolr implements Cloneable {
 //		clonedWork.lccns = (HashSet<String>) lccns.clone();
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
+		// noinspection unchecked
+		clonedWork.rawLexileScores = (HashMap<Integer, Integer>) rawLexileScores.clone();
 		// noinspection unchecked
 		clonedWork.literaryFormFull = (HashMap<String, Integer>) literaryFormFull.clone();
 		// noinspection unchecked
@@ -347,7 +350,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Awards and ratings
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
-		doc.addField("lexile_score", lexileScore);
+		doc.addField("lexile_score", getLexileScore());
 		if (!lexileCode.isEmpty()) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
@@ -1826,16 +1829,45 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userRating = userRating;
 	}
 
+	/**
+	 * Gather all the Lexile scores found on the related records of a work.
+	 * In the end, the score with the most instances on the work will be
+	 * used as the single score for the work.
+	 * @param lexileScore A Lexile score found on a related record of a work
+	 */
 	void setLexileScore(int lexileScore) {
-		this.lexileScore = lexileScore;
+		if (this.rawLexileScores.containsKey(lexileScore)){
+			// Additional instances of this score
+			int numInstances = this.rawLexileScores.get(lexileScore);
+			this.rawLexileScores.put(lexileScore, ++numInstances);
+		} else {
+			// First instance of this score
+			this.rawLexileScores.put(lexileScore, 1);
+		}
 	}
 
+	/**
+	 * Runs through the accumulated lexile score counts of the work, and sets the official score to the
+	 *  value with the most instances on the work.
+	 * @return most common lexile score found on the grouped work.
+	 */
 	int getLexileScore(){
+		if (!rawLexileScores.isEmpty()) {
+			Optional<Map.Entry<Integer, Integer>> maxEntry = rawLexileScores.entrySet().stream().max(Map.Entry.comparingByValue());
+			maxEntry.ifPresent(mostCommonScore -> this.lexileScore = mostCommonScore.getKey());
+		}
 		return this.lexileScore;
 	}
 
+	/**
+	 * @param lexileCode two letter Lexile code plus code meaning. See system translation file lexile_code_map.properties
+	 */
 	void setLexileCode(String lexileCode) {
 		this.lexileCode = lexileCode;
+	}
+
+	String getLexileCode(){
+		return lexileCode;
 	}
 
 	void setFountasPinnell(String fountasPinnell){

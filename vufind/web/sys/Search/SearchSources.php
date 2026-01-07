@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -364,23 +363,20 @@ class SearchSources {
 				$worldCatLink       = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
 				if (!empty($library->worldCatUrl)){
 					$worldCatLink = $library->worldCatUrl;
-					if (strpos($worldCatLink, '?') == false){
-						$worldCatLink .= "?";
+					if (!str_contains($worldCatLink, '?')){
+						$worldCatLink .= '?';
 					}
-					$worldCatLink .= "q={$worldCatSearchType}:" . urlencode($lookFor);
+					$worldCatLink .= "q=$worldCatSearchType:" . urlencode($lookFor);
 					//Repeat the search term with a parameter of queryString since some interfaces use that parameter instead of q
-					$worldCatLink .= "&queryString={$worldCatSearchType}:" . urlencode($lookFor);
+					$worldCatLink .= "&queryString=$worldCatSearchType:" . urlencode($lookFor);
 					if (strlen($library->worldCatQt) > 0){
-						$worldCatLink .= "&qt=" . $library->worldCatQt;
+						$worldCatLink .= '&qt=' . $library->worldCatQt;
 					}
 				}
 				return $worldCatLink;
 			case 'overdrive':
 				$overDriveUrl = rtrim($configArray['OverDrive']['url'], '/');
 				return "$overDriveUrl/search?query=" . urlencode($lookFor);
-//			case 'overdriveKids':
-//				$overDriveUrl = $configArray['OverDrive']['url'];
-//				return "$overDriveUrl/library/kids/search?query=" . urlencode($lookFor);
 			case 'prospector':
 				$prospectorSearchType = self::getProspectorSearchType($type);
 				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
@@ -403,14 +399,47 @@ class SearchSources {
 				$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
 				return "$classicOpacBaseURL/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 			default:
-				if (strpos($searchSource, 'overdrive') === 0){
-					$overDriveUrl              = rtrim($configArray['OverDrive']['url'], '/');
+				if (str_starts_with($searchSource, 'overdrive')){
+					// e.g. searchSource=overdriveKids; searchSource=overdriveMagazines; searchSource=overdriveSpanish
+					$overDriveUrl              = self::getOverDriveURL($library);
+					$overDriveUrl              = rtrim($overDriveUrl, '/');
 					$alternateOverDriveLibrary = str_replace('overdrive', '', $searchSource);
 					return "$overDriveUrl/library/$alternateOverDriveLibrary/search?query=" . urlencode($lookFor);
 				} else{
 					return '';
 				}
 		}
+	}
+
+	/**
+	 * When a site uses multiple OverDrive collections, the OverDrive URL to use
+	 * needs to be parsed out by the library setting for the OverDrive shared
+	 * Collection number (-1,-2,etc.)
+	 *
+	 * In the configuration file, URLs needs to be separated by the comma (,) character
+	 *
+	 * @param Library $library Library to look up URL for
+	 * @return mixed|string    OverDrive URL to use
+	 */
+	private static function getOverDriveURL(Library $library){
+		$sharedCollectionId = $library->sharedOverdriveCollection;
+		if (empty($sharedCollectionId)){
+			// single Overdrive collection pika sites don't need the shared collection
+			// id set. (Should assume -1)
+			$arrayIndex = 0;
+		}else {
+			$arrayIndex = abs($sharedCollectionId) - 1;
+			// convert to positive number; subtract one to use an array index
+		}
+		global $configArray;
+		$overDriveUrls = explode(',', $configArray['OverDrive']['url']);
+		if (array_key_exists($arrayIndex, $overDriveUrls)){
+			return $overDriveUrls[$arrayIndex];
+		} else {
+			global $pikaLogger;
+			$pikaLogger->withName(__CLASS__)->error('Failed to get OverDrive URL for ' . $library->subdomain);
+		}
+		return $configArray['OverDrive']['url'];
 	}
 
 	static function getProspectorSearchType($type){

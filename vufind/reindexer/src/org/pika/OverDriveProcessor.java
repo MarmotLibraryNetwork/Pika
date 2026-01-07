@@ -87,11 +87,8 @@ public class OverDriveProcessor {
 					String title     = productRS.getString("title");
 
 					if (productRS.getInt("deleted") == 1) {
-						if (logger.isInfoEnabled()) {
-							logger.info("Not processing deleted overdrive product {} - {}", title, identifier);
-						}
+						logger.info("Not processing deleted overdrive product {} - {}", title, identifier);
 						indexer.overDriveRecordsSkipped.add(identifier);
-
 					} else {
 						getNumCopiesStmt.setLong(1, productId);
 						try (ResultSet numCopiesRS = getNumCopiesStmt.executeQuery()) {
@@ -153,15 +150,15 @@ public class OverDriveProcessor {
 										String titleLowerCase    = title.toLowerCase();
 										String subTitleLowerCase = subTitle.toLowerCase();
 										if (titleLowerCase.equals(subTitleLowerCase)) {
-											if (fullReindex) {
-												logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle :" + subTitle );
-											}
+											//if (fullReindex) {
+												logger.info("{} OverDrive title '{}' is the same as the subtitle :{}", identifier, title, subTitle );
+											//}
 											subTitle = "";
 										} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 											// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
-											if (fullReindex) {
-												logger.warn(identifier + " Overdrive title '" + title + "' ends with the subtitle :" + subTitle);
-											}
+											//if (fullReindex) {
+												logger.info("{} OverDrive title '{}' ends with the subtitle :", identifier, title, subTitle);
+											//}
 											title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 											title = title.replaceAll("[\\s:]+$", ""); // remove ending white space and any ending colon characters. //TODO: remove trailing "--"
 										} else if (subTitleLowerCase.contains(" series, book")){
@@ -173,18 +170,24 @@ public class OverDriveProcessor {
 												sortTitle = title; // The sort title will likely just contain the series statement as well
 												//TODO: Remove beginning The, A, An
 												if (fullReindex) {
-													logger.warn("OverDrive title had series styled subtitle but is missing series info, subtitle '" + subTitle + "' for " + identifier);
+													logger.warn("OverDrive title had series styled subtitle but is missing series info, subtitle '{}' for {}", subTitle, identifier);
 												}
 											} else {
 												// Remove Series statement from sort title
-												String seriesNameInSortTitle = series.replaceAll("&", "and").replaceAll("'", "");
+												String seriesNameInSortTitle = series.replaceAll("&", "and").replaceAll("'", "")
+																.replace("Series Series", "Series");
 												//TODO: probably need a remove all punctuation regex
+												if (seriesNameInSortTitle.contains("Frommers Complete") && !seriesNameInSortTitle.contains("Frommers Complete Guides")){
+													seriesNameInSortTitle = seriesNameInSortTitle.replace("Frommers Complete", "Frommers Complete Guides");
+												}
 												if (sortTitle.contains(seriesNameInSortTitle)) {
 													sortTitle = sortTitle.replaceAll(seriesNameInSortTitle + " Series Book (?:.*)$", "");
 													// The Series Number at the end of the series statement is usually digits but not always
-													// eg. Book One, Book 14.5, Book I
+													// e.g. Book One, Book 14.5, Book I
+													//TODO: does the "Series Series" duplication need to removed after a first attempt?
 													if (fullReindex && sortTitle.contains("Series Book")) {
-														logger.warn(identifier + " : Failed to remove series info from Overdrive sort title '" + sortTitle + "'");
+														//Note: there are quite a few of these.
+														logger.info("{} : Failed to remove series info from OverDrive sort title '{}'", identifier, sortTitle);
 													}
 												} else {
 													sortTitle = title; // The sort title will likely just contain the series statement as well
@@ -200,7 +203,7 @@ public class OverDriveProcessor {
 									fullTitle = fullTitle.trim();
 									groupedWork.setTitle(title, subTitle, fullTitle, sortTitle, primaryFormat);
 								} catch (Exception e) {
-									logger.error("Error processing Overdrive title info for " + identifier, e);
+									logger.error("Error processing Overdrive title info for {}", identifier, e);
 								}
 								groupedWork.addFullTitle(fullTitle);
 								if (!loadedNovelistSeries) {
@@ -501,7 +504,7 @@ public class OverDriveProcessor {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error fetching Overdrive Subjects for product " + productId, e);
+			logger.error("Error fetching Overdrive Subjects for product {}", productId, e);
 		}
 
 		return new Object[] { isKids, isTeen, isAdult, isComic };
@@ -530,7 +533,7 @@ public class OverDriveProcessor {
 					iso3LanguageCode = indexer.translateSystemValue("iso639-1TOiso639-2B", overdriveLanguageCode, overDriveRecord.getRecordIdentifier());
 					language         = indexer.translateSystemValue("language", iso3LanguageCode, overDriveRecord.getRecordIdentifier());
 				} catch (MissingResourceException e) {
-					logger.warn("Can not convert Overdrive language code :" + overdriveLanguageCode);
+					logger.warn("Can not convert Overdrive language code :{}", overdriveLanguageCode);
 					language = languagesRS.getString("name");
 				}
 				languages.add(language);
@@ -542,7 +545,7 @@ public class OverDriveProcessor {
 		}
 		if (primaryLanguage == null) {
 			if  (logger.isInfoEnabled()){
-				logger.info("Using English, because no language found for overdrive record "+ overDriveRecord.getRecordIdentifier());
+				logger.info("Using English, because no language found for overdrive record {}", overDriveRecord.getRecordIdentifier());
 			}
 			primaryLanguage = "English";
 		}
@@ -569,7 +572,7 @@ public class OverDriveProcessor {
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), overDriveRecord.getRecordIdentifier()));
 				} catch (Exception e) {
-					logger.warn("Could not translate format boost for " + overDriveRecord.getFullIdentifier());
+					logger.warn("Could not translate format boost for {}", overDriveRecord.getFullIdentifier());
 				}
 				if (formatBoost > maxFormatBoost) {
 					maxFormatBoost = formatBoost;
@@ -627,25 +630,15 @@ public class OverDriveProcessor {
 						}
 						if (jsonData.has("lexileScore")){
 							try {
-								int currentLexileScore = groupedWork.getLexileScore();
-								int lexileScore        = jsonData.getInt("lexileScore");
-								logger.debug("Lexile Score {} from OverDrive data for title {}", lexileScore, productId);
-								if (lexileScore < 0){
-									logger.debug("Found negative Lexile score {} on OverDrive title {}", lexileScore, productId);
-								}
-								if (currentLexileScore != -1){
-									if (lexileScore != currentLexileScore) {
-										if (fullReindex) {
-											logger.warn("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
-										} else {
-											logger.info("OverDrive title {} has a different lexile score {} than previously set value {}", productId, lexileScore, currentLexileScore);
-										}
-									}
-								}
+								int lexileScore = jsonData.getInt("lexileScore");
+								logger.debug("Lexile Score '{}' from OverDrive data for title {}", lexileScore, productId);
+//								if (lexileScore < 0){
+//									logger.debug("Found negative Lexile score {} on OverDrive title {}", lexileScore, productId);
+//								}
 								groupedWork.setLexileScore(lexileScore);
 							} catch (JSONException e) {
 								if (fullReindex) {
-									logger.error("Error getting OverDrive title {} lexile score", productId);
+									logger.error("Error getting OverDrive title {} lexile score", productId, e);
 								}
 							}
 						}
@@ -653,7 +646,7 @@ public class OverDriveProcessor {
 //							groupedWork.setAcceleratedReaderReadingLevel(jsonData.getString("ATOS"));
 //						}
 					}else{
-						logger.warn("Overdrive product " + productId + " did not have raw metadata");
+						logger.warn("Overdrive product {} did not have raw metadata", productId);
 					}
 				} catch (JSONException e) {
 					logger.error("Error loading raw data for OverDrive MetaData", e);

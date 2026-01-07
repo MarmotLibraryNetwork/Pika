@@ -673,15 +673,17 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'autocomplete' => 'postal-code',
         ];
 
-        $fields[] = [
-            'property' => 'PhoneVoice1',
-            'type' => 'tel',
-            'label' => 'Primary phone (XXX-XXX-XXXX)',
-            'description' => 'Your primary phone number.',
-            'maxLength' => 20,
-            'required' => false,
-            'autocomplete' => 'tel-national',
-        ];
+			$fields[] = [
+				'property'     => 'PhoneVoice1',
+				//'type'         => 'tel', // input telephone doesn't allow dashes on iPhones. See D-5229
+				'type'         => 'text',
+				'label'        => 'Primary phone (XXX-XXX-XXXX)',
+				'description'  => 'Your primary phone number.',
+				'maxLength'    => 20,
+				'required'     => false,
+				'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+				'autocomplete' => 'tel-national',
+				];
 
         $fields[] = [
             'property' => 'Phone1CarrierID',
