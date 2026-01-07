@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -50,10 +49,12 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		$this->accountProfile = $accountProfile;
 		$cache                = initCache();
 		$this->cache          = new Cache($cache);
-		$this->logger         = new Logger(__CLASS__);
+		//$this->logger         = new Logger(__CLASS__);
 	}
 
 	/**
+	 * Wrapper method to retrieve logger.
+	 * This way the logger is only set if needed
 	 * @return Logger
 	 */
 	function getLogger(){
@@ -490,7 +491,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 				if(isset($user->id)) {
 					global $configArray;
 					$patronObjectCacheKey = $this->cache->makePatronKey('patron', $user->id);
-					$this->logger->debug('Saving patron to memcache:' . $patronObjectCacheKey);
+					$this->getLogger()->debug('Saving patron to memcache:' . $patronObjectCacheKey);
 					$this->cache->set($patronObjectCacheKey, $user, $configArray['Caching']['user']);
 				}
 
