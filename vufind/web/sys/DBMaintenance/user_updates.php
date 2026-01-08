@@ -55,7 +55,7 @@ function getUserUpdates(): array{
 			'description'   =>'Add a table to link previous user system accounts to mln accounts',
 			'continueOnError' => false,
 			'sql'             => [
-				'CREATE TABLE `user_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `mlnId` INT(11) NOT NULL,  `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY `index2` (`migrationDate`))'
+				'CREATE TABLE `user_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `mlnId` INT(11) NOT NULL, `userId` INT(11) NOT NULL,  `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY `UserId` (`userId`))'
 			]
 		]
 	];

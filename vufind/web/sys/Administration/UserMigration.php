@@ -26,6 +26,7 @@ class UserMigration extends DB_DataObject
 	public $__table = 'user_migration';    // table name
 	public $id;                      //int(11)
 	public $mlnId;                    //int(11)
+	public $userId;
 	public $barcode;       //varchar(45)
 	public $migrationDate; //int(11)
 
@@ -51,6 +52,7 @@ class UserMigration extends DB_DataObject
 
 			if ($migration->find() == 0 || $migration->find() === false){
 				$migration->mlnId         = $sierraUser->ilsUserId;
+				$migration->userId       = $sierraUser->id;
 				$migration->migrationDate = time();
 				$migration->insert();
 				return $sierraUser->ilsUserId;
