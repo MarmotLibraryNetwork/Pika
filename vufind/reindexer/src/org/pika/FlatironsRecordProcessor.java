@@ -274,7 +274,7 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 			String locationCode = printItem.getLocationCode();
 			if (locationCode.length() > 2) {
 				// MLN2 location codes longer than 2 characters have valid trailing target audience characters
-				if (!printItem.isOrderItem() || !locationCode.equals("none")) { // don't use order record fake location "none"
+				if (!printItem.isOrderItem() && !locationCode.equals("none")) { // don't use order record fake location "none"
 					String lastCharacter = locationCode.substring(locationCode.length() - 1);
 					targetAudienceCodes.add(lastCharacter);
 				}
