@@ -2,7 +2,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 namespace Administration;
+
 use DB_DataObject;
 use Pika\Logger;
 use UserAccount;
 
-class UserMigration extends DB_DataObject
-{
+class UserMigration extends DB_DataObject {
 	public $__table = 'user_migration';    // table name
-	public $id;                      //int(11)
-	public $mlnId;                    //int(11)
+	public $id;                            //int(11)
+	public $mlnId;                         //int(11)
 	public $userId;
 	public $barcode;       //varchar(45)
 	public $migrationDate; //int(11)
@@ -42,17 +42,16 @@ class UserMigration extends DB_DataObject
 
 	public function migrateUser($barcode){
 		$this->logger = new Logger(__CLASS__);
-		$account    = new UserAccount();
-		$sierraUser = $account->findNewUser($barcode);
+		$account      = new UserAccount();
+		$sierraUser   = $account->findNewUser($barcode);
 		if ($sierraUser){
-			$migration                = new UserMigration();
-			$migration->barcode       = $barcode;
-
+			$migration          = new UserMigration();
+			$migration->barcode = $barcode;
 
 
 			if ($migration->find() == 0 || $migration->find() === false){
 				$migration->mlnId         = $sierraUser->ilsUserId;
-				$migration->userId       = $sierraUser->id;
+				$migration->userId        = $sierraUser->id;
 				$migration->migrationDate = time();
 				$migration->insert();
 				return $sierraUser->ilsUserId;
@@ -66,28 +65,26 @@ class UserMigration extends DB_DataObject
 	/**
 	 *
 	 * @param $migrationFile
-	 * @return void
+	 * @return int|false
 	 */
 	public function migrateUsers($migrationFile){
 		$this->logger = new Logger(__CLASS__);
 		$migrationCSV = fopen($migrationFile, 'r');
-		$barcodes = explode(PHP_EOL, fread($migrationCSV, filesize($migrationFile)));
-			$n = 0;
-			foreach ($barcodes as $barcode){
-				if ($this->migrateUser(trim($barcode)))
-				{
-					$n = $n + 1;
-				}
+		$barcodes     = explode(PHP_EOL, fread($migrationCSV, filesize($migrationFile)));
+		$n            = 0;
+		foreach ($barcodes as $barcode){
+			if ($this->migrateUser(trim($barcode))){
+				$n = $n + 1;
 			}
-			fclose($migrationCSV);
-			if ($n > 0)
-			{
+		}
+		fclose($migrationCSV);
+		if ($n > 0){
 
-				return $n;
-			}else{
-				$this->logger->warn('No users were migrated');
-				return false;
-			}
+			return $n;
+		}else{
+			$this->logger->warn('No users were migrated');
+			return false;
+		}
 	}
 
 	function getAllowableRoles(){
