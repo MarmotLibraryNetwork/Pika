@@ -10,6 +10,15 @@
 		{else}
 			{if $submit}
 				<div class="alert alert-success">{$migratedUsers} users were migrated successfully</div>
+				{if $errorBarcodes > 0}
+					<div class="alert alert-warning">The following barcodes were not successful:
+						<ul>
+							{foreach from=$errorBarcodes item=errorBarcode}
+								<li>{$errorBarcode}</li>
+							{/foreach}
+						</ul>
+					</div>
+				{/if}
 			{/if}
 		{/if}
 

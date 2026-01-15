@@ -56,9 +56,13 @@ class UserMigration extends DB_DataObject {
 				$migration->insert();
 				return $sierraUser->ilsUserId;
 			}else{
+				echo "Error on barcode " . $barcode . ": User was previously migrated <br>";
 				$this->logger->notice('barcode ' . $barcode . ' was previously migrated');
 				return false;
 			}
+		}else{
+			echo "Error on barcode " . $barcode . ": User was not found in ILS<br>";
+			return false;
 		}
 	}
 
@@ -72,15 +76,19 @@ class UserMigration extends DB_DataObject {
 		$migrationCSV = fopen($migrationFile, 'r');
 		$barcodes     = explode(PHP_EOL, fread($migrationCSV, filesize($migrationFile)));
 		$n            = 0;
+		$migrationAccounts  = array();
 		foreach ($barcodes as $barcode){
 			if ($this->migrateUser(trim($barcode))){
-				$n = $n + 1;
+				$n = $n+1;
+				$migrationAccounts['success'][] = $barcode;
+			}else{
+				$migrationAccounts['error'][] = $barcode;
 			}
 		}
 		fclose($migrationCSV);
 		if ($n > 0){
-
-			return $n;
+			$migrationAccounts['migratedUsers'] = $n;
+			return $migrationAccounts;
 		}else{
 			$this->logger->warn('No users were migrated');
 			return false;

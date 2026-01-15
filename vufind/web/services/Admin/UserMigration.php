@@ -37,6 +37,7 @@ class Admin_UserMigration extends Admin_Admin
 	 * @return string|false error message on false; number of successfully imported users on success
 	 */
 	function processFile(){
+		set_time_limit(600);
 			global $interface;
 			$interface->setTemplate('../Admin/migrateUsers.tpl');
 			$instructions = $this->getInstructions()?:"";
@@ -45,7 +46,8 @@ class Admin_UserMigration extends Admin_Admin
 			$migration = new UserMigration();
 			if (!empty($processed = $migration->migrateUsers($file))){
 				$interface->assign('submit', true);
-				$interface->assign('migratedUsers', $processed);
+				$interface->assign('migratedUsers', $processed['migratedUsers']);
+				$interface->assign('errorBarcodes', $processed['error']);
 				return $processed;
 			}else{
 				$interface->assign('error','No Users were migrated');
