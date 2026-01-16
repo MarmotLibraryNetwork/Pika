@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Listen for Xdebug",
+      "type": "php",
+      "request": "launch",
+      "port": 9003,
+      "log": true,
+      "xdebugSettings": {
+        "max_children": 128,
+        "max_data": 1024
+      },
+      "pathMappings": {
+        "/usr/local/pika": "${workspaceFolder}",
+        "/usr/local/pika/vufind/web": "${workspaceFolder}/vufind/web"
+      }
+    },
+    {
+      "name": "Debug current file (CLI)",
+      "type": "php",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "runtimeArgs": [
+        "-d",
+        "xdebug.mode=debug",
+        "-d",
+        "xdebug.start_with_request=yes"
+      ],
+      "env": {
+        "XDEBUG_CONFIG": "client_host=127.0.0.1 client_port=9003 idekey=VSCODE"
+      }
+    }
+  ]
+}
