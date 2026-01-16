@@ -10,7 +10,8 @@ var viewer = Mirador.viewer({
         "allowMaximize": false,
         "allowFullscreen": true,
         "defaultSideBarPanel": 'info',
-        "sideBarOpenByDefault": true,
+        "sideBarOpenByDefault": false,
+        "hideWindowTitle": true,
         "views": [
             { "key": 'single' },
             { "key": 'gallery' },
@@ -23,12 +24,19 @@ var viewer = Mirador.viewer({
     "workspaceControlPanel": {
         "enabled": false, // Remove extra workspace settings
     },
+    thumbnailNavigation: {
+        defaultPosition: 'far-bottom', // Which position for the thumbnail navigation to be be displayed. Other possible values are "far-bottom" or "far-right"
+        displaySettings: false, // Display the settings for this in WindowTopMenu
+        height: 80, // height of entire ThumbnailNavigation area when position is "far-bottom"
+        showThumbnailLabels: true, // Configure if thumbnail labels should be displayed
+        width: 60, // width of one canvas (doubled for book view) in ThumbnailNavigation area when position is "far-right"
+    },
     "theme": {
         "typography": {
             body1: {
-                fontSize: "1.4rem",
+                fontSize: "1.215rem",
                 letterSpacing: "0em",
-                lineHeight: "1.6em",
+                lineHeight: "1.4em",
             },
             body2: {
                 fontSize: "1rem",
@@ -67,8 +75,8 @@ var viewer = Mirador.viewer({
                 lineHeight: "1.6rem",
             },
             overline: {
-                fontSize: "0.678rem",
-                fontWeight: 500,
+                fontSize: "0.9rem",
+                fontWeight: 800,
                 letterSpacing: "0.166em",
                 lineHeight: "2em",
                 textTransform: "uppercase",
