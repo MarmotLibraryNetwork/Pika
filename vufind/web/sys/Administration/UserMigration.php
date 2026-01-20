@@ -25,9 +25,9 @@ use UserAccount;
 class UserMigration extends DB_DataObject {
 	public $__table = 'user_migration';    // table name
 	public $id;                            //int(11)
-	public $mlnId;                         //int(11)
-	public $userId;
-	public $barcode;       //varchar(45)
+	public $mlnId;   // ILS ID               //int(11)
+	public $userId;  // Pika UserId
+	public $barcode; //varchar(45)
 	public $migrationDate; //int(11)
 
 	protected $logger;

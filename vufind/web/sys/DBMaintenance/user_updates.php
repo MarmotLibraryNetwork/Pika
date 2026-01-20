@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +54,7 @@ function getUserUpdates(): array{
 			'description'   =>'Add a table to link previous user system accounts to mln accounts',
 			'continueOnError' => false,
 			'sql'             => [
-				'CREATE TABLE `user_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `mlnId` INT(11) NOT NULL, `userId` INT(11) NOT NULL,  `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY (`userId`))'
+				'CREATE TABLE `user_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `mlnId` INT(11) NOT NULL COMMENT "ils id", `userId` INT(11) NOT NULL,  `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY (`userId`))'
 			]
 		]
 	];
