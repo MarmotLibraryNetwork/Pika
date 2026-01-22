@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,6 +21,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 
 class Suggestions {
+	private Const maxNotInterested = 1000;
 	/*
 	 * Get suggestions for titles that a user might like based on their rating history
 	 * and related titles from Novelist.
@@ -42,6 +42,9 @@ class Suggestions {
 		//Load all titles the user is not interested in
 		$notInterested         = new NotInterested();
 		$notInterested->userId = $userId;
+		// TODO Limit not interested Ids when we resort to solr getMoreLikeThese() recommendations
+		//$notInterested->orderBy('dateMarked DESC');
+		//$notInterested->limit(self::maxNotInterested);
 		$notInterestedTitles   = $notInterested->fetchAll('groupedWorkPermanentId');
 		$timer->logTime('Loaded titles the patron is not interested in');
 
