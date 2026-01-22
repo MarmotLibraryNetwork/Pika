@@ -2394,6 +2394,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	function getMoreLikeThese($ids, $notInterestedIds){
 		global $configArray;
 		// Query String Parameters
+		//TODO: set q.op=OR so that separator string can be single space character ' '
 		$idString = implode(' OR ', $ids);
 		$options  = [
 			'q'                    => "id:($idString)",
@@ -2403,6 +2404,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		];
 
 		if (!empty($notInterestedIds)){
+			//TODO: test if q.op works on filter query parameter also
 			$notInterestedString = implode(' OR ', $notInterestedIds);
 			$options['fq'][]     = "-id:($notInterestedString)";
 		}
