@@ -182,7 +182,6 @@
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="/Admin/Administrators">Administrators</a></div>
 							{/if}
 							{if in_array('opacAdmin', $userRoles)}
-								<div class="adminMenuLink {if $action == "UserMigration"} active{/if}"><a href="/Admin/UserMigration">User Migration</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="/Admin/PHPInfo">PHP Information</a></div>
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="/Admin/MemCacheInfo">MemCache Information</a></div>
