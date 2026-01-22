@@ -39,7 +39,7 @@ use Pika\Logger;
 require_once ROOT_DIR . '/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php';
 require_once ROOT_DIR . '/sys/Pika/PatronDrivers/MyBooking.php';
 
-class Marmot extends Sierra {
+class MLN1 extends Sierra {
 
 	use \PatronBookingsOperations;
 

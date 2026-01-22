@@ -28,7 +28,7 @@ namespace Pika\PatronDrivers;
 
 use Location;
 
-class Flatirons extends Sierra {
+class MLN2 extends Sierra {
 	public function getSelfRegistrationFields(){
 		global $library;
 
