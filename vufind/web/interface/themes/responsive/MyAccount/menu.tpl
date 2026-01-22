@@ -182,7 +182,6 @@
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="/Admin/Administrators">Administrators</a></div>
 							{/if}
 							{if in_array('opacAdmin', $userRoles)}
-								<div class="adminMenuLink {if $action == "UserMigration"} active{/if}"><a href="/Admin/UserMigration">User Migration</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="/Admin/PHPInfo">PHP Information</a></div>
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="/Admin/MemCacheInfo">MemCache Information</a></div>
@@ -192,6 +191,27 @@
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
 								<div class="adminMenuLink{if $action == "DBMaintenanceOverDrive"} active{/if}"><a href="/Admin/DBMaintenanceOverDrive">DB Maintenance - OverDrive</a></div>
 							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+				{if in_array($action, array('UserMigration', 'ListMigration'))}
+					{assign var="curSection" value = true}
+				{else}
+					{assign var="curSection" value = false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#migrationMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">System Migration</div>
+						</div>
+					</a>
+					<div id="migrationMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+								<div class="adminMenuLink {if $action == "UserMigration"} active{/if}"><a href="/Admin/UserMigration">User Migration</a></div>
+								<div class="adminMenuLink {if $action == "ListMigration"} active{/if}"><a href="/Admin/ListMigration">List Migration</a></div>
 						</div>
 					</div>
 				</div>
