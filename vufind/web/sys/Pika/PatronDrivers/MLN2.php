@@ -33,22 +33,8 @@ class MLN2 extends Sierra {
 		global $library;
 
 		$libSubDomain = strtolower($library->subdomain);
-		// get library code
-		$location            = new Location();
-		$location->libraryId = $library->libraryId;
-		$location->find(true);
-		if (!$location){
-			return ['success' => false, 'barcode' => ''];
-		}
-		$homeLibraryCode = $location->code;
 
 		$fields   = [];
-		// Preset the self reg user's homelibarycode to the first location for the library
-		$fields[] = [
-			'property' => 'homelibrarycode',
-			'type'     => 'hidden',
-			'default'  => $homeLibraryCode
-		];
 		$fields[] = [
 			'property'     => 'firstname',
 			'type'         => 'text',
@@ -76,8 +62,45 @@ class MLN2 extends Sierra {
 			'required'     => true,
 			'autocomplete' => 'family-name',
 		];
+
+		if ($libSubDomain == 'clearview'){
+			// For Clearview, provide home pickup options to select from
+
+			// get the valid home/pickup locations
+			$homeLocations = $this->getSelfRegHomeLocations($library);
+
+			$fields[] = [
+				'property'    => 'homelibrarycode',
+				'type'        => 'enum',
+				'label'       => 'Home Library/Preferred pickup location',
+				'description' => 'Your home library and preferred pickup location.',
+				'values'      => $homeLocations,
+				'required'    => true
+			];
+
+		} else {
+			// For other libraries, set home library as first location (for the library)
+			// as a hidden form field
+
+			// get library code
+			$location            = new Location();
+			$location->libraryId = $library->libraryId;
+			$location->find(true);
+			if (!$location){
+				return ['success' => false, 'barcode' => ''];
+			}
+			$homeLibraryCode = $location->code;
+
+			// Preset the self reg user's homelibarycode to the first location for the library
+			$fields[] = [
+				'property' => 'homelibrarycode',
+				'type'     => 'hidden',
+				'default'  => $homeLibraryCode
+			];
+		}
+
 		// if library would like a birthdate
-		if ($library && $library->promptForBirthDateInSelfReg){
+		if (isset($library) && $library->promptForBirthDateInSelfReg){
 			$fields[] = [
 				'property'     => 'birthdate',
 				'type'         => 'date',
