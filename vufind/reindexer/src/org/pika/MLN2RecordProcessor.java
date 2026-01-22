@@ -30,11 +30,11 @@ import java.util.*;
  * Date: 12/29/2014
  * Time: 10:25 AM
  */
-class FlatironsRecordProcessor extends SierraRecordProcessor {
+class MLN2RecordProcessor extends SierraRecordProcessor {
 	char locationsSubfield                 = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
 	char sierraFixedFieldLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
 
-	FlatironsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+	MLN2RecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 

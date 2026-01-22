@@ -247,11 +247,11 @@ public class GroupedWorkIndexer {
 									break;
 								case "MLN1":
 								case "Marmot":
-									indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									indexingRecordProcessors.put(sourceName, new MLN1RecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "MLN2":
 								case "Flatirons":
-									indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									indexingRecordProcessors.put(sourceName, new MLN2RecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
