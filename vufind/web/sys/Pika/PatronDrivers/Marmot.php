@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -53,19 +52,10 @@ class Marmot extends Sierra {
 	 * @return array
 	 */
 	protected function getSelfRegHomeLocations(Library $library): array{
-		$homeLocations = [];
-		$l                        = new Location();
-		$l->libraryId             = $library->libraryId;
-		$l->validHoldPickupBranch = '1';
-		$l->orderBy('displayName');
-		if ($l->find()){
-			$homeLocations = $l->fetchAll('code', 'displayName');
-			if ($library->subdomain == 'evld'){
-				// For Eagle Valley, remove lib-lockers and bookmobile
-				$homeLocations = array_filter($homeLocations, function($code){
-					return !in_array($code, ['evall', 'evgll', 'evb']);
-				}, ARRAY_FILTER_USE_KEY);
-			}
+		$homeLocations = parent::getSelfRegHomeLocations($library);
+		if ($library->subdomain == 'evld' && !empty($homeLocations)){
+			// For Eagle Valley, remove lib-lockers and bookmobile
+			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['evall', 'evgll', 'evb']), ARRAY_FILTER_USE_KEY);
 		}
 		return $homeLocations;
 	}
@@ -126,7 +116,7 @@ class Marmot extends Sierra {
 	}
 
 	/**
-	 * @param bool $extraSelfRegParams
+	 * @param array|false $extraSelfRegParams
 	 * @return array
 	 * @throws \ErrorException
 	 */

@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,8 +28,7 @@ namespace Pika\PatronDrivers;
 
 use Location;
 
-class Flatirons extends Sierra
-{
+class Flatirons extends Sierra {
 	public function getSelfRegistrationFields(){
 		global $library;
 
@@ -226,6 +225,19 @@ class Flatirons extends Sierra
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * @param \Library $library
+	 * @return array
+	 */
+	protected function getSelfRegHomeLocations(\Library $library): array{
+		$homeLocations = parent::getSelfRegHomeLocations($library);
+		if ($library->subdomain == 'clearview' && !empty($homeLocations)){
+			// For Clearview, remove admin and bookmobile
+			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['ca', 'cb',]), ARRAY_FILTER_USE_KEY);
+		}
+		return $homeLocations;
 	}
 
 	function selfRegister($extraSelfRegParams = false){
