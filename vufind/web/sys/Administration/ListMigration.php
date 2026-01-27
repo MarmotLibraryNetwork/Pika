@@ -1,4 +1,20 @@
 <?php
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2026  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 namespace Administration;
 
@@ -28,24 +44,23 @@ class ListMigration extends \DB_DataObject
 	}
 
 	public function migrateList($barcode, $previousListId, $previousUserId, $title, $description=null, $public = false, $dateUpdated=null, $deleted = false, $created=null, $defaultSort=null){
-		$this->logger = new Logger(__CLASS__);
-		$user      = new User();
+		$this->logger  = new Logger(__CLASS__);
+		$user          = new User();
 		$user->barcode = $barcode;
-		$user->find(true);
+		$user->find(true); // you can use find in your if statement, it will return false on error, 0 on no results; or number of rows for the result set
 		if (!empty($user->id)){
 			$migration                 = new ListMigration();
 			$migration->previousListId = $previousListId;
-			$migration->find();
-			if(count($migration) == 0 || $migration === false){
+			if(!$migration->find()){
 				$userList = new UserList();
 				$userList->user_id = $user->id;
 				$userList->title = $title;
 				$userList->description = $description;
-				$userList->public = $public;
-				$userList->date_updated = $dateUpdated;
-				$userList->deleted = $deleted;
-				$userList->created = $created;
-				$userList->default_sort = $defaultSort;
+				$userList->public      = $public;
+				$userList->dateUpdated = $dateUpdated;
+				$userList->deleted     = $deleted;
+				$userList->created     = $created;
+				$userList->defaultSort = $defaultSort;
 				if($insertedList = $userList->insert()){
 					$migration->listId = $insertedList;
 					$migration->barcode = $barcode;
