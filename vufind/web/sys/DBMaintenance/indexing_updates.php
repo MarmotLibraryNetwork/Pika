@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -81,6 +81,15 @@ function getIndexingUpdates(): array{
 			]
 		],
 
+		'2026.01.0_polaris-item-to-bib-table_updates' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Add item barcode to item-to-bib-Id table',
+			'description'     => 'Include item barcode in table to make Clearview migration easier',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `ils_itemid_to_ilsid` ADD COLUMN `itemBarcode` VARCHAR(32) NULL DEFAULT NULL AFTER `itemId`;'
+			]
+		],
 		'2024.03.0_ils_hold_sumary_update_time' => [
 			'release'         => '2024.03.0',
 			'title'           => 'Add update time to hold summary table.',

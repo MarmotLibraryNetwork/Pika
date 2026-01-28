@@ -42,6 +42,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 	protected char isItemHoldableSubfield = '5';
 
 	private PreparedStatement itemToRecordStatement;
+	private PreparedStatement itemAndBarcodeToRecordStatement;
 	private PreparedStatement clearItemIdsForBibStatement;
 	private PreparedStatement updateExtractInfoStatement;
 	private int indexingProfileId;
@@ -80,10 +81,11 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			logger.error("Error loading indexing profile information from database for PolarisRecordProcessor", e);
 		}
 		try {
-			updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)");
+			updateExtractInfoStatement      = pikaConn.prepareStatement("INSERT INTO `ils_extract_info` (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)");
 			// unique key is indexingProfileId and ilsId combined
-			itemToRecordStatement       = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, ilsId) VALUES (?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
-			clearItemIdsForBibStatement = pikaConn.prepareStatement("DELETE FROM `ils_itemid_to_ilsid` WHERE `ilsId` = ?");
+			itemToRecordStatement           = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, ilsId) VALUES (?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+			itemAndBarcodeToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, itemBarcode, ilsId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+			clearItemIdsForBibStatement     = pikaConn.prepareStatement("DELETE FROM `ils_itemid_to_ilsid` WHERE `ilsId` = ?");
 		} catch (SQLException e) {
 			logger.error("Error preparing statement for Polaris item to record Ids");
 		}
@@ -159,7 +161,8 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 		if (!itemRecords.isEmpty()) {
 			removeItemIdToRecordIdEntries(identifier);
 			for (DataField itemField : itemRecords) {
-				setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), identifier);
+				//setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), identifier);
+				setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), getItemSubfieldData(barcodeSubfield, itemField), identifier);
 				if (!isItemSuppressed(itemField, identifier)) {
 					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
@@ -178,11 +181,23 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 
 	private void setItemIdToRecordIdEntry(String itemId, RecordIdentifier identifier) {
 		try {
-			// TODO: Ignore for suppressed items?
-			// TODO: Should use a deleted date?  Delete with database clean-up at 6 months
 			itemToRecordStatement.setString(1, itemId);
 			itemToRecordStatement.setString(2, identifier.getIdentifier());
 			int result = itemToRecordStatement.executeUpdate();
+		} catch (SQLException e) {
+			logger.error("Error setting item to record entry");
+		}
+	}
+
+	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
+		try {
+			itemAndBarcodeToRecordStatement.setString(1, itemId);
+			itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
+			itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
+			int result = itemToRecordStatement.executeUpdate();
+			if (result != 1) {
+				logger.error("Failed to set item to record entry");
+			}
 		} catch (SQLException e) {
 			logger.error("Error setting item to record entry");
 		}
