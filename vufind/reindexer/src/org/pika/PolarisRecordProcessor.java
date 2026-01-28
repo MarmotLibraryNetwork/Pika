@@ -196,7 +196,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 			itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
 			int result = itemToRecordStatement.executeUpdate();
 			if (result != 1) {
-				logger.error("Failed to set item to record entry");
+				logger.error("Failed to set item to record entry with reported result {}", result);
 			}
 		} catch (SQLException e) {
 			logger.error("Error setting item to record entry");
