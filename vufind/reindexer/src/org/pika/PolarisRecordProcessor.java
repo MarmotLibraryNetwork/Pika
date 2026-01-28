@@ -199,7 +199,7 @@ abstract public class PolarisRecordProcessor extends IlsRecordProcessor {
 				logger.error("Failed to set item to record entry with reported result {}", result);
 			}
 		} catch (SQLException e) {
-			logger.error("Error setting item to record entry");
+			logger.error("Error setting item to record entry", e);
 		}
 	}
 
