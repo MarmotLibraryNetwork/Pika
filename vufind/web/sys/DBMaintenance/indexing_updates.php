@@ -96,7 +96,7 @@ function getIndexingUpdates(): array{
 			'description'     => 'So we can store Sierra Ids which include characters',
 			'continueOnError' => true,
 			'sql'             => [
-				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `itemBarcode` `itemBarcode` VARCHAR(32) NULL DEFAULT NULL;',
+				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `itemId` `itemId` VARCHAR(32) NULL DEFAULT NULL;',
 				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(32) NULL DEFAULT NULL;',
 			]
 		],
