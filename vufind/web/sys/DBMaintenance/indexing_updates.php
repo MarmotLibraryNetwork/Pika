@@ -90,6 +90,16 @@ function getIndexingUpdates(): array{
 				'ALTER TABLE `ils_itemid_to_ilsid` ADD COLUMN `itemBarcode` VARCHAR(32) NULL DEFAULT NULL AFTER `itemId`;'
 			]
 		],
+		'2026.01.0_mln2-item-to-bib-table_updates' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Convert item and ils id columns to varchar',
+			'description'     => 'So we can store Sierra Ids which include characters',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `itemBarcode` `itemBarcode` VARCHAR(32) NULL DEFAULT NULL;',
+				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(32) NULL DEFAULT NULL;',
+			]
+		],
 		'2024.03.0_ils_hold_sumary_update_time' => [
 			'release'         => '2024.03.0',
 			'title'           => 'Add update time to hold summary table.',
