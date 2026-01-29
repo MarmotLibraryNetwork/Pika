@@ -65,12 +65,17 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 
 	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
 		try {
-			itemAndBarcodeToRecordStatement.setString(1, itemId);
-			itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
-			itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
-			int result = itemAndBarcodeToRecordStatement.executeUpdate();
-			if (result != 1) {
-				logger.error("Failed to set item to record entry with reported result {}", result);
+			if (itemId != null && itemBarcode != null)  {
+				itemAndBarcodeToRecordStatement.setString(1, itemId);
+				itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
+				itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
+				int result = itemAndBarcodeToRecordStatement.executeUpdate();
+				if (result == 0) {
+					logger.error("Failed to set item to record entry with reported result {}", result);
+					// I believe the insert reports 2 when it's doing a replacement
+				}
+			} else {
+				logger.info("Item tag on bib {} without itemId {} or item barcode {}", identifier, itemId, itemBarcode);
 			}
 		} catch (SQLException e) {
 			logger.error("Error setting item to record entry item id {} item barcode {} record id {}, error {}", itemId, itemBarcode, identifier, e.getMessage());
