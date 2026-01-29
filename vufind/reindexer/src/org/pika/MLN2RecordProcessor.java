@@ -73,7 +73,7 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 				logger.error("Failed to set item to record entry with reported result {}", result);
 			}
 		} catch (SQLException e) {
-			logger.error("Error setting item to record entry", e);
+			logger.error("Error setting item to record entry item id {} item barcode {} record id {}", itemId, itemBarcode, identifier, e);
 		}
 	}
 
