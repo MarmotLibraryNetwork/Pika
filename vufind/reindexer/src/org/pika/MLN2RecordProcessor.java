@@ -19,7 +19,9 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -36,6 +38,11 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 
 	MLN2RecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		try {
+			itemAndBarcodeToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, itemBarcode, ilsId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+		} catch (SQLException e) {
+			logger.error("Error preparing statement for MLN2 item to record Ids");
+		}
 	}
 
 	@Override
@@ -46,10 +53,27 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 			//The record is print
 			List<DataField>  itemRecords      = MarcUtil.getDataFields(record, itemTag);
 			for (DataField itemField : itemRecords) {
+				setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), getItemSubfieldData(barcodeSubfield, itemField), identifier);
+				// Add item ids & barcodes to ils_itemid_to_ilsid table to assist in Clearview Migration
 				if (!isItemSuppressed(itemField, identifier)) {
 					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
+		}
+	}
+	private PreparedStatement itemAndBarcodeToRecordStatement;
+
+	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
+		try {
+			itemAndBarcodeToRecordStatement.setString(1, itemId);
+			itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
+			itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
+			int result = itemAndBarcodeToRecordStatement.executeUpdate();
+			if (result != 1) {
+				logger.error("Failed to set item to record entry with reported result {}", result);
+			}
+		} catch (SQLException e) {
+			logger.error("Error setting item to record entry", e);
 		}
 	}
 
