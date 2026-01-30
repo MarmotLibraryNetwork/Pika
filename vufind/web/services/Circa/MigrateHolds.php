@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,11 +29,44 @@
 
 class Circa_MigrateHolds extends Action {
 
+	//TODO: Migrate class to the place CJ created her Migration scripts
+
+
 	function launch(){
 		set_time_limit(600);
 		// Clearview Migration
-		$this->createNewUsersFromBarCodeList();
-		$this->processClearviewHolds();
+
+		//Need to comment or remove comments from methods you need to run.
+		// This process is meant to be run locally (on the development environment)
+		// so that needed changes can be made conveniently.
+
+		// Set pickup code; find item barcodes to match in Sierra with
+		//$this->preprocessClearviewHolds();
+		// run this step on the clearview instance
+
+		// Find Sierra BibIds based on item barcodes
+		$holdsArray = $this->findNewMLN2SierraBibIds();
+		// [$patronBarcode, $pickupCode, $itemBarcode, &$bibId, $holdDate, &$sierraItemId]
+
+		$this->writeCSVfile($holdsArray, 'clearview_holds_phase_three.csv');
+		// run this step on the mln2 instance
+		// adding the sierra item id, in case item hold is needed
+
+		// Sort Holds by creation date
+		$holdsArray = $this->sortClearviewHoldsByCreationDate($holdsArray);
+		// [$patronBarcode, $pickupCode, $itemBarcode, &$bibId, $holdDate, &$sierraItemId]
+		$this->writeCSVfile($holdsArray, 'clearview_holds_phase_four.csv');
+
+		$barcodes = array_column($holdsArray, 0);
+		$this->createNewUsersFromBarCodeList($barcodes);
+		// run this step on the mln2 instance
+
+		$holdsArrayFinal = $this->placeHoldsInSierra($holdsArray);
+		$this->writeCSVfile($holdsArrayFinal, 'clearview_holds_final.csv');
+		// run this step on the mln2 instance
+
+
+
 
 		// Delta Migration
 //		$this->createNewUsersFromBarCodeList();
@@ -46,23 +78,23 @@ class Circa_MigrateHolds extends Action {
 
 	}
 
-	function createNewUsersFromBarCodeList(){
-		$barCodes = []; // Manually input barcodes here
+	function createNewUsersFromBarCodeList($barcodes = null){
+		$barcodes ??= []; // Manually input barcodes here
 
 		echo '<pre>';
 		/** @var Pika\PatronDrivers\Sierra $sierra */
 		require_once ROOT_DIR . '/CatalogConnection.php';
 		$sierra = CatalogFactory::getCatalogConnectionInstance();
 
-		foreach (array_unique($barCodes) as $barCode){
+		foreach (array_unique($barcodes) as $barcode){
 			$user          = new User();
-			$user->barcode = $barCode;
+			$user->barcode = $barcode;
 			if (!$user->find()){
-				$user = $sierra->findNewUser($barCode);
+				$user = $sierra->findNewUser($barcode);
 				if (!is_a($user, 'User')){
-					echo "Failed to create user for barcode $barCode\n";
+					echo "Failed to create user for barcode $barcode\n";
 				}else{
-					echo "Barcode: $barCode, Pika User id: {$user->id}\n";
+					echo "Barcode: $barcode, Pika User id: {$user->id}\n";
 					//TODO: write to a csv
 				}
 			}
@@ -72,8 +104,14 @@ class Circa_MigrateHolds extends Action {
 
 	}
 
-	function getBibIdFromItemBarcode(){
-		$itemBarcodes = [];
+//	const string itemRecordtag = '989';
+	const string itemRecordTag = '949';
+	const string itemBarcodeSubfield = 'p';
+	function getBibIdFromItemBarcode(array $itemBarcodes = null){
+		// Use the array below if the passed in parameter for $itemBarcodes is null
+		$itemBarcodes ??= [
+
+		];
 
 		/** @var SearchObject_Solr $searchObject */
 //		global $searchObject;
@@ -98,10 +136,10 @@ class Circa_MigrateHolds extends Action {
 									$marcRecord   = $recordDriver->getMarcRecord();
 
 									if ($marcRecord != false){
-										$itemTags = $marcRecord->getFields('989');
+										$itemTags = $marcRecord->getFields(self::itemRecordTag);
 										foreach ($itemTags as $itemTag){
-											if (!empty($itemTag->getSubfield('b'))){
-												$itemTagBarcode = trim($itemTag->getSubfield('b')->getData());
+											if (!empty($itemTag->getSubfield(self::itemBarcodeSubfield))){
+												$itemTagBarcode = trim($itemTag->getSubfield(self::itemBarcodeSubfield)->getData());
 												if ($itemBarcode == $itemTagBarcode){
 													$matchRecordFound = true;
 													echo "$itemBarcode, " . str_replace('ils:', '', $relatedRecord['id']);
@@ -134,14 +172,14 @@ class Circa_MigrateHolds extends Action {
 	}
 
 	function getBibIdFromISBN(){
-		$ISBNs = array(
-		);
+		$ISBNs = [
+		];
 		/** @var SearchObject_Solr $searchObject */
 //		global $searchObject;
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		foreach ($ISBNs as $ISBN){
-			$solrDoc = $searchObject->getRecordByIsbn(array($ISBN));
+			$solrDoc = $searchObject->getRecordByIsbn([$ISBN]);
 			if (!empty($solrDoc)){
 				$groupedWorkDriver = RecordDriverFactory::initRecordDriver($solrDoc);
 				if (!empty($groupedWorkDriver) && $groupedWorkDriver->isValid()){
@@ -327,130 +365,91 @@ class Circa_MigrateHolds extends Action {
 		echo '</pre>';
 	}
 
-	function processClearviewHolds(){
-		$userIdAndBarcode = [];
-		$userId           = $itemBarcode = $holdDate = $pickupCode = $holdExpires = null;
-		// Process All holds file
-		if (($handle = fopen("all_holds.flat", "r")) !== false){
-			echo '<pre>';
-			while (($data = fgetcsv($handle, 0, "|")) !== false){
-				if (strpos($data[0], 'PatronId')){  // patron barcode would be better.
-					$userId = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'ITEM_ID')){
-					$itemBarcode = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_DATE')){
-					$holdDate = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
-					$pickupCode = substr($data[1], 1);
-				}
-//				if (strpos($data[0], 'HOLD_EXPIRES_DATE')){
-//					$holdExpires = substr($data[1], 1);
-//				}
-				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode) /*&& !empty($holdExpires)*/){
-					$userIdAndBarcode[] = [$userId, $itemBarcode, $holdDate, $pickupCode];
-//					echo $userId . ", $itemBarcode\n";
-//					echo $userId . ", $itemBarcode, Expires: $holdExpires". ( $holdExpires != 'NEVER' && (int) $holdExpires < 20201201 ? ' expired' : '') .  "\n";
-					$userId = $holdDate = $pickupCode = $itemBarcode = null;
-					continue;
-				}
-			}
-		}
-		fclose($handle);
+	const string HOLDS_FILE_NAME = 'clearview_holds.csv';
+	// Save file is base web directory pika/vufind/web/
 
-		// Remove inactive entries
-		$userId = $holdDate = $pickupCode = $itemBarcode = null;
-		if (($handle = fopen("holdinactiveav.flat", "r")) !== false){
-			echo '<pre>';
-			while (($data = fgetcsv($handle, 0, "|")) !== false){
-				if (strpos($data[0], 'USER_ID')){
-					$userId = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'ITEM_ID')){
-					$itemBarcode = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_DATE')){
-					$holdDate = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
-					$pickupCode = substr($data[1], 1);
-				}
-				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode)){
-					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
-					$userId = $holdDate = $pickupCode = $itemBarcode = null;
-					continue;
-				}
-			}
-		}
-		fclose($handle);
+	function preprocessClearviewHolds(){
+		echo '<pre>';
+		$holdArray = $this->processClearviewHoldsFile();
+		// NEXT set pickup branch code
+		$holdArray = $this->setPickupBranchCode($holdArray);
+		// Save phase one
+		$this->writeCSVfile($holdArray, 'clearview_holds_phase_one.csv');
+		echo "\n\n";
+		// Set item barcodes for Polaris bib Ids
+		$holdArray = $this->findClearviewItemBarcodeForBibID($holdArray);
+		// Save as phase two
+		$this->writeCSVfile($holdArray, 'clearview_holds_phase_two.csv');
+		echo "\n\n";
+		//NEXT search Sierra bibId from item barcodes
 
-		// Remove inactive entries
-		$userId = $holdDate = $pickupCode = $itemBarcode = null;
-		if (($handle = fopen("holdinactivenotav.flat", "r")) !== false){
-			echo '<pre>';
-			while (($data = fgetcsv($handle, 0, "|")) !== false){
-				if (strpos($data[0], 'USER_ID')){
-					$userId = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'ITEM_ID')){
-					$itemBarcode = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_DATE')){
-					$holdDate = substr($data[1], 1);
-				}
-				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
-					$pickupCode = substr($data[1], 1);
-				}
-				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode) ){
-					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
-					$userId = $holdDate = $pickupCode = $itemBarcode = null;
-					continue;
-				}
-			}
-		}
-		fclose($handle);
+		// Save as phase 3
 
-		$BibIdMatches = [];
-		if (($handle = fopen("temp-delta-hold-user-barcode-item-barcode-item-barcode-again-bidId-Match.csv", "r")) !== false){
-			echo '<pre>';
-			while (($data = fgetcsv($handle)) !== false){
-				$BibIdMatches[] = $data;
-			}
-		}
-		fclose($handle);
-
-		$pickupLocations = [
-			'CE' => 'dc',
-			'CR' => 'dr',
-			'DE' => 'dd',
-			'HO' => 'dh',
-			'PA' => 'dp',
-			'TS' => 'dh',
-		];
-
-//		$sortedArray = $userIdAndBarcode;
-//		usort($sortedArray, function ($a, $b){ return $a[2] <=> $b[2];});
-//		foreach ($sortedArray as $index => $anUserIdBarcode){
-		foreach ($userIdAndBarcode as $index => $anUserIdBarcode){
-			[$holdUser, $holdBarcode, $holdsHoldDate, $holdPickupCode] = $anUserIdBarcode;
-			foreach ($BibIdMatches as $data){
-				if ($holdUser == $data[0] && $holdBarcode == $data[1]){
-					echo "$holdUser, {$data[3]}, {$pickupLocations[$holdPickupCode]}\n";
-//					echo "$holdUser, {$data[3]}, $holdsHoldDate, {$pickupLocations[$holdPickupCode]}\n";
-					break;
-				}
-			}
-		}
-
-//		foreach ($userIdAndBarcode as $index => &$anUserIdBarcode){
-//			[$holdUser, $holdBarcode] = $anUserIdBarcode;
-//			echo "$holdUser, $holdBarcode\n";
-//		}
+		// Next input holds into Sierra
 
 		echo '</pre>';
+	}
 
+	private function writeCSVfile(array $CSVData, string $filename){
+		$handle = fopen($filename, 'w');
+		foreach ($CSVData as $row){
+			fputcsv($handle, $row);
+		}
+		fclose($handle);
+	}
+	private function processClearviewHoldsFile() : array{
+		$holdArray = [];
+		$patronBarcode         = $itemBarcode = $holdDate = $pickupCode = null;
+		// Process All holds file
+		if (($handle = fopen(self::HOLDS_FILE_NAME, 'r')) !== false){
+			$data                  = fgetcsv($handle, 0, ',');
+			$patronBarcodePosition = 0;
+			$itemBarcodePosition   = 0;
+			$bibIdPosition         = 0;
+			$holdDatePosition      = 0;
+			$pickupBranchPosition  = 0;
+			foreach ($data as $position => $columnTitle){
+				if (str_starts_with($columnTitle, 'Barcode')){
+					$patronBarcodePosition = $position;
+					continue;
+				}
+				if (str_starts_with($columnTitle, 'ItemBarcode')){
+					$itemBarcodePosition = $position;
+					continue;
+				}
+				if (str_starts_with($columnTitle, 'PickupBranchID')){
+					$pickupBranchPosition = $position;
+					continue;
+				}
+				if (str_starts_with($columnTitle, 'BibliographicRecordID')){
+					$bibIdPosition = $position;
+					continue;
+				}
+				// Capture hold creation data so we can order the holds by creation date
+				if (str_starts_with($columnTitle, 'CreationDate')){
+					$holdDatePosition = $position;
+					continue;
+				}
+			}
+
+			if ($patronBarcodePosition && $itemBarcodePosition && $pickupBranchPosition && $bibIdPosition && $holdDatePosition){
+				while (($data = fgetcsv($handle, 0, ',')) !== false){
+					$patronBarcode = $data[$patronBarcodePosition];
+					$itemBarcode   = str_replace('NULL', '', $data[$itemBarcodePosition]);
+					$bibId         = $data[$bibIdPosition];
+					$pickupCode    = $data[$pickupBranchPosition];
+					$holdDate      = $data[$holdDatePosition];
+					if ((!empty($itemBarcode) || !empty($bibId)) && !empty($patronBarcode) && !empty($holdDate) && !empty($pickupCode)){
+						$holdArray[] = [$patronBarcode, $pickupCode, $itemBarcode, $bibId, $holdDate];
+						echo "$patronBarcode, $pickupCode, $itemBarcode, $bibId, $holdDate\n";
+					} else {
+						echo "Row with insufficient data :" .implode(',', $data). "\n";
+					}
+				}
+			}
+		}
+		fclose($handle);
+		return $holdArray;
 	}
 
 	private function removeHold($userId, $itemBarcode, $holdDate, $pickupCode, &$userIdAndBarcode){
@@ -604,5 +603,168 @@ class Circa_MigrateHolds extends Action {
 			echo '</pre>';
 			fclose($handle);
 		}
+	}
+
+	/**
+	 * Use the modified ils_itemid_to_ilsid table with an item barcode column
+	 * to get an item barcode from the Clearview Polaris bibId.
+	 *
+	 * NOTE: NEED TO RUN WITH A CLEARVIEW INSTANCE with data populated in the
+	 * modified ils_itemid_to_ilsid table.
+	 *
+	 * Since the item barcode won't change in the migration into Sierra, we can use
+	 * item barcodes to find the new Sierra bib ID, which will then be used to place
+	 * bib-level barcodes.
+	 *
+	 * @param array $holdsArray
+	 * @return array
+	 */
+	private function findClearviewItemBarcodeForBibID(array $holdsArray):array{
+		$db = $this->getDBConnection();
+		foreach ($holdsArray as [$patronBarcode, $pickupCode, &$itemBarcode, $bibId, $holdDate]){
+			if (empty($itemBarcode)){
+				if (!empty($bibId)){
+					$result = $db->query("SELECT `itembarcode` FROM `ils_itemid_to_ilsid` WHERE `ilsId` = '$bibId' LIMIT 1");
+					[$foundItemBarcode] = $result->fetchRow();
+					if (!empty($foundItemBarcode) && ctype_digit($foundItemBarcode)){
+						echo " Found item barcode $foundItemBarcode for bib Id $bibId\n";
+						$itemBarcode = $foundItemBarcode;
+					}else{
+						echo 'ERROR getting item barcode for bib ID: ' . $bibId . ", found '$foundItemBarcode'\n";
+					}
+				}else{
+					echo "Hold entry without an item barcode or an Bib Id for patron $patronBarcode hold date $holdDate\n";
+				}
+			}
+		}
+		return $holdsArray;
+	}
+
+	const array PICKUP_BRANCH_CODES = [
+			'3' => 'cw', // windsor
+			'8' => 'cs', // severence
+			'4' => 'cb', // bookmobile
+			'5' => 'ca', //storage/admin
+		];
+
+	private function setPickupBranchCode(array $holdArray){
+		foreach ($holdArray as [$patronBarcode, &$pickupCode, $itemBarcode, $bibId, $holdDate]){
+			if (!empty($pickupCode)){
+				if (array_key_exists($pickupCode, self::PICKUP_BRANCH_CODES)){
+					$pickupCode = self::PICKUP_BRANCH_CODES[$pickupCode];
+				} else {
+					echo "Did not find pickup code $pickupCode in our code array\n";
+				}
+			} else {
+				echo "Missing pickup code $pickupCode in hold array with patron barcode $patronBarcode\n";
+			}
+		}
+		return $holdArray;
+		}
+
+	private function findNewMLN2SierraBibIds($filename = 'clearview_holds_phase_two.csv'){
+		echo "<pre>\n";
+		$holdsArray = $this->loadCSVintoHoldsArray($filename);
+
+
+		$db = $this->getDBConnection();
+		foreach ($holdsArray as [$patronBarcode, $pickupCode, $itemBarcode, &$bibId, $holdDate, &$sierraItemId]){
+			if (!empty($itemBarcode)){
+				$result = $db->query("SELECT `ilsId`, `itemId` FROM `ils_itemid_to_ilsid` WHERE `itemBarcode` = '$itemBarcode' LIMIT 1");
+				[$foundBibId, $foundItemId] = $result->fetchRow();
+				if (empty($foundBibId)){
+					echo "Did not find new Bib Id for item barcode $itemBarcode\n";
+					$bibId = null; // empty out the bib id to remove the old bib id
+				} else {
+					$bibId = $foundBibId;
+				}
+				if (!empty($foundItemId)){
+					$sierraItemId = $foundItemId;
+				}
+			} else {
+				echo "No item barcode to search for Bib id for patron $patronBarcode with hold date $holdDate\n";
+				$bibId = null; // empty out the old bib id
+			}
+		}
+		echo "</pre>\n";
+		return $holdsArray;
+	}
+
+	private function sortClearviewHoldsByCreationDate(array $holdsArray) :array{
+		foreach ($holdsArray as [$patronBarcode, $pickupCode, $itemBarcode, $bibId, &$holdDate, $sierraItemId]){
+			$holdDate = str_replace([
+				' 1:',
+				' 2:',
+				' 3:',
+				' 4:',
+				' 5:',
+				' 6:',
+				' 7:',
+				' 8:',
+				' 9:',
+			], [
+				' 01:',
+				' 02:',
+				' 03:',
+				' 04:',
+				' 05:',
+				' 06:',
+				' 07:',
+				' 08:',
+				' 09:',
+			],  $holdDate);
+			// Replace single-digit hours with double-digit version so the sorting function below works correctly
+		}
+
+			usort($holdsArray, fn($a, $b) => strcmp($a[4], $b[4]));
+		return $holdsArray;
+	}
+
+	private function getDBConnection(){
+		global /** @var Library $library */
+		$library;
+		// Use a previously set Dataobject to get to the database connection in order to run our queries
+		$db = $library->getDatabaseConnection();
+		return $db;
+	}
+
+	private function placeHoldsInSierra(array $holdsArray) : array{
+		foreach ($holdsArray as [$patronBarcode, $pickupCode, $itemBarcode, $bibId, $holdDate, $sierraItemId, &$success, &$message]){
+			if (empty($success)){ // skip any previously processed
+				$success         = 0;
+				$patron          = new User();
+				$patron->barcode = $patronBarcode;
+				if ($patron->find(true)){
+					if (!empty($bibId)){
+						$response = $patron->placeHold($bibId, $pickupCode);
+						$success  = (int) $response['success'];
+						$message  = $response['message'];
+						//TODO: needs item level hold check
+
+					} elseif (!empty($sierraItemId)){
+						//TODO: need item id to place item hold;
+						$response = $patron->placeItemHold(null, $sierraItemId, $pickupCode);
+						$success  = (int) $response['success'];
+						$message  = $response['message'];
+					}
+				} else {
+					$message = 'Did not find user is Pika';
+				}
+			}
+		}
+		return $holdsArray;
+	}
+
+	/**
+	 * @param mixed $filename
+	 * @return array
+	 */
+	public function loadCSVintoHoldsArray(mixed $filename): array{
+		$holdsArray = [];
+		$lines      = file($filename, FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+		foreach ($lines as $line){
+			$holdsArray[] = str_getcsv($line);
+		}
+		return $holdsArray;
 	}
 }
