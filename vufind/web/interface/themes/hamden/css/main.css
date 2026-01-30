@@ -2121,18 +2121,18 @@ fieldset[disabled] .btn-default.active {
   background-color: #fff;
 }
 .btn-primary {
-  color: #000;
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  color: #fff;
+  background-color: #028041;
+  border-color: #026734;
 }
 .btn-primary:hover,
 .btn-primary:focus,
 .btn-primary:active,
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
-  color: #000;
-  background-color: #5fb9b1;
-  border-color: #47a29b;
+  color: #fff;
+  background-color: #01582d;
+  border-color: #012b16;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -2154,11 +2154,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  background-color: #028041;
+  border-color: #026734;
 }
 .btn-primary .badge {
-  color: #7bc5bf;
+  color: #028041;
   background-color: #fff;
 }
 .btn-warning {
@@ -7579,9 +7579,9 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 }
 .datepicker table tr td.active,
 .datepicker table tr td.active.highlighted {
-  color: #000;
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  color: #fff;
+  background-color: #028041;
+  border-color: #026734;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.active:hover,
@@ -7594,9 +7594,9 @@ fieldset[disabled] .datepicker table tr td.selected.highlighted.active {
 .datepicker table tr td.active.highlighted.active,
 .open .dropdown-toggle.datepicker table tr td.active,
 .open .dropdown-toggle.datepicker table tr td.active.highlighted {
-  color: #000;
-  background-color: #5fb9b1;
-  border-color: #47a29b;
+  color: #fff;
+  background-color: #01582d;
+  border-color: #012b16;
 }
 .datepicker table tr td.active:active,
 .datepicker table tr td.active.highlighted:active,
@@ -7636,12 +7636,12 @@ fieldset[disabled] .datepicker table tr td.active.highlighted:active,
 .datepicker table tr td.active.highlighted[disabled].active,
 fieldset[disabled] .datepicker table tr td.active.active,
 fieldset[disabled] .datepicker table tr td.active.highlighted.active {
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  background-color: #028041;
+  border-color: #026734;
 }
 .datepicker table tr td.active .badge,
 .datepicker table tr td.active.highlighted .badge {
-  color: #7bc5bf;
+  color: #028041;
   background-color: #fff;
 }
 .datepicker table tr td span {
@@ -7668,9 +7668,9 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .datepicker table tr td span.active:hover,
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
-  color: #000;
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  color: #fff;
+  background-color: #028041;
+  border-color: #026734;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.active:hover,
@@ -7693,9 +7693,9 @@ fieldset[disabled] .datepicker table tr td.active.highlighted.active {
 .open .dropdown-toggle.datepicker table tr td span.active:hover,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
-  color: #000;
-  background-color: #5fb9b1;
-  border-color: #47a29b;
+  color: #fff;
+  background-color: #01582d;
+  border-color: #012b16;
 }
 .datepicker table tr td span.active:active,
 .datepicker table tr td span.active:hover:active,
@@ -7771,14 +7771,14 @@ fieldset[disabled] .datepicker table tr td span.active.active,
 fieldset[disabled] .datepicker table tr td span.active:hover.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
-  background-color: #7bc5bf;
-  border-color: #69bdb6;
+  background-color: #028041;
+  border-color: #026734;
 }
 .datepicker table tr td span.active .badge,
 .datepicker table tr td span.active:hover .badge,
 .datepicker table tr td span.active.disabled .badge,
 .datepicker table tr td span.active.disabled:hover .badge {
-  color: #7bc5bf;
+  color: #028041;
   background-color: #fff;
 }
 .datepicker table tr td span.old,
@@ -7921,7 +7921,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   height: 0;
 }
 .switch input:checked + .slider {
-  background-color: #7bc5bf;
+  background-color: #028041;
 }
 .switch input:checked + .slider:before {
   transform: translateX(19px);
@@ -9051,8 +9051,8 @@ a.browse-thumbnail-sorted.active {
 }
 #contactUpdateForm .btn-group .btn-default:has(input[type="radio"]:checked),
 #overdrive-lending-options .btn-group .btn-default:has(input[type="radio"]:checked) {
-  background-color: #7bc5bf;
-  color: #000;
+  background-color: #028041;
+  color: #fff;
 }
 #contactUpdateForm .btn-group .btn-default:focus-within,
 #overdrive-lending-options .btn-group .btn-default:focus-within {
