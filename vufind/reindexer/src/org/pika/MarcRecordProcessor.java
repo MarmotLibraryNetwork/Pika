@@ -14,6 +14,7 @@
 
 package org.pika;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -499,7 +500,7 @@ abstract class MarcRecordProcessor {
 							String codeTranslation   = indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId());
 							String currentLexileCode = groupedWork.getLexileCode();
 							if (currentLexileCode != null && !currentLexileCode.isEmpty() && !currentLexileCode.equalsIgnoreCase(codeTranslation)){
-								logger.warn("Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
+								logger.log(fullReindex ? Level.WARN : Level.INFO, "Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
 							}
 							groupedWork.setLexileCode(codeTranslation);
 						}
