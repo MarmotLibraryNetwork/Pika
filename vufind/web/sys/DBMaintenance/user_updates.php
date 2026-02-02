@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Account\UserMigration;
+
 /**
  * Updates related to user tables
  *
@@ -72,4 +74,9 @@ function getUserUpdates(): array{
 function setReadingHistoryActionStart(){
 	$variable = new Variable('reading_history_action_log_start');
 	return $variable->setWithTimeStampValue();
+}
+function userMigrationActionStart(){
+require_once \Account\UserMigration::class;
+ $migration = new UserMigration();
+ $migration->migrateUsers('/data/pika/migration/userAccounts.csv');
 }
