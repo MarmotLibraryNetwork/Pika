@@ -46,6 +46,24 @@ function getUserUpdates(): array{
 				'CREATE TABLE `user_reading_history_action` (`id` INT(11) NOT NULL AUTO_INCREMENT, `userId` INT(11) NOT NULL, `action` VARCHAR(45) NOT NULL, `date` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY `index2` (`date`))',
 				'setReadingHistoryActionStart'
 			]
+		],
+		'2026.01.0_add_user_migration_table' =>[
+			'release'         => '2026.01.0',
+			'title'           => 'Add User Migration Table',
+			'description'   =>'Add a table to link previous user system accounts to mln accounts',
+			'continueOnError' => false,
+			'sql'             => [
+				'CREATE TABLE `user_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `mlnId` INT(11) NOT NULL COMMENT "ils id", `userId` INT(11) NOT NULL,  `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY (`userId`))'
+			]
+		],
+		'2026.01.0_add_list_migration_table' =>[
+			'release'         => '2026.01.0',
+			'title'           => 'Add List Migration Table',
+			'description'   =>'Add a table to link previous user lists to mln list numbers',
+			'continueOnError' => false,
+			'sql'             => [
+				'CREATE TABLE `list_migration` (`id` INT(11) NOT NULL AUTO_INCREMENT, `listId` INT(11) NOT NULL, `previousListId` INT(11) NOT NULL, `userId` INT(11) NOT NULL, `barcode` VARCHAR(45), `migrationDate` INT(11) NOT NULL, PRIMARY KEY(`id`), KEY (`listId`))'
+			]
 		]
 	];
 }
