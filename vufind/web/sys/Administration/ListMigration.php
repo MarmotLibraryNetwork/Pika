@@ -19,9 +19,8 @@
 namespace Administration;
 
 use Pika\Logger;
-use UserList;
 use User;
-
+use \UserList;
 class ListMigration extends \DB_DataObject
 {
 	public $__table = 'list_migration'; // table name
@@ -52,6 +51,7 @@ class ListMigration extends \DB_DataObject
 			$migration                 = new ListMigration();
 			$migration->previousListId = $previousListId;
 			if(!$migration->find()){
+				include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 				$userList = new UserList();
 				$userList->user_id = $user->id;
 				$userList->title = $title;
@@ -99,7 +99,7 @@ class ListMigration extends \DB_DataObject
 		foreach($listLines as $line){
 			$lists[] = explode(',', $line);
 		}
-		
+
 		$n            = 0;
 		$migratedLists  = array();
 		foreach ($lists as $list){
