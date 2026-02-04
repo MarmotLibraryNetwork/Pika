@@ -52,6 +52,7 @@ class ListMigration extends \DB_DataObject
 			$migration                 = new ListMigration();
 			$migration->previousListId = $previousListId;
 			if(!$migration->find()){
+				include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 				$userList = new UserList();
 				$userList->user_id = $user->id;
 				$userList->title = $title;
