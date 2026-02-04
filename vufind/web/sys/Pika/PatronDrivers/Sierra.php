@@ -1932,7 +1932,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
 			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date // this isn't available in api v4
 
-			// fix up hold position
+			// fix up the hold position
 			// #D-3420
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
 				// sierra api v4 priority is 0 based index so add 1
@@ -3441,12 +3441,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				if(isset($c->response->description)){
 					$message .= ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
-					$this->logger->warning($message, ['api_response' => $c->response]);
+					$this->logger->warning($message, ['api_response' => $c->response, 'operation' => $operation]);
 				} elseif (isset($c->response->name)){
 					// So far, this section is needed for :
 					// * getting item hold information from bib-level hold call
 					$message .= ' ' . $c->response->name;
-					$this->logger->warning($message, ['api_response' => $c->response]);
+					$this->logger->warning($message, ['api_response' => $c->response, 'operation' => $operation]);
 				}
 			} else {
 				$message                     = 'HTTP Error: ' . $c->getErrorCode() . ': ' . $c->getErrorMessage();
