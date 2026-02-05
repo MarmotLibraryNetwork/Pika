@@ -27,11 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Description goes here
+ * Indexing Driving for OverDrive Titles
  * Pika
- * User: Mark Noble
- * Date: 12/9/13
- * Time: 9:14 AM
  */
 public class OverDriveProcessor {
 	private final GroupedWorkIndexer indexer;
@@ -47,6 +44,7 @@ public class OverDriveProcessor {
 	private       PreparedStatement  getProductSubjectsStmt;
 	private       PreparedStatement  getProductIdentifiersStmt;
 	private       PreparedStatement  getMagazineIssueIdentifiersStmt;
+	private String sourceLabel;
 
 	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex, String serverName) {
 		this.indexer = groupedWorkIndexer;
@@ -54,6 +52,11 @@ public class OverDriveProcessor {
 		this.fullReindex = fullReindex; //TODO: this parameter could be removed and use this.fullReindex = indexer.fullReindex
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 		String sharedAdvantageAccounts = PikaConfigIni.getIniValue("OverDrive", "sharedAdvantageAccountKey");
+		String sourceName = PikaConfigIni.getIniValue("OverDrive", "sourceName");
+		if (sourceName == null || sourceName.isEmpty()) {
+			sourceName = "OverDrive";
+		}
+		sourceLabel = sourceName; // Since there isn't an indexing profile, use a config.ini setting to customize the eContent Source label
 		if (sharedAdvantageAccounts != null && !sharedAdvantageAccounts.isEmpty()){
 			hasSharedAdvantageAccount = true;
 		}
@@ -283,7 +286,7 @@ public class OverDriveProcessor {
 									while (availabilityRS.next()) {
 										//Just create one item for each with a list of sub formats.
 										ItemInfo itemInfo = new ItemInfo();
-										itemInfo.seteContentSource("OverDrive");
+										itemInfo.seteContentSource(sourceLabel);
 										itemInfo.setIsEContent(true);
 										itemInfo.setShelfLocation("Online OverDrive Collection");
 										itemInfo.setCallNumber("Online OverDrive");
