@@ -429,7 +429,7 @@ class UserAccount {
 		if (isset($_REQUEST['casLogin'])){
 			self::getLogger()->info('Logging the user in via CAS');
 			//Check CAS first
-		//	require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+			//	require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication();
 			$casUsername       = $casAuthentication->authenticate();
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){

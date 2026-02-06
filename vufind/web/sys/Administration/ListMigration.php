@@ -19,8 +19,9 @@
 namespace Administration;
 
 use Pika\Logger;
+use UserList;
 use User;
-use \UserList;
+
 class ListMigration extends \DB_DataObject
 {
 	public $__table = 'list_migration'; // table name
