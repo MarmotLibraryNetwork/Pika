@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1602,7 +1601,7 @@ function getSaveSeriesToListForm(){
 		$interface->assign('prospectorResults', $prospectorResults['records']);
 
 		$result = [
-			'numTitles'     => count($prospectorResults),
+			'numTitles'     => $prospectorResults ? count($prospectorResults) : 0,
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
 		];
 		return $result;
