@@ -53,7 +53,8 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 			//The record is print
 			List<DataField>  itemRecords      = MarcUtil.getDataFields(record, itemTag);
 			for (DataField itemField : itemRecords) {
-				setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), getItemSubfieldData(barcodeSubfield, itemField), identifier);
+				//setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), getItemSubfieldData(barcodeSubfield, itemField), identifier);
+				// Populating this table does slow down indexing
 				// Add item ids & barcodes to ils_itemid_to_ilsid table to assist in Clearview Migration
 				if (!isItemSuppressed(itemField, identifier)) {
 					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
@@ -63,24 +64,31 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 	}
 	private PreparedStatement itemAndBarcodeToRecordStatement;
 
-	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
-		try {
-			if (itemId != null && itemBarcode != null)  {
-				itemAndBarcodeToRecordStatement.setString(1, itemId);
-				itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
-				itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
-				int result = itemAndBarcodeToRecordStatement.executeUpdate();
-				if (result == 0) {
-					logger.error("Failed to set item to record entry with reported result {}", result);
-					// I believe the insert reports 2 when it's doing a replacement
-				}
-			} else {
-				logger.info("Item tag on bib {} without itemId {} or item barcode {}", identifier, itemId, itemBarcode);
-			}
-		} catch (SQLException e) {
-			logger.error("Error setting item to record entry item id {} item barcode {} record id {}, error {}", itemId, itemBarcode, identifier, e.getMessage());
-		}
-	}
+//	/**
+//	 * Populate a database table with itemIds & item barcodes mapped to the Record Id
+//	 *
+//	 * @param itemId
+//	 * @param itemBarcode
+//	 * @param identifier
+//	 */
+//	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
+//		try {
+//			if (itemId != null && itemBarcode != null)  {
+//				itemAndBarcodeToRecordStatement.setString(1, itemId);
+//				itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
+//				itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
+//				int result = itemAndBarcodeToRecordStatement.executeUpdate();
+//				if (result == 0) {
+//					logger.error("Failed to set item to record entry with reported result {}", result);
+//					// I believe the insert reports 2 when it's doing a replacement
+//				}
+//			} else {
+//				logger.info("Item tag on bib {} without itemId {} or item barcode {}", identifier, itemId, itemBarcode);
+//			}
+//		} catch (SQLException e) {
+//			logger.error("Error setting item to record entry item id {} item barcode {} record id {}, error {}", itemId, itemBarcode, identifier, e.getMessage());
+//		}
+//	}
 
 	@Override
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
