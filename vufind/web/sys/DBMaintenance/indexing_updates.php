@@ -100,6 +100,15 @@ function getIndexingUpdates(): array{
 				'ALTER TABLE `ils_itemid_to_ilsid` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(32) NULL DEFAULT NULL;',
 			]
 		],
+		'2026.01.item-to-bib-table_updates' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Create an index for each column of the item to bib table',
+			'description'     => 'These Indexes will make querying faster.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE `ils_itemid_to_ilsid` ADD INDEX `itemBarcode_INDEX` (`itemBarcode` ASC), ADD INDEX `ilsId_INDEX` (`ilsId` ASC);',
+			]
+		],
 		'2024.03.0_ils_hold_sumary_update_time' => [
 			'release'         => '2024.03.0',
 			'title'           => 'Add update time to hold summary table.',
