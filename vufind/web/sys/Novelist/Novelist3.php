@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -493,7 +493,7 @@ class Novelist3{
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;
 
-		//When loading full data, we aways need to load the data since we can't cache due to terms of sevice
+		//When loading full data, we always need to load the data since we can't cache due to terms of sevice
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
 			$ISBNs = [$novelistData->primaryISBN];

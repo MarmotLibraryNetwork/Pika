@@ -337,7 +337,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 	function getTitles(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$ids    = $_REQUEST["ids"];
+		$ids    = $_REQUEST['ids'];
 		$titles = [];
 		foreach ($ids as $id){
 			$recordDriver = new GroupedWorkDriver($id);
@@ -1638,17 +1638,16 @@ function getSaveSeriesToListForm(){
 	}
 
 	function reloadNovelistData(){
-
-		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-
-		global $configArray;
-		$id = $_REQUEST['id'];
-
-		$novelist = new NovelistData();
-		$novelist->groupedWorkPermanentId = $id;
-		$novelist->delete();
-
-		return['success' => true, 'message'=> 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
+		$id = trim($_REQUEST['id']);
+		if (!empty($id)){
+			require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+			if (NovelistData::removeNovelistCachedSeriesEntry($id)){
+				return ['success' => true, 'message' => 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
+			} else {
+				return ['success' => false, 'message' => 'Could not remove novelist data.'];
+			}
+		}
+		return ['success' => false, 'message' => 'Invalid Id'];
 	}
 
 	function reloadIslandora(){
