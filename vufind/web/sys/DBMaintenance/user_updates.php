@@ -75,8 +75,3 @@ function setReadingHistoryActionStart(){
 	$variable = new Variable('reading_history_action_log_start');
 	return $variable->setWithTimeStampValue();
 }
-function userMigrationActionStart(){
-require_once \Account\UserMigration::class;
- $migration = new UserMigration();
- $migration->migrateUsers('/data/pika/migration/userAccounts.csv');
-}

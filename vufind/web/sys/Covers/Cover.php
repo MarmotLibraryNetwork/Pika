@@ -23,6 +23,7 @@ class Cover extends DB_DataObject {
 	public $__table = 'covers';
 	public $coverId;
 	public $fileName;
+	public $modified;
 	public $cover;
 
 
@@ -48,8 +49,9 @@ class Cover extends DB_DataObject {
 		$storagePath = $configArray['Site']['coverPath'];
 		$structure   = [
 
-			'coverId' => ['property' => 'coverId', 'type' => 'label', 'label' => 'Cover Id', 'description' => 'The unique id of the cover within the database', 'hideInLists' => true],
-			'cover'   => ['property' => 'cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.'],
+			'coverId'  => ['property' => 'coverId', 'type' => 'label', 'customName' => true, 'label' => 'id', 'description' => 'The unique id of the cover within the database'],
+			'cover'    => ['property' => 'cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.'],
+			'modified' => ['property' => 'modified', 'type' => 'text', 'customName' => true, 'label' => 'Updated', 'format' => 'Y-m-d', 'description' => 'The date when the image was last updated.'],
 			//            'fileName'  => array('property'=>'fileName', 'type'=>'text', 'maxLength'=>100, 'label'=>'File Name ', 'description'=>'Name of the file'),
 		];
 		return $structure;
@@ -74,7 +76,6 @@ class Cover extends DB_DataObject {
 		global $configArray;
 		$storagePath = $configArray['Site']['coverPath'];
 		$coverPath   = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
-
 		if (isset($_REQUEST['fileName'])){
 			$extension = pathinfo($this->cover, PATHINFO_EXTENSION);
 
@@ -94,18 +95,34 @@ class Cover extends DB_DataObject {
 
 	function insert(){
 		global $configArray;
-		$storagePath = $configArray['Site']['coverPath'];
-		$coverPath   = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+		$storagePath    = $configArray['Site']['coverPath'];
+		$coverPath      = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+		$this->modified = time();
 		if (file_exists($coverPath)){
 			$newCover       = clone $this;
 			$duplicateCover = new Cover();
 			$duplicateCover->get('cover', $newCover->cover);
 			$duplicateCover->delete(false, true);
-
-
 		}
 		return parent::insert();
 	}
+
+	function setModifiedDate(){
+		global $configArray;
+		$storagePath = $configArray['Site']['coverPath'];
+		$fullPath = $storagePath . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . $this->cover;
+		if (file_exists($fullPath) && !empty($this->cover)){
+			$modified = filemtime($fullPath);
+			$this->modified = $modified;
+			$this->update();
+			$verifyTime = new Cover();
+			$verifyTime->coverId = $this->coverId;
+			$verifyTime->modified = $modified;
+			if ($verifyTime->find()){
+				return true;
+			}else{
+				return false;
+			}
+		}
+	}
 }
-
-
