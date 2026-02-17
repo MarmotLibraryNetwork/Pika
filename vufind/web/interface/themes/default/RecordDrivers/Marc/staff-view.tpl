@@ -27,6 +27,7 @@
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-default">Reload Cover</button>
 				<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
+				<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear NoveList Data</button>
 				{if $staffClientUrl}
 					<a href="{$staffClientUrl}" class="btn btn-sm btn-info">View in Staff Client</a>
 				{/if}
