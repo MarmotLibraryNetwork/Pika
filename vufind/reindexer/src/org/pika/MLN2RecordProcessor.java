@@ -38,11 +38,11 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 
 	MLN2RecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-		try {
-			itemAndBarcodeToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, itemBarcode, ilsId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
-		} catch (SQLException e) {
-			logger.error("Error preparing statement for MLN2 item to record Ids");
-		}
+//		try {
+//			itemAndBarcodeToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, itemBarcode, ilsId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+//		} catch (SQLException e) {
+//			logger.error("Error preparing statement for MLN2 item to record Ids");
+//		}
 	}
 
 	@Override
@@ -62,7 +62,7 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 			}
 		}
 	}
-	private PreparedStatement itemAndBarcodeToRecordStatement;
+//	private PreparedStatement itemAndBarcodeToRecordStatement;
 
 //	/**
 //	 * Populate a database table with itemIds & item barcodes mapped to the Record Id
