@@ -137,6 +137,18 @@
 
             player.textTracks[0].addEventListener('cuechange', currentCueListener);
         }
+
+        // Listen for when user toggles captions on/off (must be on TextTrackList, not individual track)
+        if (player.textTracks && player.textTracks.length > 0) {
+            player.textTracks.addEventListener('change', function() {
+                const track = player.textTracks[0];
+                if (track && (track.mode === 'disabled' || track.mode === 'hidden')) {
+                    vttText.style.display = 'none';
+                } else if (track && track.mode === 'showing' && !player.paused) {
+                    vttText.style.display = 'block';
+                }
+            });
+        }
     }
 
     // Event listeners for caption display
