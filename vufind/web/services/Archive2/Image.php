@@ -27,11 +27,16 @@ class Image extends ArchiveObject
     public function launch()
     {
         global $interface;
-        
+        global $configArray;
+
         $serviceFile = $this->mediaObject->getServiceFile();
         $serviceFileUrl = null;
+        
+        # if CORS becomes an issue see vufind/web/services/Archive/AJAX.php fetchCantaloupeMaifest() 
         if($serviceFile && isset($serviceFile->fileUrl)) {
-            $serviceFileUrl = urlencode($serviceFile->fileUrl);
+            $baseUrl = $configArray['Islandora2']['url'] ?? '';
+            $baseUrl = rtrim($baseUrl, '/');
+		    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
         }
         
         $interface->assign('service_file_url', $serviceFileUrl);
