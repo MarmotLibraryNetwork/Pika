@@ -32,6 +32,17 @@ class ArchiveObject extends \Action
     /** node ID */
     protected int $nid;
 
+    protected const MODEL_VIEWER_MAP = [
+        'audio' => 'audio',
+        'book' => 'mirador',
+        'compound object' => 'compound',
+        'digital document' => 'pdfjs',
+        'image' => 'open_seadragon',
+        'paged content' => 'mirador',
+        'postcard' => 'open_seadragon_multi',
+        'video' => 'video',
+    ];
+
 
     public function __construct()
     {
@@ -68,7 +79,8 @@ class ArchiveObject extends \Action
 		}
         
         // Media
-		$interface->assign('media', $nodeData['media'] ?? []);
+		//$interface->assign('media', $nodeData['media'] ?? []);
+        //$interface->assign('viewer', $this->getViewerForModel($this->mediaObject->getObjectModel()));
         
         // Overrides
         // Dates
@@ -113,7 +125,7 @@ class ArchiveObject extends \Action
         } else {
             $subjects = [];
         }
-        $interface->assign('subjects', $subjects);
+        $interface->assign('subjects_urls', $subjects);
 
         // Extent (physical description)
         $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
@@ -173,6 +185,15 @@ class ArchiveObject extends \Action
 
         
 
+    }
+
+    protected function getViewerForModel(?string $model): ?string
+    {
+        if ($model === null || $model === '') {
+            return null;
+        }
+
+        return self::MODEL_VIEWER_MAP[$model] ?? null;
     }
 
 	private function formatDisplayDate($value): ?string {
