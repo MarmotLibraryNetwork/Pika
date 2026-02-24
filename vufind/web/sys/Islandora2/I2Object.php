@@ -154,6 +154,11 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the most recently created thumbnail media object for this node.
+     *
+     * @return I2Media|null The newest thumbnail, or null when none exist.
+     */
     public function getThumbnail() {
         $media = $this->getMedia();
         $thumbnails = [];
@@ -169,6 +174,11 @@ abstract class I2Object implements MediaObjectInterface
         return $sorted[0];
     }
 
+    /**
+     * Return all thumbnail media objects associated with this node.
+     *
+     * @return I2Media[]|null Array of thumbnail media objects, or null when none exist.
+     */
     public function getThumbnails() {
         $media = $this->getMedia();
         $thumbnails = [];
@@ -183,6 +193,11 @@ abstract class I2Object implements MediaObjectInterface
         return $thumbnails;
     }
 
+    /**
+     * Return the service file media object for this node, if one exists.
+     *
+     * @return I2Media|null The service file media object, or null when unavailable.
+     */
     public function getServiceFile() {
         $media = $this->getMedia();
         foreach($media as $m) {
@@ -193,7 +208,12 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
-    public function getDescription(): ?string 
+    /**
+     * Return the description for this node, preferring the long form when available.
+     *
+     * @return string|null The description string, or null when neither form is set.
+     */
+    public function getDescription(): ?string
     {
        if(isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
             return $this->nodeWithoutFieldPrefix['description_long'];
@@ -203,7 +223,12 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
-    public function getTitle(): ?string 
+    /**
+     * Return the display title for this node, falling back to the plain title.
+     *
+     * @return string|null The title string, or null when neither field is set.
+     */
+    public function getTitle(): ?string
     {
         if(isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
             return $this->nodeWithoutFieldPrefix['display_title'];
@@ -213,6 +238,11 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the human-readable language name for this node.
+     *
+     * @return string|null The language name, or null when unavailable.
+     */
     public function getLanguage(): ?string {
         if(isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
             return $this->nodeWithoutFieldPrefix['language']['name'];
@@ -220,6 +250,11 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the subject terms associated with this node.
+     *
+     * @return array|null Array of subject values, or null when none are present.
+     */
     public function getSubjects(): ?array {
         $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
         return $subjects;
