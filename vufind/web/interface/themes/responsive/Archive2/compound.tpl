@@ -1,8 +1,8 @@
 {if $useCompoundAudio}
-    {* Use compound audio viewer for all-audio compound objects *}
+    {* Use compound audio viewer for all audio compound objects *}
     {include file="Archive2/audio_compound.tpl" children=$audioChildren}
 {elseif $useCompoundVideo}
-    {* Use compound video viewer for all-video compound objects *}
+    {* Use compound video viewer for all video compound objects *}
     {include file="Archive2/video_compound.tpl" children=$videoChildren}
 {else}
     {* Use individual viewers for each child *}
