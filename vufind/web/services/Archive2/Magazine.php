@@ -16,36 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 namespace Archive2;
 
-require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+//require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+require_once ROOT_DIR . '/services/Archive2/PagedContent.php';
 
-/* Responsible for displaying video from Islandora2 */
-class Image extends ArchiveObject
+class Magazine extends PagedContent
 {
 
     public function launch()
     {
         global $interface;
-        global $configArray;
-
-        $serviceFile = $this->mediaObject->getServiceFile();
-        $serviceFileUrl = null;
         
-        # if CORS becomes an issue see vufind/web/services/Archive/AJAX.php fetchCantaloupeMaifest() 
-        if($serviceFile && isset($serviceFile->fileUrl)) {
-            $baseUrl = $configArray['Islandora2']['url'] ?? '';
-            $baseUrl = rtrim($baseUrl, '/');
-		    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
-        }
-        
-        $interface->assign('service_file_url', $serviceFileUrl);
         parent::launch();
 
-        $interface->assign('viewer', 'open_seadragon');
+        $interface->assign('viewer', 'mirador');
 
         $title = $this->mediaObject->getTitle();
         return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
-
+   
 }

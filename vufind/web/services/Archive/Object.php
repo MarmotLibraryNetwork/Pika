@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -175,7 +174,7 @@ abstract class Archive_Object extends Action {
 		// * let page know it's an archive page
 		$namespace = explode(':', $this->pid);
 		$namespace = $namespace[0];
-		$interface->assign('lid',$namespace);
+		$interface->assign('lid', $namespace);
 		$interface->assign('archivePage', true);
 
 		//Find the owning library
@@ -383,12 +382,12 @@ abstract class Archive_Object extends Action {
 					$anonymousMasterDownload = false;
 				}
 				if ($restrictionLower == 'preventverifiedmasterdownload'){
-					$verifiedMasterDownload = false;
+					$verifiedMasterDownload  = false;
 					$anonymousMasterDownload = false;
 				}
 				if ($restrictionLower == 'anonymousmasterdownload'){
 					$anonymousMasterDownload = true;
-					$verifiedMasterDownload = true;
+					$verifiedMasterDownload  = true;
 				}
 				if ($restrictionLower == 'verifiedmasterdownload'){
 					$anonymousMasterDownload = true;
@@ -407,10 +406,9 @@ abstract class Archive_Object extends Action {
 		}
 	}
 
-	protected function endExhibitContext()
-	{
+	protected function endExhibitContext(){
 		global $pikaLogger;
-		$pikaLogger->debug("Ending exhibit context");
+		$pikaLogger->debug('Ending exhibit context');
 		$_SESSION['ExhibitContext']  = null;
 		$_SESSION['exhibitSearchId'] = null;
 		$_SESSION['placePid']        = null;
@@ -427,8 +425,7 @@ abstract class Archive_Object extends Action {
 	/**
 	 *
 	 */
-	protected function setExhibitNavigation()
-	{
+	protected function setExhibitNavigation(){
 		global $interface;
 		global $pikaLogger;
 
@@ -444,9 +441,9 @@ abstract class Archive_Object extends Action {
 			if (!empty($_SESSION['placeLabel'])) {
 				$exhibitName .= ' - ' . $_SESSION['placeLabel'];
 			}
-			$pikaLogger->debug("Navigating from a map exhibit");
+			$pikaLogger->debug('Navigating from a map exhibit');
 		}else{
-			$pikaLogger->debug("Navigating from a NON map exhibit");
+			$pikaLogger->debug('Navigating from a NON map exhibit');
 		}
 
 		//TODO: rename to template vars exhibitName and exhibitUrl;  does it affect other navigation contexts
@@ -485,6 +482,7 @@ abstract class Archive_Object extends Action {
 			$page        = $_COOKIE['page'] ?? null;
 			// Restore Islandora Search
 			/** @var SearchObject_Islandora $searchObject */
+			//TODO: update to islandora2?
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init('islandora');
 			$searchObject->getNextPrevLinks($_SESSION['exhibitSearchId'], $recordIndex, $page, $isMapExhibit);
@@ -495,8 +493,7 @@ abstract class Archive_Object extends Action {
 		}
 	}
 
-	private function setArchiveSearchNavigation()
-	{
+	private function setArchiveSearchNavigation(){
 		global $interface;
 		global $pikaLogger;
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
@@ -509,42 +506,43 @@ abstract class Archive_Object extends Action {
 		$pikaLogger->debug("Setting search navigation for archive search");
 	}
 
-	private function initializeExhibitContextDataFromCookie() {
-		global $pikaLogger;
-		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
-		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? $_SESSION['ExhibitContext'] : $_COOKIE['ExhibitContext'];
-		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? $_SESSION['exhibitSearchId'] : $_COOKIE['exhibitSearchId'];
-		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? $_SESSION['placePid'] : $_COOKIE['placePid'];
-		$_SESSION['placeLabel']                 = empty($_COOKIE['placeLabel'])                 ? $_SESSION['placeLabel'] : $_COOKIE['placeLabel'];
-		$_SESSION['exhibitInAExhibitParentPid'] = empty($_COOKIE['exhibitInAExhibitParentPid']) ? $_SESSION['exhibitInAExhibitParentPid'] : $_COOKIE['exhibitInAExhibitParentPid'];
-//		$_SESSION['dateFilter']      = null;
-
-//		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? null : $_COOKIE['ExhibitContext'];
-//		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? null : $_COOKIE['exhibitSearchId'];
-//		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? null : $_COOKIE['placePid'];
-//		$_SESSION['placeLabel']                 = empty($_COOKIE['placeLabel'])                 ? null : $_COOKIE['placeLabel'];
-//		$_SESSION['exhibitInAExhibitParentPid'] = empty($_COOKIE['exhibitInAExhibitParentPid']) ? null : $_COOKIE['exhibitInAExhibitParentPid'];
+//	private function initializeExhibitContextDataFromCookie() {
+//		global $pikaLogger;
+//		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
+//		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? $_SESSION['ExhibitContext'] : $_COOKIE['ExhibitContext'];
+//		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? $_SESSION['exhibitSearchId'] : $_COOKIE['exhibitSearchId'];
+//		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? $_SESSION['placePid'] : $_COOKIE['placePid'];
+//		$_SESSION['placeLabel']                 = empty($_COOKIE['placeLabel'])                 ? $_SESSION['placeLabel'] : $_COOKIE['placeLabel'];
+//		$_SESSION['exhibitInAExhibitParentPid'] = empty($_COOKIE['exhibitInAExhibitParentPid']) ? $_SESSION['exhibitInAExhibitParentPid'] : $_COOKIE['exhibitInAExhibitParentPid'];
 ////		$_SESSION['dateFilter']      = null;
-	}
+//
+////		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? null : $_COOKIE['ExhibitContext'];
+////		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? null : $_COOKIE['exhibitSearchId'];
+////		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? null : $_COOKIE['placePid'];
+////		$_SESSION['placeLabel']                 = empty($_COOKIE['placeLabel'])                 ? null : $_COOKIE['placeLabel'];
+////		$_SESSION['exhibitInAExhibitParentPid'] = empty($_COOKIE['exhibitInAExhibitParentPid']) ? null : $_COOKIE['exhibitInAExhibitParentPid'];
+//////		$_SESSION['dateFilter']      = null;
+//	}
 
-	private function updateCookieForExhibitContextData() {
-		global $pikaLogger;
-		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
-		$_COOKIE['ExhibitContext']             = empty($_SESSION['ExhibitContext'])             ? null : $_SESSION['ExhibitContext'];
-		$_COOKIE['exhibitSearchId']            = empty($_SESSION['exhibitSearchId'])            ? null : $_SESSION['exhibitSearchId'];
-		$_COOKIE['placePid']                   = empty($_SESSION['placePid'])                   ? null : $_SESSION['placePid'];
-		$_COOKIE['placeLabel']                 = empty($_SESSION['placeLabel'])                 ? null : $_SESSION['placeLabel'];
-		$_COOKIE['exhibitInAExhibitParentPid'] = empty($_SESSION['exhibitInAExhibitParentPid']) ? null : $_SESSION['exhibitInAExhibitParentPid'];
-//		$_SESSION['dateFilter']      = null;
-
-		foreach ($_COOKIE as $cookieName => $cookieValue) {
-			handleCookie($cookieName, $cookieValue);
-		}
-	}
+//	private function updateCookieForExhibitContextData() {
+//		global $pikaLogger;
+//		$pikaLogger->debug("Initializing exhibit context from Cookie Data");
+//		$_COOKIE['ExhibitContext']             = empty($_SESSION['ExhibitContext'])             ? null : $_SESSION['ExhibitContext'];
+//		$_COOKIE['exhibitSearchId']            = empty($_SESSION['exhibitSearchId'])            ? null : $_SESSION['exhibitSearchId'];
+//		$_COOKIE['placePid']                   = empty($_SESSION['placePid'])                   ? null : $_SESSION['placePid'];
+//		$_COOKIE['placeLabel']                 = empty($_SESSION['placeLabel'])                 ? null : $_SESSION['placeLabel'];
+//		$_COOKIE['exhibitInAExhibitParentPid'] = empty($_SESSION['exhibitInAExhibitParentPid']) ? null : $_SESSION['exhibitInAExhibitParentPid'];
+////		$_SESSION['dateFilter']      = null;
+//
+//		foreach ($_COOKIE as $cookieName => $cookieValue) {
+//			handleCookie($cookieName, $cookieValue);
+//		}
+//	}
 
 	protected function archiveCollectionDisplayMode($displayMode = null) {
 		if (empty($displayMode)) {
 			global $library;
+			//TODO: validate Request parameters below
 			if (!empty($_REQUEST['archiveCollectionView'])) {
 				$displayMode = $_REQUEST['archiveCollectionView'];
 			} elseif (!empty($_SESSION['archiveCollectionDisplayMode'])) {
@@ -555,7 +553,6 @@ abstract class Archive_Object extends Action {
 				$displayMode = 'covers'; // Pika default mode is covers
 			}
 		}
-
 		$_SESSION['archiveCollectionDisplayMode'] = $displayMode;
 
 		global $interface;
