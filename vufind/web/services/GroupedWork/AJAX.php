@@ -23,6 +23,7 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php'; // Include for Id validation
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
@@ -318,29 +319,34 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
-		$dataType = strip_tags($_REQUEST['dataType']);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
-		// TODO: request id is not always being set by index page.
-		$recordDriver = new GroupedWorkDriver($id);
-		$upc          = $recordDriver->getCleanUPC();
-		$isbn         = $recordDriver->getCleanISBN();
-
-		$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
-		$return        = [
-			'formattedData' => $formattedData,
-		];
-		return $return;
-
+		if (GroupedWork::validGroupedWorkId($id)){
+			// TODO: request id is not always being set by index page.
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
+			$dataType      = strip_tags($_REQUEST['dataType']);
+			$recordDriver  = new GroupedWorkDriver($id);
+			$upc           = $recordDriver->getCleanUPC();
+			$isbn          = $recordDriver->getCleanISBN();
+			$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
+			$return        = [
+				'formattedData' => $formattedData,
+			];
+			return $return;
+		}
+		return ['formattedData' => ''];
 	}
 
 	function getTitles(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$ids    = $_REQUEST['ids'];
 		$titles = [];
 		foreach ($ids as $id){
+			if (!GroupedWork::validGroupedWorkId($id)){
+				continue;
+			}
 			$recordDriver = new GroupedWorkDriver($id);
 			$titles[]     = [
 				'title' => $recordDriver->getTitleShort(),
@@ -414,16 +420,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (!UserAccount::isLoggedIn()){
 			return ['error' => 'Please log in to rate this title.'];
 		}
-		if (empty($_REQUEST['id'])){
-			return ['error' => 'ID for the item to rate is required.'];
-		}
-		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])){
+		$rating = $_REQUEST['rating'];
+		if (empty($rating) || !ctype_digit($rating)){
 			return ['error' => 'Invalid value for rating.'];
 		}
-		$rating = $_REQUEST['rating'];
+		$groupedWorkId = $_REQUEST['id'];
+		if (empty($groupedWorkId)){
+			return ['error' => 'ID for the item to rate is required.'];
+		}
+		if (!GroupedWork::validGroupedWorkId($groupedWorkId)){
+			return ['error' => 'Invalid ID.'];
+		}
 		//Save the rating
 		$workReview                         = new UserWorkReview();
-		$workReview->groupedWorkPermanentId = $_REQUEST['id'];
+		$workReview->groupedWorkPermanentId = $groupedWorkId;
 		$workReview->userId                 = UserAccount::getActiveUserId();
 		if ($workReview->find(true)){
 			if ($rating != $workReview->rating){ // update gives an error if the rating value is the same as stored.
@@ -443,7 +453,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if ($success){
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
-
 			return ['rating' => $rating];
 		}else{
 			return ['error' => 'Unable to save your rating.'];
@@ -464,7 +473,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewInfo(){
 		$results = [];
 		$id      = $_REQUEST['id'];
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		//require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		if (GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($id);
@@ -546,7 +555,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					];
 				}
 			}else{
-				// Option already set to don't prompt, so let's don't prompt already.
+				// Option already set to not prompt, so let's not prompt already.
 				$results = [
 					'prompt' => false,
 				];
@@ -572,7 +581,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewForm(){
 		global $interface;
 		$id = $_REQUEST['id'];
-		if (!empty($id)){
+		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
 			$interface->assign('id', $id);
 
 			// check if rating/review exists for user and work
@@ -604,16 +613,19 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function saveReview(){
 		$result = [];
 
-		if (UserAccount::isLoggedIn() == false){
+		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
 			$result['message'] = 'Please log in before adding a review.';
 		}elseif (empty($_REQUEST['id'])){
 			$result['success'] = false;
 			$result['message'] = 'ID for the item to review is required.';
+		} elseif (GroupedWork::validGroupedWorkId($_REQUEST['id'])){
+			$result['success'] = false;
+			$result['message'] = 'Invalid ID.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 			$id        = $_REQUEST['id'];
-			$rating    = isset($_REQUEST['rating']) ? $_REQUEST['rating'] : '';
+			$rating    = $_REQUEST['rating'] ?? '';
 			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (may be only ratings instead)
 			$comment   = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
 
@@ -642,7 +654,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$success = true;
 				} // pretend success since values are already set to same values.
 			}
-			if (!$success){ // if sql save didn't work, let user know.
+			if (!$success){ // if SQL save didn't work, let user know.
 				$result['success'] = false;
 				$result['message'] = 'Failed to save rating or review.';
 			}else{ // successfully saved
@@ -665,18 +677,18 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$sms = new SMSMailer();
 		$interface->assign('carriers', $sms->getCarriers());
 		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
-		$relatedRecords = $recordDriver->getRelatedRecords();
-		$interface->assign('relatedRecords', $relatedRecords);
-		$results = [
-			'title'        => 'Share via SMS Message',
-			'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
-		];
+		if (GroupedWork::validGroupedWorkId($id)){
+			$interface->assign('id', $id);
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver   = new GroupedWorkDriver($id);
+			$relatedRecords = $recordDriver->getRelatedRecords();
+			$interface->assign('relatedRecords', $relatedRecords);
+			$results = [
+				'title'        => 'Share via SMS Message',
+				'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
+			];
+		}
 		return $results;
 	}
 
