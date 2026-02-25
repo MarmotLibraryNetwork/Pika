@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -48,12 +47,24 @@ class DjatokaResolver extends Action {
 		try {
 			$response = @file_get_contents($requestUrl);
 			if (!$response){
+				global $pikaLogger;
+				$logger = $pikaLogger->withName(__CLASS__);
+				$logger->error('Could not load from the specified URL ' . $requestUrl);
 				$response = json_encode([
 					'success' => false,
 					'message' => 'Could not load from the specified URL ' . $requestUrl
 				]);
+			} else {
+				if (str_contains($response,'challenge-error-text')){
+					global $pikaLogger;
+					$logger = $pikaLogger->withName(__CLASS__);
+					$logger->error("Recieved Cloudflare challenge response");
+				}
 			}
 		} catch (Exception $e){
+			global $pikaLogger;
+			$logger = $pikaLogger->withName(__CLASS__);
+			$logger->error('Exception :' . $e->getMessage());
 			$response = json_encode([
 				'success' => false,
 				'message' => $e
