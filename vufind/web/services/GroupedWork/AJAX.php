@@ -94,15 +94,17 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to delete ratings.';
 		}else{
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$userWorkReview                         = new UserWorkReview();
-			$userWorkReview->groupedWorkPermanentId = $id;
-			$userWorkReview->userId                 = UserAccount::getActiveUserId();
-			if ($userWorkReview->find(true)){
-				$userWorkReview->delete();
-				$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
-			}else{
-				$result['message'] = 'Sorry, we could not find that review in the system.';
+			if (GroupedWork::validGroupedWorkId($id)){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+				$userWorkReview                         = new UserWorkReview();
+				$userWorkReview->groupedWorkPermanentId = $id;
+				$userWorkReview->userId                 = UserAccount::getActiveUserId();
+				if ($userWorkReview->find(true)){
+					$userWorkReview->delete();
+					$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
+				}else{
+					$result['message'] = 'Sorry, we could not find that review in the system.';
+				}
 			}
 		}
 
@@ -241,9 +243,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}
 				$enrichmentResult['similarTitles'] = ['titles' => $similarTitles, 'currentIndex' => 0];
 			} else {
-				global $pikaLogger;
 				global $solrScope;
-				$pikaLogger->notice("More Like This had no results for $id in scope $solrScope");
+				$this->logger->notice("More Like This had no results for $id in scope $solrScope");
 			}
 			$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
@@ -1645,9 +1646,7 @@ function getSaveSeriesToListForm(){
 				return ['success' => false, 'message' => 'Some or all of the covers sizes were not reloaded.'];
 			}
 		}
-		global $pikaLogger;
-		$logger = $pikaLogger->withName(__CLASS__);
-		$logger->error('Invalid Grouped Work Id passed to reloadCover() : ' . $id);
+		$this->logger->error('Invalid Grouped Work Id passed to reloadCover() : ' . $id);
 		return ['success' => false, 'message' => 'Invalid Id'];
 	}
 
@@ -1671,9 +1670,7 @@ function getSaveSeriesToListForm(){
 
 	private function checkForCloudflareChallengeResponse($response){
 		if (str_contains($response, 'challenge-error-text')){
-			global $pikaLogger;
-			$logger = $pikaLogger->withName(__CLASS__);
-			$logger->error('Received Cloudflare Challenge Response');
+			$this->logger->error('Received Cloudflare Challenge Response');
 			return true;
 		}
 		return false;
