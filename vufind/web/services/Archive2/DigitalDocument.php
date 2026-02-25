@@ -29,15 +29,23 @@ class DigitalDocument extends ArchiveObject
         global $interface;
         global $configArray;
         
-        parent::launch(); 
+        parent::launch();
 
         $pdf = $this->mediaObject->getOriginalMedia();
-        $interface->assign('pdf_url', $pdf->fileUrl);
+        if ($pdf === null) {
+            $this->logger->error('PDF media not found for digital document.', ['nid' => $this->mediaObject->getNodeId()]);
+            $interface->assign('pdf_url', null);
+            $interface->assign('iframe_src', null);
+        } else {
+            $interface->assign('pdf_url', $pdf->fileUrl);
 
-        $iframeSrc = $configArray['Islandora2']['url'] ?? '';
-        //TODO: catch error for empty url
-        $iframeSrc = rtrim($iframeSrc, '/') . "/libraries/pdf.js/web/viewer.html?file=" . urlencode($pdf->fileUrl);
-        $interface->assign('iframe_src', $iframeSrc);
+            $iframeSrc = $configArray['Islandora2']['url'] ?? '';
+            if (empty($iframeSrc)) {
+                $this->logger->error('Islandora2 URL not configured; cannot build PDF viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
+            }
+            $iframeSrc = rtrim($iframeSrc, '/') . "/libraries/pdf.js/web/viewer.html?file=" . urlencode($pdf->fileUrl);
+            $interface->assign('iframe_src', $iframeSrc);
+        }
         
         $interface->assign('viewer', 'pdfjs');
 

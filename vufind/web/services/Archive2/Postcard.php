@@ -31,29 +31,37 @@ class Postcard extends ArchiveObject
         global $configArray;
 
         // Get manifests for child objects
+        $serviceFileUrls = [];
         if (method_exists($this->mediaObject, 'getChildren')) {
             $childObjects = $this->mediaObject->getChildren();
-            $serviceFileUrls = [];
             foreach ($childObjects as $childObject) {
-                if (strtolower($childObject->model['name']) !== 'image') {
+                $modelName = $childObject->model['name'] ?? null;
+                if ($modelName === null || strtolower($modelName) !== 'image') {
                     continue;
                 }
-                
+
                 $serviceFile = $childObject->getServiceFile();
                 $serviceFileUrl = null;
 
                 if ($serviceFile && isset($serviceFile->fileUrl)) {
                     $baseUrl = $configArray['Islandora2']['url'] ?? '';
-                    $baseUrl = rtrim($baseUrl, '/');
-                    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+                    if (empty($baseUrl)) {
+                        $this->logger->error('Islandora2 URL not configured; cannot build postcard image URL.', ['nid' => $childObject->getNodeId()]);
+                    } else {
+                        $baseUrl = rtrim($baseUrl, '/');
+                        $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+                    }
+                } else {
+                    $this->logger->warning('Service file not found for postcard child.', ['nid' => $childObject->getNodeId()]);
                 }
-                    
-                $serviceFileUrls[] = $serviceFileUrl;
 
+                $serviceFileUrls[] = $serviceFileUrl;
             }
+        } else {
+            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
-       $interface->assign('service_file_url', $serviceFileUrls);
+        $interface->assign('service_file_url', $serviceFileUrls);
 
         parent::launch();
 

@@ -28,24 +28,32 @@ class Video extends ArchiveObject
     public function launch()
     {
         global $interface;
-        
-        $video = $this->mediaObject->getVideo();
-        $interface->assign('videoUrl', $video->fileUrl);
 
-        $videoMime = $video->mime;
-        $interface->assign('videoMime', $videoMime);
+        $video = $this->mediaObject->getVideo();
+        if ($video === null) {
+            $this->logger->warning('Video media not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
+            $interface->assign('videoUrl', null);
+            $interface->assign('videoMime', null);
+        } else {
+            $interface->assign('videoUrl', $video->fileUrl);
+            $interface->assign('videoMime', $video->mime);
+        }
 
         $poster = $this->mediaObject->getVideoPoster();
-        $interface->assign('posterUrl', $poster->fileUrl);
+        if ($poster === null) {
+            $this->logger->warning('Video poster not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
+            $interface->assign('posterUrl', null);
+        } else {
+            $interface->assign('posterUrl', $poster->fileUrl);
+        }
 
         $captions = $this->mediaObject->getCaptions();
-        // cast to an array
-        $captionsArray = json_decode(json_encode($captions), true);
+        $captionsArray = $captions !== null ? json_decode(json_encode($captions), true) : [];
         $interface->assign('captions', $captionsArray);
-       
+
         $transcripts = $this->mediaObject->getTranscripts();
-        $interface->assign('transcripts', $transcripts);
-        
+        $interface->assign('transcripts', $transcripts ?? []);
+
         parent::launch();
 
         $interface->assign('viewer', 'video');

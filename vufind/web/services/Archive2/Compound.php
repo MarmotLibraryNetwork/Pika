@@ -57,23 +57,26 @@ class Compound extends ArchiveObject
 
             // If all children are audio and there's more than one, use compound audio viewer
             if ($allAudio && count($childObjects) > 1) {
-                
+
                 $audioChildren = [];
                 foreach ($childObjects as $childObject) {
                     // Extract audio data
                     $audio = $childObject->getAudio();
+                    if ($audio === null) {
+                        $this->logger->warning('Audio media not found for compound child.', ['nid' => $childObject->getNodeId()]);
+                    }
                     $thumb = $childObject->getThumbnail();
                     $captions = $childObject->getCaptions();
 
                     // Cast captions to array
-                    $captionsArray = json_decode(json_encode($captions), true);
+                    $captionsArray = $captions !== null ? json_decode(json_encode($captions), true) : [];
 
                     $audioChildren[] = [
                         'audioUrl' => $audio->fileUrl ?? '',
                         'audioMime' => $audio->mime ?? 'audio/mpeg',
                         'title' => $childObject->getTitle() ?? 'Untitled',
                         'thumbnailUrl' => $thumb->fileUrl ?? null,
-                        'captions' => $captionsArray ?? []
+                        'captions' => $captionsArray,
                     ];
                 }
 
@@ -94,18 +97,21 @@ class Compound extends ArchiveObject
                 foreach ($childObjects as $childObject) {
                     // Extract video data
                     $video = $childObject->getVideo();
+                    if ($video === null) {
+                        $this->logger->warning('Video media not found for compound child.', ['nid' => $childObject->getNodeId()]);
+                    }
                     $poster = $childObject->getVideoPoster();
                     $captions = $childObject->getCaptions();
 
                     // Cast captions to array
-                    $captionsArray = json_decode(json_encode($captions), true);
+                    $captionsArray = $captions !== null ? json_decode(json_encode($captions), true) : [];
 
                     $videoChildren[] = [
                         'videoUrl' => $video->fileUrl ?? '',
                         'videoMime' => $video->mime ?? 'video/mp4',
                         'title' => $childObject->getTitle() ?? 'Untitled',
                         'posterUrl' => $poster->fileUrl ?? null,
-                        'captions' => $captionsArray ?? []
+                        'captions' => $captionsArray,
                     ];
                 }
 
@@ -133,7 +139,7 @@ class Compound extends ArchiveObject
                 ];
             }
         } else {
-            error_log("DEBUG: mediaObject does not have getChildren method");
+            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
         parent::launch();
