@@ -1620,23 +1620,64 @@ function getSaveSeriesToListForm(){
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
+		if (GroupedWork::validGroupedWorkId($id)){
+			$recordDriver = new GroupedWorkDriver($id);
+			$success      = true;
 
-		//Reload small cover
-		$smallCoverUrl =  $recordDriver->getBookcoverUrl('small', true) . '&reload';
-		$ret           = file_get_contents($smallCoverUrl);
+			//Reload small cover
+			if (!$this->sendReloadCoverURl($recordDriver, 'small')){
+				$success = false;
+			}
 
-		//Reload medium cover
-		$mediumCoverUrl = $recordDriver->getBookcoverUrl('medium', true) . '&reload';
-		$ret            = file_get_contents($mediumCoverUrl);
+			//Reload medium cover
+			if (!$this->sendReloadCoverURl($recordDriver, 'medium')){
+				$success = false;
+			}
 
-		//Reload large cover
-		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
-		$ret           = file_get_contents($largeCoverUrl);
+			//Reload large cover
+			if (!$this->sendReloadCoverURl($recordDriver, 'large')){
+				$success = false;
+			}
 
-		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+			if ($success){
+				return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+			}else{
+				return ['success' => false, 'message' => 'Some or all of the covers sizes were not reloaded.'];
+			}
+		}
+		global $pikaLogger;
+		$logger = $pikaLogger->withName(__CLASS__);
+		$logger->error('Invalid Grouped Work Id passed to reloadCover() : ' . $id);
+		return ['success' => false, 'message' => 'Invalid Id'];
 	}
 
+	/**
+	 * @param GroupedWorkDriver $recordDriver
+	 * @param string $size
+	 * @return bool
+	 */
+	private function sendReloadCoverURl(GroupedWorkDriver $recordDriver, string $size): bool{
+		$reloadCoverURL = $recordDriver->getBookcoverUrl($size, true) . '&reload';
+		$response       = file_get_contents($reloadCoverURL);
+		if ($response === false){
+			return false;
+		}else{
+			if ($this->checkForCloudflareChallengeResponse($response)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private function checkForCloudflareChallengeResponse($response){
+		if (str_contains($response, 'challenge-error-text')){
+			global $pikaLogger;
+			$logger = $pikaLogger->withName(__CLASS__);
+			$logger->error('Received Cloudflare Challenge Response');
+			return true;
+		}
+		return false;
+	}
 	function reloadNovelistData(){
 		$id = trim($_REQUEST['id']);
 		if (!empty($id)){
