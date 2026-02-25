@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,22 +35,12 @@ trait MARC_AJAX_Basic {
 	protected array $methodsThatRespondThemselves;*/
 
 	function __construct(){
-
 		// Add allowed AJAX method calls to the ones already set
-		if(!is_null($this->methodsThatRespondWithJSONUnstructured)){
-		$this->methodsThatRespondWithJSONUnstructured  = array_merge($this->methodsThatRespondWithJSONUnstructured,
-		                                                             array('reloadCover'));
-		} else {
-			$this->methodsThatRespondWithJSONUnstructured = array('reloadCover');
-		}
+		$this->methodsThatRespondWithJSONUnstructured = !is_null($this->methodsThatRespondWithJSONUnstructured) ? array_merge($this->methodsThatRespondWithJSONUnstructured, ['reloadCover']) : ['reloadCover'];
 		/*$this->methodsThatRespondWithJSONResultWrapper = array_merge($this->methodsThatRespondWithJSONResultWrapper, array());
 		$this->methodsThatRespondWithHTML             = array_merge($this->methodsThatRespondWithHTML, array());
 		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());*/
-		if(!is_null($this->methodsThatRespondThemselves)) {
-			$this->methodsThatRespondThemselves = array_merge($this->methodsThatRespondThemselves, array('downloadMarc'));
-		} else {
-			$this->methodsThatRespondThemselves = array('downloadMarc');
-		}
+		$this->methodsThatRespondThemselves = !is_null($this->methodsThatRespondThemselves) ? array_merge($this->methodsThatRespondThemselves, ['downloadMarc']) : ['downloadMarc'];
 	}
 
 	function downloadMarc(){
