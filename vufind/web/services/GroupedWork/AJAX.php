@@ -1670,6 +1670,7 @@ function getSaveSeriesToListForm(){
 	private function sendReloadCoverURl(GroupedWorkDriver $recordDriver, string $size): bool{
 		$reloadCoverURL = $recordDriver->getBookcoverUrl($size, true) . '&reload';
 		$response       = file_get_contents($reloadCoverURL);
+		$this->logger->debug('Reload Cover URL: ' . $reloadCoverURL, [$response]);
 		if ($response === false){
 			return false;
 		}else{
