@@ -1669,7 +1669,9 @@ function getSaveSeriesToListForm(){
 	 */
 	private function sendReloadCoverURl(GroupedWorkDriver $recordDriver, string $size): bool{
 		$reloadCoverURL = $recordDriver->getBookcoverUrl($size, true) . '&reload';
-		$response       = file_get_contents($reloadCoverURL);
+		$options        = ['http' => ['user_agent' => 'PikaArchive']];
+		$context        = stream_context_create($options);
+		$response       = file_get_contents($reloadCoverURL, false, $context);
 		$this->logger->debug('Reload Cover URL: ' . $reloadCoverURL, [$response]);
 		if ($response === false){
 			return false;
