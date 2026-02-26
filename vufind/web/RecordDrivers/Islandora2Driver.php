@@ -42,10 +42,8 @@ class Islandora2Driver extends RecordInterface
     private int $nodeId = 0;
     private ?I2Object $i2Object = null;
     private bool $i2ObjectLoaded = false;
-	/* */
-	private string $displayModel = null;
 
-	protected const DISPLAY_MODEL_URL_MAP = [
+	public const DISPLAY_MODEL_URL_MAP = [
         'audio' => 'Audio',
         'book' => 'Book',
         'compound object' => 'Compound',
