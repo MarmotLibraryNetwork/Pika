@@ -32,7 +32,7 @@ abstract class RecordInterface {
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param SourceAndId|array|File_MARC_Record|string   $recordData     Data to construct the driver from
+	 * @param SourceAndId|array|File_MARC_Record|string|NodeID|int   $recordData     Data to construct the driver from
 	 * @access                       public
 	 */
 	public abstract function __construct($recordData);
