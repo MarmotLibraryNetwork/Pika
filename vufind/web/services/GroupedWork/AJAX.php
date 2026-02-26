@@ -1742,25 +1742,36 @@ function getSaveSeriesToListForm(){
 	 */
 	function openBookshelf(){
 		global $interface;
-		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
-		$idString = $_REQUEST['ids'];
-		$ids = explode(',', $idString);
-		$idString = "'" . $idString . "'";
-		$items = [];
-		foreach($ids as $id){
-			$recordDriver = new GroupedWorkDriver($id);
-			$description = $recordDriver->getDescriptionFast(false);
-			$description = strip_tags($description);
-			$title = "Bookshelf - " . count($ids) . " item";
-			if(count($ids) > 1){
-				$title = $title . "s";
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$ids      = explode(',', $_REQUEST['ids']);
+		$items    = [];
+		foreach ($ids as $index => $id){
+			if (GroupedWork::validGroupedWorkId($id)){
+				$recordDriver = new GroupedWorkDriver($id);
+				$description  = $recordDriver->getDescriptionFast(false);
+				$description  = strip_tags($description);
+				$items[$id] = [
+					'cover'       => $recordDriver->getBookcoverUrl(),
+					'title'       => $recordDriver->getTitle(false),
+					'author'      => $recordDriver->getPrimaryAuthor(),
+					'description' => $description
+				];
+			} else {
+				unset($ids[$index]);
 			}
-			$items[$id] = array ('cover'=> $recordDriver->getBookcoverUrl(),'title'=> $recordDriver->getTitle(false), 'author'=>$recordDriver->getPrimaryAuthor(), 'description'=> $description);
 		}
-		$interface->assign('items',$items);
+		$idString = "'" . implode("','", $ids) . "'"; // Join IDs with commas and single quotes
+		$count    = count($ids); // Get the number of items
+		$title    = 'Bookshelf - ' . $count . ' item' . ($count > 1 ? 's' : ''); // Construct title with pluralization
+		$interface->assign('items', $items);
 		$interface->assign('idString', $idString);
 		$message = $interface->fetch('Search/bookshelf.tpl');
-		return ['success' => true, 'title' =>$title, 'message' => $message, 'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList('.$idString.')" class="tool btn btn-primary">Add All To List</button>'];
+		return [
+			'success' => true,
+			'title'   => $title,
+			'message' => $message,
+			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList(' . $idString . ')" class="tool btn btn-primary">Add All To List</button>'
+		];
 	}
 
 
