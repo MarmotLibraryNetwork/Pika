@@ -1698,7 +1698,7 @@ function getSaveSeriesToListForm(){
 	}
 	function reloadNovelistData(){
 		$id = trim($_REQUEST['id']);
-		if (!empty($id)){
+		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 			if (NovelistData::removeNovelistCachedSeriesEntry($id)){
 				return ['success' => true, 'message' => 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
@@ -1713,20 +1713,21 @@ function getSaveSeriesToListForm(){
 		$id              = $_REQUEST['id'];
 		$samePikaCleared = false;
 		$cacheMessage    = '';
-		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-		//Check for cached links
-		$samePikaCache                         = new IslandoraSamePikaCache();
-		$samePikaCache->groupedWorkPermanentId = $id;
-		if ($samePikaCache->find(true)){
-			if ($samePikaCache->delete()){
-				$samePikaCleared = true;
-				$cacheMessage = 'Deleted same pika cache';
-			}else{
-				$cacheMessage = 'Could not delete same pika cache';
-			}
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';//Check for cached links
+			$samePikaCache                         = new IslandoraSamePikaCache();
+			$samePikaCache->groupedWorkPermanentId = $id;
+			if ($samePikaCache->find(true)){
+				if ($samePikaCache->delete()){
+					$samePikaCleared = true;
+					$cacheMessage    = 'Deleted same pika cache';
+				}else{
+					$cacheMessage = 'Could not delete same pika cache';
+				}
 
-		}else{
-			$cacheMessage = 'Data not cached for same pika link';
+			}else{
+				$cacheMessage = 'Data not cached for same pika link';
+			}
 		}
 
 		return [
@@ -1776,87 +1777,89 @@ function getSaveSeriesToListForm(){
 
 
 	/**
-	 * @throws Exception
+	 * Generate Excel Spreadsheet for NoveList Series page
+	 * @return void
 	 */
-	function exportSeriesToExcel(){
-
+	function exportSeriesToExcel(): void{
 		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . "/sys/Novelist/Novelist3.php";
-		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
-		$recordDriver  = new GroupedWorkDriver($id);
-		$novelist      = NovelistFactory::getNovelist();
-		$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
-		$seriesTitle   = $seriesInfo->seriesTitle;
-		$seriesTitles  = $seriesInfo->seriesTitles ?? [];
-		$seriesEntries = [];
-		foreach ($seriesTitles as $seriesEntry){
-			$seriesEntries[$seriesEntry['volume']] = [
-				'title'         => $seriesEntry['title'],
-				'author'        => $seriesEntry['author'],
-				'volume'        => $seriesEntry['volume'],
-				'primaryISBN'   => $seriesEntry['isbn'],
-				'groupedWorkId' => $seriesEntry['id'] ?? null,
-			];
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver  = new GroupedWorkDriver($id);
+			$novelist      = NovelistFactory::getNovelist();
+			$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+			$seriesTitle   = $seriesInfo->seriesTitle;
+			$seriesTitles  = $seriesInfo->seriesTitles ?? [];
+			$seriesEntries = [];
+			foreach ($seriesTitles as $seriesEntry){
+				$seriesEntries[$seriesEntry['volume']] = [
+					'title'         => $seriesEntry['title'],
+					'author'        => $seriesEntry['author'],
+					'volume'        => $seriesEntry['volume'],
+					'primaryISBN'   => $seriesEntry['isbn'],
+					'groupedWorkId' => $seriesEntry['id'] ?? null,
+				];
+			}
+			try {
+				global $interface;
+				$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+				$gitBranch   = $interface->getVariable('gitBranch');
+				$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+					->setLastModifiedBy('Pika ' . $gitBranch)
+					->setTitle("Office 2007 XLSX Document")
+					->setTitle("Office 2007 XLSX Document")
+					->setSubject("Office 2007 XLSX Document")
+					->setDescription("Office 2007 XLSX, generated using PHP.")
+					->setKeywords("office 2007 openxml php")
+					->setCategory("List Items");
+
+				$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', $seriesTitle)
+					->setCellValue('A3', 'Title')
+					->setCellValue('B3', 'Author')
+					->setCellValue('C3', 'Volume')
+					->setCellValue('D3', 'ISBN')
+					->setCellValue('E3', 'Grouped Work ID');
+
+				$a = 4;
+				foreach ($seriesEntries as $entry){
+					$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
+					$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A' . $a, $entry['title'])
+						->setCellValue('B' . $a, $entry['author'])
+						->setCellValue('C' . $a, $entry['volume'])
+						->setCellValue('D' . $a, $entry['primaryISBN'])
+						->setCellValue('E' . $a, $entry['groupedWorkId']);
+					$a++;
+				}
+
+				$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+				// Rename sheet
+				$strip      = [
+					"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+					"}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+					"â€”", "â€“", ",", "<", ".", ">", "/", "?"
+				];
+				$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
+				$excelTitle = str_replace(" ", "_", $excelTitle);
+				$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle, 0, 30));
+
+				// Redirect output to a client's web browser (Excel5)
+				header('Content-Type: application/vnd.ms-excel');
+				header('Content-Disposition: attachment;filename="' . substr($excelTitle, 0, 27) . '.xls"');
+				header('Cache-Control: max-age=0');
+				$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
+				$objWriter->save('php://output');
+				exit;
+			} catch (Exception $e){
+				$this->logger->error('Error creating Excel Spreadsheet' . $e->getMessage());
+			}
 		}
-		global $interface;
-		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-		$gitBranch   = $interface->getVariable('gitBranch');
-		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
-			->setLastModifiedBy('Pika ' . $gitBranch)
-			->setTitle("Office 2007 XLSX Document")
-			->setTitle("Office 2007 XLSX Document")
-			->setSubject("Office 2007 XLSX Document")
-			->setDescription("Office 2007 XLSX, generated using PHP.")
-			->setKeywords("office 2007 openxml php")
-			->setCategory("List Items");
-
-		$objPHPExcel->setActiveSheetIndex(0)
-			->setCellValue('A1', $seriesTitle)
-			->setCellValue('A3', 'Title')
-			->setCellValue('B3', 'Author')
-			->setCellValue('C3', 'Volume')
-			->setCellValue('D3', 'ISBN')
-			->setCellValue('E3', 'Grouped Work ID');
-
-
-		$a = 4;
-		foreach ($seriesEntries as $entry) {
-			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
-			$objPHPExcel->setActiveSheetIndex(0)
-				->setCellValue('A' . $a, $entry['title'])
-				->setCellValue('B' . $a, $entry['author'])
-				->setCellValue('C' . $a, $entry['volume'])
-				->setCellValue('D' . $a, $entry['primaryISBN'])
-				->setCellValue('E' . $a, $entry['groupedWorkId']);
-			$a++;
-
-		}
-
-		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-
-		// Rename sheet
-		$strip = [
-			"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
-			"}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
-			"â€”", "â€“", ",", "<", ".", ">", "/", "?"
-		];
-		$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
-		$excelTitle = str_replace(" ", "_", $excelTitle );
-		$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle,0,30));
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
-		header('Cache-Control: max-age=0');
-		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
-
-
-			$objWriter->save('php://output');
-			exit;
-
 	}
+
 }
