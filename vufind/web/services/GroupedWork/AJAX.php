@@ -724,7 +724,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getSeriesEmailForm(){
 		$id = $_REQUEST['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
-			$recordDriver = new GroupedWorkDriver($id);
+			//$recordDriver = new GroupedWorkDriver($id);
 			global $interface;
 			$interface->assign('id', $id);
 			if (UserAccount::isLoggedIn()){
@@ -742,7 +742,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
 			];
 		}
-		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
+		return ['success' => false, 'message' => 'Invalid Grouped Work ID.'];
 	}
 
 	function sendEmail(){
@@ -750,63 +750,71 @@ class GroupedWork_AJAX extends AJAXHandler {
 		global $configArray;
 		$recaptchaValid = recaptchaCheckAnswer();
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
-			$message = $_REQUEST['message'];
-			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$id           = $_REQUEST['id'];
-				$recordDriver = new GroupedWorkDriver($id);
-				$to           = strip_tags($_REQUEST['to']);
-				$from         = strip_tags($_REQUEST['from']);
-				$interface->assign('from', $from);
-				$interface->assign('message', $message);
-				$interface->assign('recordDriver', $recordDriver);
-				$interface->assign('url', $recordDriver->getAbsoluteUrl());
+			$id = $_REQUEST['id'];
+			if (GroupedWork::validGroupedWorkId($id)){
+				$message = $_REQUEST['message'];
+				if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)){
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$recordDriver = new GroupedWorkDriver($id);
+					$to           = strip_tags($_REQUEST['to']);
+					$from         = strip_tags($_REQUEST['from']);
+					$interface->assign('from', $from);
+					$interface->assign('message', $message);
+					$interface->assign('recordDriver', $recordDriver);
+					$interface->assign('url', $recordDriver->getAbsoluteUrl());
 
-				if (!empty($_REQUEST['related_record'])){
-					$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
-					if (!empty($relatedRecord['callNumber'])){
-						$interface->assign('callnumber', $relatedRecord['callNumber']);
+					if (!empty($_REQUEST['related_record'])){
+						$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
+						if (!empty($relatedRecord['callNumber'])){
+							$interface->assign('callnumber', $relatedRecord['callNumber']);
+						}
+						if (!empty($relatedRecord['shelfLocation'])){
+							$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+						}
+						if (!empty($relatedRecord['driver'])){
+							$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
+						}
 					}
-					if (!empty($relatedRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+
+					$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
+					$body    = $interface->fetch('Emails/grouped-work-email.tpl');
+
+					require_once ROOT_DIR . '/sys/Mailer.php';
+					$mail        = new VuFindMailer();
+					$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+
+					if ($emailResult === true){
+						$result = [
+							'result'  => true,
+							'message' => 'Your e-mail was sent successfully.',
+						];
+					}elseif (PEAR_Singleton::isError($emailResult)){
+						$result = [
+							'result'  => false,
+							'message' => "Your e-mail message could not be sent: {$emailResult}.",
+						];
+					}else{
+						$result = [
+							'result'  => false,
+							'message' => 'Your e-mail message could not be sent due to an unknown error.',
+						];
+
+						$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 					}
-					if (!empty($relatedRecord['driver'])){
-						$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
-					}
-				}
-
-				$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
-				$body    = $interface->fetch('Emails/grouped-work-email.tpl');
-
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail        = new VuFindMailer();
-				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
-
-				if ($emailResult === true){
-					$result = [
-						'result'  => true,
-						'message' => 'Your e-mail was sent successfully.',
-					];
-				}elseif (PEAR_Singleton::isError($emailResult)){
-					$result = [
-						'result'  => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult}.",
-					];
 				}else{
 					$result = [
 						'result'  => false,
-						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+						'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
 					];
-
-					$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 				}
 			}else{
 				$result = [
 					'result'  => false,
-					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+					'message' => 'Invalid Grouped Work ID.',
 				];
 			}
-		}else{ // logged in check, or captcha check
+		}else{
+			// logged in check, or captcha check
 			$result = [
 				'result'  => false,
 				'message' => 'Not logged in or invalid captcha response',
@@ -1680,6 +1688,7 @@ function getSaveSeriesToListForm(){
 		$context        = stream_context_create($options);
 		$response       = file_get_contents($reloadCoverURL, false, $context);
 		if ($response === false){
+			$this->logger->error('Error reloading cover URL: ' . $reloadCoverURL);
 			return false;
 		}elseif (!getimagesizefromstring($response)){
 			$this->logger->error('Reload Cover URL: ' . $reloadCoverURL, [$response]);
@@ -1696,6 +1705,7 @@ function getSaveSeriesToListForm(){
 		}
 		return false;
 	}
+
 	function reloadNovelistData(){
 		$id = trim($_REQUEST['id']);
 		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
