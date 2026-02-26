@@ -24,6 +24,7 @@ require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
+use Pika\Logger;
 
 /* responsible for displaying template */
 class ArchiveObject extends \Action
@@ -31,6 +32,7 @@ class ArchiveObject extends \Action
     protected ?MediaObjectInterface $mediaObject = null;
     /** node ID */
     protected int $nid;
+    protected Logger $logger;
 
     protected const MODEL_VIEWER_MAP = [
         'audio' => 'audio',
@@ -46,12 +48,18 @@ class ArchiveObject extends \Action
 
     public function __construct()
     {
-        $nid = (int)$_GET['nid'];
+        $this->logger = new Logger(__CLASS__);
+        $nid = (int)($_GET['nid'] ?? 0);
         if ($nid <= 0) {
+            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['nid'] ?? null]);
             // redirect to 404;
+            return;
         }
         $factory = new I2ObjectFactory();
         $this->mediaObject = $factory->fromNodeId($nid);
+        if ($this->mediaObject === null) {
+            $this->logger->error('Failed to create media object for nid.', ['nid' => $nid]);
+        }
     }
 
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
@@ -68,6 +76,11 @@ class ArchiveObject extends \Action
 	public function launch()
 	{
 		global $interface;
+
+        if ($this->mediaObject === null) {
+            $this->logger->error('Attempted to launch with null mediaObject.');
+            return;
+        }
 
         $interface->assign('showExploreMore', true);
         $interface->assign('debug_archive_object', true);
@@ -132,13 +145,13 @@ class ArchiveObject extends \Action
         $interface->assign('physical_description', $extent);
 
         // Library
-        $libraryName = ($this->mediaObject->library['name'] !== null) ? $this->mediaObject->library['name'] : null;
+        $libraryName = $this->mediaObject->library['name'] ?? null;
         $interface->assign('library_name', $libraryName);
-        $libraryTid = ($this->mediaObject->library['tid'] !== null) ? $this->mediaObject->library['tid'] : null;
+        $libraryTid = $this->mediaObject->library['tid'] ?? null;
         $interface->assign('library_tid', $libraryTid);
         $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
         $interface->assign('library_url', $libraryUrl);
-        $libraryNamespace = ($this->mediaObject->library['namespace'] !== null) ? $this->mediaObject->library['namespace'] : null;
+        $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
         $interface->assign('library_namespace', $libraryNamespace);
 
         // Location
@@ -316,12 +329,14 @@ class ArchiveObject extends \Action
 
         if (is_string($raw)) {
             $rawArray = preg_split('/[\r\n;]+/', $raw);
+        } elseif (is_array($raw)) {
+            $rawArray = $raw;
+        } else {
+            $this->logger->warning('Unexpected type for pika_access_limits.', ['type' => gettype($raw)]);
+            return [];
         }
 
-        if (!is_array($rawArray)) {
-            return [$rawArray];
-        }
-        return $rawArray;
+        return array_values(array_filter($rawArray));
     }
 
     protected function parseRestriction($restriction)
