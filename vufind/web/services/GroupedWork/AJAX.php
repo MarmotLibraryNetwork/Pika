@@ -1679,13 +1679,12 @@ function getSaveSeriesToListForm(){
 		$options        = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent'] ]];
 		$context        = stream_context_create($options);
 		$response       = file_get_contents($reloadCoverURL, false, $context);
-		$this->logger->debug('Reload Cover URL: ' . $reloadCoverURL, [$response]);
 		if ($response === false){
 			return false;
-		}else{
-			if ($this->checkForCloudflareChallengeResponse($response)){
-				return false;
-			}
+		}elseif (!getimagesizefromstring($response)){
+			$this->logger->error('Reload Cover URL: ' . $reloadCoverURL, [$response]);
+			$this->checkForCloudflareChallengeResponse($response);
+			return false;
 		}
 		return true;
 	}
