@@ -693,50 +693,56 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getEmailForm(){
-		$id             = $_REQUEST['id'];
-		$recordDriver   = new GroupedWorkDriver($id);
-		$relatedRecords = $recordDriver->getRelatedRecords();
-		global $interface;
-		$interface->assign('id', $id);
-		$interface->assign('relatedRecords', $relatedRecords);
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)) {
+			$recordDriver = new GroupedWorkDriver($id);
+			$relatedRecords = $recordDriver->getRelatedRecords();
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('relatedRecords', $relatedRecords);
 
-		if (UserAccount::isLoggedIn()){
-			/** @var User $user */
-			$user = UserAccount::getActiveUserObj();
-			if (!empty($user->email)){
-				$interface->assign('from', $user->email);
+			if (UserAccount::isLoggedIn()){
+				/** @var User $user */
+				$user = UserAccount::getActiveUserObj();
+				if (!empty($user->email)){
+					$interface->assign('from', $user->email);
+				}
+			}else{
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
-		}else{
-			$captchaCode = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
+			return [
+				'title'        => 'Share via E-mail',
+				'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+				// triggering submit action to trigger form validation
+			];
 		}
-		return [
-			'title'        => 'Share via E-mail',
-			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
-			// triggering submit action to trigger form validation
-		];
+		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
 	}
 
 	function getSeriesEmailForm(){
-		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
-		global $interface;
-		$interface->assign('id', $id);
-		if(UserAccount::isLoggedIn()){
-			$user = UserAccount::getActiveUserObj();
-			if (!empty($user->email)){
-				$interface->assign('from', $user->email);
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)){
+			$recordDriver = new GroupedWorkDriver($id);
+			global $interface;
+			$interface->assign('id', $id);
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				if (!empty($user->email)){
+					$interface->assign('from', $user->email);
+				}
+			}else{
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
-		}else{
-			$captchaCode = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
+			return [
+				'title'        => 'Share via E-mail',
+				'modalBody'    => $interface->fetch("GroupedWork/email-series.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+			];
 		}
-		return [
-			'title'         => 'Share via E-mail',
-			'modalBody'     => $interface->fetch("GroupedWork/email-series.tpl"),
-			'modalButtons'  => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
-		];
+		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
 	}
 
 	function sendEmail(){
