@@ -34,18 +34,18 @@ class DjatokaResolver extends Action {
 
 		global $configArray;
 		$queryString = $_SERVER['QUERY_STRING'];
-		$queryString = str_replace('module=AJAX&', '', $queryString);
-		$queryString = str_replace('action=DjatokaResolver&', '', $queryString);
-		if (substr($queryString, 0, 1) == '&'){
+		$queryString = str_replace(['module=AJAX&', 'action=DjatokaResolver&'], '', $queryString);
+		if (str_starts_with($queryString, '&')){
 			$queryString = substr($queryString, 1);
 		}
-		$queryString       = str_replace('https', 'http', $queryString);
 		$baseRepositoryUrl = $configArray['Islandora']['repositoryUrl'];
-		$baseRepositoryUrl = str_replace('https', 'http', $baseRepositoryUrl);
-		$requestUrl        = $baseRepositoryUrl . '/adore-djatoka/resolver?' . $queryString;
+		[$queryString, $baseRepositoryUrl] = str_replace('https', 'http', [$queryString, $baseRepositoryUrl]);
+		$requestUrl = $baseRepositoryUrl . '/adore-djatoka/resolver?' . $queryString;
 
 		try {
-			$response = @file_get_contents($requestUrl);
+			$options  = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent']]];
+			$context  = stream_context_create($options);
+			$response = @file_get_contents($requestUrl, false, $context);
 			if (!$response){
 				global $pikaLogger;
 				$logger = $pikaLogger->withName(__CLASS__);
@@ -54,11 +54,14 @@ class DjatokaResolver extends Action {
 					'success' => false,
 					'message' => 'Could not load from the specified URL ' . $requestUrl
 				]);
+				header('Content-type: application/json');
+				echo $response;
+				exit;
 			} else {
 				if (str_contains($response,'challenge-error-text')){
 					global $pikaLogger;
 					$logger = $pikaLogger->withName(__CLASS__);
-					$logger->error("Recieved Cloudflare challenge response");
+					$logger->error('Received Cloudflare challenge response');
 				}
 			}
 		} catch (Exception $e){
@@ -69,6 +72,9 @@ class DjatokaResolver extends Action {
 				'success' => false,
 				'message' => $e
 			]);
+			header('Content-type: application/json');
+			echo $response;
+			exit;
 		}
 		header('Content-type: image/jpeg');
 		echo $response;
