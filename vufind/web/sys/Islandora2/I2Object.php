@@ -139,6 +139,20 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Get the display model/type.
+     *
+     * @return string
+     */
+    public function getDisplayModel(): ?string 
+    {
+        $displayModel = $this->legacy_resource_type['name'] ?? null;
+        if($displayModel === null) {
+            $displayModel = $this->getObjectModel();
+        }
+        return $displayModel;
+    }
+
+    /**
      * Attempt to return the primary media file/derivative metadata.
      *
      * @return array|null
