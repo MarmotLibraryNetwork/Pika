@@ -45,14 +45,13 @@ class ArchiveObject extends \Action
         'video' => 'video',
     ];
 
-
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
         $nid = (int)($_GET['nid'] ?? 0);
         if ($nid <= 0) {
             $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['nid'] ?? null]);
-            // redirect to 404;
+            // TODO: redirect to 404;
             return;
         }
         $factory = new I2ObjectFactory();
@@ -196,7 +195,8 @@ class ArchiveObject extends \Action
         $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
         $interface->assign('local_identifer', $localIdentifier);
 
-        
+        // $url = $this->mediaObject->getUrl();
+        // $url = urlencode($url);
 
     }
 

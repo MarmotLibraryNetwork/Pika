@@ -20,6 +20,7 @@
 namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Media.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Pika\Logger;
 use Islandora2\I2Media;
@@ -300,6 +301,11 @@ abstract class I2Object implements MediaObjectInterface
         }
 
         return null;
+    }
+
+    public function getUrl(): string
+    {
+        return getObjRelativeUrl($this);
     }
 
     /**
