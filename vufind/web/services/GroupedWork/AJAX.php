@@ -1645,25 +1645,17 @@ function getSaveSeriesToListForm(){
 //	}
 
 	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$id           = $_REQUEST['id'];
+		$id = $_REQUEST['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($id);
 			$success      = true;
 
-			//Reload small cover
-			if (!$this->sendReloadCoverURl($recordDriver, 'small')){
-				$success = false;
-			}
-
-			//Reload medium cover
-			if (!$this->sendReloadCoverURl($recordDriver, 'medium')){
-				$success = false;
-			}
-
-			//Reload large cover
-			if (!$this->sendReloadCoverURl($recordDriver, 'large')){
-				$success = false;
+			// Reload covers for different sizes
+			foreach (['small', 'medium', 'large'] as $size) {
+				if (!$this->sendReloadCoverURl($recordDriver, $size)) {
+					$success = false;
+				}
 			}
 
 			if ($success){
