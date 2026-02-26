@@ -2,7 +2,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +25,7 @@ use Pika\Logger;
 /**
  * Record driver for Islandora 2 nodes that are exposed through the JSON endpoint.
  *
- * The driver mirrors the behaviour of the legacy Islandora driver where possible
+ * The driver mirrors the behavior of the legacy Islandora driver where possible
  * while sourcing its data from the Islandora 2 pika-api interface.
  *
  * @category Pika
