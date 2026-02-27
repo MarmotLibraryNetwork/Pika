@@ -10728,3 +10728,7 @@ a .header-button:hover {
   top: 55px;
   left: -40px;
 }
+.loginOptions,
+.logoutOptions {
+  margin-top: 50px;
+}
