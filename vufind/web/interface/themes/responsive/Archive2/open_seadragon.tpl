@@ -5,8 +5,9 @@
 {literal}
 var viewer = OpenSeadragon({
   id: "openseadragon-viewer",
-  prefixUrl: "//cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/",
-  tileSources: "/Archive/AJAX?method=fetchCantaloupeMaifest&sf={/literal}{$service_file_url}{literal}",
+  prefixUrl: "https://cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/",
+  tileSources: ["{/literal}{$service_file_url}{literal}"],
+  crossOriginPolicy: 'Anonymous',
 });
 {/literal}
 </script>

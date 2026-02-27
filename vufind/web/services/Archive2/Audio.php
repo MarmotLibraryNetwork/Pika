@@ -27,24 +27,32 @@ class Audio extends ArchiveObject
     public function launch()
     {
         global $interface;
-        
-        $audio = $this->mediaObject->getAudio();
-        $interface->assign('audioUrl', $audio->fileUrl);
 
-        $videoMime = $audio->mime;
-        $interface->assign('audioMime', $videoMime);
+        $audio = $this->mediaObject->getAudio();
+        if ($audio === null) {
+            $this->logger->warning('Audio media not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
+            $interface->assign('audioUrl', null);
+            $interface->assign('audioMime', null);
+        } else {
+            $interface->assign('audioUrl', $audio->fileUrl);
+            $interface->assign('audioMime', $audio->mime);
+        }
 
         $thumb = $this->mediaObject->getThumbnail();
-        $interface->assign('videoThumbnailUrl', $thumb->fileUrl);
+        if ($thumb === null) {
+            $this->logger->warning('Thumbnail not found for audio node.', ['nid' => $this->mediaObject->getNodeId()]);
+            $interface->assign('videoThumbnailUrl', null);
+        } else {
+            $interface->assign('videoThumbnailUrl', $thumb->fileUrl);
+        }
 
         $captions = $this->mediaObject->getCaptions();
-        // cast to an array
-        $captionsArray = json_decode(json_encode($captions), true);
+        $captionsArray = $captions !== null ? json_decode(json_encode($captions), true) : [];
         $interface->assign('captions', $captionsArray);
-       
+
         $transcripts = $this->mediaObject->getTranscripts();
-        $interface->assign('transcripts', $transcripts);
-        
+        $interface->assign('transcripts', $transcripts ?? []);
+
         parent::launch();
 
         $interface->assign('object_viewer', 'audio');

@@ -216,6 +216,24 @@ function getIndexingUpdates(): array{
 			],
 		],
 
+		'2026.01.0_add_easy_reader_format' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Add Easy Reader Format',
+			'description'     => 'Add Easy Reader format to translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'grouping_categories'),
+					'EasyReader', 'book')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'EasyReader', 'Easy Reader')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'EasyReader', 'Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'EasyReader', '10')"
+			],
+		],
+
 	];
 }
 

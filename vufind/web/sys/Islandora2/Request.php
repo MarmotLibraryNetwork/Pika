@@ -3,7 +3,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +27,7 @@ class Request
     private $api_url;
     private $logger;
     protected ?int $nodeId;
+		private $userAgent;
 
     public function __construct($nodeId = null)
     {
@@ -38,6 +38,7 @@ class Request
         $this->logger = new Logger(__CLASS__);
         $baseUrl = $configArray['Islandora2']['url'] ?? '';
         $this->api_url = $baseUrl ? rtrim($baseUrl, '/') . '/pika-json/node/' : '';
+				$this->userAgent = $configArray['Islandora2']['userAgent'];
     }
 
     /**
@@ -67,7 +68,7 @@ class Request
         $url       = $this->api_url . $nodeId;
         $curl      = new Curl();
         $response  = null;
-        $curl->setUserAgent('pikaArchive');
+        $curl->setUserAgent($this->userAgent);
         
         try {
             $response = $curl->get($url);

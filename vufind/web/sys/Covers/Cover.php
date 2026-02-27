@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -48,10 +47,9 @@ class Cover extends DB_DataObject {
 		global $configArray;
 		$storagePath = $configArray['Site']['coverPath'];
 		$structure   = [
-
 			'coverId'  => ['property' => 'coverId', 'type' => 'label', 'customName' => true, 'label' => 'id', 'description' => 'The unique id of the cover within the database'],
-			'cover'    => ['property' => 'cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.'],
-			'modified' => ['property' => 'modified', 'type' => 'text', 'customName' => true, 'label' => 'Updated', 'format' => 'Y-m-d', 'description' => 'The date when the image was last updated.'],
+			'cover'    => ['property' => 'Cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.', 'required' => true],
+			'modified' => ['property' => 'modified', 'type' => 'dateReadOnly', 'customName' => true, 'label' => 'Updated', 'format' => 'Y-m-d', 'description' => 'The date when the image was last updated.'],
 			//            'fileName'  => array('property'=>'fileName', 'type'=>'text', 'maxLength'=>100, 'label'=>'File Name ', 'description'=>'Name of the file'),
 		];
 		return $structure;

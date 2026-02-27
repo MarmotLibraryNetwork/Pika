@@ -23,7 +23,7 @@
         });
 
         document.getElementById('archive-audio-player').addEventListener('pause', function() {
-            document.getElementById('vtt-text').style.display = "none";
+            //document.getElementById('vtt-text').style.display = "none";
         });
 
         document.getElementById('archive-audio-player').textTracks[0].addEventListener('cuechange', function() {

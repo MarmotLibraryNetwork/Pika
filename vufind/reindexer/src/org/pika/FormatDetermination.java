@@ -1561,8 +1561,10 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
+						}else if (subfieldData.contains("readers for new literates")) {
 							result.add("AdultLiteracyBook");
+						} else if (subfieldData.contains("high interest-low vocabulary") || subfieldData.contains("readers (publications)")) {
+							result.add("EasyReader");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						) {
