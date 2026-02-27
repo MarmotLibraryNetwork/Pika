@@ -8105,7 +8105,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 170px;
+  height: 140px;
   min-height: 100px;
   padding-top: 0;
   background-color: #20368c;
@@ -8128,7 +8128,7 @@ a .header-button {
   color: #222;
   background-color: #20368c;
   border: 1px solid #555;
-  margin-top: 110px / 2;
+  margin-top: 80px / 2;
 }
 a .header-button:hover {
   color: #fff;
@@ -10610,7 +10610,7 @@ a .header-button {
   border-radius: 0.5em;
   color: #000;
   background-color: #fff;
-  margin-top: 110px / 2;
+  margin-top: 80px / 2;
   line-height: 60px;
   text-shadow: none;
 }
@@ -10620,7 +10620,7 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #fff;
 }
 #header-logo {
-  height: 160px;
+  height: 120px;
   max-height: none;
 }
 .system-message-header {
@@ -10721,14 +10721,14 @@ a .header-button:hover {
   display: table;
 }
 #headingInfo::before {
-  content: "261 Main Street, Norwich CT \00000a (860)889-2365";
+  content: "261 Main Street, Norwich CT \00000a (860) 889-2365";
   color: white;
   white-space: pre;
   position: relative;
-  top: 55px;
-  left: -40px;
+  top: 35px;
+  left: -60px;
 }
 #header-container .loginOptions,
 #header-container .logoutOptions {
-  margin-top: 50px;
+  margin-top: 35px;
 }
