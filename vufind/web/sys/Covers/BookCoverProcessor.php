@@ -883,7 +883,7 @@ class BookCoverProcessor {
 					$x++;
 				}
 
-				if ($x == 4 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 50, 100)){
+				if (count($imageArray) == 4 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 50, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 0, 50, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[2], 50, 0, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[3], 50, 50, 0, 0, 50, 50, 100);
@@ -914,7 +914,7 @@ class BookCoverProcessor {
 					}
 					$x++;
 				}
-				if ($x == 3 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
+				if (count($imageArray)  == 3 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 50, 0, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[2], 50, 50, 0, 0, 50, 50, 100);
 				}
@@ -941,7 +941,7 @@ class BookCoverProcessor {
 					}
 					$x++;
 				}
-				if ($x == 2 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
+				if (count($imageArray) == 2 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 50, 0, 0, 0, 50, 100, 100);
 				}
 				$fontColor = imagecolorallocate($finalCover, 255, 255, 255);
