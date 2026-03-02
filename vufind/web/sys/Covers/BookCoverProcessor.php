@@ -857,7 +857,7 @@ class BookCoverProcessor {
 		require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
 		require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
 		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-		$defaultImage = imagecreatefromstring(ROOT_DIR . '/interface/themes/default/images/lists.png');
+		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
 
 		if ($this->reload){
 			unlink($this->cacheFile);
@@ -879,7 +879,7 @@ class BookCoverProcessor {
 							$imageArray[$x]         = $resizedResource;
 						}
 					}else{
-						imagecopymerge($finalCover, $defaultImage, 0, 0, 0, 100, 100, 100, 100);
+						$finalCover = $defaultImage;
 					}
 					$x++;
 				}
@@ -911,7 +911,7 @@ class BookCoverProcessor {
 							$imageArray[$x] = $resizedResource;
 						}
 					}else{
-						imagecopymerge($finalCover, $defaultImage, 0, 0, 0, 100, 100, 100,100);
+						$finalCover = $defaultImage;
 					}
 					$x++;
 				}
@@ -938,7 +938,7 @@ class BookCoverProcessor {
 							$imageArray[$x]         = $resizedResource;
 							}
 						}else{
-						imagecopymerge($finalCover, $defaultImage, 0, 0, 0, 100, 100, 100,100);
+						$finalCover = $defaultImage;
 					}
 					$x++;
 				}
