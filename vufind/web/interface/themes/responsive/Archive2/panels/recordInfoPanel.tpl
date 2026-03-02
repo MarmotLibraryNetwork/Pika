@@ -22,6 +22,7 @@
                                 <a href="{$collection.link}">{$collection.pid}</a> ({$collection.label})<br>
                             {/foreach}
                         </div>
+                        {/if}
                     </div>
                 {/if}
 
@@ -53,3 +54,4 @@
             </div>
         </div>
     </div>
+{/strip}
