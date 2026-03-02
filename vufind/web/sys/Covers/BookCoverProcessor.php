@@ -871,11 +871,12 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 4){
-					$bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x]);
-					if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-						$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-						$resizedResource        = imagescale($listEntryImageResource, 50);
-						$imageArray[$x]         = $resizedResource;
+					if ($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+							$resizedResource        = imagescale($listEntryImageResource, 50);
+							$imageArray[$x]         = $resizedResource;
+						}
 					}
 					$x++;
 				}
@@ -896,15 +897,16 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 3){
-					$bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x]);
-					if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-						$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-						if ($x == 0){
-							$resizedResource = imagescale($listEntryImageResource, -1, 98);
-						}else{
-							$resizedResource = imagescale($listEntryImageResource, 50);
+					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+							if ($x == 0){
+								$resizedResource = imagescale($listEntryImageResource, -1, 98);
+							}else{
+								$resizedResource = imagescale($listEntryImageResource, 50);
+							}
+							$imageArray[$x] = $resizedResource;
 						}
-						$imageArray[$x] = $resizedResource;
 					}
 					$x++;
 				}
@@ -924,14 +926,14 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 2){
-					$bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x]);
-					if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-						$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-						$resizedResource        = imagescale($listEntryImageResource, -1, 100);
-						$imageArray[$x]         = $resizedResource;
-					}
+					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+							$resizedResource        = imagescale($listEntryImageResource, -1, 100);
+							$imageArray[$x]         = $resizedResource;
+							}
+						}
 					$x++;
-
 				}
 				if (imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 50, 0, 0, 0, 50, 100, 100);
@@ -947,8 +949,6 @@ class BookCoverProcessor {
 		}
 		return false;
 	}
-
-
 	/**
 	 * @param string $itemId GroupedWorkId or ArchivePID taken from an entry in a User List
 	 * @return string|void  A Cover url to fetch
@@ -963,7 +963,12 @@ class BookCoverProcessor {
 		}else{
 			$bookcoverUrl = $this->configArray['Site']['url'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
 		}
-		return $bookcoverUrl;
+		if(@is_array(getimagesize($bookcoverUrl))){
+			return $bookcoverUrl;
+		}else{
+			$this->logger->error('Image was not returned');
+			return false;
+		}
 	}
 
 	private function getGroupedWorkCover(){
