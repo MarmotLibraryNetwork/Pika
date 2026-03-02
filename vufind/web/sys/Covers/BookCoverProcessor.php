@@ -877,11 +877,13 @@ class BookCoverProcessor {
 							$resizedResource        = imagescale($listEntryImageResource, 50);
 							$imageArray[$x]         = $resizedResource;
 						}
+					}else{
+						$finalCover = $this->getDefaultCover();
 					}
 					$x++;
 				}
 
-				if (imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 50, 100)){
+				if ($x == 4 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 50, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 0, 50, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[2], 50, 0, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[3], 50, 50, 0, 0, 50, 50, 100);
@@ -907,10 +909,12 @@ class BookCoverProcessor {
 							}
 							$imageArray[$x] = $resizedResource;
 						}
+					}else{
+						$finalCover = $this->getDefaultCover();
 					}
 					$x++;
 				}
-				if (imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
+				if ($x == 3 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 50, 0, 0, 0, 50, 50, 100);
 					imagecopymerge($finalCover, $imageArray[2], 50, 50, 0, 0, 50, 50, 100);
 				}
@@ -932,10 +936,12 @@ class BookCoverProcessor {
 							$resizedResource        = imagescale($listEntryImageResource, -1, 100);
 							$imageArray[$x]         = $resizedResource;
 							}
-						}
+						}else{
+						$finalCover = $this->getDefaultCover();
+					}
 					$x++;
 				}
-				if (imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
+				if ($x == 2 && imagecopymerge($finalCover, $imageArray[0], 0, 0, 0, 0, 50, 100, 100)){
 					imagecopymerge($finalCover, $imageArray[1], 50, 0, 0, 0, 50, 100, 100);
 				}
 				$fontColor = imagecolorallocate($finalCover, 255, 255, 255);
