@@ -32,3 +32,10 @@
 		{* end content *}
 	{/if} 
 {/strip}
+{literal}
+<script>
+$().ready(function(){
+	Pika.Archive.loadExploreMore('{/literal}{$pid|urlencode}{literal}');
+});
+</script>
+{/literal}

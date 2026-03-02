@@ -20,6 +20,7 @@
 namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Media.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Pika\Logger;
 use Islandora2\I2Media;
@@ -136,6 +137,20 @@ abstract class I2Object implements MediaObjectInterface
     public function getObjectModelLabel(): string
     {
         return ucfirst($this->getObjectModel());
+    }
+
+    /**
+     * Get the display model/type.
+     *
+     * @return string
+     */
+    public function getDisplayModel(): ?string 
+    {
+        $displayModel = $this->legacy_resource_type['name'] ?? null;
+        if($displayModel === null) {
+            $displayModel = $this->getObjectModel();
+        }
+        return $displayModel;
     }
 
     /**
@@ -286,6 +301,11 @@ abstract class I2Object implements MediaObjectInterface
         }
 
         return null;
+    }
+
+    public function getUrl(): string
+    {
+        return getObjRelativeUrl($this);
     }
 
     /**
