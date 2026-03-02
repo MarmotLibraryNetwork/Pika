@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,25 +33,24 @@ class SearchEntry extends DB_DataObject {
 	/**
 	 * Get an array of SearchEntry objects for the specified user.
 	 *
-	 * @access  public
-	 * @param int $sid Session ID of current user.
-	 * @param int $uid User ID of current user (optional).
-	 * @return  array                       Matching SearchEntry objects.
+	 * @access public
+	 * @param string   $sid Session ID of current user (a hash string).
+	 * @param int|null $uid User ID of current user (optional).
+	 * @return  array  Matching SearchEntry objects.
 	 */
-	function getSearches($sid, $uid = null){
-		$searches = array();
-
-		$sql = "SELECT * FROM search WHERE session_id = '" . $this->escape($sid) . "'";
-		if (!empty($uid)){
-			$sql .= " OR user_id = '" . $this->escape($uid) . "'";
-		}
-		$sql .= ' ORDER BY id';
-
-		$s = new SearchEntry();
-		$s->query($sql);
-		if ($s->N){
-			while ($s->fetch()){
-				$searches[] = clone($s);
+	function getSearches($sid, $uid = null): array{
+		$searches = [];
+		$s        = new SearchEntry();
+		if (ctype_alnum($sid)){
+			$s->whereAdd("session_id = '" . $this->escape($sid) . "'");
+			if (!empty($uid) && ctype_digit($uid)){
+				$s->whereAdd("user_id = '$uid'", 'OR');
+			}
+			$s->orderBy('id');
+			if ($s->find()){
+				while ($s->fetch()){
+					$searches[] = clone $s;
+				}
 			}
 		}
 

@@ -10,7 +10,7 @@
 					<ul id="categoryValues" class="row list-unstyled" aria-label="{$cluster.label}">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop" key="i"}
 							{if $thisFacet.isApplied}
-								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books"}{* Add offset to first column *} col-tn-offset-1{/if}">
+								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} col-tn-offset-1{/if}">
 									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
 										<div class="row">
 											<div class="col-xs-6">

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1470,7 +1469,11 @@ class GroupedWorkDriver extends RecordInterface {
 					'hideByDefault'        => false,
 					'itemSummary'          => [],
 					//'itemSummaryLocal'     => [],
-					'groupedStatus'        => ''
+					'groupedStatus'        => '',
+
+					// Local Shelving status display for format manifestation level
+					'anyRecordHasStatusBetterThanShelving' => false,
+					'localShelvingItem'                    => false,
 				];
 			}
 			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
@@ -1505,8 +1508,20 @@ class GroupedWorkDriver extends RecordInterface {
 			}else{
 				$relatedManifestations[$currentManifestation]['allLibraryUseOnly'] = false;
 			}
-			if (!$relatedManifestations[$currentManifestation]['hasLocalItem'] && $curRecord['hasLocalItem']){
+			if (!empty($curRecord['hasLocalItem'])){
 				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
+
+				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] && $curRecord['anyLocalStatusBetterThanShelving']){
+					$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] = true;
+					// Flag to disable displaying Shelving override status at format manifestation level
+					$relatedManifestations[$currentManifestation]['localShelvingItem']   = false;
+					// Unset other flag in case previously set
+				}
+				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] && !empty($curRecord['localShelvingItem'])){
+					// Set manifestation level localShelvingItem flag if a record does have it on.
+					$relatedManifestations[$currentManifestation]['localShelvingItem']   = true;
+					$relatedManifestations[$currentManifestation]['localShelvingStatus'] = $curRecord['localShelvingStatus'];
+				}
 			}
 			if ($curRecord['shelfLocation']){
 				$relatedManifestations[$currentManifestation]['shelfLocation'][$curRecord['shelfLocation']] = $curRecord['shelfLocation'];
@@ -1601,13 +1616,13 @@ class GroupedWorkDriver extends RecordInterface {
 
 
 		//Check to see what we need to do for actions, and determine if the record should be hidden by default
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$isSuperScope   = false;
+		$searchLibrary     = Library::getSearchLibrary();
+		$searchLocation    = Location::getSearchLocation();
+		$isRestrictedScope = false;
 		if ($searchLocation){
-			$isSuperScope = !$searchLocation->restrictSearchByLocation;
+			$isRestrictedScope = $searchLocation->restrictSearchByLocation;
 		}elseif ($searchLibrary){
-			$isSuperScope = !$searchLibrary->restrictSearchByLibrary;
+			$isRestrictedScope = $searchLibrary->restrictSearchByLibrary;
 		}
 		foreach ($relatedManifestations as $key => $manifestation){
 			$manifestation['numRelatedRecords'] = count($manifestation['relatedRecords']);
@@ -1739,7 +1754,7 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($selectedFormatCategories && !in_array($manifestation['formatCategory'], $selectedFormatCategories)){
 				if (($manifestation['format'] == 'eAudiobook') && (in_array('eBook', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is a special case where the format is in 2 categories
-				}elseif (in_array($manifestation['format'], ['VOX Books', "WonderBook"]) && (in_array('Books', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
+				}elseif (in_array($manifestation['format'], ['Read-Along Book', 'VOX Book', 'VOX Books', 'WonderBook']) && (in_array('Books', $selectedFormatCategories) || in_array('Audio Books', $selectedFormatCategories))){
 					//This is another special case where the format is in 2 categories
 				}else{
 					$manifestation['hideByDefault'] = true;
@@ -1760,10 +1775,12 @@ class GroupedWorkDriver extends RecordInterface {
 					if (!$addOnline){
 						$manifestation['hideByDefault'] = true;
 					}
-				}elseif (!$manifestation['availableLocally'] && !$isSuperScope){
+				}elseif ($isRestrictedScope && !$manifestation['availableLocally']){
+					// For Restricted Scopes, hide by default anything not available locally
 					$manifestation['hideByDefault'] = true;
 				}
-			}elseif ($selectedAvailability == 'Entire Collection' && !$isSuperScope && (!$manifestation['hasLocalItem'] && !$manifestation['isEContent'])){
+			}elseif ($isRestrictedScope && $selectedAvailability == 'Entire Collection' && (!$manifestation['hasLocalItem'] && !$manifestation['isEContent'])){
+				//TODO: add explaining comment for this block of logic
 				$manifestation['hideByDefault'] = true;
 			}
 			if ($selectedDetailedAvailability){
@@ -2693,7 +2710,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null){
 		return [];
 	}
 
@@ -2954,6 +2971,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'holdable'               => false,
 			'itemSummary'            => [],
 			'groupedStatus'          => 'Currently Unavailable',
+			'anyLocalStatusBetterThanShelving' => false,
 			'source'                 => $source,
 			'actions'                => [],
 			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
@@ -2977,8 +2995,17 @@ class GroupedWorkDriver extends RecordInterface {
 
 		$i                 = 0;
 		$allLibraryUseOnly = true;
+
+		// booleans to be used together to determine if the most available local item has
+		// the shelving or recently returned grouped item status; and no other local item is on shelf
+		$anyLocalShelving                 = false;
+		$anyLocalStatusBetterThanShelving = false;
+		$localShelvingStatus              = '';
+
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
+			$isExternalReservationItem = false;
+
 			$itemId        = $curItem->itemIdentifier;
 			$shelfLocation = $curItem->shelfLocation;
 
@@ -3033,16 +3060,17 @@ class GroupedWorkDriver extends RecordInterface {
 				$holdable = $this->calculateForActionByPtype($activePTypes, $holdablePTypes, $holdable);
 				if ($holdable){
 					// If this item is holdable, then treat the record as holdable when building action buttons
-					$recordHoldable = true;
+					$recordHoldable            = true;
+					$relatedRecord['holdable'] = true;
 				}
 
 				// If bookable pTypes were calculated for this scope, determine if the record is bookable to the scope's pTypes
 				$bookable = $this->calculateForActionByPtype($activePTypes, $bookablePTypes, $bookable);
 				if ($bookable){
 					// If this item is bookable, then treat the record as bookable when building action buttons
-					$recordBookable = true;
+					$recordBookable            = true;
+					$relatedRecord['bookable'] = true;
 				}
-
 
 				global $configArray;
 				if (!empty($configArray['Catalog']['displayHomePickupItems']) && $holdable && $isHomePickUp){
@@ -3083,17 +3111,25 @@ class GroupedWorkDriver extends RecordInterface {
 			}elseif (!empty($curItem->itemUrl)){
 				// Special Physical Records, like KitKeeper, that link to an external reservation system
 				// Also physical item sideloads
-				$url = $scopingDetails->localUrl ?? $curItem->itemUrl;
+				$url = !empty($scopingDetails->localUrl) ? $scopingDetails->localUrl : $curItem->itemUrl;
 				// Scope url overrides necessary for physical item sideloads
 				$relatedUrls[] = [
 					'url' => $url
 				];
-				if (!$holdable & $available && str_starts_with($curItem->recordIdentifier, 'ils') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+				if (!$holdable && str_starts_with($curItem->recordIdentifier, 'ils') && ($available || $groupedStatus == 'Checked Out') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+					$isExternalReservationItem = true;
 					// Regular, available, not hold-able items with an item URL should be presumed as
 					// items intended to be reserved externally (not in the library circulation system).
+					// Checked Out is the exceptional status to the $available check.  (Using Grouped Status, since detailed status give due date.)
+
 					// Exclude physical sideload items with the status check: str_starts_with($curItem->recordIdentifier, 'ils')
 					// (which will also be available, not hold-able and have an item URL)
-					$status = translate('Available for Reservation');
+					$reservationPhrase = translate('Available for Reservation');
+					if ($groupedStatus == 'Checked Out'){
+						$status .= '; ' . $reservationPhrase;
+					} else {
+						$status = $reservationPhrase;
+					}
 				}
 			}
 
@@ -3120,12 +3156,6 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecord['inLibraryUseOnly'] = false;
 			}
 			$relatedRecord['allLibraryUseOnly'] = $allLibraryUseOnly;
-			if ($holdable){
-				$relatedRecord['holdable'] = true;
-			}
-			if ($bookable){
-				$relatedRecord['bookable'] = true;
-			}
 			$relatedRecord['groupedStatus']      = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
 			$relatedRecord['isAvailableToOrder'] = $relatedRecord['groupedStatus'] == 'Available to Order';
 
@@ -3168,6 +3198,14 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecord['hasLocalItem'] = true;
 				$sectionId                     = 1;
 				$section                       = 'In this library';
+
+				// Check if the best status is Shelving; only check while the relevant flags aren't true.
+				if (!$anyLocalStatusBetterThanShelving && self::$statusRankings[$groupedStatus] > self::$statusRankings['Shelving']){
+					$anyLocalStatusBetterThanShelving = true;
+				} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
+					$anyLocalShelving    = true;
+					$localShelvingStatus = $groupedStatus;
+				}
 			}elseif ($libraryOwned){
 				if ($libraryShelfLocation == null){
 					$libraryShelfLocation = $shelfLocation;
@@ -3181,6 +3219,14 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedRecord['localCopies'] += $numCopies;
 				if ($searchLocation == null || $isEcontent){
 					$relatedRecord['hasLocalItem'] = true;
+
+					// Check if the best status is Shelving; only check while the relevant flags aren't true.
+					if (!$anyLocalStatusBetterThanShelving && self::$statusRankings[$groupedStatus] > self::$statusRankings['Shelving']){
+						$anyLocalStatusBetterThanShelving = true;
+					} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
+						$anyLocalShelving    = true;
+						$localShelvingStatus = $groupedStatus;
+					}
 				}
 				$sectionId = 5;
 				$section   = $library->displayName;
@@ -3226,6 +3272,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'itemId'             => $itemId
 			];
 			if (!$forCovers){
+				// This looks like this is only for ILS eContent bibs; (maybe even just MLN1 ILS eContent)
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : [];
 			}
 
@@ -3271,7 +3318,18 @@ class GroupedWorkDriver extends RecordInterface {
 
 		if (!$forCovers){
 			$recordAvailable          = $relatedRecord['availableLocally'] || $relatedRecord['availableOnline'];
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $relatedUrls/*, $volumeData*/) : [];
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $isExternalReservationItem, $relatedUrls/*, $volumeData*/) : [];
+
+			if ($anyLocalShelving && !$anyLocalStatusBetterThanShelving){
+				// display override status when the most available local item is being shelved
+				$relatedRecord['localShelvingItem']   = true;
+				$relatedRecord['localShelvingStatus'] = $localShelvingStatus;
+			}
+			if ($anyLocalStatusBetterThanShelving){
+				$relatedRecord['anyLocalStatusBetterThanShelving'] = true;
+				// Use this flag to determine if we can display Shelving grouped status
+				// at format manifestation level (in search results & grouped work view)
+			}
 			$timer->logTime('Loaded actions');
 			$memoryWatcher->logMemory('Loaded actions');
 		}
@@ -3459,6 +3517,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'eVideo':
 			case 'VHS':
 			case 'Video':
+			case '4K Ultra HD Blu-ray':
 				return 'Movie';
 
 			case 'Map':
@@ -3467,6 +3526,8 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Nintendo 3DS':
 			case 'Nintendo Wii':
 			case 'Nintendo Wii U':
+			case 'Nintendo Switch':
+			case 'Nintendo Switch 2':
 			case 'PlayStation':
 			case 'PlayStation 3':
 			case 'PlayStation 4':
@@ -3490,6 +3551,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Book':
 			case 'Large Print':
 			case 'Manuscript':
+			case 'Illustrated Edition':
 				return 'Hardcover';
 
 			case 'Audio':
@@ -3510,7 +3572,10 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->notice("No schema.org book format set for $pikaFormat");
+				$this->logger->notice('No schema.org book format set for ' . $pikaFormat);
+			case 'Book Club Kit':
+			case 'Read-Along Book':
+			case 'Newspaper':
 				return '';
 		}
 	}

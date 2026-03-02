@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -754,7 +753,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 						]);
 					throw new ErrorException('Error saving patron to Pika database');
 				}else{
-					$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode()]);
+					$this->logger->debug('Created patron in Pika database.', ['barcode' => $patron->getBarcode(), 'pikaId' => $patron->id]);
 				}
 			}elseif ($updatePatron && !$createPatron){
 				$result = $patron->update();
@@ -1473,6 +1472,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$this->logger->warning('Failed to self register patron', [$this->apiLastError]);
 			if (!empty($this->apiLastErrorForPatron)){
 				$result['message'] = $this->apiLastErrorForPatron;
+			} else {
+				$result['message'] = 'Self Registration failed';
 			}
 			return $result;
 		}
@@ -1481,7 +1482,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
 		}
 
-		$this->logger->debug('Success self registering patron : ' . $barcode);
+		$this->logger->info('Success self registering patron : ' . $barcode);
 		return ['success' => true, 'barcode' => $barcode];
 	}
 
@@ -1616,23 +1617,26 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		];
 
 		$fields[] = [
-			'property'     => 'primaryphone',
-			'type'         => 'tel',
-			'label'        => 'Primary phone (XXX-XXX-XXXX)',
-			'description'  => 'Your primary phone number.',
-			'maxLength'    => 20,
-			'required'     => false,
-			'autocomplete' => 'tel-national',
+			'property'      => 'primaryphone',
+			//'type'         => 'tel', // input telephone doesn't allow dashes on iPhones. See D-5229
+			'type'          => 'text',
+			'label'         => 'Primary phone (XXX-XXX-XXXX)',
+			'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+			'description'   => 'Your primary phone number.',
+			'maxLength'     => 20,
+			'required'      => false,
+			'autocomplete'  => 'tel-national',
 		];
 
 		if ($library && $library->showWorkPhoneInProfile){
 			$fields[] = [
-				'property'    => 'altphone',
-				'type'        => 'text',
-				'label'       => 'Work phone (XXX-XXX-XXXX)',
-				'description' => 'Work Phone',
-				'maxLength'   => 40,
-				'required'    => true
+				'property'      => 'altphone',
+				'type'          => 'text',
+				'label'         => 'Work phone (XXX-XXX-XXXX)',
+				'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+				'description'   => 'Work Phone',
+				'maxLength'     => 40,
+				'required'      => true
 			];
 		}
 
@@ -1928,7 +1932,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
 			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date // this isn't available in api v4
 
-			// fix up hold position
+			// fix up the hold position
 			// #D-3420
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
 				// sierra api v4 priority is 0 based index so add 1
@@ -3437,12 +3441,12 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				if(isset($c->response->description)){
 					$message .= ' ' . $c->response->description;
 					$this->apiLastErrorForPatron = $c->response->description;
-					$this->logger->warning($message, ['api_response' => $c->response]);
+					$this->logger->warning($message, ['api_response' => $c->response, 'operation' => $operation]);
 				} elseif (isset($c->response->name)){
 					// So far, this section is needed for :
 					// * getting item hold information from bib-level hold call
 					$message .= ' ' . $c->response->name;
-					$this->logger->warning($message, ['api_response' => $c->response]);
+					$this->logger->warning($message, ['api_response' => $c->response, 'operation' => $operation]);
 				}
 			} else {
 				$message                     = 'HTTP Error: ' . $c->getErrorCode() . ': ' . $c->getErrorMessage();

@@ -174,10 +174,10 @@ class RecordGroupingProcessor {
 		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
 			if (fullRegrouping) {
-				logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+				logger.warn("More than one grouping category for {} : {}", identifier, String.join(",", groupingCategories));
 			}
 		} else if (groupingCategories.isEmpty()){
-			logger.warn("No grouping category for " + identifier);
+			logger.warn("No grouping category for {}", identifier);
 			groupingCategory = "book"; // fall back option for now
 		} else {
 			groupingCategory = groupingCategories.iterator().next(); //First Grouping Category
@@ -198,7 +198,7 @@ class RecordGroupingProcessor {
 				movieDuration = oo8Data.substring(18, 21)
 						.trim();  //Some records will just use 2 digit playtimes instead of 3, eg  '89 ' instead of '089'
 				if (movieDuration.equals("000")) {
-					logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
+					logger.debug("movie 008 running time exceeds 999 minutes - {}", identifier);
 					// We will try to parse from physical description instead
 				} else if (movieDuration.matches("^\\d+$")) {
 					// Is a numeric string
@@ -207,15 +207,15 @@ class RecordGroupingProcessor {
 				} else {
 					if (fullRegrouping && !movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
 						// entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
-						//logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+						//logger.warn("008 running time invalid : '{}' for {}", movieDuration, identifier);
 						invalid008runtime = true;
 					}
 				}
 			} else if (fullRegrouping){
-				logger.error("008 not long enough to have a movie running time for " + identifier);
+				logger.error("008 not long enough to have a movie running time for {}", identifier);
 			}
 		} else if (fullRegrouping){
-			logger.warn("Missing 008 for grouping Movie : " + identifier.toString());
+			logger.warn("Missing 008 for grouping Movie : {}", identifier);
 		}
 		// if any part of that failed, try parsing a playtime number from the physical description
 		if (author == null) {
@@ -235,7 +235,7 @@ class RecordGroupingProcessor {
 			}
 			if (invalid008runtime && author == null){
 				// now that we checked both places and didn't get a run time, issue a warning
-				logger.warn("008 running time invalid : '" + movieDuration + "' and none found in physical description for " + identifier);
+				logger.warn("008 running time invalid : '{}' and none found in physical description for {}", movieDuration, identifier);
 			}
 		}
 		return author;
@@ -372,9 +372,7 @@ class RecordGroupingProcessor {
 													//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
 													author = author.substring(0, author.indexOf(';') - 1);
 												}
-												if (logger.isInfoEnabled()) {
-													logger.info("Resorting to 245c for grouping author for {} : {}", identifier, author);
-												}
+												logger.info("Resorting to 245c for grouping author for {} : {}", identifier, author);
 											}
 										}
 									}
@@ -401,10 +399,10 @@ class RecordGroupingProcessor {
 		int commaPosition = author.indexOf(',');
 		if (commaPosition != -1) {
 			author = author.substring(commaPosition + 2) + " " + author.substring(0, commaPosition);
-		} else if (logger.isDebugEnabled()) {
+		} else {
 			// A lot of records will not have a inverted name order despite the indicators set as surname
 			// This should be okay because the name will be in regular order at that point
-			logger.debug("Passed an inverted name order with out a dividing comma: '" + author + "' - " + identifier);
+			logger.debug("Passed an inverted name order with out a dividing comma: '{}' - {}", author, identifier);
 		}
 		return author;
 	}
@@ -431,13 +429,13 @@ class RecordGroupingProcessor {
 			String       oo8Data         = fixedField.getData();
 			if (oo8Data.length() > 37) {
 				String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
-				if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
+				if (!oo8languageCode.isEmpty() && !oo8languageCode.equals("|||")){
 					//"   " (trimmed to "" & "|||" are equivalent to no language value being set
 					languageCode = oo8languageCode;
 				}
 			}
 		} else {
-			logger.warn("Missing 008 for grouping language : " + identifier.toString());
+			logger.warn("Missing 008 for grouping language : {}", identifier);
 		}
 		if (languageCode == null) {
 			// If we still don't have a language, try using the first 041a if present
@@ -550,7 +548,7 @@ class RecordGroupingProcessor {
 		} else {
 			try {
 //				if (logger.isDebugEnabled()){
-//					logger.debug("checking historical grouping table for existing entry for id:  " + groupedWork.permanentId);
+//					logger.debug("checking historical grouping table for existing entry for id:  {}", groupedWork.permanentId);
 //				}
 				checkHistoricalGroupedWorkStmt.setString(1, groupedWork.permanentId);
 				checkHistoricalGroupedWorkStmt.setString(2, groupedWork.fullTitle);
@@ -590,11 +588,11 @@ class RecordGroupingProcessor {
 
 			int success = insertHistoricalGroupedWorkStmt.executeUpdate();
 			if (success != 1){
-				logger.error("Error adding to historical grouping table: " + groupedWork.permanentId + " with title '" + groupedWork.fullTitle + "' and author '" + groupedWork.author + "'");
+				logger.error("Error adding to historical grouping table: {} with title '{}' and author '{}'", groupedWork.permanentId, groupedWork.fullTitle, groupedWork.author);
 			}
 
 		} catch (SQLException e){
-			logger.warn("Error adding entry to historical table for " + groupedWork.getPermanentId() + ", query: " + insertHistoricalGroupedWorkStmt, e);
+			logger.warn("Error adding entry to historical table for {}, query: {}", groupedWork.getPermanentId() , insertHistoricalGroupedWorkStmt, e);
 		}
 
 	}
@@ -695,9 +693,7 @@ class RecordGroupingProcessor {
 		String targetGroupedWorkPermanentId = mergedGroupedWorks.get(sourceGroupedWorkPermanentId);
 		groupedWork.overridePermanentId(targetGroupedWorkPermanentId);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Work Merging: Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
-		}
+		logger.debug("Work Merging: Overriding grouped work {} with {}", sourceGroupedWorkPermanentId, targetGroupedWorkPermanentId);
 
 		//Mark that the original was updated
 		long originalGroupedWorkId = getExistingWork(sourceGroupedWorkPermanentId);
@@ -713,7 +709,7 @@ class RecordGroupingProcessor {
 				removePrimaryIdentifiersForMergedWorkStmt.setLong(1, originalGroupedWorkId);
 				removePrimaryIdentifiersForMergedWorkStmt.executeUpdate();
 			} catch (SQLException e) {
-				logger.error("Error removing primary identifiers for merged work " + sourceGroupedWorkPermanentId + " (" + originalGroupedWorkId + ")");
+				logger.error("Error removing primary identifiers for merged work {} ({})", sourceGroupedWorkPermanentId, originalGroupedWorkId);
 			}
 		}
 		return targetGroupedWorkPermanentId;
@@ -745,7 +741,7 @@ class RecordGroupingProcessor {
 			addPrimaryIdentifierForWorkStmt.setString(3, primaryIdentifier.getIdentifier());
 			addPrimaryIdentifierForWorkStmt.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
+			logger.error("Error adding primary identifier to grouped work {} {}", groupedWorkId, primaryIdentifier, e);
 		}
 	}
 
@@ -789,7 +785,7 @@ class RecordGroupingProcessor {
 		try {
 			props.load(new FileReader(translationMapFile));
 		} catch (IOException e) {
-			logger.error("Could not read file translation map, " + translationMapFile.getAbsolutePath(), e);
+			logger.error("Could not read file translation map, {}", translationMapFile.getAbsolutePath(), e);
 		}
 		TranslationMap translationMap = new TranslationMap("grouping", mapName, false, false, logger);
 		//TODO: profile name
@@ -802,6 +798,6 @@ class RecordGroupingProcessor {
 		return translationMap;
 	}
 
-	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
+	//private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
 }

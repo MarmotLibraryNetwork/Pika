@@ -1,3 +1,20 @@
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2025  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // Core variables and mixins
 @import (reference) "../../responsive/css/variables.less";
 @import (reference) "variables";
@@ -50,7 +67,7 @@
   padding: 7px 0;
 }
 
-#advancedSearchLink{
+#keepFiltersSwitchLabel,#advancedSearchLink{
   color: @brand-body-color;
 }
 
@@ -67,4 +84,8 @@
 
 #browse-category-carousel .browse-category.category1, #browse-category-carousel .browse-category.category2, #browse-category-carousel .browse-category.category3, #browse-category-carousel .browse-category.category4, #browse-category-carousel .browse-category.category5, #browse-category-carousel .browse-category.category6, #browse-category-carousel .browse-category.category7, #browse-category-carousel .browse-category.category8, #browse-category-carousel .browse-category.category9{
   border:none;
+}
+
+.pagination>.active>span {
+  color: #000;
 }

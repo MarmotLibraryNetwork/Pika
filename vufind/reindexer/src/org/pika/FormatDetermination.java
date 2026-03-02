@@ -700,7 +700,7 @@ public class FormatDetermination {
 		}
 
 		// Read-Along things
-		if (hasOverRidingFormat("VoxBooks", printFormats)) {
+		if (hasOverRidingFormat("VoxBook", printFormats)) {
 			return;
 		}
 
@@ -1198,7 +1198,7 @@ public class FormatDetermination {
 						} else if (physicalDescriptionData.contains("wonderbook")) {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
-							result.add("VoxBooks");
+							result.add("VoxBook");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
 							result.add("PhysicalObject");
 						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
@@ -1295,7 +1295,7 @@ public class FormatDetermination {
 				if (noteField.getSubfield('a') != null) {
 					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
 					if (noteValue.contains("vox book") || noteValue.contains("vox audio")) {
-						result.add("VoxBooks");
+						result.add("VoxBook");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
 					} else if (noteValue.contains("playaway launchpad")) {
@@ -1561,8 +1561,10 @@ public class FormatDetermination {
 							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
-						}else if (subfieldData.contains("readers for new literates")/* || subfieldData.contains("high interest-low vocabulary books")*/) {
+						}else if (subfieldData.contains("readers for new literates")) {
 							result.add("AdultLiteracyBook");
+						} else if (subfieldData.contains("high interest-low vocabulary") || subfieldData.contains("readers (publications)")) {
+							result.add("EasyReader");
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						) {

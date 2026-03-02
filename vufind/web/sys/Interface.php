@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -437,7 +436,7 @@ class UInterface extends Smarty {
 			$this->assign('accessibilityEmail', $library->accessibilityEmail);
 			$this->assign('showLoginButton', $library->showLoginButton);
 			$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
-			$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
+			$this->assign('enableProspectorIntegration', !empty($configArray['Content']['Prospector']) && $library->enableProspectorIntegration);
 			$this->assign('showTagging', $library->showTagging);
 			$this->assign('showRatings', $library->showRatings);
 			$this->assign('show856LinksAsTab', $library->show856LinksAsTab);

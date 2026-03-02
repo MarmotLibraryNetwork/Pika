@@ -31,8 +31,12 @@ namespace ExternalEnrichment;
 class WikipediaParser {
 	private $lang;
 
+	private $logger;
+
 	public function __construct($lang = null){
-		$this->lang = $lang ?? 'en';
+		global $pikaLogger;
+		$this->lang   = $lang ?? 'en';
+		$this->logger = $pikaLogger->withName(__CLASS__);
 	}
 
 	/**
@@ -285,7 +289,6 @@ class WikipediaParser {
 		$response = file_get_contents($url);
 
 		if ($response){
-
 			if ($imageinfo = json_decode($response, true)){
 				if (isset($imageinfo['query']['pages']['-1']['imageinfo'][0]['url'])){
 					$imageUrl = $imageinfo['query']['pages']['-1']['imageinfo'][0]['url'];
@@ -308,11 +311,16 @@ class WikipediaParser {
 	public function getWikipediaPage($baseURL, $queryTerm = null){
 		$pageUrl = $baseURL . urlencode($queryTerm);
 		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
+			$this->logger->info('Wikipedia page URL: ' . $pageUrl);
 			$result     = file_get_contents($pageUrl);
-			$jsonResult = json_decode($result, true);
-			$info       = $this->parseWikipedia($jsonResult, $baseURL);
-			if (!empty($info)){
-				return $info;
+			if (empty($result)){
+				$this->logger->error('Failed to get wikipedia page results');
+			} else{
+				$jsonResult = json_decode($result, true);
+				$info       = $this->parseWikipedia($jsonResult, $baseURL);
+				if (!empty($info)){
+					return $info;
+				}
 			}
 		}
 		return null;

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +39,8 @@ class History extends Action {
 
 		// Retrieve search history
 		$s             = new SearchEntry();
-		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+		$activeUserId  = UserAccount::getActiveUserId() ?? null;
+		$searchHistory = $s->getSearches(session_id(), $activeUserId);
 
 		$noHistory = true;
 		if (count($searchHistory) > 0){
@@ -49,6 +49,7 @@ class History extends Action {
 			$saved = [];
 
 			// Loop through the history
+			/** @var SearchEntry $search */
 			foreach ($searchHistory as $search){
 				if (isset($_REQUEST['deleteUnsavedSearches']) && $_REQUEST['deleteUnsavedSearches'] == 'true' && $search->saved == 0){
 					$search->delete();
@@ -57,8 +58,6 @@ class History extends Action {
 					unset($_SESSION['lastSearchURL']);
 					// Otherwise add to the list
 				}else{
-
-					//$size              = strlen($search->search_object);
 					$minSO             = unserialize($search->search_object);
 					$searchObject      = SearchObjectFactory::deminify($minSO);
 					$searchSourceLabel = $searchObject->getSearchSource();
@@ -72,7 +71,8 @@ class History extends Action {
 
 					$historyEntry = [
 						'id'          => $search->id,
-						'time'        => date("g:ia, jS M Y", $searchObject->getStartTime()),
+						//'userId'      => $search->user_id, // debugging only
+						'time'        => date('g:ia, jS M Y', $searchObject->getStartTime()),
 						'url'         => $searchObject->renderSearchUrl(),
 						'searchId'    => $searchObject->getSearchId(),
 						'description' => $searchObject->displayQuery(),
@@ -80,14 +80,21 @@ class History extends Action {
 						'hits'        => number_format($searchObject->getResultTotal()),
 						'source'      => $searchSourceLabel,
 						'speed'       => round($searchObject->getQuerySpeed(), 2) . "s",
-						// Size is purely for debugging. Not currently displayed in the template.
-						// It's the size of the serialized, minified search in the database.
-						//'size'        => round($size/1024, 3)."kb"
 					];
 
 					if ($search->saved == 1){
-						// Saved searches
-						$saved[] = $historyEntry;
+						if (!empty($activeUserId) && $search->user_id == $activeUserId){
+							// Saved searches
+
+							// When Masquerading, the session ID is shared between
+							// the guiding user & masqueraded user, so we should
+							// only display saved searches for the active user
+							$saved[] = $historyEntry;
+						}
+						//else{
+							// Exclude other saved searches that happened in the session
+							// (e.g. when masquerading)
+						//}
 					}else{
 						// All the others
 						$links[] = $historyEntry;

@@ -76,7 +76,7 @@
 						<hr class="menu">
 						<div class="myAccountLink{if $pageTemplate=="profile.tpl"} active{/if}"><a href="/MyAccount/Profile">Account Settings</a></div>
 						{* Only highlight saved searches as active if user is logged in: *}
-						<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='history_saved_searches'}</a></div>
+						<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History'}</a></div>
 						{if $allowMasqueradeMode && !$masqueradeMode}
 							{if $canMasquerade}
 								<hr class="menu">
@@ -191,6 +191,27 @@
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
 								<div class="adminMenuLink{if $action == "DBMaintenanceOverDrive"} active{/if}"><a href="/Admin/DBMaintenanceOverDrive">DB Maintenance - OverDrive</a></div>
 							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+				{if in_array($action, array('UserMigration', 'ListMigration'))}
+					{assign var="curSection" value = true}
+				{else}
+					{assign var="curSection" value = false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#migrationMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">System Migration</div>
+						</div>
+					</a>
+					<div id="migrationMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+								<div class="adminMenuLink {if $action == "UserMigration"} active{/if}"><a href="/Admin/UserMigration">User Migration</a></div>
+								<div class="adminMenuLink {if $action == "ListMigration"} active{/if}"><a href="/Admin/ListMigration">List Migration</a></div>
 						</div>
 					</div>
 				</div>

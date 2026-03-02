@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1582,23 +1581,32 @@ class Library extends DB_DataObject {
 		$this->clearRecordsOwned();
 		$this->clearRecordsToInclude();
 		$this->clearHooplaSettings();
-		$this->enableArchive             = true;
-		$this->enableOverdriveCollection = false;
-		$this->showLoginButton           = false;
-		$this->showAdvancedSearchbox     = false;
-		$this->enableCombinedResults     = false;
-		$this->defaultToCombinedResults  = false;
-		$this->repeatInOnlineCollection  = false;
-		$this->includeNovelistEnrichment = false;
-		$this->showGoodReadsReviews      = false;
-		$this->showStandardReviews       = false;
-		$this->preferSyndeticsSummary    = false;
-		$this->showSimilarAuthors        = false;
-		$this->showSimilarTitles         = false;
-		$this->showWikipediaContent      = false;
-		$this->showFavorites             = false;
-		$this->showRatings               = false;
-		$this->hideCommentsWithBadWords  = false;
+		$this->enableArchive                               = true;
+		$this->enableOverdriveCollection                   = false;
+		$this->showLoginButton                             = false;
+		$this->showAdvancedSearchbox                       = false;
+		$this->enableCombinedResults                       = false;
+		$this->defaultToCombinedResults                    = false;
+		$this->repeatInOnlineCollection                    = false;
+		$this->includeNovelistEnrichment                   = false;
+		$this->showGoodReadsReviews                        = false;
+		$this->showStandardReviews                         = false;
+		$this->preferSyndeticsSummary                      = false;
+		$this->showSimilarAuthors                          = false;
+		$this->showSimilarTitles                           = false;
+		$this->showWikipediaContent                        = false;
+		$this->showFavorites                               = false;
+		$this->showRatings                                 = false;
+		$this->hideCommentsWithBadWords                    = false;
+		$this->restrictSearchByLibrary                     = false;
+		$this->repeatSearchOption                          = 'none';
+		$this->includeOnlineMaterialsInAvailableToggle     = false;
+		$this->includeAllRecordsInShelvingFacets           = false;
+		$this->includeOnOrderRecordsInDateAddedFacetValues = false;
+		$this->boostByLibrary                              = false;
+		$this->publicListsToInclude                        = 0;
+		$this->systemsToRepeatIn                           = '';
+		//TODO: reset catalog search facets
 	}
 
 	/**

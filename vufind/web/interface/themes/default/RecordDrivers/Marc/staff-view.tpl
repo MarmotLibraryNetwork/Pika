@@ -2,9 +2,23 @@
 {if $recordDriver}
 	<div class="row">
 		<div class="result-label col-xs-3">Grouped Work ID: </div>
-		<div class="col-xs-9 result-value">
-			{$recordDriver->getPermanentId()}
+		<div class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
+			<span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 		</div>
+		{if $userIsStaff}
+			<div class="col-xs-2">
+				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+			</div>
+		{/if}
+	</div>
+	<div class="row">
+		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
+		<div id="recordIdCol" class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">{$id}</div>
+		{if $userIsStaff}
+			<div class="col-xs-2">
+				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('recordIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+			</div>
+		{/if}
 	</div>
 
 	<div class="row">
@@ -13,6 +27,7 @@
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-default">Reload Cover</button>
 				<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
+				<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear NoveList Data</button>
 				{if $staffClientUrl}
 					<a href="{$staffClientUrl}" class="btn btn-sm btn-info">View in Staff Client</a>
 				{/if}

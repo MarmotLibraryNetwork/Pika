@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -654,10 +653,12 @@ function setUpSearchDisplayOptions($module, $action){
 
 
 	if (isset($_REQUEST['basicType'])){
+		//TODO: validate $_REQUEST['basicType'] is one of the valid types
 		$interface->assign('basicSearchIndex', $_REQUEST['basicType'] ?? 'Keyword');
 	}
 
 	if (isset($_REQUEST['genealogyType'])){
+		//TODO: validate $_REQUEST['genealogyType'] is one of the valid types
 		$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
 	}else{
 		$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
@@ -666,14 +667,17 @@ function setUpSearchDisplayOptions($module, $action){
 	global $searchSource;
 	$interface->assign('searchSource', $searchSource);
 	// Set $_REQUEST['type']
+	//TODO: Document Importance/Purpose of setting $_REQUEST['type']
 	switch ($searchSource){
 		case 'genealogy':
 			$_REQUEST['type'] = $_REQUEST['genealogyType'] ?? 'GenealogyKeyword';
 			break;
 		case 'islandora':
-			$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'IslandoraKeyword';
+			//TODO: validate $_REQUEST['islandoraType'] is one of the valid types
+		$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'IslandoraKeyword';
 			break;
 		case 'ebsco':
+			//TODO: validate $_REQUEST['ebscoType'] is one of the valid types
 			$_REQUEST['type'] = $_REQUEST['ebscoType'] ?? 'TX';
 			break;
 		default:
@@ -743,7 +747,7 @@ function setUpSearchDisplayOptions($module, $action){
 		$interface->assign('showBreadcrumbs', 0);
 	}else{
 		$interface->assign('showBreadcrumbs', 1);
-		if (!empty($library) && $library->useHomeLinkInBreadcrumbs){
+		if (!empty($library) && $library->useHomeLinkInBreadcrumbs && $library->homeLink != 'default'){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');

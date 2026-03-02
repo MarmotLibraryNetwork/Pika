@@ -32,8 +32,8 @@ import java.util.*;
  * Date: 2/21/14
  * Time: 3:00 PM
  */
-class MarmotRecordProcessor extends SierraRecordProcessor {
-	MarmotRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+class MLN1RecordProcessor extends SierraRecordProcessor {
+	MLN1RecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 	}
 

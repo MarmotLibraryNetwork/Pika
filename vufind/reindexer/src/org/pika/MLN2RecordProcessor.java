@@ -19,7 +19,9 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -30,12 +32,17 @@ import java.util.*;
  * Date: 12/29/2014
  * Time: 10:25 AM
  */
-class FlatironsRecordProcessor extends SierraRecordProcessor {
+class MLN2RecordProcessor extends SierraRecordProcessor {
 	char locationsSubfield                 = 'b'; // usually stored in the 998, but for flatirons it is in the record number tag (907)
 	char sierraFixedFieldLocationsSubfield = 'h'; // typically subfield 'a' but is 'h' for flatirons
 
-	FlatironsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+	MLN2RecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+//		try {
+//			itemAndBarcodeToRecordStatement = pikaConn.prepareStatement("INSERT INTO `ils_itemid_to_ilsid` (itemId, itemBarcode, ilsId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ilsId=VALUE(ilsId)");
+//		} catch (SQLException e) {
+//			logger.error("Error preparing statement for MLN2 item to record Ids");
+//		}
 	}
 
 	@Override
@@ -46,12 +53,42 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 			//The record is print
 			List<DataField>  itemRecords      = MarcUtil.getDataFields(record, itemTag);
 			for (DataField itemField : itemRecords) {
+				//setItemIdToRecordIdEntry(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField), getItemSubfieldData(barcodeSubfield, itemField), identifier);
+				// Populating this table does slow down indexing
+				// Add item ids & barcodes to ils_itemid_to_ilsid table to assist in Clearview Migration
 				if (!isItemSuppressed(itemField, identifier)) {
 					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
 		}
 	}
+//	private PreparedStatement itemAndBarcodeToRecordStatement;
+
+//	/**
+//	 * Populate a database table with itemIds & item barcodes mapped to the Record Id
+//	 *
+//	 * @param itemId
+//	 * @param itemBarcode
+//	 * @param identifier
+//	 */
+//	private void setItemIdToRecordIdEntry(String itemId, String itemBarcode, RecordIdentifier identifier) {
+//		try {
+//			if (itemId != null && itemBarcode != null)  {
+//				itemAndBarcodeToRecordStatement.setString(1, itemId);
+//				itemAndBarcodeToRecordStatement.setString(2, itemBarcode);
+//				itemAndBarcodeToRecordStatement.setString(3, identifier.getIdentifier());
+//				int result = itemAndBarcodeToRecordStatement.executeUpdate();
+//				if (result == 0) {
+//					logger.error("Failed to set item to record entry with reported result {}", result);
+//					// I believe the insert reports 2 when it's doing a replacement
+//				}
+//			} else {
+//				logger.info("Item tag on bib {} without itemId {} or item barcode {}", identifier, itemId, itemBarcode);
+//			}
+//		} catch (SQLException e) {
+//			logger.error("Error setting item to record entry item id {} item barcode {} record id {}, error {}", itemId, itemBarcode, identifier, e.getMessage());
+//		}
+//	}
 
 	@Override
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
@@ -108,9 +145,11 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 							itemInfo.setItemUrl(url);
 						}
 
-						//Determine eContent Source
+						// Determine eContent Source
 						itemInfo.seteContentSource("eContent");
-						if (url.contains("ebrary.com")) {
+						if (url.contains("brainfuse.com")){
+							itemInfo.seteContentSource("brainfuse");
+						} else if (url.contains("ebrary.com")) {
 							itemInfo.seteContentSource("ebrary");
 						} else if (url.contains("gutenberg.org")) {
 							itemInfo.seteContentSource("Project Gutenberg");
@@ -267,21 +306,21 @@ class FlatironsRecordProcessor extends SierraRecordProcessor {
 	 */
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
-		HashSet<String> targetAudiences = new HashSet<>();
+		HashSet<String> targetAudienceCodes = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
 			String locationCode = printItem.getLocationCode();
 			if (locationCode.length() > 2) {
 				// MLN2 location codes longer than 2 characters have valid trailing target audience characters
-				if (!printItem.isOrderItem() || !locationCode.equals("none")) { // don't use order record fake location "none"
+				if (!printItem.isOrderItem() && !locationCode.equals("none")) { // don't use order record fake location "none"
 					String lastCharacter = locationCode.substring(locationCode.length() - 1);
-					targetAudiences.add(lastCharacter);
+					targetAudienceCodes.add(lastCharacter);
 				}
 			}
 		}
 
-		final HashSet<String> target_audiences = translateCollection("target_audience", targetAudiences, identifier);
-		groupedWork.addTargetAudiences(target_audiences);
-		groupedWork.addTargetAudiencesFull(target_audiences);
+		final HashSet<String> targetAudiences = translateCollection("target_audience", targetAudienceCodes, identifier);
+		groupedWork.addTargetAudiences(targetAudiences);
+		groupedWork.addTargetAudiencesFull(targetAudiences);
 	}
 
 	private class IsRecordEContent {

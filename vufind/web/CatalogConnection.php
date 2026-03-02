@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -104,21 +103,21 @@ class CatalogConnection
 	 * @access public
 	 * @deprecated Just use method_exists(); The additional functionality doesn't come into effect
 	 */
-	public function checkFunction($function)
-	{
-		// Extract the configuration from the driver if available:
-		$functionConfig = method_exists($this->driver, 'getConfig') ? $this->driver->getConfig($function) : false;
-
-		// See if we have a corresponding check method to analyze the response:
-		$checkMethod = "_checkMethod".$function;
-		if (!method_exists($this, $checkMethod)) {
-			//Just see if the method exists on the driver
-			return method_exists($this->driver, $function);
-		}
-
-		// Send back the settings:
-		return $this->$checkMethod($functionConfig);
-	}
+//	public function checkFunction($function)
+//	{
+//		// Extract the configuration from the driver if available:
+//		$functionConfig = method_exists($this->driver, 'getConfig') ? $this->driver->getConfig($function) : false;
+//
+//		// See if we have a corresponding check method to analyze the response:
+//		$checkMethod = "_checkMethod".$function;
+//		if (!method_exists($this, $checkMethod)) {
+//			//Just see if the method exists on the driver
+//			return method_exists($this->driver, $function);
+//		}
+//
+//		// Send back the settings:
+//		return $this->$checkMethod($functionConfig);
+//	}
 
 	/**
 	 * Get Holding

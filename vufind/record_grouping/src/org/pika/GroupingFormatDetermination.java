@@ -505,9 +505,9 @@ public class GroupingFormatDetermination {
 		}
 
 		// Read-Along things
-		if (printFormats.contains("VoxBooks")){
+		if (printFormats.contains("VoxBook")){
 			printFormats.clear();
-			printFormats.add("VoxBooks");
+			printFormats.add("VoxBook");
 			return;
 		}
 		if (printFormats.contains("WonderBook")){
@@ -899,7 +899,7 @@ public class GroupingFormatDetermination {
 				if (noteField.getSubfield('a') != null) {
 					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
 					if (noteValue.contains("vox book")) {
-						result.add("VoxBooks");
+						result.add("VoxBook");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
 					} else if (noteValue.contains("playaway view")) {

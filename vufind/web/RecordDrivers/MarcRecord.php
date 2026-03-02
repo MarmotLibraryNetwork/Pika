@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1304,7 +1303,7 @@ class MarcRecord extends IndexRecord {
 		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null, $volumeData = null){
 		$actions = [];
 		global $interface;
 		global $library;
@@ -1396,10 +1395,12 @@ class MarcRecord extends IndexRecord {
 		}
 
 		// Physical Record actions with URL links, used for external reservation URLs
-		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
+		if (empty($actions) && !empty($relatedUrls) && $isExternalReservationItem){
 			// Don't display Reserve action when the item isn't available
 			// Must also be non-holdable or the hold button will
 			// display instead (caused by empty($action) checked)
+			// Replacing isAvailable check with not isHoldable, because these items can
+			// check out, and will be unavailable when checked out. Pascal 12/9/2025
 			foreach ($relatedUrls as $relatedUrl){
 				$actions[] = [
 					'title'        => translate('Reserve Online'),
@@ -2180,19 +2181,20 @@ class MarcRecord extends IndexRecord {
 	}
 
 	/**
-	 * Load additional information for issues of periodicals. Currently only goes into effect for Marmot
+	 * Load additional information for issues of periodicals.
+	 * Currently only goes into effect for Marmot.
 	 *
 	 * @return array|null
 	 */
 	public function loadPeriodicalInformation(){
-		/** @var \Pika\PatronDrivers\Marmot|Sierra $catalogDriver */
+		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
-		if ($catalogDriver->checkFunction('getIssueSummaries')){
+		if (method_exists($catalogDriver, 'getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
-            if (!is_array($issueSummaries)){
-                return [];
-            }
+			if (!is_array($issueSummaries)){
+				return [];
+			}
 			if (count($issueSummaries)){
 				//Insert copies into the information about the periodicals
 				$copies = $this->getCopies();
@@ -2209,7 +2211,7 @@ class MarcRecord extends IndexRecord {
 					}
 				}
 				krsort($copies);
-				//Group holdings under the issue issue summary that is related.
+				//Group holdings under the issue summary that is related.
 				foreach ($copies as $key => $holding){
 					//Have issue summary = false
 					$haveIssueSummary = false;
