@@ -878,7 +878,7 @@ class BookCoverProcessor {
 							$imageArray[$x]         = $resizedResource;
 						}
 					}else{
-						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100);
+						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100, 100);
 					}
 					$x++;
 				}
@@ -910,7 +910,7 @@ class BookCoverProcessor {
 							$imageArray[$x] = $resizedResource;
 						}
 					}else{
-						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100);
+						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100,100);
 					}
 					$x++;
 				}
@@ -937,7 +937,7 @@ class BookCoverProcessor {
 							$imageArray[$x]         = $resizedResource;
 							}
 						}else{
-						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100);
+						imagecopymerge($finalCover, $this->getDefaultCover(), 0, 0, 0, 100, 100, 100,100);
 					}
 					$x++;
 				}
