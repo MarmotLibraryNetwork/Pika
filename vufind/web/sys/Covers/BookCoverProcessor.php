@@ -968,12 +968,12 @@ class BookCoverProcessor {
 			$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($itemId);
 			$bookcoverUrl    = $islandoraObject->getBookcoverUrl();
 		}else{
-			$bookcoverUrl = $this->configArray['Site']['url'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+			$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
 		}
 		if(@is_array(getimagesize($bookcoverUrl))){
 			return $bookcoverUrl;
 		}else{
-			$this->logger->error('Image was not returned');
+			$this->logger->error('Image was not returned when retrieving: ' . $bookcoverUrl);
 			return false;
 		}
 	}
