@@ -89,6 +89,9 @@ class ArchiveObject extends \Action
 		foreach ($nodeData as $field => $value){
 			$interface->assign($field, $value);
 		}
+
+        // legacy ID 
+        $interface->assign('pid', $this->mediaObject->pid);
         
         // Media
 		//$interface->assign('media', $nodeData['media'] ?? []);
@@ -131,8 +134,13 @@ class ArchiveObject extends \Action
         // Subjects
         $subjects = $this->mediaObject->getSubjects();
         if (is_array($subjects)) {
-            foreach ($subjects as $subject) {
-                $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
+            if(array_key_exists('tid', $subjects)) {
+                $subjects['url'] = "/Archive/Subject?tid=" . $subjects['tid'];
+                $subjects = [$subjects];
+            } else {
+                foreach ($subjects as $subject) {
+                    $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
+                }
             }
         } else {
             $subjects = [];
@@ -195,8 +203,8 @@ class ArchiveObject extends \Action
         $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
         $interface->assign('local_identifer', $localIdentifier);
 
-        // $url = $this->mediaObject->getUrl();
-        // $url = urlencode($url);
+        // Analytics
+        $interface->assign('archivePage', true);
 
     }
 
