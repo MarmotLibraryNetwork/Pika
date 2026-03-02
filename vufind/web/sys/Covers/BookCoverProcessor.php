@@ -857,7 +857,7 @@ class BookCoverProcessor {
 		require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
 		require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
 		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-		$defaultImage = ROOT_DIR . '/interface/themes/default/images/lists.png';
+		$defaultImage = imagecreatefromstring(ROOT_DIR . '/interface/themes/default/images/lists.png');
 
 		if ($this->reload){
 			unlink($this->cacheFile);
