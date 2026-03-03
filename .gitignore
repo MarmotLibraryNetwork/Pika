@@ -30,7 +30,7 @@ config.pwd.ini
 *.csv
 author_authorities.properties.temp
 author_authorities.v1.properties
-hcl_solr_bib_export.properties
+#hcl_solr_bib_export.properties
 horizon_export.properties
 *.pid
 *.port
@@ -45,7 +45,7 @@ horizon_export.properties
 
 # Unneeded files that are large or built at runtime #
 #####################################################
-LexileTitles.txt
+#LexileTitles.txt
 
 # Packages #
 ############
@@ -123,18 +123,6 @@ sites/*.marmot.org
 #######################
 sites/*.lionlibraries.org
 
-# Sacramento Symbolic Links #
-#############################
-sites/*.saclibrary.org
-sites/librarycatalog.suttercounty.org
-sites/librarycatalog.cityofwoodland.org
-sites/librarycatalog.folsom.ca.us
-
-# Local Machine Symbolic Links #
-################################
-sites/librarycatalog.folsom.localhost/*
-sites/librarycatalog.sutter.localhost/*
-
 # Other stuff #
 ###############
 sites/marmot.localhost/sql_backup/marmot_econtent.sql
@@ -148,3 +136,7 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 # Output file for PRTG sensor #
 ###############################
 vufind/web/solrIndex.json
+
+# Claude Files #
+################
+CLAUDE.md
