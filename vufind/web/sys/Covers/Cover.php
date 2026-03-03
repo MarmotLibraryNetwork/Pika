@@ -48,7 +48,7 @@ class Cover extends DB_DataObject {
 		$storagePath = $configArray['Site']['coverPath'];
 		$structure   = [
 			'coverId'  => ['property' => 'coverId', 'type' => 'label', 'customName' => true, 'label' => 'id', 'description' => 'The unique id of the cover within the database'],
-			'cover'    => ['property' => 'Cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.', 'required' => true],
+			'cover'    => ['property' => 'cover', 'type' => 'image', 'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.', 'required' => true],
 			'modified' => ['property' => 'modified', 'type' => 'dateReadOnly', 'customName' => true, 'label' => 'Updated', 'format' => 'Y-m-d', 'description' => 'The date when the image was last updated.'],
 			//            'fileName'  => array('property'=>'fileName', 'type'=>'text', 'maxLength'=>100, 'label'=>'File Name ', 'description'=>'Name of the file'),
 		];
@@ -86,7 +86,6 @@ class Cover extends DB_DataObject {
 			}
 			$this->cover = $newFileName;
 		}
-
 
 		parent::update($dataObject);
 	}
