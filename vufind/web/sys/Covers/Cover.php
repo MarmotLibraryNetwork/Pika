@@ -86,6 +86,7 @@ class Cover extends DB_DataObject {
 			}
 			$this->cover = $newFileName;
 		}
+		$this->modified = time();
 
 		parent::update($dataObject);
 	}
