@@ -41,9 +41,9 @@ class Admin_ListMigration extends Admin_Admin
 		set_time_limit(600);
 		global $interface;
 		$interface->setTemplate('../Admin/migrateLists.tpl');
-		$instructions = $this->getInstructions()?:"";
+		$instructions = $this->getInstructions() ? : '';
 		$interface->assign('instructions', $instructions);
-		$file = $_FILES['listsFile']['tmp_name'];
+		$file      = $_FILES['listsFile']['tmp_name'];
 		$migration = new ListMigration();
 		if (!empty($processed = $migration->migrateLists($file))){
 			$interface->assign('submit', true);
@@ -51,10 +51,9 @@ class Admin_ListMigration extends Admin_Admin
 			$interface->assign('errorLists', $processed['error']);
 			return $processed;
 		}else{
-			$interface->assign('error','No Lists were migrated');
+			$interface->assign('error', 'No Lists were migrated');
 			return false;
 		}
-		return false;
 	}
 
 	function getMigrationCount(){

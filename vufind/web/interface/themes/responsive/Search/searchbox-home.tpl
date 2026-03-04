@@ -80,11 +80,13 @@
 										<li class="divider ebscoType"></li>
 									{/if}
 									{/if}
-									<li class="catalogType">
-										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
-											{translate text="Advanced"}
-										</a>
-									</li>
+									{if $showAdvancedSearchbox}
+										<li class="catalogType">
+											<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
+												{translate text="Advanced"}
+											</a>
+										</li>
+									{/if}
 
 									{* Link to Search Tips Help *}
 									<li>

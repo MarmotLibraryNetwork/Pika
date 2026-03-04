@@ -336,10 +336,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}catch (FileNotFoundException fe){
-			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
+			logger.warn("Could not find MARC record at {} for {}", individualFilename, identifier);
 			updateLastExtractTimeForRecord(identifier.getIdentifier());
 		} catch (Exception e) {
-			logger.error("Error reading data from ils file " + individualFilename, e);
+			logger.error("Error reading data from ils file {}", individualFilename, e);
 		}
 		return record;
 	}
@@ -381,7 +381,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			// Let's first look for the print/order record
 			RecordInfo recordInfo = groupedWork.addRelatedRecord(identifier);
 			if (logger.isDebugEnabled()) {
-				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
+				logger.debug("Added record for {} work now has {} records", identifier, groupedWork.getNumRecords());
 			}
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 			loadOnOrderItems(groupedWork, recordInfo, record);
@@ -1062,9 +1062,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			volume = getItemSubfieldData(volumeSubfield, itemField);
 
 			if (useItemBasedCallNumbers) {
-				String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
-				String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
-				String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
+				String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField, itemInfo);
+				String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField, itemInfo);
+				String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField, itemInfo);
 				String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
 
 				StringBuilder fullCallNumber     = new StringBuilder();
@@ -1276,6 +1276,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private String getItemSubfieldDataWithoutTrimming(char subfieldIndicator, DataField itemField) {
+		return getItemSubfieldDataWithoutTrimming(subfieldIndicator, itemField, null);
+	}
+
+	private String getItemSubfieldDataWithoutTrimming(char subfieldIndicator, DataField itemField, ItemInfo iteminfo) {
 		if (subfieldIndicator == ' '){
 			return null;
 		}else {
@@ -1287,6 +1291,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			} else if (subfields.isEmpty()) {
 				return null;
 			} else {
+//				if (fullReindex && iteminfo != null) {
+					// Report these to the cataloging team
+					logger.info("Item callnumber subfield {} has more than one entry on item {}", subfieldIndicator, iteminfo.getItemIdentifier());
+//				}
 				StringBuilder subfieldData = new StringBuilder();
 				for (Subfield subfield:subfields) {
 					appendWithSpace(subfieldData, subfield.getData());

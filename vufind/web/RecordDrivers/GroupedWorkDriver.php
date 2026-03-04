@@ -1616,13 +1616,13 @@ class GroupedWorkDriver extends RecordInterface {
 
 
 		//Check to see what we need to do for actions, and determine if the record should be hidden by default
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$isSuperScope   = false;
+		$searchLibrary     = Library::getSearchLibrary();
+		$searchLocation    = Location::getSearchLocation();
+		$isRestrictedScope = false;
 		if ($searchLocation){
-			$isSuperScope = !$searchLocation->restrictSearchByLocation;
+			$isRestrictedScope = $searchLocation->restrictSearchByLocation;
 		}elseif ($searchLibrary){
-			$isSuperScope = !$searchLibrary->restrictSearchByLibrary;
+			$isRestrictedScope = $searchLibrary->restrictSearchByLibrary;
 		}
 		foreach ($relatedManifestations as $key => $manifestation){
 			$manifestation['numRelatedRecords'] = count($manifestation['relatedRecords']);
@@ -1775,10 +1775,12 @@ class GroupedWorkDriver extends RecordInterface {
 					if (!$addOnline){
 						$manifestation['hideByDefault'] = true;
 					}
-				}elseif (!$manifestation['availableLocally'] && !$isSuperScope){
+				}elseif ($isRestrictedScope && !$manifestation['availableLocally']){
+					// For Restricted Scopes, hide by default anything not available locally
 					$manifestation['hideByDefault'] = true;
 				}
-			}elseif ($selectedAvailability == 'Entire Collection' && !$isSuperScope && (!$manifestation['hasLocalItem'] && !$manifestation['isEContent'])){
+			}elseif ($isRestrictedScope && $selectedAvailability == 'Entire Collection' && (!$manifestation['hasLocalItem'] && !$manifestation['isEContent'])){
+				//TODO: add explaining comment for this block of logic
 				$manifestation['hideByDefault'] = true;
 			}
 			if ($selectedDetailedAvailability){

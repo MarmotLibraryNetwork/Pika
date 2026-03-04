@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,35 +17,32 @@
  */
 
 /**
- * Control how subjects are handled when linking to the catalog.
- *
- * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 2/22/2016
- * Time: 7:05 PM
- */
+ * Collections to Exclude from Archive Search. Currently single entry table
+  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
+//Use ArchivePrivateCollection; //TODO: test this
 class Admin_ArchivePrivateCollections extends Admin_Admin{
 
 	function launch() {
-		global $interface;
 		$privateCollections = new ArchivePrivateCollection();
 		$privateCollections->find(true);
 		if (isset($_POST['privateCollections'])){
 			$privateCollections->privateCollections = strip_tags($_POST['privateCollections']);
+			//TODO: validate contains only id numbers and line returns; strip spaces
 			if ($privateCollections->id){
 				$privateCollections->update();
 			}else{
 				$privateCollections->insert();
 			}
 		}
+		global /** @var UInterface $interface */ $interface;
 		$interface->assign('privateCollections', $privateCollections->privateCollections);
 
 		$this->display('archivePrivateCollections.tpl', 'Archive Private Collections');
 	}
 
 	function getAllowableRoles() {
-		return array('archives');
+		return ['archives'];
 	}
 }

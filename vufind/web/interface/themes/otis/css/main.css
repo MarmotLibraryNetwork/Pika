@@ -1,3 +1,19 @@
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2026  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 article,
 aside,
 details,
@@ -8089,7 +8105,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
           text-decoration: underline dotted;
 }
 #header-container {
-  height: 150px;
+  height: 140px;
   min-height: 100px;
   padding-top: 0;
   background-color: #20368c;
@@ -8108,11 +8124,11 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 }
 a .header-button {
   text-align: center;
-  line-height: 50px;
+  line-height: 60px;
   color: #222;
   background-color: #20368c;
   border: 1px solid #555;
-  margin-top: 100px / 2;
+  margin-top: 80px / 2;
 }
 a .header-button:hover {
   color: #fff;
@@ -10594,7 +10610,7 @@ a .header-button {
   border-radius: 0.5em;
   color: #000;
   background-color: #fff;
-  margin-top: 20px;
+  margin-top: 80px / 2;
   line-height: 60px;
   text-shadow: none;
 }
@@ -10604,7 +10620,7 @@ a .header-button:hover {
   box-shadow: 2px 2px 5px #fff;
 }
 #header-logo {
-  height: 140px;
+  height: 120px;
   max-height: none;
 }
 .system-message-header {
@@ -10703,4 +10719,16 @@ a .header-button:hover {
   -o-column-break-inside: avoid;
   column-break-inside: avoid;
   display: table;
+}
+#headingInfo::before {
+  content: "261 Main Street, Norwich CT 06360 \00000a (860) 889-2365";
+  color: white;
+  white-space: pre;
+  position: relative;
+  top: 35px;
+  left: -60px;
+}
+#header-container .loginOptions,
+#header-container .logoutOptions {
+  margin-top: 35px;
 }

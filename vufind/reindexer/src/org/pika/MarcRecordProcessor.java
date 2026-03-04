@@ -14,6 +14,7 @@
 
 package org.pika;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -499,7 +500,7 @@ abstract class MarcRecordProcessor {
 							String codeTranslation   = indexer.translateSystemValue("lexile_code", lexileCode, groupedWork.getId());
 							String currentLexileCode = groupedWork.getLexileCode();
 							if (currentLexileCode != null && !currentLexileCode.isEmpty() && !currentLexileCode.equalsIgnoreCase(codeTranslation)){
-								logger.warn("Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
+								logger.log(fullReindex ? Level.WARN : Level.INFO, "Found different Lexile Code {} than previously set code {} on {}", lexileCode, currentLexileCode, identifier);
 							}
 							groupedWork.setLexileCode(codeTranslation);
 						}
@@ -1097,7 +1098,7 @@ abstract class MarcRecordProcessor {
 		String subTitleValue = MarcUtil.getFirstFieldVal(record, "245bnp"); //MDN 2/6/2016 add np to subtitle #ARL-163
 		if (titleValue == null){
 			if (fullReindex) {
-				logger.warn(identifier + " has no title value (245a)");
+				logger.warn("{} has no title value (245a)", identifier);
 			}
 			titleValue = "";
 		} else {
@@ -1105,15 +1106,15 @@ abstract class MarcRecordProcessor {
 				String subTitleLowerCase = subTitleValue.toLowerCase();
 				String titleLowerCase    = titleValue.toLowerCase();
 				if (titleLowerCase.equals(subTitleLowerCase)){
-					if (fullReindex && logger.isInfoEnabled()) {
-						logger.info(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle : " + subTitleValue);
+					if (fullReindex) {
+						logger.info("{} title (245a) '{}' is the same as the subtitle : {}", identifier, titleValue, subTitleValue);
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
-						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
-						if (fullReindex && logger.isInfoEnabled()) {
-							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue);
+						// Remove subtitle from title in order to avoid repeats of subtitle in display & title fields in index
+						if (fullReindex) {
+							logger.info("{} title (245a) '{}' ends with the subtitle (245bnp) : {}", identifier,  titleValue, subTitleValue);
 						}
 						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 					}
@@ -1205,7 +1206,7 @@ abstract class MarcRecordProcessor {
 				//Try to determine if this is a resource or not.
 				if (isLikelyEContentUrl(urlField)){
 					if (logger.isInfoEnabled() && urlField.getIndicator2() == '1'){
-						logger.info("Related link used for access link for {}",  identifier);
+						logger.info("Related link used for access link for {}", identifier);
 						// Log some examples so we can verify the exclusion below
 					}
 					itemInfo.setItemUrl(urlField.getSubfield('u').getData().trim());
@@ -1214,7 +1215,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 //		if (fullReindex && itemInfo.geteContentUrl() == null) {
-//			logger.warn("Item for " + identifier + " had no eContent URL set");
+//			logger.warn("Item for {} had no eContent URL set", identifier);
 //		}
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
 	}

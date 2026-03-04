@@ -90,22 +90,22 @@ class ListMigration extends \DB_DataObject
 	/**
 	 *
 	 * @param $migrationFile
-	 * @return int|false
+	 * @return array|false
 	 */
 	public function migrateLists($migrationFile){
 		$this->logger = new Logger(__CLASS__);
 		$migrationCSV = fopen($migrationFile, 'r');
-		$listLines     = explode(PHP_EOL, fread($migrationCSV, filesize($migrationFile)));
-		$lists = array();
-		foreach($listLines as $line){
+		$listLines    = explode(PHP_EOL, fread($migrationCSV, filesize($migrationFile)));
+		$lists        = [];
+		foreach ($listLines as $line){
 			$lists[] = explode(',', $line);
 		}
 
-		$n            = 0;
-		$migratedLists  = array();
+		$n             = 0;
+		$migratedLists = [];
 		foreach ($lists as $list){
 			if ($this->migrateList(trim($list[1]), trim($list[0]), trim($list[2]), trim($list[3]), trim($list[4]), trim($list[5]), trim($list[6]), trim($list[7]), trim($list[8]), trim($list[9]))){
-				$n = $n+1;
+				$n                          = $n + 1;
 				$migratedLists['success'][] = $list->id;
 			}else{
 				$migratedLists['error'][] = $list->id;

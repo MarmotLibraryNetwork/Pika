@@ -64,8 +64,39 @@ function getAdminUpdates() {
 				'ALTER TABLE `offline_circulation` ADD COLUMN `statGroup` VARCHAR(5) NULL DEFAULT NULL AFTER `loginPassword`;'
 			]
 		],
+
+		'2026.01.0_update_covers_table' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Update covers table',
+			'description'     => 'Add modified column to covers table.',
+			'continueOnError' => true,
+			'sql'             => [
+				'ALTER TABLE  `covers` ADD COLUMN `modified` INT(11) NULL DEFAULT NULL;',
+				'coverModifiedTime'
+			]
+		],
 	];
 }
 
 
 // Functions definitions that get executed by any of the updates above
+
+function coverModifiedTime(){
+	include_once ROOT_DIR . '/sys/Covers/Cover.php';
+	$covers = new Cover();
+	$coverQuery = $covers->fetchAll();
+	$count = 0;
+	global $configArray;
+	/** @var Cover $cover */
+	foreach ($coverQuery as $cover) {
+			if($cover->setModifiedDate()){
+				$count++;
+			}else{
+				global $pikaLogger;
+				$pikaLogger->warn("cover with id " . $cover->coverId . " was not updated. - " . $cover->_lastError );
+			}
+	}
+	if ($count > 0) {
+		return true;
+	}
+}

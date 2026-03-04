@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,10 @@
  */
 
 /**
- * ISO 639-2 Language Code Class
+ * ISO 639 Language helper.
  *
- * This is a full list of the ISO 639-2 Languages
- *
- * @author      Andrew S. Nagy <andrew.nagy@villanova.edu>
+ * Provides lookups for ISO 639-2 language names and transparently maps
+ * ISO 639-1 codes to their three-character equivalents using translation maps.
  */
 class Language {
 	private  static $lang = [
@@ -513,13 +512,138 @@ class Language {
 		'zza' => 'Zaza'
 	];
 
-	static function getLanguage($code){
-		return self::$lang[$code] ?? 'Unknown';
+	private static $iso6391ToIso6392 = null;
+
+	/**
+	 * Retrieve (and cache) the ISO 639-1 -> ISO 639-2/B translation map.
+	 *
+	 * @return array<string, string> Lowercase ISO 639-1 code mapped to ISO 639-2/B code.
+	 */
+	private static function getIso6391ToIso6392Map(){
+		if (self::$iso6391ToIso6392 !== null){
+			return self::$iso6391ToIso6392;
+		}
+
+		$map = [];
+		if (function_exists('getTranslationMap') && isset($GLOBALS['memCache']) && is_object($GLOBALS['memCache'])){
+			$map = getTranslationMap('iso639-1TOiso639-2B');
+		}
+
+		if (empty($map)){
+			$map = self::loadIso6391ToIso6392FromFilesystem();
+		}
+
+		$normalizedMap = [];
+		if (is_array($map)){
+			foreach ($map as $key => $value){
+				$key = strtolower(trim($key));
+				$value = strtolower(trim($value));
+				if ($key !== '' && $value !== ''){
+					$normalizedMap[$key] = $value;
+				}
+			}
+		}
+
+		self::$iso6391ToIso6392 = $normalizedMap;
+		return self::$iso6391ToIso6392;
 	}
 
+	/**
+	 * Load ISO 639 translation map directly from the filesystem when caching is unavailable.
+	 *
+	 * @return array<string, string> Raw map contents parsed from the properties file.
+	 */
+	private static function loadIso6391ToIso6392FromFilesystem(){
+		$paths = [];
+		$serverName = $GLOBALS['serverName'] ?? null;
+		if (defined('ROOT_DIR')){
+			if (!empty($serverName)){
+				$paths[] = ROOT_DIR . "/../sites/$serverName/translation_maps/iso639-1TOiso639-2B_map.properties";
+			}
+			$paths[] = ROOT_DIR . '/../sites/default/translation_maps/iso639-1TOiso639-2B_map.properties';
+		}
+		$paths[] = __DIR__ . '/../../../sites/default/translation_maps/iso639-1TOiso639-2B_map.properties';
+
+		foreach ($paths as $path){
+			if (!empty($path) && is_readable($path)){
+				return self::parseIso639TranslationMapFile($path);
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * Parse a translation map properties file into an associative array.
+	 *
+	 * @param string $filename Fully-qualified path to the properties file.
+	 * @return array<string, string> Parsed map of ISO 639-1 to ISO 639-2/B codes.
+	 */
+	private static function parseIso639TranslationMapFile($filename){
+		$map = [];
+		$handle = @fopen($filename, 'r');
+		if ($handle === false){
+			return $map;
+		}
+
+		while (($line = fgets($handle)) !== false){
+			$line = trim($line);
+			if ($line === '' || strpos($line, '#') === 0){
+				continue;
+			}
+			$pair = explode('=', $line, 2);
+			if (count($pair) == 2){
+				$key = strtolower(trim($pair[0]));
+				$value = strtolower(trim($pair[1]));
+				if ($key !== '' && $value !== ''){
+					$map[$key] = $value;
+				}
+			}
+		}
+
+		fclose($handle);
+		return $map;
+	}
+
+	/**
+	 * Resolve a language name from an ISO 639 code (2 or 3 character).
+	 *
+	 * @param string|null $code ISO 639-1 or ISO 639-2 code.
+	 * @return string Human readable language name, or 'Unknown'.
+	 */
+	static function getLanguage($code){
+		if ($code === null){
+			return 'Unknown';
+		}
+		$normalizedCode = strtolower(trim($code));
+		if ($normalizedCode === ''){
+			return 'Unknown';
+		}
+		if (isset(self::$lang[$normalizedCode])){
+			return self::$lang[$normalizedCode];
+		}
+		if (strlen($normalizedCode) == 2){
+			$iso6391Map = self::getIso6391ToIso6392Map();
+			if (!empty($iso6391Map)){
+				$iso6392Code = $iso6391Map[$normalizedCode] ?? null;
+				if ($iso6392Code && isset(self::$lang[$iso6392Code])){
+					return self::$lang[$iso6392Code];
+				}
+			}
+		}
+		return 'Unknown';
+	}
+
+	/**
+	 * Retrieve the first ISO 639-2 code for a given language name.
+	 *
+	 * @author      Andrew S. Nagy <andrew.nagy@villanova.edu>
+	 * 
+	 * @param string $lang Language name to match against the lookup table.
+	 * @return string ISO 639-2 code.
+	 */
 	static function getCode($lang){
 		$keys = array_keys(self::$lang, $lang);
 		return $keys[0];
 	}
 }
-

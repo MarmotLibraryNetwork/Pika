@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -115,41 +114,47 @@ class Admin_Administrators extends ObjectEditor {
 		$interface->assign('barcode', $barcode);
 		$interface->setTemplate('addAdministrator.tpl');
 
-		if (!empty($_REQUEST['roles'])){
-			$newAdmin = new User();
-			$newAdmin->get('barcode', $barcode);
-			$success = ($newAdmin->N == 1); // Call success if we found exactly one user (multiple users is an error also)
-			if ($newAdmin->N == 0){
-				//Try searching ILS for user if no user was found
-				$newAdmin = UserAccount::findNewUser($barcode);
-				$success  = is_a($newAdmin, 'User') && !empty($newAdmin->ilsUserId);
-				if (!$success){
-					$interface->assign('error', 'Could not find a user with that barcode, and did not find a user in ILS with that barcode or can\'t look up new users in ILS');
-					return;
+		if (!empty($barcode)){
+			if (!empty($_REQUEST['roles'])){
+				$newAdmin = new User();
+				$newAdmin->get('barcode', $barcode);
+				$success = ($newAdmin->N == 1); // Call success if we found exactly one user (multiple users is an error also)
+				if ($newAdmin->N == 0){
+					//Try searching ILS for user if no user was found
+					$newAdmin = UserAccount::findNewUser($barcode);
+					$success  = is_a($newAdmin, 'User') && !empty($newAdmin->ilsUserId);
+					if (!$success){
+						$interface->assign('error', 'Could not find a user with that barcode, and did not find a user in ILS with that barcode or can\'t look up new users in ILS');
+						return;
+					}
 				}
-			}
-			if ($success){
-				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
-				$existingRoles         = new UserRoles();
-				$existingRoles->userId = $newAdmin->id;
-				if ($existingRoles->count() === 0){
-					$newAdmin->roles = $_REQUEST['roles'];
-					$newAdmin->update();
-					global $configArray;
-					header("Location: /Admin/{$this->getToolName()}");
-					die;
+				if ($success){
+					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+					$existingRoles         = new UserRoles();
+					$existingRoles->userId = $newAdmin->id;
+					if ($existingRoles->count() === 0){
+						$newAdmin->roles = $_REQUEST['roles'];
+						$newAdmin->update();
+						header("Location: /Admin/{$this->getToolName()}");
+						die;
+					}else{
+						$interface->assign('error', $barcode . ' is already an administrator.');
+					}
+				}elseif ($newAdmin->N == 0){
+					$interface->assign('error', 'Could not find a user with that barcode. (The user needs to have logged in at least once.)');
+				}elseif ($newAdmin->N > 1){
+					global $pikaLogger;
+					$msg = "Found multiple ({$newAdmin->N}) users with that barcode. (The database needs to be cleaned up.)";
+					$pikaLogger->error($msg, [$barcode]);
+					$interface->assign('error', $msg);
 				}else{
-					$interface->assign('error', $barcode . ' is already an administrator.');
+					$interface->assign('error', 'Unknown error while looking for administrator');
 				}
-			}elseif ($newAdmin->N == 0){
-				$interface->assign('error', 'Could not find a user with that barcode. (The user needs to have logged in at least once.)');
-			}elseif ($newAdmin->N > 1){
-				$interface->assign('error', "Found multiple ({$newAdmin->N}) users with that barcode. (The database needs to be cleaned up.)");
 			}else{
-				$interface->assign('error', 'Unknown error while looking for administrator');
+				$interface->assign('error', 'No roles assigned to new administrator');
 			}
-		}else{
-			$interface->assign('error', 'No roles assigned to new administrator');
+		} else {
+			$interface->assign('error', 'No barcode was provided');
 		}
 	}
 

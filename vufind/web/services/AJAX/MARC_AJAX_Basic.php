@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,22 +35,12 @@ trait MARC_AJAX_Basic {
 	protected array $methodsThatRespondThemselves;*/
 
 	function __construct(){
-
 		// Add allowed AJAX method calls to the ones already set
-		if(!is_null($this->methodsThatRespondWithJSONUnstructured)){
-		$this->methodsThatRespondWithJSONUnstructured  = array_merge($this->methodsThatRespondWithJSONUnstructured,
-		                                                             array('reloadCover'));
-		} else {
-			$this->methodsThatRespondWithJSONUnstructured = array('reloadCover');
-		}
+		$this->methodsThatRespondWithJSONUnstructured = !is_null($this->methodsThatRespondWithJSONUnstructured) ? array_merge($this->methodsThatRespondWithJSONUnstructured, ['reloadCover']) : ['reloadCover'];
 		/*$this->methodsThatRespondWithJSONResultWrapper = array_merge($this->methodsThatRespondWithJSONResultWrapper, array());
 		$this->methodsThatRespondWithHTML             = array_merge($this->methodsThatRespondWithHTML, array());
 		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());*/
-		if(!is_null($this->methodsThatRespondThemselves)) {
-			$this->methodsThatRespondThemselves = array_merge($this->methodsThatRespondThemselves, array('downloadMarc'));
-		} else {
-			$this->methodsThatRespondThemselves = array('downloadMarc');
-		}
+		$this->methodsThatRespondThemselves = !is_null($this->methodsThatRespondThemselves) ? array_merge($this->methodsThatRespondThemselves, ['downloadMarc']) : ['downloadMarc'];
 	}
 
 	function downloadMarc(){
@@ -78,36 +67,69 @@ trait MARC_AJAX_Basic {
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 		$sourceAndId  = new SourceAndId($_REQUEST['id']);
 		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
+		if ($recordDriver->isValid()){
+			$success = true;
 
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';
-		file_get_contents($smallCoverUrl);
+			// Reload covers for different sizes
+			foreach (['small', 'medium', 'large'] as $size) {
+				if (!$this->sendReloadCoverURl($recordDriver, $size)) {
+					$success = false;
+				}
+			}
 
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium')) . '&reload';
-		file_get_contents($mediumCoverUrl);
+			//Also reload covers for the grouped work
+			$groupedWorkDriver = $recordDriver->getGroupedWorkDriver();
+			if ($groupedWorkDriver->isValid()){
+				foreach (['small', 'medium', 'large'] as $size) {
+					if (!$this->sendReloadCoverURl($groupedWorkDriver, $size)) {
+						$success = false;
+					}
+				}
+			}
 
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large')) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		//Also reload covers for the grouped work
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+			if ($success){
+				return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+			}else{
+				return ['success' => false, 'message' => 'Some or all covers have not been reloaded.'];
+			}
+		} else {
+			return ['success' => false, 'message' => 'Invalid Id.'];
+		}
 	}
 
+	/**
+	 * @param RecordInterface $recordDriver
+	 * @param string $size
+	 * @return bool
+	 */
+	private function sendReloadCoverURl(RecordInterface $recordDriver, string $size): bool{
+		global $configArray;
+		$reloadCoverURL = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl($size, true)) . '&reload';
+		$options        = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent'] ]];
+		$context        = stream_context_create($options);
+		$response       = file_get_contents($reloadCoverURL, false, $context);
+		if ($response === false){
+			$this->logger->error('Error reloading cover URL: ' . $reloadCoverURL);
+			return false;
+		}elseif (!getimagesizefromstring($response)){
+			$this->logger->error('Reload Cover URL: ' . $reloadCoverURL, [$response]);
+			$this->checkForCloudflareChallengeResponse($response);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Test if a call's response includes Cloudflare Challenge HTML.
+	 *
+	 * @param $response
+	 * @return bool
+	 */
+	private function checkForCloudflareChallengeResponse($response){
+		if (str_contains($response, 'challenge-error-text')){
+			$this->logger->error('Received Cloudflare Challenge Response');
+			return true;
+		}
+		return false;
+	}
 }

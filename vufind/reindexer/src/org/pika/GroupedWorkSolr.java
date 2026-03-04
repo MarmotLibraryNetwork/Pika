@@ -26,13 +26,8 @@ import java.util.regex.Pattern;
 import static java.time.Year.now;
 
 /**
- * A representation of the grouped record as it will be added to Solr.
- *
- * Pika
- * User: Mark Noble
- * Date: 11/25/13
- * Time: 3:19 PM
- */
+ * A representation of the grouped work as it will be added to Solr.
+  */
 public class GroupedWorkSolr implements Cloneable {
 	private String id;
 
@@ -103,19 +98,16 @@ public class GroupedWorkSolr implements Cloneable {
 	private TreeSet<String>          targetAudience           = new TreeSet<>();
 	private String                   title;
 	private HashSet<String>          titleAlt                 = new HashSet<>();
-//	private HashSet<String>          titleOld                 = new HashSet<>();
-//	private HashSet<String>          titleNew                 = new HashSet<>();
 	private String                   titleSort;
 	private String                   titleFormat              = "";
 	private HashSet<String>          topics                   = new HashSet<>();
 	private HashSet<String>          topicFacets              = new HashSet<>();
 	private HashSet<String>          subjects                 = new HashSet<>();
 	private HashMap<String, Long>    upcs                     = new HashMap<>();
-//	private float                    hooplaPrice              = 0.0f;
 
-	private Logger             logger;
-	private GroupedWorkIndexer groupedWorkIndexer;
-	private HashSet<String>    systemLists = new HashSet<>();
+	private final Logger             logger;
+	private final GroupedWorkIndexer groupedWorkIndexer;
+	private       HashSet<String>    systemLists = new HashSet<>();
 
 	public GroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
@@ -145,6 +137,8 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.awards = (HashSet<String>) awards.clone();
 		// noinspection unchecked
 		clonedWork.barcodes = (HashSet<String>) barcodes.clone();
+		// noinspection unchecked
+		clonedWork.bisacSubjects = (HashSet<String>) bisacSubjects.clone();
 		// noinspection unchecked
 		clonedWork.contents = (HashSet<String>) contents.clone();
 		// noinspection unchecked
@@ -209,10 +203,6 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.targetAudience = (TreeSet<String>) targetAudience.clone();
 		// noinspection unchecked
 		clonedWork.titleAlt = (HashSet<String>) titleAlt.clone();
-		// noinspection unchecked
-//		clonedWork.titleOld = (HashSet<String>) titleOld.clone();
-		// noinspection unchecked
-//		clonedWork.titleNew = (HashSet<String>) titleNew.clone();
 		// noinspection unchecked
 		clonedWork.topics = (HashSet<String>) topics.clone();
 		// noinspection unchecked
@@ -1837,6 +1827,7 @@ public class GroupedWorkSolr implements Cloneable {
 	 */
 	void setLexileScore(int lexileScore) {
 		if (this.rawLexileScores.containsKey(lexileScore)){
+
 			// Additional instances of this score
 			int numInstances = this.rawLexileScores.get(lexileScore);
 			this.rawLexileScores.put(lexileScore, ++numInstances);

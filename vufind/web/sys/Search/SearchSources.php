@@ -180,7 +180,7 @@ class SearchSources {
 			];
 		}
 
-		//Marmot Global search
+		//Marmot Global search as an alternate search source for restricted scopes
 		if (isset($library) &&
 			($repeatSearchSetting == 'marmot') &&
 			$library->restrictSearchByLibrary

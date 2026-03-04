@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -46,6 +45,9 @@ class Archive_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondThemselves = [
 		'getVtt',
+		'fetchVtt',
+		'fetchManifest',
+		'fetchCantaloupeMaifest',
 	];
 
 	function getRelatedObjectsForExhibit(){
@@ -914,10 +916,162 @@ class Archive_AJAX extends AJAXHandler {
 			}
 		}else{
 			//TODO: log error
-			echo ''; //TODO Echo an httpd error code?
+			echo ''; 
 
 		}
 
+	}
+
+	
+	/**
+	 * Fetch vtt files using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchVTT() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$path = urldecode($_REQUEST['path']);
+		
+		if(!$path) {
+			# TODO: log error
+			return '';
+		}
+
+		$url = $url . $path;
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'],
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: text/vtt');
+		echo $response;
+	}
+
+	/**
+	 * Fetch manifet files using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchManifest() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$nid = $_REQUEST['nid'];
+		
+		if(!$nid) {
+			# TODO: log error
+			return '';
+		}
+
+		$url = $url . "/node/" . $nid . "/manifest";
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'],
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: application/ld+json');
+		echo $response;
+	}
+
+	/**
+	 * Fetch manifet files from Caneloupe server using cURL.
+	 *
+	 * @return string
+	 *   The response body.
+	 *
+	 * @throws RuntimeException
+	 *   Thrown when the request fails.
+	 */
+	function fetchCantaloupeMaifest() {
+		global $configArray;
+		$baseUrl = $configArray['Islandora2']['url'] ?? '';
+        $url = rtrim($baseUrl, '/');
+		$serviceFileUrl = urlencode(urldecode($_REQUEST['sf']));
+
+		$url = $url . "/cantaloupe/iiif/2/" . $serviceFileUrl;
+
+		$ch = curl_init($url);
+
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'],
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			//CURLOPT_SSL_VERIFYPEER => true,
+			//CURLOPT_SSL_VERIFYHOST => 1,
+		]);
+
+		$response = curl_exec($ch);
+
+		if ($response === false) {
+			$error = curl_error($ch);
+			# TODO: log error
+			return '';
+		}
+
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($statusCode !== 200) {
+			#TODO: log error;
+			return '';
+		}
+		header('Content-Type: application/json;charset=utf-8');
+		echo $response;
 	}
 
 	public function getAdditionalRelatedObjects(){

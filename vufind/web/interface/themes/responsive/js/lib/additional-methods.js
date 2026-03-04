@@ -1334,7 +1334,69 @@
 		return false;
 	}, "The specified vehicle identification number (VIN) is invalid." );
 
+
 	/* Marmot created additional Validation Methods */
+
+
+	jQuery.validator.addMethod("multiemail", function (value, element) {
+		if (this.optional(element)) {
+			return true;
+		}
+		var emails = value.split(/[,;]/),
+				valid = true;
+		for (var i = 0, limit = emails.length; i < limit; i++) {
+			value = emails[i];
+			valid = valid && jQuery.validator.methods.email.call(this, value, element);
+		}
+		return valid;
+	}, "Invalid email format: please use a comma to separate multiple email addresses.");
+
+	/**
+	 *  Modified from above code, for Pika self registration form.
+	 *
+	 * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
+	 *
+	 * @example jQuery.validator.methods.date("01-01-1900")
+	 * @result true
+	 *
+	 * @example jQuery.validator.methods.date("01-13-1990")
+	 * @result false
+	 *
+	 * @example jQuery.validator.methods.date("01.01.1900")
+	 * @result false
+	 *
+	 * @example <input name="pippo" class="{datePika:true}" />
+	 * @desc Declares an optional input element whose value must be a valid date.
+	 *
+	 * @name jQuery.validator.methods.datePika
+	 * @type Boolean
+	 * @cat Plugins/Validate/Methods
+	 */
+	jQuery.validator.addMethod(
+			"datePika",
+			function(value, element) {
+				var check = false;
+				var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
+				if( re.test(value)){
+					var adata = value.split('-');
+					var mm = parseInt(adata[0],10);
+					var dd = parseInt(adata[1],10);
+					var aaaa = parseInt(adata[2],10);
+					var xdata = new Date(aaaa,mm-1,dd);
+					if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
+						check = true;
+					else
+						check = false;
+				} else
+					check = false;
+				return this.optional(element) || check;
+			},
+			"Please enter a correct date"
+	);
+
+	jQuery.validator.addMethod("alphaNumeric", function(value, element) {
+		return this.optional(element) || /^[a-z0-9]+$/i.test(value);
+	}, "Please enter only letters and digits.");
 
 	$.validator.addMethod( "zipcodeUS", function( value, element ) {
 		return this.optional( element ) || /^\d{5}(-\d{4})?$/.test( value );
@@ -1344,9 +1406,17 @@
 		return this.optional( element ) || /^\d{3}-\d{3}-\d{4}$/.test( value );
 	}, "The phone number format is invalid" );
 
+	/* Added to just the /nwln/MyAccount/profile-notification-preferences.tpl template for now
+
+	jQuery.validator.addMethod("simplePhoneFormat", function(value, element) {
+		return this.optional(element) || /^\d{3}-\d{3}-\d{4}$/.test(value);
+	}, "Format: xxx-xxx-xxxx");
+	*/
+
 	// Sacramento zipcode range
-	$.validator.addMethod( "ziprange", function( value, element ) {
-		return this.optional( element ) || /^90[2-5]\d{2}-\d{4}$/.test( value );
-	}, "Your ZIP-code must be in the range 902xx-xxxx to 905xx-xxxx" );
+	// $.validator.addMethod( "ziprange", function( value, element ) {
+	// 	return this.optional( element ) || /^90[2-5]\d{2}-\d{4}$/.test( value );
+	// }, "Your ZIP-code must be in the range 902xx-xxxx to 905xx-xxxx" );
+
 	return $;
 }));

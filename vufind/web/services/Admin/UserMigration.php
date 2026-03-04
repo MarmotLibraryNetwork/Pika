@@ -40,9 +40,9 @@ class Admin_UserMigration extends Admin_Admin
 		set_time_limit(600);
 		global $interface;
 		$interface->setTemplate('../Admin/migrateUsers.tpl');
-		$instructions = $this->getInstructions()?:"";
+		$instructions = $this->getInstructions() ? : "";
 		$interface->assign('instructions', $instructions);
-		$file = $_FILES['migrationBarcodes']['tmp_name'];
+		$file      = $_FILES['migrationBarcodes']['tmp_name'];
 		$migration = new UserMigration();
 		if (!empty($processed = $migration->migrateUsers($file))){
 			$interface->assign('submit', true);
@@ -50,10 +50,9 @@ class Admin_UserMigration extends Admin_Admin
 			$interface->assign('errorBarcodes', $processed['error']);
 			return $processed;
 		}else{
-			$interface->assign('error','No Users were migrated');
+			$interface->assign('error', 'No Users were migrated');
 			return false;
 		}
-		return false;
 	}
 
 	function getMigrationCount(){

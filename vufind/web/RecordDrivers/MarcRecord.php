@@ -2181,19 +2181,20 @@ class MarcRecord extends IndexRecord {
 	}
 
 	/**
-	 * Load additional information for issues of periodicals. Currently only goes into effect for Marmot
+	 * Load additional information for issues of periodicals.
+	 * Currently only goes into effect for Marmot.
 	 *
 	 * @return array|null
 	 */
 	public function loadPeriodicalInformation(){
-		/** @var \Pika\PatronDrivers\Marmot|Sierra $catalogDriver */
+		/** @var \Pika\PatronDrivers\Marmot|\Pika\PatronDrivers\Sierra $catalogDriver */
 		$issueSummaries = null;
 		$catalogDriver  = $this->getCatalogDriver();
-		if ($catalogDriver->checkFunction('getIssueSummaries')){
+		if (method_exists($catalogDriver, 'getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
-            if (!is_array($issueSummaries)){
-                return [];
-            }
+			if (!is_array($issueSummaries)){
+				return [];
+			}
 			if (count($issueSummaries)){
 				//Insert copies into the information about the periodicals
 				$copies = $this->getCopies();
@@ -2210,7 +2211,7 @@ class MarcRecord extends IndexRecord {
 					}
 				}
 				krsort($copies);
-				//Group holdings under the issue issue summary that is related.
+				//Group holdings under the issue summary that is related.
 				foreach ($copies as $key => $holding){
 					//Have issue summary = false
 					$haveIssueSummary = false;

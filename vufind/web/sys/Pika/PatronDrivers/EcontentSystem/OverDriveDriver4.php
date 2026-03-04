@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,6 +28,7 @@ use OverDriveRecordDriver;
 
 class OverDriveDriver4 {
 	const VERSION = 4;
+	const string OVERDRIVE_API_URL = 'https://api.overdrive.com';
 
 	private bool $offline = false;
 	private array $requirePin;
@@ -367,6 +367,7 @@ class OverDriveDriver4 {
 	 * @return bool|mixed
 	 */
 	public function _callPatronUrl(User $user, $url, $postParams = null, $put = false){
+		$this->logger->debug("Calling OverDrive PatronUrl: $url");
 		$tokenData = $this->_connectToPatronAPI($user);
 		if ($tokenData){
 			$headers = $this->_patronRequestHeaders($tokenData, $url);
@@ -386,6 +387,7 @@ class OverDriveDriver4 {
 				$returnVal = $curl->get($url);
 			}
 			//$curlInfo = $curl->getInfo(); // for debugging
+			$this->logger->debug("Patron URL returned: $curl->rawResponse");
 
 			if (empty($returnVal)){
 				return $curl->httpStatusCode === 204; // Code 204 is success
@@ -442,34 +444,34 @@ class OverDriveDriver4 {
 	}
 
 	public function getLibraryAccountInformation($overdriveAccountId){
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId");
+		return $this->_callUrl(self::OVERDRIVE_API_URL . "/v1/libraries/$overdriveAccountId");
 	}
 
 	public function getAdvantageAccountInformation($overdriveAccountId){
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId/advantageAccounts");
+		return $this->_callUrl(self::OVERDRIVE_API_URL . "/v1/libraries/$overdriveAccountId/advantageAccounts");
 	}
 
 	public function getProductsInAccount($overdriveProductsKey, $productsUrl = null, $start = 0, $limit = 25){
 		if ($productsUrl == null){
-			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveProductsKey/products";
+			$productsUrl = self::OVERDRIVE_API_URL . "/v1/collections/$overdriveProductsKey/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
 		return $this->_callUrl($productsUrl);
 	}
 
 	public function getProductById($overDriveId, $productsKey){
-		$productsUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId";
+		$productsUrl = self::OVERDRIVE_API_URL . "/v1/collections/$productsKey/products/$overDriveId";
 		return $this->_callUrl($productsUrl);
 	}
 
 	public function getProductMetadata($overDriveId, $productsKey){
 		$overDriveId = strtoupper($overDriveId);
-		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
+		$metadataUrl = self::OVERDRIVE_API_URL . "/v1/collections/$productsKey/products/$overDriveId/metadata";
 		return $this->_callUrl($metadataUrl);
 	}
 
 	public function searchAPI($productsKey, $crossRefId = null, $overDriveId = null){
-		$searchUrl = "https://api.overdrive.com/v1/collections/$productsKey/products?";
+		$searchUrl = self::OVERDRIVE_API_URL . "/v1/collections/$productsKey/products?";
 		if (!empty($crossRefId)){
 			$searchUrl .= "crossRefId=$crossRefId";
 		} elseif (!empty($overDriveId)){
@@ -482,18 +484,18 @@ class OverDriveDriver4 {
 	}
 
 	public function getProductAvailability($overDriveId, $productsKey){
-		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/products/$overDriveId/availability";
+		$availabilityUrl = self::OVERDRIVE_API_URL . "/v2/collections/$productsKey/products/$overDriveId/availability";
 		return $this->_callUrl($availabilityUrl);
 	}
 
 	public function getProductAvailabilityAlt($overDriveId, $productsKey){
-		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/availability?products=$overDriveId";
+		$availabilityUrl = self::OVERDRIVE_API_URL . "/v2/collections/$productsKey/availability?products=$overDriveId";
 		return $this->_callUrl($availabilityUrl);
 	}
 
 	public function getIssuesData($overDriveId, $productsKey){
 		$overDriveId = strtoupper($overDriveId);
-		$issuesDataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/issues";
+		$issuesDataUrl = self::OVERDRIVE_API_URL . "/v1/collections/$productsKey/products/$overDriveId/issues";
 		return $this->_callUrl($issuesDataUrl);
 	}
 

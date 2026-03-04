@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +23,7 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php'; // Include for Id validation
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
@@ -95,15 +95,17 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to delete ratings.';
 		}else{
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$userWorkReview                         = new UserWorkReview();
-			$userWorkReview->groupedWorkPermanentId = $id;
-			$userWorkReview->userId                 = UserAccount::getActiveUserId();
-			if ($userWorkReview->find(true)){
-				$userWorkReview->delete();
-				$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
-			}else{
-				$result['message'] = 'Sorry, we could not find that review in the system.';
+			if (GroupedWork::validGroupedWorkId($id)){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+				$userWorkReview                         = new UserWorkReview();
+				$userWorkReview->groupedWorkPermanentId = $id;
+				$userWorkReview->userId                 = UserAccount::getActiveUserId();
+				if ($userWorkReview->find(true)){
+					$userWorkReview->delete();
+					$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
+				}else{
+					$result['message'] = 'Sorry, we could not find that review in the system.';
+				}
 			}
 		}
 
@@ -242,9 +244,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}
 				$enrichmentResult['similarTitles'] = ['titles' => $similarTitles, 'currentIndex' => 0];
 			} else {
-				global $pikaLogger;
 				global $solrScope;
-				$pikaLogger->notice("More Like This had no results for $id in scope $solrScope");
+				$this->logger->notice("More Like This had no results for $id in scope $solrScope");
 			}
 			$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
@@ -318,29 +319,34 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
-		$dataType = strip_tags($_REQUEST['dataType']);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
-		// TODO: request id is not always being set by index page.
-		$recordDriver = new GroupedWorkDriver($id);
-		$upc          = $recordDriver->getCleanUPC();
-		$isbn         = $recordDriver->getCleanISBN();
-
-		$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
-		$return        = [
-			'formattedData' => $formattedData,
-		];
-		return $return;
-
+		if (GroupedWork::validGroupedWorkId($id)){
+			// TODO: request id is not always being set by index page.
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
+			$dataType      = strip_tags($_REQUEST['dataType']);
+			$recordDriver  = new GroupedWorkDriver($id);
+			$upc           = $recordDriver->getCleanUPC();
+			$isbn          = $recordDriver->getCleanISBN();
+			$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
+			$return        = [
+				'formattedData' => $formattedData,
+			];
+			return $return;
+		}
+		return ['formattedData' => ''];
 	}
 
 	function getTitles(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$ids    = $_REQUEST["ids"];
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$ids    = $_REQUEST['ids'];
 		$titles = [];
 		foreach ($ids as $id){
+			if (!GroupedWork::validGroupedWorkId($id)){
+				continue;
+			}
 			$recordDriver = new GroupedWorkDriver($id);
 			$titles[]     = [
 				'title' => $recordDriver->getTitleShort(),
@@ -414,16 +420,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (!UserAccount::isLoggedIn()){
 			return ['error' => 'Please log in to rate this title.'];
 		}
-		if (empty($_REQUEST['id'])){
-			return ['error' => 'ID for the item to rate is required.'];
-		}
-		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])){
+		$rating = $_REQUEST['rating'];
+		if (empty($rating) || !ctype_digit($rating)){
 			return ['error' => 'Invalid value for rating.'];
 		}
-		$rating = $_REQUEST['rating'];
+		$groupedWorkId = $_REQUEST['id'];
+		if (empty($groupedWorkId)){
+			return ['error' => 'ID for the item to rate is required.'];
+		}
+		if (!GroupedWork::validGroupedWorkId($groupedWorkId)){
+			return ['error' => 'Invalid ID.'];
+		}
 		//Save the rating
 		$workReview                         = new UserWorkReview();
-		$workReview->groupedWorkPermanentId = $_REQUEST['id'];
+		$workReview->groupedWorkPermanentId = $groupedWorkId;
 		$workReview->userId                 = UserAccount::getActiveUserId();
 		if ($workReview->find(true)){
 			if ($rating != $workReview->rating){ // update gives an error if the rating value is the same as stored.
@@ -443,7 +453,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if ($success){
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
-
 			return ['rating' => $rating];
 		}else{
 			return ['error' => 'Unable to save your rating.'];
@@ -464,7 +473,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewInfo(){
 		$results = [];
 		$id      = $_REQUEST['id'];
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		//require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		if (GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($id);
@@ -546,7 +555,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					];
 				}
 			}else{
-				// Option already set to don't prompt, so let's don't prompt already.
+				// Option already set to not prompt, so let's not prompt already.
 				$results = [
 					'prompt' => false,
 				];
@@ -572,7 +581,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewForm(){
 		global $interface;
 		$id = $_REQUEST['id'];
-		if (!empty($id)){
+		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
 			$interface->assign('id', $id);
 
 			// check if rating/review exists for user and work
@@ -604,16 +613,19 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function saveReview(){
 		$result = [];
 
-		if (UserAccount::isLoggedIn() == false){
+		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
 			$result['message'] = 'Please log in before adding a review.';
 		}elseif (empty($_REQUEST['id'])){
 			$result['success'] = false;
 			$result['message'] = 'ID for the item to review is required.';
+		} elseif (GroupedWork::validGroupedWorkId($_REQUEST['id'])){
+			$result['success'] = false;
+			$result['message'] = 'Invalid ID.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 			$id        = $_REQUEST['id'];
-			$rating    = isset($_REQUEST['rating']) ? $_REQUEST['rating'] : '';
+			$rating    = $_REQUEST['rating'] ?? '';
 			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (may be only ratings instead)
 			$comment   = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
 
@@ -642,7 +654,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$success = true;
 				} // pretend success since values are already set to same values.
 			}
-			if (!$success){ // if sql save didn't work, let user know.
+			if (!$success){ // if SQL save didn't work, let user know.
 				$result['success'] = false;
 				$result['message'] = 'Failed to save rating or review.';
 			}else{ // successfully saved
@@ -665,66 +677,72 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$sms = new SMSMailer();
 		$interface->assign('carriers', $sms->getCarriers());
 		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
-		$relatedRecords = $recordDriver->getRelatedRecords();
-		$interface->assign('relatedRecords', $relatedRecords);
-		$results = [
-			'title'        => 'Share via SMS Message',
-			'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
-		];
+		if (GroupedWork::validGroupedWorkId($id)){
+			$interface->assign('id', $id);
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver   = new GroupedWorkDriver($id);
+			$relatedRecords = $recordDriver->getRelatedRecords();
+			$interface->assign('relatedRecords', $relatedRecords);
+			$results = [
+				'title'        => 'Share via SMS Message',
+				'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
+			];
+		}
 		return $results;
 	}
 
 	function getEmailForm(){
-		$id             = $_REQUEST['id'];
-		$recordDriver   = new GroupedWorkDriver($id);
-		$relatedRecords = $recordDriver->getRelatedRecords();
-		global $interface;
-		$interface->assign('id', $id);
-		$interface->assign('relatedRecords', $relatedRecords);
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)) {
+			$recordDriver = new GroupedWorkDriver($id);
+			$relatedRecords = $recordDriver->getRelatedRecords();
+			global $interface;
+			$interface->assign('id', $id);
+			$interface->assign('relatedRecords', $relatedRecords);
 
-		if (UserAccount::isLoggedIn()){
-			/** @var User $user */
-			$user = UserAccount::getActiveUserObj();
-			if (!empty($user->email)){
-				$interface->assign('from', $user->email);
+			if (UserAccount::isLoggedIn()){
+				/** @var User $user */
+				$user = UserAccount::getActiveUserObj();
+				if (!empty($user->email)){
+					$interface->assign('from', $user->email);
+				}
+			}else{
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
-		}else{
-			$captchaCode = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
+			return [
+				'title'        => 'Share via E-mail',
+				'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+				// triggering submit action to trigger form validation
+			];
 		}
-		return [
-			'title'        => 'Share via E-mail',
-			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
-			// triggering submit action to trigger form validation
-		];
+		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
 	}
 
 	function getSeriesEmailForm(){
-		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
-		global $interface;
-		$interface->assign('id', $id);
-		if(UserAccount::isLoggedIn()){
-			$user = UserAccount::getActiveUserObj();
-			if (!empty($user->email)){
-				$interface->assign('from', $user->email);
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)){
+			//$recordDriver = new GroupedWorkDriver($id);
+			global $interface;
+			$interface->assign('id', $id);
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				if (!empty($user->email)){
+					$interface->assign('from', $user->email);
+				}
+			}else{
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
-		}else{
-			$captchaCode = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
+			return [
+				'title'        => 'Share via E-mail',
+				'modalBody'    => $interface->fetch("GroupedWork/email-series.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+			];
 		}
-		return [
-			'title'         => 'Share via E-mail',
-			'modalBody'     => $interface->fetch("GroupedWork/email-series.tpl"),
-			'modalButtons'  => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
-		];
+		return ['success' => false, 'message' => 'Invalid Grouped Work ID.'];
 	}
 
 	function sendEmail(){
@@ -732,63 +750,71 @@ class GroupedWork_AJAX extends AJAXHandler {
 		global $configArray;
 		$recaptchaValid = recaptchaCheckAnswer();
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
-			$message = $_REQUEST['message'];
-			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$id           = $_REQUEST['id'];
-				$recordDriver = new GroupedWorkDriver($id);
-				$to           = strip_tags($_REQUEST['to']);
-				$from         = strip_tags($_REQUEST['from']);
-				$interface->assign('from', $from);
-				$interface->assign('message', $message);
-				$interface->assign('recordDriver', $recordDriver);
-				$interface->assign('url', $recordDriver->getAbsoluteUrl());
+			$id = $_REQUEST['id'];
+			if (GroupedWork::validGroupedWorkId($id)){
+				$message = $_REQUEST['message'];
+				if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)){
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$recordDriver = new GroupedWorkDriver($id);
+					$to           = strip_tags($_REQUEST['to']);
+					$from         = strip_tags($_REQUEST['from']);
+					$interface->assign('from', $from);
+					$interface->assign('message', $message);
+					$interface->assign('recordDriver', $recordDriver);
+					$interface->assign('url', $recordDriver->getAbsoluteUrl());
 
-				if (!empty($_REQUEST['related_record'])){
-					$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
-					if (!empty($relatedRecord['callNumber'])){
-						$interface->assign('callnumber', $relatedRecord['callNumber']);
+					if (!empty($_REQUEST['related_record'])){
+						$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
+						if (!empty($relatedRecord['callNumber'])){
+							$interface->assign('callnumber', $relatedRecord['callNumber']);
+						}
+						if (!empty($relatedRecord['shelfLocation'])){
+							$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+						}
+						if (!empty($relatedRecord['driver'])){
+							$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
+						}
 					}
-					if (!empty($relatedRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+
+					$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
+					$body    = $interface->fetch('Emails/grouped-work-email.tpl');
+
+					require_once ROOT_DIR . '/sys/Mailer.php';
+					$mail        = new VuFindMailer();
+					$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+
+					if ($emailResult === true){
+						$result = [
+							'result'  => true,
+							'message' => 'Your e-mail was sent successfully.',
+						];
+					}elseif (PEAR_Singleton::isError($emailResult)){
+						$result = [
+							'result'  => false,
+							'message' => "Your e-mail message could not be sent: {$emailResult}.",
+						];
+					}else{
+						$result = [
+							'result'  => false,
+							'message' => 'Your e-mail message could not be sent due to an unknown error.',
+						];
+
+						$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 					}
-					if (!empty($relatedRecord['driver'])){
-						$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
-					}
-				}
-
-				$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
-				$body    = $interface->fetch('Emails/grouped-work-email.tpl');
-
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail        = new VuFindMailer();
-				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
-
-				if ($emailResult === true){
-					$result = [
-						'result'  => true,
-						'message' => 'Your e-mail was sent successfully.',
-					];
-				}elseif (PEAR_Singleton::isError($emailResult)){
-					$result = [
-						'result'  => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult}.",
-					];
 				}else{
 					$result = [
 						'result'  => false,
-						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+						'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
 					];
-
-					$this->logger->error("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body");
 				}
 			}else{
 				$result = [
 					'result'  => false,
-					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+					'message' => 'Invalid Grouped Work ID.',
 				];
 			}
-		}else{ // logged in check, or captcha check
+		}else{
+			// logged in check, or captcha check
 			$result = [
 				'result'  => false,
 				'message' => 'Not logged in or invalid captcha response',
@@ -1602,7 +1628,7 @@ function getSaveSeriesToListForm(){
 		$interface->assign('prospectorResults', $prospectorResults['records']);
 
 		$result = [
-			'numTitles'     => count($prospectorResults),
+			'numTitles'     => $prospectorResults ? count($prospectorResults) : 0,
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
 		];
 		return $result;
@@ -1619,57 +1645,91 @@ function getSaveSeriesToListForm(){
 //	}
 
 	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$id           = $_REQUEST['id'];
-		$recordDriver = new GroupedWorkDriver($id);
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver = new GroupedWorkDriver($id);
+			$success      = true;
 
-		//Reload small cover
-		$smallCoverUrl =  $recordDriver->getBookcoverUrl('small', true) . '&reload';
-		$ret           = file_get_contents($smallCoverUrl);
+			// Reload covers for different sizes
+			foreach (['small', 'medium', 'large'] as $size) {
+				if (!$this->sendReloadCoverURl($recordDriver, $size)) {
+					$success = false;
+				}
+			}
 
-		//Reload medium cover
-		$mediumCoverUrl = $recordDriver->getBookcoverUrl('medium', true) . '&reload';
-		$ret            = file_get_contents($mediumCoverUrl);
+			if ($success){
+				return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+			}else{
+				return ['success' => false, 'message' => 'Some or all of the covers sizes were not reloaded.'];
+			}
+		}
+		$this->logger->error('Invalid Grouped Work Id passed to reloadCover() : ' . $id);
+		return ['success' => false, 'message' => 'Invalid Id'];
+	}
 
-		//Reload large cover
-		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
-		$ret           = file_get_contents($largeCoverUrl);
+	/**
+	 * @param GroupedWorkDriver $recordDriver
+	 * @param string $size
+	 * @return bool
+	 */
+	private function sendReloadCoverURl(GroupedWorkDriver $recordDriver, string $size): bool{
+		global $configArray;
+		$reloadCoverURL = $recordDriver->getBookcoverUrl($size, true) . '&reload';
+		$options        = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent'] ]];
+		$context        = stream_context_create($options);
+		$response       = file_get_contents($reloadCoverURL, false, $context);
+		if ($response === false){
+			$this->logger->error('Error reloading cover URL: ' . $reloadCoverURL);
+			return false;
+		}elseif (!getimagesizefromstring($response)){
+			$this->logger->error('Reload Cover URL: ' . $reloadCoverURL, [$response]);
+			$this->checkForCloudflareChallengeResponse($response);
+			return false;
+		}
+		return true;
+	}
 
-		return ['success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'];
+	private function checkForCloudflareChallengeResponse($response){
+		if (str_contains($response, 'challenge-error-text')){
+			$this->logger->error('Received Cloudflare Challenge Response');
+			return true;
+		}
+		return false;
 	}
 
 	function reloadNovelistData(){
-
-		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-
-		global $configArray;
-		$id = $_REQUEST['id'];
-
-		$novelist = new NovelistData();
-		$novelist->groupedWorkPermanentId = $id;
-		$novelist->delete();
-
-		return['success' => true, 'message'=> 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
+		$id = trim($_REQUEST['id']);
+		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+			if (NovelistData::removeNovelistCachedSeriesEntry($id)){
+				return ['success' => true, 'message' => 'NoveList data cleared. You may need to refresh the page to clear your local cache'];
+			} else {
+				return ['success' => false, 'message' => 'Could not remove novelist data.'];
+			}
+		}
+		return ['success' => false, 'message' => 'Invalid Id'];
 	}
 
 	function reloadIslandora(){
 		$id              = $_REQUEST['id'];
 		$samePikaCleared = false;
 		$cacheMessage    = '';
-		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-		//Check for cached links
-		$samePikaCache                         = new IslandoraSamePikaCache();
-		$samePikaCache->groupedWorkPermanentId = $id;
-		if ($samePikaCache->find(true)){
-			if ($samePikaCache->delete()){
-				$samePikaCleared = true;
-				$cacheMessage = 'Deleted same pika cache';
-			}else{
-				$cacheMessage = 'Could not delete same pika cache';
-			}
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';//Check for cached links
+			$samePikaCache                         = new IslandoraSamePikaCache();
+			$samePikaCache->groupedWorkPermanentId = $id;
+			if ($samePikaCache->find(true)){
+				if ($samePikaCache->delete()){
+					$samePikaCleared = true;
+					$cacheMessage    = 'Deleted same pika cache';
+				}else{
+					$cacheMessage = 'Could not delete same pika cache';
+				}
 
-		}else{
-			$cacheMessage = 'Data not cached for same pika link';
+			}else{
+				$cacheMessage = 'Data not cached for same pika link';
+			}
 		}
 
 		return [
@@ -1685,110 +1745,123 @@ function getSaveSeriesToListForm(){
 	 */
 	function openBookshelf(){
 		global $interface;
-		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
-		$idString = $_REQUEST['ids'];
-		$ids = explode(',', $idString);
-		$idString = "'" . $idString . "'";
-		$items = [];
-		foreach($ids as $id){
-			$recordDriver = new GroupedWorkDriver($id);
-			$description = $recordDriver->getDescriptionFast(false);
-			$description = strip_tags($description);
-			$title = "Bookshelf - " . count($ids) . " item";
-			if(count($ids) > 1){
-				$title = $title . "s";
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$ids      = explode(',', $_REQUEST['ids']);
+		$items    = [];
+		foreach ($ids as $index => $id){
+			if (GroupedWork::validGroupedWorkId($id)){
+				$recordDriver = new GroupedWorkDriver($id);
+				$description  = $recordDriver->getDescriptionFast(false);
+				$description  = strip_tags($description);
+				$items[$id] = [
+					'cover'       => $recordDriver->getBookcoverUrl(),
+					'title'       => $recordDriver->getTitle(false),
+					'author'      => $recordDriver->getPrimaryAuthor(),
+					'description' => $description
+				];
+			} else {
+				unset($ids[$index]);
 			}
-			$items[$id] = array ('cover'=> $recordDriver->getBookcoverUrl(),'title'=> $recordDriver->getTitle(false), 'author'=>$recordDriver->getPrimaryAuthor(), 'description'=> $description);
 		}
-		$interface->assign('items',$items);
+		$idString = "'" . implode("','", $ids) . "'"; // Join IDs with commas and single quotes
+		$count    = count($ids); // Get the number of items
+		$title    = 'Bookshelf - ' . $count . ' item' . ($count > 1 ? 's' : ''); // Construct title with pluralization
+		$interface->assign('items', $items);
 		$interface->assign('idString', $idString);
 		$message = $interface->fetch('Search/bookshelf.tpl');
-		return ['success' => true, 'title' =>$title, 'message' => $message, 'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList('.$idString.')" class="tool btn btn-primary">Add All To List</button>'];
+		return [
+			'success' => true,
+			'title'   => $title,
+			'message' => $message,
+			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList(' . $idString . ')" class="tool btn btn-primary">Add All To List</button>'
+		];
 	}
 
 
 	/**
-	 * @throws Exception
+	 * Generate Excel Spreadsheet for NoveList Series page
+	 * @return void
 	 */
-	function exportSeriesToExcel(){
-
+	function exportSeriesToExcel(): void{
 		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . "/sys/Novelist/Novelist3.php";
-		require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
-		$recordDriver  = new GroupedWorkDriver($id);
-		$novelist      = NovelistFactory::getNovelist();
-		$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
-		$seriesTitle   = $seriesInfo->seriesTitle;
-		$seriesTitles  = $seriesInfo->seriesTitles ?? [];
-		$seriesEntries = [];
-		foreach ($seriesTitles as $seriesEntry){
-			$seriesEntries[$seriesEntry['volume']] = [
-				'title'         => $seriesEntry['title'],
-				'author'        => $seriesEntry['author'],
-				'volume'        => $seriesEntry['volume'],
-				'primaryISBN'   => $seriesEntry['isbn'],
-				'groupedWorkId' => $seriesEntry['id'] ?? null,
-			];
+		if (GroupedWork::validGroupedWorkId($id)){
+			require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver  = new GroupedWorkDriver($id);
+			$novelist      = NovelistFactory::getNovelist();
+			$seriesInfo    = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
+			$seriesTitle   = $seriesInfo->seriesTitle;
+			$seriesTitles  = $seriesInfo->seriesTitles ?? [];
+			$seriesEntries = [];
+			foreach ($seriesTitles as $seriesEntry){
+				$seriesEntries[$seriesEntry['volume']] = [
+					'title'         => $seriesEntry['title'],
+					'author'        => $seriesEntry['author'],
+					'volume'        => $seriesEntry['volume'],
+					'primaryISBN'   => $seriesEntry['isbn'],
+					'groupedWorkId' => $seriesEntry['id'] ?? null,
+				];
+			}
+			try {
+				global $interface;
+				$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+				$gitBranch   = $interface->getVariable('gitBranch');
+				$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
+					->setLastModifiedBy('Pika ' . $gitBranch)
+					->setTitle("Office 2007 XLSX Document")
+					->setTitle("Office 2007 XLSX Document")
+					->setSubject("Office 2007 XLSX Document")
+					->setDescription("Office 2007 XLSX, generated using PHP.")
+					->setKeywords("office 2007 openxml php")
+					->setCategory("List Items");
+
+				$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', $seriesTitle)
+					->setCellValue('A3', 'Title')
+					->setCellValue('B3', 'Author')
+					->setCellValue('C3', 'Volume')
+					->setCellValue('D3', 'ISBN')
+					->setCellValue('E3', 'Grouped Work ID');
+
+				$a = 4;
+				foreach ($seriesEntries as $entry){
+					$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
+					$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A' . $a, $entry['title'])
+						->setCellValue('B' . $a, $entry['author'])
+						->setCellValue('C' . $a, $entry['volume'])
+						->setCellValue('D' . $a, $entry['primaryISBN'])
+						->setCellValue('E' . $a, $entry['groupedWorkId']);
+					$a++;
+				}
+
+				$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+				// Rename sheet
+				$strip      = [
+					"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+					"}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+					"â€”", "â€“", ",", "<", ".", ">", "/", "?"
+				];
+				$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
+				$excelTitle = str_replace(" ", "_", $excelTitle);
+				$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle, 0, 30));
+
+				// Redirect output to a client's web browser (Excel5)
+				header('Content-Type: application/vnd.ms-excel');
+				header('Content-Disposition: attachment;filename="' . substr($excelTitle, 0, 27) . '.xls"');
+				header('Cache-Control: max-age=0');
+				$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
+				$objWriter->save('php://output');
+				exit;
+			} catch (Exception $e){
+				$this->logger->error('Error creating Excel Spreadsheet' . $e->getMessage());
+			}
 		}
-		global $interface;
-		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-		$gitBranch   = $interface->getVariable('gitBranch');
-		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
-			->setLastModifiedBy('Pika ' . $gitBranch)
-			->setTitle("Office 2007 XLSX Document")
-			->setTitle("Office 2007 XLSX Document")
-			->setSubject("Office 2007 XLSX Document")
-			->setDescription("Office 2007 XLSX, generated using PHP.")
-			->setKeywords("office 2007 openxml php")
-			->setCategory("List Items");
-
-		$objPHPExcel->setActiveSheetIndex(0)
-			->setCellValue('A1', $seriesTitle)
-			->setCellValue('A3', 'Title')
-			->setCellValue('B3', 'Author')
-			->setCellValue('C3', 'Volume')
-			->setCellValue('D3', 'ISBN')
-			->setCellValue('E3', 'Grouped Work ID');
-
-
-		$a = 4;
-		foreach ($seriesEntries as $entry) {
-			$objPHPExcel->getActiveSheet()->getStyle('D' . $a)->getNumberFormat()->setFormatCode(PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER);
-			$objPHPExcel->setActiveSheetIndex(0)
-				->setCellValue('A' . $a, $entry['title'])
-				->setCellValue('B' . $a, $entry['author'])
-				->setCellValue('C' . $a, $entry['volume'])
-				->setCellValue('D' . $a, $entry['primaryISBN'])
-				->setCellValue('E' . $a, $entry['groupedWorkId']);
-			$a++;
-
-		}
-
-		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-
-		// Rename sheet
-		$strip = [
-			"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
-			"}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
-			"â€”", "â€“", ",", "<", ".", ">", "/", "?"
-		];
-		$excelTitle = trim(str_replace($strip, "", strip_tags($seriesTitle)));
-		$excelTitle = str_replace(" ", "_", $excelTitle );
-		$objPHPExcel->getActiveSheet()->setTitle(substr($excelTitle,0,30));
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="' . substr($excelTitle,0,27) . '.xls"');
-		header('Cache-Control: max-age=0');
-		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
-
-
-			$objWriter->save('php://output');
-			exit;
-
 	}
+
 }
