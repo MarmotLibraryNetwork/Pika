@@ -1,7 +1,5 @@
 {strip}
-	{* DEBUG - remove after diagnosis *}
-	<!-- HOLD DEBUG: title=[{$record.title}] id=[{$record.id}] holdSource=[{$record.holdSource}] -->
-	{* Overall hold *}
+{* Overall hold *}
 	<div class="result">
 
 		{* Title row *}
