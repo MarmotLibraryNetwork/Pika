@@ -26,8 +26,8 @@
 		{elseif $property.listStyle == 'checkboxList'}
 			<div class="checkbox">
 				{*this assumes a simple array, eg list *}
-				{foreach from=$property.values item=propertyName name="checkboxList"}
-					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} id="{$propName}-{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}-{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>
+				{foreach from=$property.values item=propertyName}
+					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if} id="{$propName}-{$propertyName@iteration}"> <label for="{$propName}-{$propertyName@iteration}">{$propertyName}</label><br>
 {*					<input name='{$propName}[]' type="checkbox" value='{$propertyName}' {if is_array($propValue) && in_array($propertyName, $propValue)}checked='checked'{/if}> {$propertyName}<br>*}
 				{/foreach}
 			</div>

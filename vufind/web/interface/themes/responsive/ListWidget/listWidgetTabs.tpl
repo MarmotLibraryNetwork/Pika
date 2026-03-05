@@ -4,11 +4,11 @@
 		{if !isset($widget->listDisplayType) || $widget->listDisplayType == 'tabs'}
 			{* Display Tabs *}
 			<ul class="nav nav-tabs" role="tablist">
-				{foreach from=$widget->lists item=list name=listWidgetList}
-					{assign var="active" value=$smarty.foreach.listWidgetList.first}
+				{foreach from=$widget->lists item=list}
+					{assign var="active" value=$list@first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						<li {if $active}class="active"{/if} role="presentation">
-							<a href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.listWidgetList.index}">{$list->name}</a>
+							<a href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$list@index}">{$list->name}</a>
 					</li>
 					{/if}
 				{/foreach}
@@ -27,8 +27,8 @@
 	{/if}
 	<div class="tab-content">
 	{assign var="listIndex" value="0"}
-	{foreach from=$widget->lists item=list name=listWidgetList}
-		{assign var="active" value=$smarty.foreach.listWidgetList.first}
+	{foreach from=$widget->lists item=list}
+		{assign var="active" value=$list@first}
 		{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 			{assign var="showViewMoreLink" value=$widget->showViewMoreLink}
 			{assign var="showListWidgetTitle" value=$widget->showListWidgetTitle}

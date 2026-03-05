@@ -1167,21 +1167,21 @@ class IndexRecord extends RecordInterface {
 			$interface->assign('showMoreLikeThisInExplore', true);
 
 			if ($this->getCleanISBN()){
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$exploreMoreOptions['similarTitles'] = [
 						'label'         => 'Similar Titles From NoveList',
 						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
 						'hideByDefault' => true
 					];
 				}
-				if ($interface->getVariable('showSimilarAuthors')){
+				if ($interface->getTemplateVariable('showSimilarAuthors')){
 					$exploreMoreOptions['similarAuthors'] = [
 						'label'         => 'Similar Authors From NoveList',
 						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
 						'hideByDefault' => true
 					];
 				}
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$exploreMoreOptions['similarSeries'] = [
 						'label'         => 'Similar Series From NoveList',
 						'body'          => '<div id="novelistseriesPlaceholder"></div>',

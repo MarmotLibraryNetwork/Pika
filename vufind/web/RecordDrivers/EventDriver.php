@@ -85,9 +85,9 @@ class EventDriver extends IslandoraDriver {
 		if (count($this->relatedPlaces) == 0){
 			unset($moreDetailsOptions['relatedPlaces']);
 		}
-		if (!empty($interface->getVariable('creators'))
+		if (!empty($interface->getTemplateVariable('creators'))
 			|| $this->hasDetails
-			|| !empty($interface->getVariable('marriages'))
+			|| !empty($interface->getTemplateVariable('marriages'))
 			|| !empty($this->unlinkedEntities)){
 			$moreDetailsOptions['details'] = array(
 				'label'         => 'Details',

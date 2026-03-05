@@ -30,7 +30,7 @@
 
 				<span class="ui-rater-starsOff" style="width:90px">
 					{* Don't show a user's ratings in browse results because the results get cached so shouldn't be particular to a single user.*}
-					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>
+					<span class="ui-rater-starsOn" style="width:{$ratingData.averageStarWidth}px"></span>
 				</span>
 				</div>
 			{/if}

@@ -63,10 +63,10 @@
 							{if count($indexedSeries) >= 5}
 									{assign var=showMoreSeries value="true"}
 							{/if}
-							{foreach from=$indexedSeries item=seriesItem name=loop}
+							{foreach from=$indexedSeries item=seriesItem}
 
 								<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
-								{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
+								{if $showMoreSeries && $seriesItem@iteration == 3}
 									<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 									<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">
 								{/if}

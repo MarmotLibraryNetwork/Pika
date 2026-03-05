@@ -30,7 +30,7 @@
 						{* Only show the default option if there are multiples to select. Or no formats set. *}
 						<option value="na">-Select a Format-</option>
 					{/if}
-					{foreach from="$formats" item="formatName" key="formatTextId"}
+					{foreach from=$formats item="formatName" key="formatTextId"}
 						<option value="{$formatTextId}">{$formatName}</option>
 					{foreachelse}
 						<option value="ePub">Adobe E-pub eBook</option>

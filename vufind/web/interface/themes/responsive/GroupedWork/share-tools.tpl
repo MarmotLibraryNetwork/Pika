@@ -19,7 +19,7 @@
 		{/if}
 		{if $showShareOnExternalSites}
 			<li>
-				<a href="https://bsky.app/intent/compose?text={$recordDriver->getTitle()|urlencode}%20{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on Bluesky">
+				<a href="https://bsky.app/intent/compose?text={$recordDriver->getTitle()|escape:'url'}%20{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on Bluesky">
 					{include file="images/bluesky-svg.tpl"}
 				</a>
 			</li>
@@ -32,7 +32,7 @@
 				{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/"|cat:$recordDriver->getLinkUrl() coverUrl=$recordDriver->getBookcoverUrl('large', true) description="Read at $homeLibrary"}
 			</li>
 			<li>
-				<a href="https://x.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on X">
+				<a href="https://x.com/compose/tweet?text={$recordDriver->getTitle()|escape:'url'}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on X">
 					<img class="x-twit" src="{img filename='x-icon.png'}" alt="Share on X">
 				</a>
 			</li>

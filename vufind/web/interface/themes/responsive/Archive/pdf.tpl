@@ -46,6 +46,6 @@
 {/strip}
 <script>
 	$(function(){ldelim}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|escape:'url'}');
 		{rdelim});
 </script>

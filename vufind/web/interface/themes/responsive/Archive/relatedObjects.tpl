@@ -46,15 +46,15 @@
 					<span class="input-group-btn">
 						<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;
 						{if $displayType == 'map'}
-										Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
+										Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 1);
 						{elseif $displayType == 'mapNoTimeline'}
-										Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
+										Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 1);
 						{elseif $displayType == 'timeline'}
-										Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 1);
+										Pika.Archive.reloadTimelineResults('{$exhibitPid|escape:'url'}', 1);
 						{elseif $displayType == 'scroller'}
-										Pika.Archive.reloadScrollerResults('{$exhibitPid|urlencode}', 1);
+										Pika.Archive.reloadScrollerResults('{$exhibitPid|escape:'url'}', 1);
 						{elseif $displayType == 'basic'}
-										Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
+										Pika.Archive.getMoreExhibitResults('{$exhibitPid|escape:'url'}', 1);
 						{/if}">GO</button>
 					</span>
 				</div>
@@ -76,17 +76,17 @@
 					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
 						<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
-								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
+								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
 							{elseif $displayType == 'timeline'}
-								<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
+								<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|escape:'url'}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
 							{/if}
 						</label>
 						{foreach from=$dateFacetInfo item=facet}
 							<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} active{/if}">
 								{if $displayType == 'map'}
-									<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br>({$facet.count})
+									<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br>({$facet.count})
 								{elseif $displayType == 'timeline'}
-									<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br>({$facet.count})
+									<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|escape:'url'}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br>({$facet.count})
 								{/if}
 							</label>
 						{/foreach}
@@ -94,9 +94,9 @@
 							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date" data-toggle="buttons">
 								<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 									{if $displayType == 'map'}
-										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
 									{elseif $displayType == 'timeline'}
-										<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="Pika.Archive.reloadTimelineResults('{$exhibitPid|escape:'url'}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
 									{/if}
 								</label>
 							</div>
@@ -126,7 +126,7 @@
 		{foreach from=$relatedObjects item=image}
 			{if $showThumbnailsSorted}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
 				<figure class="{if $showThumbnailsSorted}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
-					<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
+					<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|escape:'url'}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 						<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>
 						<figcaption class="explore-more-category-title">
 							<strong>{$image.title|truncate:50} ({$image.dateCreated})</strong>
@@ -143,19 +143,19 @@
 		{if $recordEnd < $recordCount}
 
 			{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
-				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" aria-label="Load more objects">
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', '{if $displayType == 'map'}true{else}false{/if}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</button>
 			{elseif $displayType == 'timeline'}
-				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|escape:'url'}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</button>
 			{elseif $displayType == 'scroller'}
-				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
+				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|escape:'url'}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</button>
 			{else}
-				<button type="button" role="button" onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" id="more-browse-results">
+				<button type="button" role="button" onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|escape:'url'}')" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</button>
 			{/if}

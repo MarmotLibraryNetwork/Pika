@@ -1,6 +1,6 @@
 {strip}
 	{* Display Issue Summaries *}
-	{foreach from=$issueSummaries item=issueSummary name=summaryLoop}
+	{foreach from=$issueSummaries item=issueSummary}
 		<div class="issue-summary-row">
 			{if $issueSummary.location}
 				<div class="issue-summary-location">{$issueSummary.location}</div>
@@ -38,7 +38,7 @@
 				{/if}
 
 				{if !empty($issueSummary.holdings)}
-					<button onclick="Pika.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
+					<button onclick="Pika.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$issueSummary@iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
 					&nbsp;
 				{/if}
 
@@ -48,7 +48,7 @@
 			</div>
 
 			{if !empty($issueSummary.holdings)}
-				<div id='issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}' class="issue-summary-holdings striped" style="display:none;">
+				<div id='issue-summary-holdings-{$issueSummary@iteration}' class="issue-summary-holdings striped" style="display:none;">
 					{include file="Record/copiesTableHeader.tpl"}
 					{foreach from=$issueSummary.holdings item=holding}
 						{include file="Record/copiesTableRow.tpl"}

@@ -8,7 +8,7 @@
     "monolog/monolog": "3.*",
     "php-console/php-console": "~3.1",
     "psr/simple-cache": "~1.0",
-    "smarty/smarty": "2.6.33",
+    "smarty/smarty": "^5.0",
     "phpmailer/phpmailer": "~6.9",
     "pear/log": "~1.13",
     "pear/xml_serializer": "0.22.0",

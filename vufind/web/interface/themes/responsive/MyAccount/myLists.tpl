@@ -35,14 +35,14 @@
 				<strong>Select All</strong>
 		</label>
 
-		{foreach from=$myLists item=myList name=myLists}
+		{foreach from=$myLists item=myList}
 			{if $myList.id != -1}
 				<div class="result">
 
 					<div class="row result-title-row">
 						<div class="col-tn-12">
 							<h2 class="h3">
-								<span class="result-index">{$smarty.foreach.myLists.iteration}.</span>&nbsp;
+								<span class="result-index">{$myList@iteration}.</span>&nbsp;
 								<a href="{$myList.url}" class="result-title{* notranslate*}">{$myList.name}</a>
 							</h2>
 						</div>

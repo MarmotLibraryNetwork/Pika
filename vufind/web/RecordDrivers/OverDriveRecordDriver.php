@@ -1031,7 +1031,7 @@ class OverDriveRecordDriver extends RecordInterface {
 			'body'  => $interface->fetch('OverDrive/view-copies.tpl'),
 		];
 
-		if ($interface->getVariable('showStaffView')){
+		if ($interface->getTemplateVariable('showStaffView')){
 			$user        = UserAccount::getLoggedInUser();
 			$userIsStaff = $user && $user->isStaff();
 			$interface->assign('userIsStaff', $userIsStaff);

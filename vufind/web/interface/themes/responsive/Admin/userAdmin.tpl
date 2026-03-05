@@ -68,9 +68,9 @@
 				<td></td>
 				<td></td>
 			</tr>
-				{foreach from=$duplicateUsers item=duplicateUser name=loop}
+				{foreach from=$duplicateUsers item=duplicateUser}
 						<tr style="border-top: 1px solid #ddd">
-							<td><strong>{$smarty.foreach.loop.iteration}</strong></td>
+							<td><strong>{$duplicateUser@iteration}</strong></td>
 							<td>{$duplicateUser->firstname}</td>
 							<td>{$duplicateUser->lastname}</td>
 							<td>{$duplicateUser->created|date_format:'%m/%d/%Y'}</td>

@@ -113,11 +113,11 @@ abstract class RecordInterface {
 		global $interface;
 		$linkUrl     = $this->getRecordUrl();
 		$extraParams = [];
-		if (!empty($interface->get_template_vars('searchId'))){
-			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
-			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
-			$extraParams[] = 'page=' . $interface->get_template_vars('page');
-			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+		if (!empty($interface->getTemplateVars('searchId'))){
+			$extraParams[] = 'searchId=' . $interface->getTemplateVars('searchId');
+			$extraParams[] = 'recordIndex=' . $interface->getTemplateVars('recordIndex');
+			$extraParams[] = 'page=' . $interface->getTemplateVars('page');
+			$extraParams[] = 'searchSource=' . $interface->getTemplateVars('searchSource');
 		}
 
 		if (count($extraParams) > 0){
@@ -276,7 +276,7 @@ abstract class RecordInterface {
 			];
 		}
 		$timer->logTime('Loaded More Like This');
-		if ($interface->getVariable('enableProspectorIntegration')){
+		if ($interface->getTemplateVariable('enableProspectorIntegration')){
 			// enableProspectorIntegration may be set by  $configArray['Content']['Prospector'] or by library setting $library->enableProspectorIntegration
 			$innReachEncoreName               = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$moreDetailsOptions['prospector'] = [
@@ -301,7 +301,7 @@ abstract class RecordInterface {
 			'body'          => '<div id="authornotesPlaceholder">Loading Author Notes...</div>',
 			'hideByDefault' => true,
 		];
-		if ($interface->getVariable('showComments')){
+		if ($interface->getTemplateVariable('showComments')){
 			$moreDetailsOptions['borrowerReviews'] = [
 				'label' => 'Borrower Reviews',
 				'body'  => "<div id='customerReviewPlaceholder'></div>",
@@ -311,7 +311,7 @@ abstract class RecordInterface {
 			'label' => 'Librarian Reviews',
 			'body'  => "<div id='librarianReviewPlaceholder'></div>",
 		];
-		if ($interface->getVariable('showTagging')){
+		if ($interface->getTemplateVariable('showTagging')){
 			$moreDetailsOptions['tags'] = [
 				'label' => 'Tagging',
 				'body'  => $interface->fetch('GroupedWork/view-tags.tpl'),
@@ -322,7 +322,7 @@ abstract class RecordInterface {
 				'label' => 'Published Reviews',
 				'body'  => "<div id='syndicatedReviewPlaceholder'></div>",
 			];
-			if ($interface->getVariable('showGoodReadsReviews')){
+			if ($interface->getTemplateVariable('showGoodReadsReviews')){
 				$moreDetailsOptions['goodreadsReviews'] = [
 					'label'  => 'Reviews from GoodReads',
 					'onShow' => "Pika.GroupedWork.getGoodReadsComments('$isbn');",
@@ -330,21 +330,21 @@ abstract class RecordInterface {
 				];
 			}
 			if (!$configArray['Catalog']['showExploreMoreForFullRecords']){
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$moreDetailsOptions['similarTitles'] = [
 						'label'         => 'Similar Titles From NoveList',
 						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
 						'hideByDefault' => true,
 					];
 				}
-				if ($interface->getVariable('showSimilarAuthors')){
+				if ($interface->getTemplateVariable('showSimilarAuthors')){
 					$moreDetailsOptions['similarAuthors'] = [
 						'label'         => 'Similar Authors From NoveList',
 						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
 						'hideByDefault' => true,
 					];
 				}
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$moreDetailsOptions['similarSeries'] = [
 						'label'         => 'Similar Series From NoveList',
 						'body'          => '<div id="novelistseriesPlaceholder"></div>',

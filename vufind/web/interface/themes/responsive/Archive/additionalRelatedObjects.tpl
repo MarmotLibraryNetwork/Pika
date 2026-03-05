@@ -16,8 +16,8 @@
 	{else}
 		{foreach from=$directlyRelatedObjects.objects item=image}
 			<figure class="browse-thumbnail-sorted">
-				<a href="{$image.link}" {if $image.label}data-title="{$image.label|urlencode}"{/if}>
-					<img src="{$image.image}" {if $image.label}alt="{$image.label|urlencode}"{/if}>
+				<a href="{$image.link}" {if $image.label}data-title="{$image.label|escape:'url'}"{/if}>
+					<img src="{$image.image}" {if $image.label}alt="{$image.label|escape:'url'}"{/if}>
 				</a>
 				<figcaption class="explore-more-category-title">
 					<strong>{$image.label}</strong>

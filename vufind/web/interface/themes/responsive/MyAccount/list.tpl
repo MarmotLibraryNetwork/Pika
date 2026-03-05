@@ -124,7 +124,7 @@
 											</li>
 											{if $showShareOnExternalSites}
 												<li>
-													<a href="https://bsky.app/intent/compose?text={$favList->title|urlencode}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Bluesky">
+													<a href="https://bsky.app/intent/compose?text={$favList->title|escape:'url'}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Bluesky">
 														{include file="images/bluesky-svg.tpl"}
 													</a>
 												</li>
@@ -231,8 +231,8 @@
 			{/if}
 
 			<div id="UserList">{*Keep only list entries in div for custom sorting functions*}
-				{foreach from=$resourceList item=resource name="recordLoop" key=resourceId}
-					<div class="result{if ($smarty.foreach.recordLoop.iteration % 2) == 0} alt{/if}">
+				{foreach from=$resourceList item=resource key=resourceId}
+					<div class="result{if ($resource@iteration % 2) == 0} alt{/if}">
 						{* This is raw HTML -- do not escape it: *}
 
 						{$resource}

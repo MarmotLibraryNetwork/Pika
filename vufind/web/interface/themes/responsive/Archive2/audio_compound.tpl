@@ -12,13 +12,13 @@
 
 {* Grid of Audio Items *}
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-top: 20px;">
-    {foreach from=$children item=child name=audioLoop}
+    {foreach from=$children item=child}
         <div class="audio-item"
              data-audio-url="{$child.audioUrl}"
              data-audio-mime="{$child.audioMime}"
              data-audio-title="{$child.title|escape}"
              data-captions='{if $child.captions}{$child.captions|@json_encode}{else}[]{/if}'
-             data-index="{$smarty.foreach.audioLoop.index}"
+             data-index="{$child@index}"
              style="cursor: pointer; border: 2px solid #ddd; border-radius: 6px; padding: 15px; transition: all 0.3s ease; background: #fff;">
 
             {* Thumbnail *}

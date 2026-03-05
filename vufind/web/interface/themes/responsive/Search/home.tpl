@@ -12,8 +12,8 @@
 
 					<div class="jcarousel" id="browse-category-carousel">
 						<ul>
-							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
-								<li id="browse-category-{$browseCategory->textId}" class="browse-category category{$smarty.foreach.browseCategoryLoop.index%9}{if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
+							{foreach from=$browseCategories item=browseCategory}
+								<li id="browse-category-{$browseCategory->textId}" class="browse-category category{$browseCategory@index%9}{if (!$selectedBrowseCategory && $browseCategory@index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
 										<button>
 											{$browseCategory->label}
 										</button>

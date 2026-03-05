@@ -25,9 +25,9 @@
 					</thead>
 					<tbody>
 
-					{foreach from=$ratings name="recordLoop" key=recordKey item=rating}
+					{foreach from=$ratings key=recordKey item=rating}
 
-						<tr id="myRating{$rating.groupedWorkId|escape}" class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
+						<tr id="myRating{$rating.groupedWorkId|escape}" class="result {if ($rating@iteration % 2) == 0}alt{/if} record{$rating@iteration}">
 							<td>
 								{if isset($rating.dateRated)}
 									<span data-date="{$rating.dateRated}">{$rating.dateRated|date_format}</span>

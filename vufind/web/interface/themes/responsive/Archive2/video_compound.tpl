@@ -9,14 +9,14 @@
 
 {* Grid of Video Items *}
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-top: 20px;">
-    {foreach from=$children item=child name=videoLoop}
+    {foreach from=$children item=child}
         <div class="video-item"
              data-video-url="{$child.videoUrl}"
              data-video-mime="{$child.videoMime}"
              data-video-title="{$child.title|escape}"
              data-poster-url="{$child.posterUrl}"
              data-captions='{if $child.captions}{$child.captions|@json_encode}{else}[]{/if}'
-             data-index="{$smarty.foreach.videoLoop.index}"
+             data-index="{$child@index}"
              style="cursor: pointer; border: 2px solid #ddd; border-radius: 6px; padding: 15px; transition: all 0.3s ease; background: #fff;">
 
             {* Thumbnail/Poster *}

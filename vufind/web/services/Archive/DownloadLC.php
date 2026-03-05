@@ -30,8 +30,8 @@ class DownloadLC extends Archive_Object{
 	function launch(){
 		global $interface;
 		$this->loadArchiveObjectData();
-		$anonymousLcDownload = $interface->getVariable('anonymousLcDownload');
-		$verifiedLcDownload = $interface->getVariable('verifiedLcDownload');
+		$anonymousLcDownload = $interface->getTemplateVariable('anonymousLcDownload');
+		$verifiedLcDownload = $interface->getTemplateVariable('verifiedLcDownload');
 
 		if ($anonymousLcDownload || (UserAccount::isLoggedIn() && $verifiedLcDownload)){
 			$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side

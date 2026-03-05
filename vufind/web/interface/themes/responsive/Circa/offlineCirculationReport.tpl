@@ -115,8 +115,8 @@
 					<tr><th>#</th><th>Login</th><th>Stat Group</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
 					<tbody>
-					{foreach from=$offlineCirculation item=offlineCircEntry name='offlinecircs'}
-						<tr><td>{$smarty.foreach.offlinecircs.iteration}</td><td>{$offlineCircEntry->login}</td><td>{$offlineCircEntry->statGroup}</td>{*<td>{$offlineCircEntry->initials}</td><td>{$offlineCircEntry->type}</td>*}<td>{$offlineCircEntry->itemBarcode}</td><td>{$offlineCircEntry->patronBarcode}</td><td>{$offlineCircEntry->timeEntered|date_format}</td><td>{$offlineCircEntry->status}</td><td>{$offlineCircEntry->notes}</td></tr>
+					{foreach from=$offlineCirculation item=offlineCircEntry}
+						<tr><td>{$offlineCircEntry@iteration}</td><td>{$offlineCircEntry->login}</td><td>{$offlineCircEntry->statGroup}</td>{*<td>{$offlineCircEntry->initials}</td><td>{$offlineCircEntry->type}</td>*}<td>{$offlineCircEntry->itemBarcode}</td><td>{$offlineCircEntry->patronBarcode}</td><td>{$offlineCircEntry->timeEntered|date_format}</td><td>{$offlineCircEntry->status}</td><td>{$offlineCircEntry->notes}</td></tr>
 					{/foreach}
 					</tbody>
 				</table>

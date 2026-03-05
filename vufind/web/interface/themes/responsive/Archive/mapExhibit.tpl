@@ -47,9 +47,9 @@
 
 						Pika.Archive.archive_info_window = new google.maps.InfoWindow({ldelim}{rdelim});
 
-						{foreach from=$mappedPlaces item=place name=place}
+						{foreach from=$mappedPlaces item=place}
 							{if $place.latitude && $place.longitude}
-								var marker{$smarty.foreach.place.index} = new google.maps.Marker({ldelim}
+								var marker{$place@index} = new google.maps.Marker({ldelim}
 									position: {ldelim}lat: {$place.latitude}, lng: {$place.longitude}{rdelim},
 									map: Pika.Archive.archive_map,
 									title: '{$place.label|escapeCSS} ({$place.count})',
@@ -65,34 +65,34 @@
 										{rdelim}
 								{rdelim});
 
-								Pika.Archive.markers[{$smarty.foreach.place.index}] = marker{$smarty.foreach.place.index};
-								marker{$smarty.foreach.place.index}.addListener('click', function(){ldelim}
-									Pika.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+								Pika.Archive.markers[{$place@index}] = marker{$place@index};
+								marker{$place@index}.addListener('click', function(){ldelim}
+									Pika.Archive.handleMapClick({$place@index}, '{$pid|escape:'url'}', '{$place.pid|escape:'url'}', '{$place.label|escape:javascript}', false, {$showTimeline});
 								{rdelim});
 
 								{if $selectedPlace == $place.pid}
 									{* Click the first marker so we show images by default *}
-									Pika.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+									Pika.Archive.handleMapClick({$place@index}, '{$pid|escape:'url'}', '{$place.pid|escape:'url'}', '{$place.label|escape:javascript}', false, {$showTimeline});
 								{/if}
 							{/if}
 						{/foreach}
-						{foreach from=$geolocatedObjects item=geolocatedObject name=geolocatedObjects}
-							var geomarker{$smarty.foreach.geolocatedObjects.index} = new google.maps.Marker({ldelim}
+						{foreach from=$geolocatedObjects item=geolocatedObject}
+							var geomarker{$geolocatedObject@index} = new google.maps.Marker({ldelim}
 								position: {ldelim}lat: {$geolocatedObject.latitude}, lng: {$geolocatedObject.longitude}{rdelim},
 								map: Pika.Archive.archive_map,
 								title: '{$geolocatedObject.label|escape:javascript}',
 								{rdelim});
 
-							Pika.Archive.geomarkers[{$smarty.foreach.geolocatedObjects.index}] = geomarker{$smarty.foreach.geolocatedObjects.index};
-							geomarker{$smarty.foreach.geolocatedObjects.index}.addListener('click', function(){ldelim}
-								Pika.Archive.showObjectInPopup('{$geolocatedObject.pid|urlencode}', {$smarty.foreach.geolocatedObjects.index}, 1);
+							Pika.Archive.geomarkers[{$geolocatedObject@index}] = geomarker{$geolocatedObject@index};
+							geomarker{$geolocatedObject@index}.addListener('click', function(){ldelim}
+								Pika.Archive.showObjectInPopup('{$geolocatedObject.pid|escape:'url'}', {$geolocatedObject@index}, 1);
 								{rdelim});
 
 						{/foreach}
 						{foreach from=$unmappedPlaces item=place}
 							{if $selectedPlace == $place.pid}
 								{* Click the first marker so we show images by default *}
-								Pika.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+								Pika.Archive.handleMapClick(-1, '{$pid|escape:'url'}', '{$place.pid|escape:'url'}', '{$place.label|escape:javascript}', false, {$showTimeline});
 							{/if}
 						{/foreach}
 					{rdelim}
@@ -118,7 +118,7 @@
 				<ol>
 					{foreach from=$unmappedPlaces item=place}
 						<li>
-							<a href="{$place.url}" onclick="Pika.closeLightbox();return Pika.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});">
+							<a href="{$place.url}" onclick="Pika.closeLightbox();return Pika.Archive.handleMapClick(-1, '{$pid|escape:'url'}', '{$place.pid|escape:'url'}', '{$place.label|escape:javascript}', false, {$showTimeline});">
 								{$place.label} has {$place.count} objects
 							</a>
 						</li>
@@ -172,6 +172,6 @@
 {/strip}
 <script>
 	$().ready(function(){ldelim}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|escape:'url'}');
 	{rdelim});
 </script>

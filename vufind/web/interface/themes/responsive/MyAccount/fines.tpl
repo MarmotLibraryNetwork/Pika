@@ -20,10 +20,10 @@
 			</div>
 		{/if}
 
-		{foreach from=$userFines item=fines key=userId name=fineTable}
+		{foreach from=$userFines item=fines key=userId}
 			{if count($userFines) > 1}<h2 class="h3">{$userAccountLabel.$userId}</h2>{/if}{* Only show account name if there is more than one account. *}
 			{if $fines}
-			<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
+			<table id="finesTable{$fines@index}" class="fines-table table table-striped">
 				<thead>
 					<tr>
 						{if $showDate}

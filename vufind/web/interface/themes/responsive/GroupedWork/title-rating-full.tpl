@@ -32,7 +32,7 @@
 {*			</div>*}
 
 			{if $ratingData.average > 0}{* Only show histogram when there is rating data *}
-			<div class="row">Average user rating: {math equation="round(average_rating,1)" average_rating=$ratingData.average} stars</div>
+			<div class="row">Average user rating: {$ratingData.averageRounded} stars</div>
 			<div class="row">User ratings:</div>
 			<div class="rating-graph">
 				<div class="row">

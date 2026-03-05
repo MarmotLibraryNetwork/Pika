@@ -48,7 +48,7 @@
 		<tbody>
 			{if isset($dataList) && is_array($dataList)}
 				{foreach from=$dataList item=dataItem key=id}
-				<tr class='{cycle values="odd,even"} {$dataItem->class}'>
+				<tr class='{if $dataItem@iteration % 2 == 0}even{else}odd{/if} {$dataItem->class}'>
 
 					{foreach from=$structure item=property}
 						{assign var=propName value=$property.property}

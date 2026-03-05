@@ -28,11 +28,11 @@
 				</select>
 			{/if}
 
-			{foreach from=$overDriveUsers item=tmpUser name=foo}
+			{foreach from=$overDriveUsers item=tmpUser}
 				{assign var="userId" value=$tmpUser->id}
 				{* Have to assign the userid here to it's own variable because smarty can't parse correctly
 			the mixing of arrays and object properties going on for the foreach loop below *}
-				<div id="lendingPeriod{$userId}" class="lendingPeriods" {if $smarty.foreach.foo.index != 0} style="display: none"{*Hide all selects but the first one*}{/if}>
+				<div id="lendingPeriod{$userId}" class="lendingPeriods" {if $tmpUser@index != 0} style="display: none"{*Hide all selects but the first one*}{/if}>
 					{if $tmpUser->promptForOverDriveLendingPeriods && !empty($lendingPeriods.$userId)}
 						<label class="control-label" for="lendingPeriodSelect{$userId}">{translate text="Lending Period"}: </label>
 						<select name="lendingPeriod[{$userId}]" id="lendingPeriodSelect{$userId}" class="form-control">

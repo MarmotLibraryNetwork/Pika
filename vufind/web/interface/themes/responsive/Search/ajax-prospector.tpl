@@ -13,11 +13,11 @@
 		<div class="row" id="prospectorSearchResultsSection">
 			<div class="col-tn-12">
 
-				{foreach from=$prospectorResults item=prospectorResult name="recordLoop"}
+				{foreach from=$prospectorResults item=prospectorResult}
 
 					<div class="result">
 						<h3 class="h4">
-							<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
+							<span class="result-index">{$prospectorResult@iteration}.</span>&nbsp;
 							<a class="result-title notranslate" href="{$prospectorResult.link}" rel="external" target="_blank">
 								{$prospectorResult.title}
 							</a>

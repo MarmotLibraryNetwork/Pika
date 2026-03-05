@@ -20,7 +20,7 @@
 			<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 				<ul>
 
-					{foreach from=$exploreMoreOptions item=exploreMoreCategory name="loop"}
+					{foreach from=$exploreMoreOptions item=exploreMoreCategory}
 						{if $exploreMoreCategory.placeholder}
 							<li id="carousel{$i}">
 								<a href='{$exploreMoreCategory.link}'>
@@ -28,7 +28,7 @@
 								</a>
 							</li>
 						{else}
-							<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
+							<li id="exploreMore{$exploreMoreCategory@index}" class="explore-more-option">
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
 										<a href='{$exploreMoreCategory.link}' title="{$exploreMoreCategory.label|escape}">

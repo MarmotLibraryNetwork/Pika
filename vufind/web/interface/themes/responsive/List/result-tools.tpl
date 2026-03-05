@@ -19,7 +19,7 @@
 							</a>
 						</li>
 						<li>
-							<a href="https://bsky.app/intent/compose?text={$recordDriver->getTitle()|urlencode}%20{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Bluesky">
+							<a href="https://bsky.app/intent/compose?text={$recordDriver->getTitle()|escape:'url'}%20{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Bluesky">
 								{include file="images/bluesky-svg.tpl"}
 							</a>
 						</li>
@@ -32,7 +32,7 @@
 							{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$summShortId description="See My List '"|cat:$recordDriver->getTitle()|cat:"' at $homeLibrary"}
 						</li>
 						<li>
-							<a href="https://x.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on X">
+							<a href="https://x.com/compose/tweet?text={$recordDriver->getTitle()|escape:'url'}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on X">
 								<img class="x-twit" src="{img filename='x-icon.png'}" alt="Share on X">
 							</a>
 						</li>

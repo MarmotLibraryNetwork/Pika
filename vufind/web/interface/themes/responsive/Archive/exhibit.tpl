@@ -53,8 +53,8 @@
 
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
-							{foreach from=$relatedImages item=image name=loop}
-								<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
+							{foreach from=$relatedImages item=image}
+								<li id="exploreMore{$image@index}" class="explore-more-option">
 									<figure class="thumbnail" title="{$image.title|escape}">
 										<div class="explore-more-image">
 											<a href='{$image.link}'>
@@ -108,7 +108,7 @@
 						<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>Date Modified</option>
 					</select>
 					<span class="input-group-btn">
-						<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);">GO</button>
+						<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;Pika.Archive.getMoreExhibitResults('{$exhibitPid|escape:'url'}', 1);">GO</button>
 					</span>
 				</div>
 			</div>
@@ -138,7 +138,7 @@
 				{foreach from=$relatedImages item=image}
 					{if $showThumbnailsSorted && count($relatedImages) >= 18}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
 						<figure class="{if $showThumbnailsSorted && count($relatedImages) >= 18}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
-							<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
+							<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|escape:'url'}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 								<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>
 								<figcaption class="explore-more-category-title">
 									<strong>{$image.title}</strong>
@@ -152,7 +152,7 @@
 		{* Show more link if we aren't seeing all the records already *}
 		<div id="nextInsertPoint" class="text-center">
 		{if $recordEnd < $recordCount}
-			<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" aria-label="Load more objects">
+			<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreExhibitResults('{$pid|escape:'url'}')" aria-label="Load more objects">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
@@ -193,6 +193,6 @@
 {/strip}
 <script>
 	$(function(){ldelim}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|escape:'url'}');
 	{rdelim});
 </script>

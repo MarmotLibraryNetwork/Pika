@@ -161,7 +161,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 			'label' => 'Citations',
 			'body'  => $interface->fetch('Record/cite.tpl'),
 		];
-		if ($interface->getVariable('showStaffView')){
+		if ($interface->getTemplateVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),

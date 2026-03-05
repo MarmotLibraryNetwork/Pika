@@ -36,10 +36,10 @@
  * @param UInterface $smarty
  * @return null|string
  */
-function smarty_function_implode($params, &$smarty)
+function smarty_function_implode($params, \Smarty\Template $template)
 {
 	if (!isset($params['subject'])) {
-		$smarty->trigger_error("implode: missing 'subject' parameter");
+		trigger_error("implode: missing 'subject' parameter");
 		return;
 	}
 
@@ -62,6 +62,6 @@ function smarty_function_implode($params, &$smarty)
 	if (!isset($params['assign'])) {
 		return $implodedValue;
 	}else{
-		$smarty->assign($params['assign'], $implodedValue);
+		$template->assign($params['assign'], $implodedValue);
 	}
 }

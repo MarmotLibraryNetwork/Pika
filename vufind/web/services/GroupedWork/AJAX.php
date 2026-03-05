@@ -595,7 +595,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			}
 
 //			$title   = ($library->showFavorites && !$library->showComments) ? 'Rating' : 'Review'; // the library object doesn't seem to have the up-to-date settings.
-			$title   = ($interface->get_template_vars('showRatings') && !$interface->get_template_vars('showComments')) ? 'Rating' : 'Review';
+			$title   = ($interface->getTemplateVars('showRatings') && !$interface->getTemplateVars('showComments')) ? 'Rating' : 'Review';
 			$results = [
 				'title'        => $title,
 				'modalBody'    => $interface->fetch("GroupedWork/review-form-body.tpl"),
@@ -1805,7 +1805,7 @@ function getSaveSeriesToListForm(){
 			try {
 				global $interface;
 				$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-				$gitBranch   = $interface->getVariable('gitBranch');
+				$gitBranch   = $interface->getTemplateVariable('gitBranch');
 				$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 					->setLastModifiedBy('Pika ' . $gitBranch)
 					->setTitle("Office 2007 XLSX Document")

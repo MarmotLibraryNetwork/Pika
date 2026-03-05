@@ -39,7 +39,7 @@ class Fines extends MyAccount {
 				$user = UserAccount::getLoggedInUser();
 				$fines = $user->getMyFines();
 				$interface->assign('userFines', $fines);
-//			$minimumFineAmount = $interface->get_template_vars('minimumFineAmount');
+//			$minimumFineAmount = $interface->getTemplateVars('minimumFineAmount');
 //			$canShowPayFineButton = false;
 
 				// Get Account Labels, Add Up Totals

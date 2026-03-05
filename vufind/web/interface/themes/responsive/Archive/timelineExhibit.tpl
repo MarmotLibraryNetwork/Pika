@@ -68,7 +68,7 @@
 {/strip}
 <script>
 	$().ready(function(){ldelim}
-		Pika.Archive.handleTimelineClick('{$pid|urlencode}');
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.handleTimelineClick('{$pid|escape:'url'}');
+		Pika.Archive.loadExploreMore('{$pid|escape:'url'}');
 	{rdelim});
 </script>

@@ -57,13 +57,13 @@
 					{/if}
 
 					<div class="striped">
-						{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}
+						{foreach from=$transList item=checkedOutTitle key=checkedOutKey}
 							{if strtolower($checkedOutTitle.checkoutSource) == 'ils'}
-								{include file="MyAccount/ilsCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
-								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
-								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+								{include file="MyAccount/ilsCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$checkedOutTitle@iteration}
+							{elseif strtolower($checkedOutTitle.checkoutSource) == 'overdrive'}
+								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$checkedOutTitle@iteration}
+							{elseif strtolower($checkedOutTitle.checkoutSource) == 'hoopla'}
+								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$checkedOutTitle@iteration}
 							{else}
 								<div class="row">
 									Unknown record source {$checkedOutTitle.checkoutSource}

@@ -29,7 +29,7 @@
  *                  interface/themes/[theme]/images/ folder.
  * -------------------------------------------------------------
  */
-function smarty_function_img_assign($params, &$smarty)
+function smarty_function_img_assign($params, \Smarty\Template $template)
 {
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;
@@ -46,14 +46,14 @@ function smarty_function_img_assign($params, &$smarty)
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/images/{$filename}")) {
-			$smarty->assign($params['var'], "/interface/themes/{$theme}/images/{$filename}");
+			$template->assign($params['var'], "/interface/themes/{$theme}/images/{$filename}");
 			return;
 		}
 	}
 	
 	//Didn't find a theme specific image, try the images directory
 	if (file_exists("{$local}/images/{$filename}")) {
-		$smarty->assign($params['var'], "/images/{$filename}");
+		$template->assign($params['var'], "/images/{$filename}");
 		return;
 	}
 

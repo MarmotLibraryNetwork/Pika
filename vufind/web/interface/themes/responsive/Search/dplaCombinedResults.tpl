@@ -1,13 +1,13 @@
 {strip}
 	<div id="dplaSearchResults">
-		{foreach from=$searchResults item=result name="recordLoop"}
+		{foreach from=$searchResults item=result}
 			<div class="result">
 				<div class="dplaResult resultsList row">
 					<div class="col-tn-12">
 						<div class="row">
 							<div class="col-tn-12">
 								<h3 class="h4">
-									<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
+									<span class="result-index">{$result@iteration}.</span>&nbsp;
 									<a href="{$result.link}" class="result-title notranslate">
 										{if !$result.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$result.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 									</a>

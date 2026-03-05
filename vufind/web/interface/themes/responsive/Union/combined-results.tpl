@@ -12,8 +12,8 @@
 	<div id="combined-results-container">
 	{section name=column loop=2}
 		<div id="combined-results-column-{$smarty.section.column.index}" class="hidden-tn hidden-xs hidden-sm col-md-6">
-			{foreach from=$combinedResultSections item=combinedResultSection name=searchSection}
-				{if ($smarty.foreach.searchSection.index%2 == $smarty.section.column.index)}
+			{foreach from=$combinedResultSections item=combinedResultSection}
+				{if ($combinedResultSection@index%2 == $smarty.section.column.index)}
 					<div class="combined-results-section combined-results-column-{$smarty.section.column.index}">
 						<h2 class="combined-results-section-title h3">
 							{$combinedResultSection->displayName}

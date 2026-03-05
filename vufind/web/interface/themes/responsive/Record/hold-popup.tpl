@@ -81,7 +81,7 @@
 							{/literal}
 							{$activeUserId}: "{$userDisplayName|escape:javascript} - {$user->getHomeLibrarySystemName()}",
 							{assign var="linkedUsers" value=$user->getLinkedUsers()}
-							{foreach from="$linkedUsers" item="tron"}
+							{foreach from=$linkedUsers item="tron"}
 								{$tron->id}: "{$tron->displayName|escape:javascript} - {$tron->getHomeLibrarySystemName()}",
 							{/foreach}
 							{literal}

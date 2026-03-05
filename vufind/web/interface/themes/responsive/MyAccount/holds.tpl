@@ -58,14 +58,14 @@
 					</div>
 				</div>
 				<div class="striped">
-					{foreach from=$recordList.$sectionKey item=record name="recordLoop"}
-						{if strtolower($record.holdSource) == 'ils'}
-							{include file="MyAccount/ilsHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
-						{elseif $record.holdSource == 'OverDrive'}
-							{include file="MyAccount/overdriveHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+					{foreach from=$recordList.$sectionKey item=holdRecord}
+						{if strtolower($holdRecord.holdSource) == 'ils'}
+							{include file="MyAccount/ilsHold.tpl" record=$holdRecord section=$sectionKey resultIndex=$holdRecord@iteration}
+						{elseif strtolower($holdRecord.holdSource) == 'overdrive'}
+							{include file="MyAccount/overdriveHold.tpl" record=$holdRecord section=$sectionKey resultIndex=$holdRecord@iteration}
 						{else}
 							<div class="row">
-								Unknown record source {$record.holdSource}
+								Unknown record source {$holdRecord.holdSource}
 							</div>
 						{/if}
 					{/foreach}
@@ -128,8 +128,8 @@
 			These titles will have a hold placed on them when access to the circulation system is restored.
 		</p>
 
-		{foreach from=$offlineHolds item=offlineHold name="recordLoop"}
-			{include file="MyAccount/offlineHold.tpl" record=$offlineHold section='Offline' resultIndex=$smarty.foreach.recordLoop.iteration}
+		{foreach from=$offlineHolds item=offlineHold}
+			{include file="MyAccount/offlineHold.tpl" record=$offlineHold section='Offline' resultIndex=$offlineHold@iteration}
 		{/foreach}
 
 	{/if}

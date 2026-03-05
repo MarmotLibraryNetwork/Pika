@@ -9,11 +9,11 @@
 					<span class="result-index">{$resultIndex}.</span>&nbsp;
 					{if $record.link}
 						<a href="{$record.link}" class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !($record.title|removeTrailingPunctuation)}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</a>
 					{else}
 						<span class="result-title notranslate">
-							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !($record.title|removeTrailingPunctuation)}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</span>
 					{/if}
 					{if $record.title2}

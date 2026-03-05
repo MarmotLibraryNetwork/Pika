@@ -51,8 +51,8 @@
 									{*this assumes a simple array, eg list *}
 									{assign var=subPropName value=$subProperty.property}
 									{assign var=subPropValue value=$subObject->$subPropName}
-									{foreach from=$subProperty.values item=propertyName name="checkboxList"}
-										<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName|escape:'quotes'}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if} id="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-{$subObject->id}--{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>
+									{foreach from=$subProperty.values item=propertyName}
+										<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName|escape:'quotes'}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if} id="{$propName}_{$subPropName}-{$subObject->id}--{$propertyName@iteration}"> <label for="{$propName}_{$subPropName}-{$subObject->id}--{$propertyName@iteration}">{$propertyName}</label><br>
 									{/foreach}
 								</div>
 							</td>
@@ -189,8 +189,8 @@
 					{*this assumes a simple array, eg list *}
 					{assign var=subPropName value=$subProperty.property}
 					{assign var=subPropValue value=$subObject->$subPropName}
-					{foreach from=$subProperty.values item=propertyName name="checkboxList"}
-					newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName|escape:'quotes'}" id="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}"> <label for="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$smarty.foreach.checkboxList.iteration}">{$propertyName}</label><br>';
+					{foreach from=$subProperty.values item=propertyName}
+					newRow += '<input name="{$propName}_{$subPropName}[' + numAdditional{$propName} + '][]" type="checkbox" value="{$propertyName|escape:'quotes'}" id="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$propertyName@iteration}"> <label for="{$propName}_{$subPropName}-' + numAdditional{$propName} + '-{$propertyName@iteration}">{$propertyName}</label><br>';
 					{/foreach}
 					newRow += '</div>';
 					newRow += '</td>';

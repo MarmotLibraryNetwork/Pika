@@ -1,8 +1,8 @@
 {strip}
 
 			<div class="row">
-				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
-          {if $smarty.foreach.loop.index == 5}
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor}
+          {if $contributor@index == 5}
 				<div id="showAdditionalContributorsLink">
 					<a onclick="Pika.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
 				</div>
@@ -22,7 +22,7 @@
 						</div>
 					{/if}
 				{/foreach}
-            {if $smarty.foreach.loop.index >= 5}
+            {if $contributor@index >= 5}
 					<div>
 						<a href="#" onclick="Pika.Record.lessContributors(); return false;">{translate text='less'} ...</a>
 					</div>

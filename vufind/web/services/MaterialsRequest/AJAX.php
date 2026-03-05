@@ -233,7 +233,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 		$return = [
 			'title'        => 'Update Materials Request',
 			'modalBody'    => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
-			'modalButtons' => $interface->get_template_vars('error') == null ? "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : '',
+			'modalButtons' => $interface->getTemplateVars('error') == null ? "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : '',
 		];
 		return $return;
 	}

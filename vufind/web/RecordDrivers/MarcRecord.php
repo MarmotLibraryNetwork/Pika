@@ -1308,22 +1308,22 @@ class MarcRecord extends IndexRecord {
 		global $interface;
 		global $library;
 		if (isset($interface)){
-			if ($interface->getVariable('displayingSearchResults')){
-				$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
+			if ($interface->getTemplateVariable('displayingSearchResults')){
+				$showHoldButton = $interface->getTemplateVariable('showHoldButtonInSearchResults');
 			}else{
-				$showHoldButton = $interface->getVariable('showHoldButton');
+				$showHoldButton = $interface->getTemplateVariable('showHoldButton');
 			}
 
-			if ($showHoldButton && $interface->getVariable('offline')){
+			if ($showHoldButton && $interface->getTemplateVariable('offline')){
 				// When Pika is in offline mode, only show the hold button if offline-login & offline-holds are allowed
 				global $configArray;
-				if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']){
+				if (!$interface->getTemplateVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']){
 					$showHoldButton = false;
 				}
 			}
 
 			if ($showHoldButton && $isAvailable){
-				$showHoldButton = !$interface->getVariable('showHoldButtonForUnavailableOnly');
+				$showHoldButton = !$interface->getTemplateVariable('showHoldButtonForUnavailableOnly');
 			}
 		}else{
 			$showHoldButton = false;
@@ -1734,7 +1734,7 @@ class MarcRecord extends IndexRecord {
 			'body'  => $interface->fetch('Record/cite.tpl'),
 		];
 
-		if ($interface->getVariable('showStaffView')){
+		if ($interface->getTemplateVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),

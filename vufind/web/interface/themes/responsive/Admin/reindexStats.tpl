@@ -40,10 +40,10 @@
 			<h4>Toggle columns:</h4>
 
 			<div class="row">
-				{foreach from=$indexingStatHeader item=itemHeader name=indexCols}
-					{if $smarty.foreach.indexCols.index}{* Skip the first column for scope name *}
+				{foreach from=$indexingStatHeader item=itemHeader}
+					{if $itemHeader@index}{* Skip the first column for scope name *}
 						<div class="col-sm-4">
-							<button class="toggle-vis btn btn-default btn-primary" data-column="{$smarty.foreach.indexCols.index}"
+							<button class="toggle-vis btn btn-default btn-primary" data-column="{$itemHeader@index}"
 							        style="width: 100%">{$itemHeader}</button>
 						</div>
 					{/if}
@@ -75,7 +75,7 @@
 					<tbody>
 					{foreach from=$indexingStats item=statsRow}
 						<tr>
-							{foreach from=$statsRow item=statCell name=statsLoop}
+							{foreach from=$statsRow item=statCell}
 								<td{if !empty($compareTo)}{if $statCell > 0} class="success"{elseif $statCell < 0} class="danger"{/if}{/if}>{$statCell}</td>
 							{/foreach}
 						</tr>

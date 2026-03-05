@@ -100,7 +100,7 @@
 				<div class="row">
 					<div class="result-label col-tn-3">Average Rating: </div>
 					<div class="result-value col-tn-8">
-						{math equation="round(average_rating,1)" average_rating=$summRating.average} stars
+						{$summRating.averageRounded} stars
 					</div>
 				</div>
 			{/if}

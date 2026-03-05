@@ -19,7 +19,7 @@
 require_once ROOT_DIR . '/sys/mobileesp/mobile_device_detect.php';
 
 // Smarty Extension class
-class UInterface extends Smarty {
+class UInterface extends \Smarty\Smarty {
 	public $lang;
 	private $pikaTheme; // which theme(s) are active?
 	private $themes;    // The themes that are active
@@ -76,12 +76,10 @@ class UInterface extends Smarty {
 			}
 		}
 
-		$this->plugins_dir = ['plugins', "$local/interface/plugins", 'Smarty/plugins'];
 		// TODO: The correct setting for caching is 0, 1 or 2
-		// 0 will turn caching off. Not sure what a false value will do.
-		$this->caching       = false;
+		// 0 will turn caching off.
+		$this->caching       = 0;
 		$this->debugging     = false;
-        $this->error_reporting= E_ERROR;
 		$this->compile_check = true;
 		// debugging
 		if (!empty($configArray['System']['debug'])){
@@ -97,10 +95,74 @@ class UInterface extends Smarty {
 		$this->compile_check = true;
 		}
 
-		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
-//		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
-		$this->register_block('display_if_set', 'display_if_set');
-		$this->register_function('translate', 'translate');
+		// Register block and function plugins
+		$this->registerPlugin('block', 'display_if_inconsistent', 'display_if_inconsistent');
+//		$this->registerPlugin('block', 'display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
+		$this->registerPlugin('block', 'display_if_set', 'display_if_set');
+		$this->registerPlugin('function', 'translate', 'translate');
+		$this->registerPlugin('modifier', 'translate', 'translate');
+
+		// Register PHP functions used in template {if} expressions as modifiers.
+		// Smarty 5 parses func($var) in {if} as a modifier call, so these must be registered.
+		foreach ([
+			'array_key_exists', 'array_keys', 'array_values', 'count',
+			'explode', 'get_class', 'html_entity_decode', 'htmlentities',
+			'in_array', 'is_array', 'is_null', 'is_numeric', 'is_object', 'method_exists',
+			'is_string', 'json_encode', 'number_format', 'print_r',
+			'strcasecmp', 'stripos', 'strlen', 'strpos', 'strtolower',
+			'strtoupper', 'strstr', 'trim', 'ucwords',
+		] as $fn) {
+			$this->registerPlugin('modifier', $fn, $fn);
+		}
+
+		// Register custom function plugins from interface/plugins/
+		$pluginDir = "$local/interface/plugins";
+		require_once "$pluginDir/function.css.php";
+		$this->registerPlugin('function', 'css', 'smarty_function_css');
+		require_once "$pluginDir/function.img.php";
+		$this->registerPlugin('function', 'img', 'smarty_function_img');
+		require_once "$pluginDir/function.img_assign.php";
+		$this->registerPlugin('function', 'img_assign', 'smarty_function_img_assign');
+		require_once "$pluginDir/function.js.php";
+		$this->registerPlugin('function', 'js', 'smarty_function_js');
+		require_once "$pluginDir/function.formatJSON.php";
+		$this->registerPlugin('function', 'formatJSON', 'smarty_function_formatJSON');
+		require_once "$pluginDir/function.implode.php";
+		$this->registerPlugin('function', 'implode', 'smarty_function_implode');
+
+		// Register custom modifier plugins from interface/plugins/
+		require_once "$pluginDir/modifier.addEllipsis.php";
+		$this->registerPlugin('modifier', 'addEllipsis', 'smarty_modifier_addEllipsis');
+		require_once "$pluginDir/modifier.addURLParams.php";
+		$this->registerPlugin('modifier', 'addURLParams', 'smarty_modifier_addURLParams');
+		require_once "$pluginDir/modifier.contains.php";
+		$this->registerPlugin('modifier', 'contains', 'smarty_modifier_contains');
+		require_once "$pluginDir/modifier.escapeCSS.php";
+		$this->registerPlugin('modifier', 'escapeCSS', 'smarty_modifier_escapeCSS');
+		require_once "$pluginDir/modifier.file_size.php";
+		$this->registerPlugin('modifier', 'file_size', 'smarty_modifier_file_size');
+		require_once "$pluginDir/modifier.formatISBN.php";
+		$this->registerPlugin('modifier', 'formatISBN', 'smarty_modifier_formatISBN');
+		require_once "$pluginDir/modifier.getvalue.php";
+		$this->registerPlugin('modifier', 'getvalue', 'smarty_modifier_getvalue');
+		require_once "$pluginDir/modifier.highlight.php";
+		$this->registerPlugin('modifier', 'highlight', 'smarty_modifier_highlight');
+		require_once "$pluginDir/modifier.printms.php";
+		$this->registerPlugin('modifier', 'printms', 'smarty_modifier_printms');
+		require_once "$pluginDir/modifier.removeTrailingPunctuation.php";
+		$this->registerPlugin('modifier', 'removeTrailingPunctuation', 'smarty_modifier_removeTrailingPunctuation');
+		require_once "$pluginDir/modifier.removeURLParam.php";
+		$this->registerPlugin('modifier', 'removeURLParam', 'smarty_modifier_removeURLParam');
+		require_once "$pluginDir/modifier.safe_money_format.php";
+		$this->registerPlugin('modifier', 'safe_money_format', 'smarty_modifier_safe_money_format');
+		require_once "$pluginDir/modifier.stripTags.php";
+		$this->registerPlugin('modifier', 'stripTags', 'smarty_modifier_stripTags');
+		require_once "$pluginDir/modifier.substr.php";
+		$this->registerPlugin('modifier', 'substr', 'smarty_modifier_substr');
+		require_once "$pluginDir/modifier.truncate_html.php";
+		$this->registerPlugin('modifier', 'truncate_html', 'smarty_modifier_truncate_html');
+		require_once "$pluginDir/modifier.unhighlight.php";
+		$this->registerPlugin('modifier', 'unhighlight', 'smarty_modifier_unhighlight');
 //		$this->register_function('char', 'char');
 
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
@@ -233,12 +295,12 @@ class UInterface extends Smarty {
 		if ($this->isMobile()){
 			$this->assign('pageTitle', translate($title));
 		}else{
-			$this->assign('pageTitle', translate($title) . ' | ' . $this->get_template_vars('librarySystemName'));
+			$this->assign('pageTitle', translate($title) . ' | ' . $this->getTemplateVars('librarySystemName'));
 		}
 	}
 
 	function getShortPageTitle(){
-		return $this->get_template_vars('shortPageTitle');
+		return $this->getTemplateVars('shortPageTitle');
 	}
 
 	function getLanguage(){
@@ -256,13 +318,11 @@ class UInterface extends Smarty {
 	 * @param string $resource_name
 	 * @param string $cache_id
 	 * @param string $compile_id
-	 * @param boolean $display
-	 *
 	 * @return string
 	 */
-	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false){
+	function fetch($resource_name = null, $cache_id = null, $compile_id = null){
 		global $timer;
-		$resource = parent::fetch($resource_name, $cache_id, $compile_id, $display);
+		$resource = parent::fetch($resource_name, $cache_id, $compile_id);
 		$timer->logTime("Finished fetching $resource_name");
 		return $resource;
 	}
@@ -623,12 +683,12 @@ class UInterface extends Smarty {
 	 * @param string $variableName
 	 * @return string|array|object
 	 */
-	public function getVariable($variableName){
-		return $this->get_template_vars($variableName);
+	public function getTemplateVariable($variableName){
+		return $this->getTemplateVars($variableName);
 	}
 
 	public function assignAppendToExisting($variableName, $newValue){
-		$originalValue = $this->get_template_vars($variableName);
+		$originalValue = $this->getTemplateVars($variableName);
 		if ($originalValue == null){
 			$this->assign($variableName, $newValue);
 		}else{
@@ -644,7 +704,7 @@ class UInterface extends Smarty {
 	}
 
 	public function assignAppendUniqueToExisting($variableName, $newValue){
-		$originalValue = $this->get_template_vars($variableName);
+		$originalValue = $this->getTemplateVars($variableName);
 		if ($originalValue == null){
 			$this->assign($variableName, $newValue);
 		}else{
@@ -734,7 +794,7 @@ function translate($params){
 	}
 }
 
-function display_if_inconsistent($params, $content, &$smarty, &$repeat){
+function display_if_inconsistent($params, $content, \Smarty\Template $template, &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)){
@@ -799,7 +859,7 @@ function display_if_inconsistent($params, $content, &$smarty, &$repeat){
 //	return null;
 //}
 
-function display_if_set($params, $content, &$smarty, &$repeat){
+function display_if_set($params, $content, \Smarty\Template $template, &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)){

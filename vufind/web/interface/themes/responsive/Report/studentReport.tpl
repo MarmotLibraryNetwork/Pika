@@ -34,8 +34,8 @@
 					There are a total of <strong>{$reportCount-1}</strong> rows that meet your criteria.
 				</p>
 				<table id="studentReportTable" class="table table-condensed stripe">
-					{foreach from=$reportData item=dataRow name=studentData}
-						{if $smarty.foreach.studentData.index == 0}
+					{foreach from=$reportData item=dataRow}
+						{if $dataRow@index == 0}
 							<thead>
 								<tr>
 									{foreach from=$dataRow item=dataCell name=dataCol}
@@ -44,7 +44,7 @@
 								</tr>
 							</thead>
 						{else}
-							{if $smarty.foreach.studentData.index == 1}
+							{if $dataRow@index == 1}
 								<tbody>
 							{/if}
 							<tr>

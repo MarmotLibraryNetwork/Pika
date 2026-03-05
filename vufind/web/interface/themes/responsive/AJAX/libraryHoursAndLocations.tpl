@@ -11,8 +11,8 @@
 		</div>
 	</form>
 	{/if}
-	{foreach from=$libraryLocations item=curLocation name=locationLoop}
-		<div class="locationInfo container" id="locationAddress{$curLocation.id}" {if !$smarty.foreach.locationLoop.first}style="display:none"{/if}>
+	{foreach from=$libraryLocations item=curLocation}
+		<div class="locationInfo container" id="locationAddress{$curLocation.id}" {if !$curLocation@first}style="display:none"{/if}>
 			<div class="row">
 				<h3>{$curLocation.name}</h3>
 			</div>

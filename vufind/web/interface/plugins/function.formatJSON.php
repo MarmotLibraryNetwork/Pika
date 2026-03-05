@@ -34,10 +34,10 @@
  * Date: 10/8/13
  * Time: 1:51 PM
  */
-function smarty_function_formatJSON($params, &$smarty)
+function smarty_function_formatJSON($params, \Smarty\Template $template)
 {
 	if (!isset($params['subject'])) {
-		$smarty->trigger_error("implode: missing 'subject' parameter");
+		trigger_error("formatJSON: missing 'subject' parameter");
 		return null;
 	}
 

@@ -25,8 +25,8 @@
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Contributors'}:</div>
 			<div class="col-sm-8 result-value">
-				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
-					{if $smarty.foreach.loop.index == 5}
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor}
+					{if $contributor@index == 5}
 						<div id="showAdditionalContributorsLink">
 							<a onclick="Pika.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
 						</div>
@@ -44,7 +44,7 @@
 					{/if}
 				<br>
 				{/foreach}
-				{if $smarty.foreach.loop.index >= 5}
+				{if $contributor@index >= 5}
 					<div>
 						<a href="#" onclick="Pika.Record.lessContributors(); return false;">{translate text='less'} ...</a>
 					</div>
@@ -71,7 +71,7 @@
 				<div class="result-label col-sm-4">{translate text='Series'}:</div>
 				<div class="col-sm-8 result-value">
 					{if is_array($series) && !isset($series.seriesTitle)}
-						{foreach from=$series item=seriesItem name=loop}
+						{foreach from=$series item=seriesItem}
 							<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} {if is_numeric($seriesItem.volume|removeTrailingPunctuation|trim)}volume {/if}{$seriesItem.volume}{/if}<br>
 						{/foreach}
 					{else}

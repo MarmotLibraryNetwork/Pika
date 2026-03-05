@@ -1,14 +1,14 @@
 
 {* This template is used by Combined Results searches *}
 
-{foreach from=$prospectorResults item=prospectorResult name="recordLoop"}
+{foreach from=$prospectorResults item=prospectorResult}
 	<div class='result'>
 		<div class='resultsList row'>
 			{* if $showCovers}
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1 && $prospectorResult.cover}
-						<a id="prospectorImg{$smarty.foreach.recordLoop.iteration}" href="{$prospectorResult.link}">
-							<img onerror="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}', true);" onload="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}');" src="{$prospectorResult.cover}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
+						<a id="prospectorImg{$prospectorResult@iteration}" href="{$prospectorResult.link}">
+							<img onerror="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$prospectorResult@iteration}', true);" onload="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$prospectorResult@iteration}');" src="{$prospectorResult.cover}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
 						</a>
 					{/if}
 				</div>
@@ -18,7 +18,7 @@
 				<div class="row">
 					<div class="col-tn-12">
 						<h3 class="h4">
-							<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
+							<span class="result-index">{$prospectorResult@iteration}.</span>&nbsp;
 							<a href="{$prospectorResult.link}" class="result-title notranslate">
 								{if !$prospectorResult.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$prospectorResult.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 							</a>

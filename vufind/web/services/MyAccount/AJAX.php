@@ -1666,11 +1666,11 @@ class MyAccount_AJAX extends AJAXHandler {
 
 			//Expiration and fines
 			$interface->setFinesRelatedTemplateVariables();
-			if ($interface->getVariable('expiredMessage')){
-				$interface->assign('expiredMessage', str_replace('%date%', $user->expires, $interface->getVariable('expiredMessage')));
+			if ($interface->getTemplateVariable('expiredMessage')){
+				$interface->assign('expiredMessage', str_replace('%date%', $user->expires, $interface->getTemplateVariable('expiredMessage')));
 			}
-			if ($interface->getVariable('expirationNearMessage')){
-				$interface->assign('expirationNearMessage', str_replace('%date%', $user->expires, $interface->getVariable('expirationNearMessage')));
+			if ($interface->getTemplateVariable('expirationNearMessage')){
+				$interface->assign('expirationNearMessage', str_replace('%date%', $user->expires, $interface->getTemplateVariable('expirationNearMessage')));
 			}
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
 			//Fines Badge

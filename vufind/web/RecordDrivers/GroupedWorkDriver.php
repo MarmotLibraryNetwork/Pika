@@ -329,7 +329,7 @@ class GroupedWorkDriver extends RecordInterface {
 		//Build the link URL.
 		//If there is only one record for the work we will link straight to that.
 		$linkUrl = $this->getMoreInfoLinkUrl();
-		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
+		$linkUrl .= '?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('recordIndex') . '&amp;page=' . $interface->getTemplateVars('page');
 
 		$interface->assign('summUrl', $linkUrl);
 		$interface->assign('summTitle', $this->getTitleShort());
@@ -494,11 +494,11 @@ class GroupedWorkDriver extends RecordInterface {
 			$firstRecord = reset($relatedRecords);
 			$linkUrl     = $firstRecord['url'];
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
-			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('resultIndex') . '&amp;page=' . $interface->get_template_vars('page');
+			$linkUrl     .= '?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('resultIndex') . '&amp;page=' . $interface->getTemplateVars('page');
 		}else{
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
-			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('resultIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
+			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('resultIndex') . '&amp;page=' . $interface->getTemplateVars('page');
+			$linkUrl .= '&amp;searchSource=' . $interface->getTemplateVars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -2303,21 +2303,21 @@ class GroupedWorkDriver extends RecordInterface {
 			$interface->assign('showMoreLikeThisInExplore', true);
 			$interface->assign('showExploreMore', true);
 			if ($this->getCleanISBN()){
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$exploreMoreOptions['similarTitles'] = [
 						'label'         => 'Similar Titles From NoveList',
 						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
 						'hideByDefault' => true
 					];
 				}
-				if ($interface->getVariable('showSimilarAuthors')){
+				if ($interface->getTemplateVariable('showSimilarAuthors')){
 					$exploreMoreOptions['similarAuthors'] = [
 						'label'         => 'Similar Authors From NoveList',
 						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
 						'hideByDefault' => true
 					];
 				}
-				if ($interface->getVariable('showSimilarTitles')){
+				if ($interface->getTemplateVariable('showSimilarTitles')){
 					$exploreMoreOptions['similarSeries'] = [
 						'label'         => 'Similar Series From NoveList',
 						'body'          => '<div id="novelistseriesPlaceholder"></div>',
@@ -2348,7 +2348,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'label' => 'Subjects',
 			'body'  => $interface->fetch('GroupedWork/view-subjects.tpl'),
 		];
-		if ($interface->getVariable('showStaffView')){
+		if ($interface->getTemplateVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
 				'body'  => $interface->fetch($this->getStaffView()),

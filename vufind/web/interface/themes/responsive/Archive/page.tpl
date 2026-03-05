@@ -82,6 +82,6 @@
 		{if $canView}
 		Pika.Archive.changeActiveBookViewer('{$activeViewer}', '{$page.pid}')
 		{/if}
-		Pika.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|escape:'url'}');
 	{rdelim});
 </script>

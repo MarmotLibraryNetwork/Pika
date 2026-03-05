@@ -33,8 +33,8 @@
 
 	{* Display series information *}
 	<div id="seriesTitles">
-		{foreach from=$resourceList item=resource name="recordLoop"}
-			<div class="result{if ($smarty.foreach.recordLoop.iteration % 2) == 0} alt{/if}">
+		{foreach from=$resourceList item=resource}
+			<div class="result{if ($resource@iteration % 2) == 0} alt{/if}">
 				{* This is raw HTML -- do not escape it: *}
 				{$resource}
 			</div>

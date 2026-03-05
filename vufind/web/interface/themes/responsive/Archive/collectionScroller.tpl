@@ -12,8 +12,8 @@
 					<button class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></button>
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
-							{foreach from=$browseCollectionTitlesData.collectionTitles item=titleInfo name="loop"}
-								<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
+							{foreach from=$browseCollectionTitlesData.collectionTitles item=titleInfo}
+								<li id="exploreMore{$titleInfo@index}" class="explore-more-option">
 									<figure class="thumbnail" title="{$titleInfo.title|escape}">
 										<div class="explore-more-image">
 											<a href='{$titleInfo.link}'{if $titleInfo.isExhibit} onclick="Pika.Archive.setForExhibitInAExhibitNavigation('{$browseCollectionTitlesData.collectionPid}')" {/if} {*{if $titleInfo.onclick}onclick="{$titleInfo.onclick}"{/if}*}>

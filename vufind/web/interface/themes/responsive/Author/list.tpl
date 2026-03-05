@@ -20,11 +20,11 @@
 </div>
 
 {* End Listing Options *}
-{foreach from=$recordSet item=record name="recordLoop"}
-	{if ($smarty.foreach.recordLoop.iteration % 2) == 0}
-	<div class="result row alt record{$smarty.foreach.recordLoop.iteration}">
+{foreach from=$recordSet item=record}
+	{if ($record@iteration % 2) == 0}
+	<div class="result row alt record{$record@iteration}">
 	{else}
-	<div class="result row record{$smarty.foreach.recordLoop.iteration}">
+	<div class="result row record{$record@iteration}">
 	{/if}
 
 		<div class="col-md-10">

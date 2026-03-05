@@ -10,9 +10,9 @@
 		>
 			<span class="ui-rater-starsOff" style="width:90px">
 				{if $ratingData.user}
-					<span class="ui-rater-starsOn userRated" style="width:{math equation="90*rating/5" rating=$ratingData.user}px"></span>
+					<span class="ui-rater-starsOn userRated" style="width:{$ratingData.userStarWidth}px"></span>
 				{else}
-					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>
+					<span class="ui-rater-starsOn" style="width:{$ratingData.averageStarWidth}px"></span>
 				{/if}
 			</span>
 		</div>

@@ -8,7 +8,7 @@
 			{if ($categorySelected == false)}
 				<div class="formatCategories top-facet" id="formatCategories">
 					<ul id="categoryValues" class="row list-unstyled" aria-label="{$cluster.label}">
-						{foreach from=$cluster.list item=thisFacet name="narrowLoop" key="i"}
+						{foreach from=$cluster.list item=thisFacet key="i"}
 							{if $thisFacet.isApplied}
 								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} col-tn-offset-1{/if}">
 									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
@@ -46,7 +46,7 @@
 			<div id="availabilityControlContainer" class="row text-center top-facet">
 				<div class="col-tn-12">
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" aria-label="{$cluster.label}">
-						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+						{foreach from=$cluster.list item=thisFacet}
 							{if $thisFacet.isApplied}
 								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" aria-pressed="true" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{else}
@@ -61,14 +61,14 @@
 			<div class="authorbox top-facet">
 				<h5>{translate text=$cluster.label}<span>{translate text="top_facet_suffix"}</span></h5>
 				<table class="facetsTop navmenu narrow_begin">
-					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-						{if $smarty.foreach.narrowLoop.iteration == ($topFacetSettings.rows * $topFacetSettings.cols) + 1}
+					{foreach from=$cluster.list item=thisFacet}
+						{if $thisFacet@iteration == ($topFacetSettings.rows * $topFacetSettings.cols) + 1}
 							<tr id="more{$title}"><td><a href="#" onclick="moreFacets('{$title}'); return false;">{translate text='more'} ...</a></td></tr>
 							</table>
 							<table class="facetsTop navmenu narrowGroupHidden" id="narrowGroupHidden_{$title}">
 							<tr><th colspan="{$topFacetSettings.cols}"><div class="top_facet_additional_text">{translate text="top_facet_additional_prefix"}{translate text=$cluster.label}<span>{translate text="top_facet_suffix"}</span></div></th></tr>
 						{/if}
-						{if $smarty.foreach.narrowLoop.iteration % $topFacetSettings.cols == 1}
+						{if $thisFacet@iteration % $topFacetSettings.cols == 1}
 							<tr>
 						{/if}
 						{if $thisFacet.isApplied}
@@ -76,10 +76,10 @@
 						{else}
 							<td><a href="{$thisFacet.url|escape}">{$thisFacet.value|escape}</a> ({$thisFacet.count})</td>
 						{/if}
-						{if $smarty.foreach.narrowLoop.iteration % $topFacetSettings.cols == 0 || $smarty.foreach.narrowLoop.last}
+						{if $thisFacet@iteration % $topFacetSettings.cols == 0 || $thisFacet@last}
 							</tr>
 						{/if}
-						{if $smarty.foreach.narrowLoop.total > ($topFacetSettings.rows * $topFacetSettings.cols) && $smarty.foreach.narrowLoop.last}
+						{if $thisFacet@total > ($topFacetSettings.rows * $topFacetSettings.cols) && $thisFacet@last}
 							<tr><td><a href="#" onclick="lessFacets('{$title}'); return false;">{translate text='less'} ...</a></td></tr>
 						{/if}
 					{/foreach}

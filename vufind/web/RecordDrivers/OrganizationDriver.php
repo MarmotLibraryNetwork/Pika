@@ -81,9 +81,9 @@ class OrganizationDriver extends IslandoraDriver {
 				'hideByDefault' => false,
 			);
 		}
-		if ((!empty($interface->getVariable('creators')))
+		if ((!empty($interface->getTemplateVariable('creators')))
 				|| $this->hasDetails
-				|| (!empty($interface->getVariable('marriages')))
+				|| (!empty($interface->getTemplateVariable('marriages')))
 				|| (!empty($this->unlinkedEntities))){
 			$moreDetailsOptions['details'] = array(
 				'label'         => 'Details',

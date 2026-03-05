@@ -260,8 +260,8 @@
 	$(function(){ldelim}
 		{if $searchDetails}
 		{foreach from=$searchDetails item=searchGroup}
-		{foreach from=$searchGroup.group item=search name=groupLoop}
-		{if $smarty.foreach.groupLoop.iteration == 1}
+		{foreach from=$searchGroup.group item=search}
+		{if $search@iteration == 1}
 		var new_group = addGroup('{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}', '{$search.bool}');
 		{else}
 		addSearch(new_group, '{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}');

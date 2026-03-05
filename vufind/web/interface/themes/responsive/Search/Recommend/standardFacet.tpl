@@ -1,5 +1,5 @@
 {if $cluster.showMoreFacetPopup}
-	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+	{foreach from=$cluster.list item=thisFacet}
 		{if $thisFacet.isApplied}
 			<div class="facetValue"><img src="/images/silk/tick.png" alt="Selected"> {$thisFacet.display|escape} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></div>
 		{else}
@@ -15,15 +15,15 @@
 		<div class="alert alert-warning">The top {$facetValueCount} items {*by count*} are shown. Other options will show as you narrow your search further.</div>
 		{/if}
 			<div class="row moreFacetPopup">
-				{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}
+				{foreach from=$cluster.sortedList item=thisFacet}
 					<div>{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display|escape}{if $thisFacet.url !=null}</a>{/if}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}</div>
 				{/foreach}
 			</div>
 
 	</div>
 {else}
-	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-		{if $smarty.foreach.narrowLoop.iteration == ($cluster.valuesToShow + 1)}
+	{foreach from=$cluster.list item=thisFacet}
+		{if $thisFacet@iteration == ($cluster.valuesToShow + 1)}
 		{* Show More link*}
 			<div class="facetValue" id="more{$title|escape}"><button class="btn btn-link" onclick="Pika.ResultsList.moreFacets('{$title|escape}'); return false;">{translate text='more'} ...</button></div>
 		{* Start div for hidden content*}
@@ -35,7 +35,7 @@
 			<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display|escape}{if $thisFacet.url !=null}</a>{/if}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}</div>
 		{/if}
 	{/foreach}
-	{if $smarty.foreach.narrowLoop.total > $cluster.valuesToShow}
+	{if $thisFacet@total > $cluster.valuesToShow}
 		<div class="facetValue">
 			<button class="btn btn-link" onclick="Pika.ResultsList.lessFacets('{$title|escape}'); return false;">{translate text='less'} ...</button>
 		</div>

@@ -3,7 +3,7 @@
   {if strlen($librarySystemName) < 16}<ShortName>{$librarySystemName}</ShortName>{/if}
   <LongName>{$librarySystemName}</LongName>
   <Description>Library Catalog Search</Description>
-  <Image height="64" width="64" type="image/png">{$url}{img filename=favicon.png}</Image>
+  <Image height="64" width="64" type="image/png">{$url}{img filename="favicon.png"}</Image>
 	<InputEncoding>UTF-8</InputEncoding>
   <Contact>{$supportEmail}</Contact>
   <Developer>Marmot Library Network</Developer>

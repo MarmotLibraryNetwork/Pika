@@ -36,8 +36,8 @@
 					</p>
 				{else}
 					<p>Based on the titles you have <a href="/MyAccount/MyRatings">rated</a>, we have <a href="/MyAccount/SuggestedTitles">suggestions for you</a>.  To improve your suggestions keep rating more titles.</p>
-					{foreach from=$suggestions item=suggestion name=recordLoop}
-						<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
+					{foreach from=$suggestions item=suggestion}
+						<div class="result {if ($suggestion@iteration % 2) == 0}alt{/if} record{$suggestion@iteration}">
 							{$suggestion}
 						</div>
 					{/foreach}

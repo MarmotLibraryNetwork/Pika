@@ -98,6 +98,9 @@ class WorkAPI extends AJAXHandler {
 			$ratingData['barWidth2Star'] = 0;
 			$ratingData['barWidth1Star'] = 0;
 		}
+		$ratingData['userStarWidth']    = (int)(90 * $ratingData['user'] / 5);
+		$ratingData['averageStarWidth'] = (int)(90 * $ratingData['average'] / 5);
+		$ratingData['averageRounded']   = round($ratingData['average'], 1);
 		return $ratingData;
 	}
 

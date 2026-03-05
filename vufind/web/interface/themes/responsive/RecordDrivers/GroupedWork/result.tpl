@@ -112,9 +112,9 @@
 								{if count($indexedSeries) > 4}
 									{assign var=showMoreSeries value=true}
 								{/if}
-								{foreach from=$indexedSeries item=seriesItem name=loop}
+								{foreach from=$indexedSeries item=seriesItem}
 										<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
-										{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
+										{if $showMoreSeries && $seriesItem@iteration == 3}
 											<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 											<div id="moreSeries_{$summId}" style="display:none">
 										{/if}
@@ -234,7 +234,7 @@
 					<div class="row">
 						<div class="result-label col-tn-3">Average Rating: </div>
 						<div class="result-value col-tn-8">
-							{math equation="round(average_rating,1)" average_rating=$summRating.average} stars
+							{$summRating.averageRounded} stars
 						</div>
 					</div>
 				{/if}

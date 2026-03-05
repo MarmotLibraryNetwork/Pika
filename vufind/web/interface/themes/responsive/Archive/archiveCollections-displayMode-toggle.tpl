@@ -35,17 +35,17 @@
 
 			Pika.Archive.ajaxReloadCallback = function(){ldelim}
 				{if $displayType == 'map'}
-				Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0, 'true');
+				Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 0, 'true');
 				{elseif $displayType == 'mapNoTimeline'}
-				Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0, 'false');
+				Pika.Archive.reloadMapResults('{$exhibitPid|escape:'url'}', '{$placePid|escape:'url'}', 0, 'false');
 				{elseif $displayType == 'timeline'}
-				Pika.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0);
+				Pika.Archive.reloadTimelineResults('{$exhibitPid|escape:'url'}', 0);
 				{elseif $displayType == 'scroller'}
-				Pika.Archive.reloadScrollerResults('{$exhibitPid|urlencode}', 0);
+				Pika.Archive.reloadScrollerResults('{$exhibitPid|escape:'url'}', 0);
 				{elseif $displayType == 'basic'}
-				Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
+				Pika.Archive.getMoreExhibitResults('{$exhibitPid|escape:'url'}', 1);
 				{else}
-				Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
+				Pika.Archive.getMoreExhibitResults('{$exhibitPid|escape:'url'}', 1);
 				{/if}
 			{rdelim};
 

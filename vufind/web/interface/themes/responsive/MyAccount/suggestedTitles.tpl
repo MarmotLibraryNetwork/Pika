@@ -16,9 +16,9 @@
 
       {if !empty($resourceList)}
 				<div class="striped">
-            {foreach from=$resourceList item=suggestion name=recordLoop}
-                {*<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">*}
-							<div class="result record{$smarty.foreach.recordLoop.iteration}">
+            {foreach from=$resourceList item=suggestion}
+                {*<div class="result {if ($suggestion@iteration % 2) == 0}alt{/if} record{$suggestion@iteration}">*}
+							<div class="result record{$suggestion@iteration}">
                   {$suggestion}
 							</div>
             {/foreach}

@@ -473,7 +473,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}else{
 			$linkUrl .= '&';
 		}
-		$linkUrl .= 'searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
+		$linkUrl .= 'searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('recordIndex') . '&amp;page='  . $interface->getTemplateVars('page');
 
 		$interface->assign('summUrl', $linkUrl);
 		$interface->assign('summDescription', $this->getDescription());
@@ -640,13 +640,13 @@ abstract class IslandoraDriver extends RecordInterface {
 			if ($this instanceof PersonDriver){
 				$moreDetailsOptions['bio'] = [
 					'label'         => 'Biographical Information',
-					'body'          => $interface->get_template_vars('description'),
+					'body'          => $interface->getTemplateVars('description'),
 					'hideByDefault' => false,
 				];
 			}else{
 				$moreDetailsOptions['description'] = [
 					'label'         => 'Description',
-					'body'          => $interface->get_template_vars('description'),
+					'body'          => $interface->getTemplateVars('description'),
 					'hideByDefault' => false,
 				];
 			}
@@ -687,7 +687,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$directlyRelatedObjects = $this->getDirectlyRelatedArchiveObjects();
-		$existingValue          = $interface->getVariable('directlyRelatedObjects');
+		$existingValue          = $interface->getTemplateVariable('directlyRelatedObjects');
 		if ($existingValue != null){
 			$directlyRelatedObjects['numFound'] += $existingValue['numFound'];
 			$directlyRelatedObjects['objects']  = array_merge($existingValue['objects'], $directlyRelatedObjects['objects']);
@@ -702,7 +702,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$this->loadLinkedData();
-		if (!empty($interface->getVariable('obituaries'))){
+		if (!empty($interface->getTemplateVariable('obituaries'))){
 			$moreDetailsOptions['obituaries'] = [
 				'label'         => 'Obituaries',
 				'body'          => $interface->fetch('Person/obituariesSection.tpl'),
@@ -717,7 +717,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			];
 		}
 		//See if we need another section for wikipedia content.
-		if (!empty($interface->getVariable('wikipediaData'))){
+		if (!empty($interface->getTemplateVariable('wikipediaData'))){
 			// Only use first two characters of language string; Wikipedia
 			// uses language domains but doesn't break them up into regional
 			// variations like pt-br or en-gb.
@@ -755,7 +755,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		usort($creators, 'ExploreMore::sortRelatedEntities');
 
 		//Do final assignment
-		$temp = $this->mergeEntities($interface->getVariable('relatedPeople'), $relatedPeople);
+		$temp = $this->mergeEntities($interface->getTemplateVariable('relatedPeople'), $relatedPeople);
 		$interface->assign('relatedPeople', $temp);
 		// Marriage data comes from getLinkedData()
 		if ($temp){
@@ -767,7 +767,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		if ($relatedOrganizations){
-			$interface->assign('relatedItems', $this->mergeEntities($interface->getVariable('relatedOrganizations'), $relatedOrganizations));
+			$interface->assign('relatedItems', $this->mergeEntities($interface->getTemplateVariable('relatedOrganizations'), $relatedOrganizations));
 			$moreDetailsOptions['relatedOrganizations'] = [
 				'label'         => 'Related Organizations',
 				'body'          => $interface->fetch('Archive/accordion-items.tpl'),
@@ -775,7 +775,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			];
 		}
 
-		$relatedPlaces = $this->mergeEntities($interface->getVariable('relatedPlaces'), $relatedPlaces);
+		$relatedPlaces = $this->mergeEntities($interface->getTemplateVariable('relatedPlaces'), $relatedPlaces);
 		if ($relatedPlaces && $this->getType() != 'event'){
 			$interface->assign('relatedPlaces', $relatedPlaces);
 			$moreDetailsOptions['relatedPlaces'] = [
@@ -785,7 +785,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			];
 		}
 
-		$relatedEvents = $this->mergeEntities($interface->getVariable('relatedEvents'), $relatedEvents);
+		$relatedEvents = $this->mergeEntities($interface->getTemplateVariable('relatedEvents'), $relatedEvents);
 		if ($relatedEvents /*&& $recordDriver->getType() != 'event'*/){
 			$interface->assign('relatedItems', $relatedEvents);
 			$moreDetailsOptions['relatedEvents'] = [
@@ -828,7 +828,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$this->loadNotes();
-		if (count($interface->getVariable('notes'))){
+		if (count($interface->getTemplateVariable('notes'))){
 			$moreDetailsOptions['notes'] = [
 				'label'         => 'Notes',
 				'body'          => $interface->fetch('Archive/notesSection.tpl'),
@@ -840,7 +840,7 @@ abstract class IslandoraDriver extends RecordInterface {
 //		$interface->assignAppendToExisting('subjects', $this->formattedSubjects);
 
 		$interface->assignAppendToExisting('subjects', $this->getAllSubjectsWithLinks());
-		if (count($interface->getVariable('subjects'))){
+		if (count($interface->getTemplateVariable('subjects'))){
 			$moreDetailsOptions['subject'] = [
 				'label'         => 'Subjects',
 				'body'          => $interface->fetch('Archive/subjectsSection.tpl'),
@@ -848,7 +848,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			];
 		}
 
-		$productionTeam = $this->mergeEntities($interface->getVariable('productionTeam'), $productionTeam);
+		$productionTeam = $this->mergeEntities($interface->getTemplateVariable('productionTeam'), $productionTeam);
 		if ($productionTeam){
 			$interface->assign('productionTeam', $productionTeam);
 			$moreDetailsOptions['acknowledgements'] = [
@@ -860,7 +860,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$visibleLinks = $this->getVisibleLinks();
 		$interface->assignAppendToExisting('externalLinks', $visibleLinks);
-		if (count($interface->getVariable('externalLinks'))){
+		if (count($interface->getTemplateVariable('externalLinks'))){
 			$moreDetailsOptions['externalLinks'] = [
 				'label'         => 'Links',
 				'body'          => $interface->fetch('Archive/externalLinksSection.tpl'),
@@ -869,14 +869,14 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		if ($this->loadRecordInfo()) {
-			$temp                 = $this->mergeEntities($interface->getVariable('creators'), $creators);
+			$temp                 = $this->mergeEntities($interface->getTemplateVariable('creators'), $creators);
 			$interface->assign('creators', $temp);
 
 			$interface->assign('unlinkedEntities', $this->unlinkedEntities);
-			if ((!empty($interface->getVariable('creators')))
+			if ((!empty($interface->getTemplateVariable('creators')))
 					|| $this->hasDetails
-					|| (!empty($interface->getVariable('marriages')))
-					|| (!empty($interface->getVariable('physicalExtents')))
+					|| (!empty($interface->getTemplateVariable('marriages')))
+					|| (!empty($interface->getTemplateVariable('physicalExtents')))
 					|| (!empty($this->unlinkedEntities))){
 				$moreDetailsOptions['details'] = [
 					'label'         => 'Details',
@@ -893,7 +893,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$this->loadRightsStatements();
-		if (count($interface->getVariable('rightsStatements'))){
+		if (count($interface->getTemplateVariable('rightsStatements'))){
 			$moreDetailsOptions['rightsStatements'] = [
 				'label'         => 'Rights Statements',
 				'body'          => $interface->fetch('Archive/rightsStatementsSection.tpl'),

@@ -151,10 +151,8 @@ class Record_AJAX extends AJAXHandler {
 					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return Pika.Record.submitHoldForm();\">",
 				];
 			}
-			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstrap
-				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return Pika.Record.submitHoldForm();\">";
-
-			}
+			// trackHoldTitleClick was part of the old UA-based tracking.tpl, which was replaced by ga4tracking.tpl.
+			// The function no longer exists, so this block is intentionally removed.
 
 		}else{
 			$results = [

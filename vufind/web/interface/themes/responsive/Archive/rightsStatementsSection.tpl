@@ -9,8 +9,8 @@
 	{if !empty($rightsHolders)}
 		<div>
 			<em>Rights held by&nbsp;
-				{foreach from=$rightsHolders item="rightsHolder" name="rightsHolders"}
-					{if $smarty.foreach.rightsHolders.iteration > 1}, {/if}
+				{foreach from=$rightsHolders item="rightsHolder"}
+					{if $rightsHolder@iteration > 1}, {/if}
 					{if $rightsHolder.link}<a href="{$rightsHolder.link}">{/if}{$rightsHolder.label}{if $rightsHolder.link}</a>{/if}
 				{/foreach}
 			</em>

@@ -29,7 +29,7 @@
  *                  interface/themes/[theme]/images/ folder.
  * -------------------------------------------------------------
  */
-function smarty_function_img($params, &$smarty)
+function smarty_function_img($params, \Smarty\Template $template)
 {
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;

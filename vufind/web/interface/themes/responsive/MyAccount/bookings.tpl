@@ -41,8 +41,8 @@
 				<br>
 
 				<div class="striped">
-					{foreach from=$recordList item=record name="recordLoop"}
-							{include file="MyAccount/bookedItem.tpl" myBooking=$record resultIndex=$smarty.foreach.recordLoop.iteration}
+					{foreach from=$recordList item=record}
+							{include file="MyAccount/bookedItem.tpl" myBooking=$record resultIndex=$record@iteration}
 					{/foreach}
 				</div>
 

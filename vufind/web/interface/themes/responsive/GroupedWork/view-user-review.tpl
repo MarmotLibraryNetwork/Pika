@@ -8,7 +8,7 @@
 			{if $showRatings && $review->rating > 0}
 				{* Display the rating the user gave it. *}
 				<span class="ui-rater-starsOff" style="width:90px">
-					<span class="ui-rater-starsOn{if $loggedIn && ($review->userid == $activeUserId)} userRated{/if}" style="width:{math equation="90*rating/5" rating=$review->rating}px"></span>
+					<span class="ui-rater-starsOn{if $loggedIn && ($review->userid == $activeUserId)} userRated{/if}" style="width:{$review->rating*18}px"></span>
 				</span>
 			{/if}
 			{if $loggedIn && ($review->userid == $activeUserId || in_array('opacAdmin', $userRoles))}

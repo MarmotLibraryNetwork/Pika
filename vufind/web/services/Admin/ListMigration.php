@@ -71,7 +71,7 @@ class Admin_ListMigration extends Admin_Admin
 		$instructions = $this->getInstructions()?:"";
 		$interface->assign('instructions', $instructions);
 		if (empty($mainContentTemplate)){
-			$mainContentTemplate = $interface->getVariable('pageTemplate'); // The main template may get set in other places in Object Editor
+			$mainContentTemplate = $interface->getTemplateVariable('pageTemplate'); // The main template may get set in other places in Object Editor
 		}
 		if (empty($pageTitle)){
 			$pageTitle = $this->getPageTitle();
