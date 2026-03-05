@@ -75,6 +75,16 @@ function getAdminUpdates() {
 				'coverModifiedTime'
 			]
 		],
+
+		'2026.01.0_delete_covers_without_filename' => [
+			'release'         => '2026.01.0',
+			'title'           => 'Delete covers without filename',
+			'description'     => 'Remove cover entries that have no filename.',
+			'continueOnError' => true,
+			'sql'             => [
+				"DELETE FROM `covers` WHERE `cover` IS NULL OR `cover` = '';"
+			]
+		],
 	];
 }
 

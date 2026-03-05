@@ -86,6 +86,7 @@ class Cover extends DB_DataObject {
 			}
 			$this->cover = $newFileName;
 		}
+		$this->modified = time();
 
 		parent::update($dataObject);
 	}
@@ -100,6 +101,7 @@ class Cover extends DB_DataObject {
 			$duplicateCover = new Cover();
 			$duplicateCover->get('cover', $newCover->cover);
 			$duplicateCover->delete(false, true);
+			$this->cover = $duplicateCover->cover;
 		}
 		return parent::insert();
 	}
