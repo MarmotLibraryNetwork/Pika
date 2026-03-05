@@ -113,7 +113,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function forceRegrouping(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
 
 		if (GroupedWork::validGroupedWorkId($id)){
@@ -136,7 +135,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 	function forceReindex(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
 			$groupedWork               = new GroupedWork();
@@ -160,7 +158,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getEnrichmentInfo(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id               = $_REQUEST['id'];
 		$enrichmentResult = [];
 		if (GroupedWork::validGroupedWorkId($id)){
@@ -319,7 +316,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
 			// TODO: request id is not always being set by index page.
@@ -334,13 +330,14 @@ class GroupedWork_AJAX extends AJAXHandler {
 				'formattedData' => $formattedData,
 			];
 			return $return;
+		} else {
+			$this->logger->error('Invalid id for getGoDeeperData(): ' . $id, [$_SERVER['REQUEST_URI']]);
 		}
 		return ['formattedData' => ''];
 	}
 
 	function getTitles(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$ids    = $_REQUEST['ids'];
 		$titles = [];
 		foreach ($ids as $id){
@@ -473,7 +470,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewInfo(){
 		$results = [];
 		$id      = $_REQUEST['id'];
-		//require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		if (GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($id);
@@ -921,7 +917,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 			if ($listOk){
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				if (!GroupedWork::validGroupedWorkId($groupedWorkId)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
@@ -984,7 +979,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				$attemptedRecords = count($ids);
 				$errors           = 0;
 				foreach ($ids as $id){
@@ -1059,13 +1053,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$novelist     = NovelistFactory::getNovelist();
 				$seriesInfo   = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 				$seriesTitle  = $seriesInfo->seriesTitle;
-				$seriesTitles = $seriesInfo->seriesTitles;
+				$seriesTitles = $seriesInfo->seriesTitles; //TODO: does this exist?
 				$i            = 0;
 				foreach($seriesTitles as $title){
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $userList->id;
 					$itemId                = $title['id'];
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($itemId)){
 						$result['success'] = false;
 						$result['message'] = 'Sorry, that is not a valid entry for the list.';
@@ -1211,7 +1204,6 @@ function createSeriesList(){
 			foreach($seriesTitles as $seriesItem){
 				if (!empty($seriesItem['id'])){
 					$recordToAdd = urldecode($seriesItem['id']);
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$e++;
@@ -1349,8 +1341,11 @@ function getSaveMultipleToListForm(){
 	}
 
 function getSaveSeriesToListForm(){
-	global $interface;
 	$id = $_REQUEST['id'];
+	if (!GroupedWork::validGroupedWorkId($id)){
+		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
+	}
+	global $interface;
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
@@ -1415,13 +1410,18 @@ function getSaveSeriesToListForm(){
 
 
 	function sendSMS(){
+		$id = $_REQUEST['id'];
+		if (!GroupedWork::validGroupedWorkId($id)){
+			return ['result' => false, 'message' => 'Invalid Grouped Work ID.'];
+		}
+
 		global $configArray;
 		global $interface;
+
 		require_once ROOT_DIR . '/sys/Mailer.php';
 		$sms = new SMSMailer();
 
 		// Get Holdings
-		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('url', $recordDriver->getAbsoluteUrl());
