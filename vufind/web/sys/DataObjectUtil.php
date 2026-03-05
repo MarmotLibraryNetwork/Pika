@@ -91,7 +91,9 @@ class DataObjectUtil {
 		foreach ($structure as $property){
 			if (isset($property['required']) && $property['required'] == true){
 				$value = $_REQUEST[$property['property']] ?? null;
-				if ($value == null || strlen($value) == 0){
+				$hasFile = ($property['type'] ?? '') === 'image'
+					&& !empty($_FILES[$property['property']]['tmp_name']);
+				if (!$hasFile && ($value == null || strlen($value) == 0)){
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
