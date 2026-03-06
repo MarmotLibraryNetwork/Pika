@@ -455,9 +455,9 @@ function pika_autoloader($class) {
 
 // todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
-	if (substr($class, 0, 4) == 'CAS_') {
-		return CAS_autoload($class);
-	}
+//	if (str_starts_with($class, 'CAS_')) {
+//		return CAS_autoload($class);
+//	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
@@ -499,7 +499,8 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{
-			//TODO: replace this with an empty return if the logging shows this obsolete action
+			// Appears to be for root directory classes: Action, AJAXHandler,
+			// CatalogConnection, CatalogFactory
 			@include_once $nameSpaceClass;
 			if (!class_exists($class, false)){
 				global $pikaLogger;
