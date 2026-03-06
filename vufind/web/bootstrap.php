@@ -485,29 +485,35 @@ function vufind_autoloader($class) {
 			$className = ROOT_DIR . '/services/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Covers/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
-		    $className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
-		    require_once $className;
-        }elseif (file_exists('sys/Account/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Account/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/' . $nameSpaceClass)){
+			$className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Account/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Account/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{
-			try {
-				include_once $nameSpaceClass;
-			} catch (Exception $e) {
-				// todo: This should fail over to next instead of throwing fatal error.
-				// PEAR_Singleton::raiseError("Error loading class $class");
+			//TODO: replace this with an empty return if the logging shows this obsolete action
+			@include_once $nameSpaceClass;
+			if (!class_exists($class, false)){
+				global $pikaLogger;
+				if ($pikaLogger){
+					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
+				}
+			} else {
+				global $pikaLogger;
+				if ($pikaLogger){
+					$pikaLogger->debug(__FUNCTION__ . " : loaded class '$class' (tried '$nameSpaceClass' via include path)");
+				}
 			}
 		}
 	}catch (Exception $e){
-		// PEAR_Singleton::raiseError("Error loading class $class");
-		// todo: This should fail over to next instead of throwing fatal error.
+		// Fail over to next loader instead of throwing error.
 	}
 }
