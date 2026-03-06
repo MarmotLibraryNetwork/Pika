@@ -210,6 +210,10 @@
 		{literal}
 		$.fn.dataTable.ext.order['dom-text'] = function( settings, col ){
 			return this.api().column( col, {order:'index'} ).nodes().map( function(td, i){
+				var select = $('select', td);
+				if (select.length) {
+					return select.find('option:selected').text();
+				}
 				return $('input', td).val();
 			});
 		}
@@ -225,10 +229,34 @@
 					{"orderDataType": "dom-text", type: 'string'},
 					null
 				],
+				// Custom filter logic for columns that contain form inputs.
+				// By default, DataTables searches the raw HTML of each cell, which
+				// for <select> elements includes the text of ALL options, not just
+				// the selected one. This render override intercepts the 'filter'
+				// data type and returns only the currently selected value, so that
+				// column search matches what the user actually sees.
+				"columnDefs": [{
+					"targets": [0, 1],
+					"render": function(data, type, row, meta){
+						// Only override for filtering; display/sort use other handlers
+						if (type === 'filter') {
+							var td = meta.settings.aoData[meta.row].anCells[meta.col];
+							var select = $('select', td);
+							if (select.length) {
+								// Dropdown: return only the selected option's text
+								return select.find('option:selected').text();
+							}
+							// Text input: return the current input value
+							return $('input', td).val();
+						}
+						return data;
+					}
+				}],
 				paging: false,
 				"dom": 'lrtip',
 				initComplete: function(){
-					this.api().columns([0, 1]).every(function(){
+					var api = this.api();
+					api.columns([0, 1]).every(function(){
 						var that = this;
 						$('input', this.header())
 							.on('keyup change clear', function(){
@@ -239,6 +267,11 @@
 							.on('click', function (e) {
 								e.stopPropagation();
 							});
+					});
+					// When a dropdown selection changes, invalidate DataTables' cached
+					// filter data so the column search reflects the new selected value
+					$('#translationMapValues tbody').on('change', 'select', function(){
+						api.rows().invalidate().draw(false);
 					});
 				}
 			});
