@@ -497,11 +497,20 @@ class Solr implements IndexEngine {
 					'fl'  => $fieldsToReturn,
 				];
 
+				// Build query string for use with GET or POST
+				$queryString = $this->buildSolrQueryString($options);
+
 				global $timer;
 				$timer->logTime('Prepare to send get (ids) request to solr');
 
 				// Send Request
-				$result = $this->client->get($this->host . '/get', $options);
+				if (strlen($queryString) > 8000){
+					// For extremely long queries, we will get an error: "URI Too Long"
+					$this->logger->debug("Using POST for getRecords request, query string length: " . strlen($queryString));
+					$result = $this->client->post($this->host . '/get', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/get', $queryString);
+				}
 
 				$timer->logTime('Send data to solr for getRecords');
 
