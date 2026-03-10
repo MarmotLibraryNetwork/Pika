@@ -1783,7 +1783,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 			// Make sure it has suggestions and is valid
 			if (count($newList) > 0 && $validTerm){
-				// Did we get more suggestions then our limit?
+				// Did we get more suggestions than our limit?
 				if ($count > $this->spellingLimit){
 					// Cut the list at the limit
 					array_splice($newList, $this->spellingLimit);
