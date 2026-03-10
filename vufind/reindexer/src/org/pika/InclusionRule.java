@@ -30,20 +30,20 @@ import java.util.regex.Pattern;
  * Time: 11:31 AM
  */
 class InclusionRule {
-	private String  indexingProfileSourceName;
-	private Pattern locationCodePattern;
-	private Pattern iTypePattern;
-	private boolean matchAllAudiences = false;
-	private Pattern audiencePattern;
-	private Pattern formatPattern;
-	private boolean includeHoldableOnly;
-	private boolean includeItemsOnOrder;
-	private boolean includeEContent;
-	private String marcTagToMatch;
-	private Pattern marcValueToMatchPattern;
-	private boolean includeExcludeMatches;
-	private String urlToMatch;
-	private String urlReplacement;
+	private final String  indexingProfileSourceName;
+	private final Pattern locationCodePattern;
+	private final Pattern iTypePattern;
+	private       boolean matchAllAudiences = false;
+	private final Pattern audiencePattern;
+	private final Pattern formatPattern;
+	private final boolean includeHoldableOnly;
+	private final boolean includeItemsOnOrder;
+	private final boolean includeEContent;
+	private final String  marcTagToMatch;
+	private final Pattern marcValueToMatchPattern;
+	private final boolean includeExcludeMatches;
+	private final String  urlToMatch;
+	private final String  urlReplacement;
 
 	InclusionRule(String indexingProfileSourceName, String locationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
 		this.indexingProfileSourceName = indexingProfileSourceName;
@@ -51,23 +51,23 @@ class InclusionRule {
 		this.includeItemsOnOrder       = includeItemsOnOrder;
 		this.includeEContent           = includeEContent;
 
-		if (locationCode.length() == 0){
+		if (locationCode.isEmpty()){
 			locationCode = ".*";
 		}
 		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
 
-		if (iType == null || iType.length() == 0){
+		if (iType == null || iType.isEmpty()){
 			iType = ".*";
 		}
 		this.iTypePattern = Pattern.compile(iType, Pattern.CASE_INSENSITIVE);
 
-		if (audience == null || audience.length() == 0){
+		if (audience == null || audience.isEmpty()){
 			audience = ".*";
 			matchAllAudiences = true;
 		}
 		this.audiencePattern = Pattern.compile(audience, Pattern.CASE_INSENSITIVE);
 
-		if (format == null || format.length() == 0){
+		if (format == null || format.isEmpty()){
 			format = ".*";
 		}
 		this.formatPattern = Pattern.compile(format, Pattern.CASE_INSENSITIVE);
@@ -79,7 +79,7 @@ class InclusionRule {
 			this.marcTagToMatch = marcTagToMatch;
 		}
 
-		if (marcValueToMatch == null || marcValueToMatch.length() == 0){
+		if (marcValueToMatch == null || marcValueToMatch.isEmpty()){
 			marcValueToMatch = ".*";
 		}
 		this.marcValueToMatchPattern = Pattern.compile(marcValueToMatch);
@@ -91,7 +91,7 @@ class InclusionRule {
 	}
 
 
-	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> locationCodeCache = new HashMap<>();
+	private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> locationCodeCache = new HashMap<>();
 	boolean isItemIncluded(String indexingProfileSourceName, String locationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
@@ -109,7 +109,7 @@ class InclusionRule {
 		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = locationCodeCache.get(locationCode);
 		if (iTypeCache == null){
 			hasCachedValue = false;
-			iTypeCache = new HashMap<>();
+			iTypeCache     = new HashMap<>();
 			locationCodeCache.put(locationCode, iTypeCache);
 		}
 		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
@@ -122,7 +122,7 @@ class InclusionRule {
 		HashMap<String, Boolean> formatCache = audiencesCache.get(audiencesKey);
 		if (formatCache == null){
 			hasCachedValue = false;
-			formatCache = new HashMap<>();
+			formatCache    = new HashMap<>();
 			audiencesCache.put(audiencesKey, formatCache);
 		}
 		Boolean cachedInclusion = formatCache.get(format);

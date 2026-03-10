@@ -24,25 +24,28 @@
 	</div>
 
 	<div class="row">
-	{if $showCovers}
-		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-			{if $disableCoverArt != 1}
-				<a href="/MyAccount/MyList/{$summShortId}" class="listResultImage">
-					<img src="/bookcover.php?id={$summShortId}&type=userList&size=medium" class="listResultImage img-thumbnail" alt="{translate text='No Cover Image'}">
-				</a>
+		{if $showBookshelf}
+			{* Place holder column so that lists Display similar to other result entries *}
+			<div class="col-tn-1 col-sm-1"></div>
+		{/if}
 
-				{* From Grouped Work results.tpl *}
-				{*<a href="{$summUrl}">*}
-					{*<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail*}{* img-responsive // shouldn't be needed *}{*" alt="{translate text='No Cover Image'}">*}
-				{*</a>*}
-			{/if}
-		</div>
-	{/if}
+		{if $showCovers}
+			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+				{if $disableCoverArt != 1}
+					<a href="/MyAccount/MyList/{$summShortId}" class="listResultImage">
+						<img src="/bookcover.php?id={$summShortId}&type=userList&size=medium" class="listResultImage img-thumbnail" alt="{translate text='No Cover Image'}">
+					</a>
+				{/if}
+			</div>
+		{/if}
 
+		{if $showBookshelf}
+			<div class="{if !$showCovers}col-xs-12{else}col-xs-8 col-sm-8 col-md-8 col-lg-9{/if}">{* May turn out to be more than one situation to consider here *}
+		{else}
+			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
+		{/if}
 
-	<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
-
-		{if $summAuthor}
+			{if $summAuthor}
 			<div class="row">
 				<div class="result-label col-tn-3">Created By: </div>
 				<div class="result-value col-tn-9 notranslate">

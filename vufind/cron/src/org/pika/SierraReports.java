@@ -38,15 +38,14 @@ import java.sql.*;
 public class SierraReports implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private Logger logger;
-	private String ils;
+
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Sierra Reports");
 		processLog.saveToDatabase(pikaConn, logger);
 		String reportsPath = PikaConfigIni.getIniValue("Site", "reportPath");
-
-		ils = PikaConfigIni.getIniValue("Catalog", "ils");
+		String ils         = PikaConfigIni.getIniValue("Catalog", "ils");
 		if (!ils.equalsIgnoreCase("Sierra")){
 			processLog.addNote("ILS is not Sierra, quiting");
 		}else{
@@ -61,7 +60,7 @@ public class SierraReports implements IProcessHandler {
 			try{
 				//Open the connection to the database
 				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
-					// Use specific user name and password when the are issues with special characters
+					// Use specific username and password when the are issues with special characters
 					if (sierraDBUser.startsWith("\"")){
 						sierraDBUser = sierraDBUser.substring(1, sierraDBUser.length() - 1);
 					}
@@ -119,57 +118,103 @@ public class SierraReports implements IProcessHandler {
 							CSVWriter patronReportCsvWriter = new CSVWriter(patronReportWriter)
 			) {
 				//Write headers
-				patronReportWriter.write("P Type,P Code 1,Patron Name,Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Stat,Address");
+				patronReportWriter.write("P Type,P Code 1,Patron Name,Home Lib,P Barcode,Grd Lvl,Home Room,$ Owed,Call #,Title,Item Barcode,Item Loc,Due Date,Status Code,Address");
 				patronReportWriter.write("\r\n");
 				//Get a list of users that belong to that branch who have titles checked out or fines
 				patronsToProcessStmt.setString(1, curLibraryPrefix);
 				ResultSet patronsForSchoolRS = patronsToProcessStmt.executeQuery();
 				while (patronsForSchoolRS.next()) {
 					//Gather information about the patron
-					long     patronId    = patronsForSchoolRS.getLong("id");
-					String[] patronInfo  = new String[16];
-					String   lastName    = patronsForSchoolRS.getString("last_name").trim();
-					String   firstName   = patronsForSchoolRS.getString("first_name").trim();
-					String   middleName  = patronsForSchoolRS.getString("middle_name").trim();
-					String   fullName    = lastName + ", " + firstName + " " + middleName;
-					String   fullAddress = patronsForSchoolRS.getString("addr1")
-									+ " " + patronsForSchoolRS.getString("city") + ", "
-									+ patronsForSchoolRS.getString("region") + " "
-									+ patronsForSchoolRS.getString("postal_code");
-					patronInfo[0]  = patronsForSchoolRS.getString("ptype_code").trim();
-					patronInfo[1]  = patronsForSchoolRS.getString("pcode1").trim();
-					patronInfo[2]  = fullName.trim();
-					patronInfo[3]  = patronsForSchoolRS.getString("home_library_code").trim();
-					patronInfo[4]  = patronsForSchoolRS.getString("barcode").trim();
-					patronInfo[5]  = patronsForSchoolRS.getString("gradelvl").trim();
-					patronInfo[6]  = patronsForSchoolRS.getString("homeroom").trim();
-					patronInfo[7]  = patronsForSchoolRS.getString("owed_amt").trim();
-					patronInfo[14] = fullAddress.trim();
-
-					//Get a list of items that are checked out to each user
-					itemsOutStmt.setLong(1, patronId);
-					ResultSet itemsOutRS      = itemsOutStmt.executeQuery();
-					int       numItemsWritten = 0;
-					while (itemsOutRS.next()) {
-						String callNumber = itemsOutRS.getString("callnumber");
-						if (callNumber == null) {
-							callNumber = "";
-						} else {
-							callNumber = callNumber.replaceAll("\\|\\w", "");
+					try {
+						long          patronId        = patronsForSchoolRS.getLong("id");
+						String[]      patronInfo      = new String[16];
+						String        ptypeCode       = patronsForSchoolRS.getString("ptype_code");
+						String        pcode1          = patronsForSchoolRS.getString("pcode1");
+						String        lastName        = patronsForSchoolRS.getString("last_name").trim();
+						String        firstName       = patronsForSchoolRS.getString("first_name").trim();
+						String        middleName      = patronsForSchoolRS.getString("middle_name").trim();
+						String        fullName        = lastName + ", " + firstName + " " + middleName;
+						String        homeLibraryCode = patronsForSchoolRS.getString("home_library_code");
+						String        patronBarcode   = patronsForSchoolRS.getString("barcode");
+						String        homeroom        = patronsForSchoolRS.getString("homeroom");
+						String        gradeLevel      = patronsForSchoolRS.getString("gradelvl");
+						String        address         = patronsForSchoolRS.getString("addr1");
+						String        city            = patronsForSchoolRS.getString("city");
+						String        region          = patronsForSchoolRS.getString("region");
+						String        postalCode      = patronsForSchoolRS.getString("postal_code");
+						String        owedAmount      = patronsForSchoolRS.getString("owed_amt");
+						StringBuilder fullAddress     = new StringBuilder();
+						if (address != null){
+							fullAddress.append(fullAddress).append(" ");
 						}
-						patronInfo[8]  = callNumber.trim();
-						patronInfo[9]  = itemsOutRS.getString("title").trim();
-						patronInfo[10] = itemsOutRS.getString("barcode").trim();
-						patronInfo[11] = itemsOutRS.getString("location_code").trim();
-						patronInfo[12] = itemsOutRS.getString("due_gmt").trim();
-						patronInfo[13] = itemsOutRS.getString("item_status_code").trim();
-						patronReportCsvWriter.writeNext(patronInfo);
-						patronInfo[7] = ""; //Only display amount owed on the first row
-						numItemsWritten++;
-					}
-					if (numItemsWritten == 0) {
-						//No items are checked out
-						patronReportCsvWriter.writeNext(patronInfo);
+						if (city != null){
+							fullAddress.append(city).append(", ");
+						}
+						if (region != null){
+							fullAddress.append(region).append(" ");
+						}
+						if (postalCode != null){
+							fullAddress.append(postalCode);
+						}
+						ptypeCode       = ptypeCode == null       ? "" : ptypeCode.trim();
+						pcode1          = pcode1 == null          ? "" : pcode1.trim();
+						patronBarcode   = patronBarcode == null   ? "" : patronBarcode.trim();
+						gradeLevel      = gradeLevel == null      ? "" : gradeLevel.trim();
+						homeroom        = homeroom == null        ? "" : homeroom.trim();
+						homeLibraryCode = homeLibraryCode == null ? "" : homeLibraryCode.trim();
+						if (owedAmount == null){
+							owedAmount = "";
+						} else if (owedAmount.length() > 4){
+							// owedAmount, when populated, is formatted as number with 6 digits beyond the decimal point
+							// e.g. "35.000000"
+							owedAmount = owedAmount.substring(0, owedAmount.length() - 4);
+							// trim to 2 digits decimal numbers
+						}
+						patronInfo[0]  = ptypeCode;
+						patronInfo[1]  = pcode1;
+						patronInfo[2]  = fullName.trim();
+						patronInfo[3]  = homeLibraryCode;
+						patronInfo[4]  = patronBarcode;
+						patronInfo[5]  = gradeLevel;
+						patronInfo[6]  = homeroom;
+						patronInfo[7]  = owedAmount;
+						patronInfo[14] = fullAddress.toString().trim();
+
+						//Get a list of items that are checked out to each user
+						itemsOutStmt.setLong(1, patronId);
+						ResultSet itemsOutRS      = itemsOutStmt.executeQuery();
+						int       numItemsWritten = 0;
+						while (itemsOutRS.next()) {
+							String callNumber     = itemsOutRS.getString("callnumber");
+							String barcode        = itemsOutRS.getString("barcode");
+							String dueDate        = itemsOutRS.getString("due_gmt");
+							String title          = itemsOutRS.getString("title");
+							String locationCode   = itemsOutRS.getString("location_code");
+							String itemStatusCode = itemsOutRS.getString("item_status_code");
+							callNumber     = callNumber == null ?     "" : callNumber.replaceAll("\\|\\w", "").trim();
+							title          = title == null ?          "" : title.trim();
+							barcode        = barcode == null ?        "" : barcode.trim();
+							locationCode   = locationCode == null ?   "" : locationCode.trim();
+							dueDate        = dueDate == null ?        "" : dueDate.replaceAll("04:00:00.0", "").trim();
+							// Remove unwanted timestamp portion, which appears to always be "04:00:00.0"
+							itemStatusCode = itemStatusCode == null ? "" : itemStatusCode.trim();
+							patronInfo[8]  = callNumber;
+							patronInfo[9]  = title;
+							patronInfo[10] = barcode;
+							patronInfo[11] = locationCode;
+							patronInfo[12] = dueDate;
+							patronInfo[13] = itemStatusCode.trim();
+							patronReportCsvWriter.writeNext(patronInfo);
+							patronInfo[7] = ""; // Only display amount owed on the first row
+							numItemsWritten++;
+						}
+						if (numItemsWritten == 0) {
+							//No items are checked out
+							patronReportCsvWriter.writeNext(patronInfo);
+						}
+					} catch (Exception e) {
+						// Aiming to catch null exceptions
+						logger.error("Error processing patron, {}", patronsForSchoolRS, e);
 					}
 				}
 			}

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -91,7 +90,7 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 			if ($groupingAuthor->find()){
 				$validationResults = [
 					'validatedOk' => false,
-					'errors'      => ['The source grouping author can not match any existing preferred grouping author entry.'],
+					'errors'      => ['The source grouping author cannot match any existing preferred grouping author entry.'],
 				];
 			}
 

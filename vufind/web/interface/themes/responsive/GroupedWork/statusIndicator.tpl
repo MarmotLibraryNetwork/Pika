@@ -49,7 +49,13 @@
 			{/if}
 		{/if}
 	{elseif $statusInformation.available && $statusInformation.hasLocalItem}
-		<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{if $statusInformation.localShelvingItem}
+			{*When the most available local item has grouped item status 'Shelving' or 'Recently Returned',
+			display that status over 'Checked Out' *}
+			<div class="related-manifestation-shelf-status availableOther">{$statusInformation.localShelvingStatus}/Available Elsewhere {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{else}
+			<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+		{/if}
 	{elseif $statusInformation.available}
 		{if $isGlobalScope}
 			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
@@ -63,10 +69,22 @@
 		<div class="related-manifestation-shelf-status isAvailableToOrder">
 				{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
 		</div>
-	{else}
-		<div class="related-manifestation-shelf-status checked_out">
-			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if} {include file='GroupedWork/homePickupbutton.tpl'}
+	{elseif $statusInformation.localShelvingItem}
+		<div class="related-manifestation-shelf-status availableOther">
+			{* This should only happen when there is a single item on the bib, which is a local item,
+			 and currently has shelving/recently returned status override *}
+			{$statusInformation.groupedStatus} {include file='GroupedWork/homePickupbutton.tpl'}
 		</div>
+	{else}
+		{if in_array($statusInformation.groupedStatus, array('Shelving', 'Recently Returned'))}
+			<div class="related-manifestation-shelf-status availableOther">
+				{$statusInformation.groupedStatus} at another library {include file='GroupedWork/homePickupbutton.tpl'}
+			</div>
+		{else}
+			<div class="related-manifestation-shelf-status checked_out">
+				{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if} {include file='GroupedWork/homePickupbutton.tpl'}
+			</div>
+		{/if}
 	{/if}
 	{if ($statusInformation.numHolds > 0 || $statusInformation.onOrderCopies > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
 		<div class="smallText">

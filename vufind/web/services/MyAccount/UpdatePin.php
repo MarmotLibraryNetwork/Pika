@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -160,7 +159,7 @@ class MyAccount_UpdatePin extends MyAccount {
 			$interface->assign('showForgotPinLink', true);
 		}
 
-		// Because we are forcing a Pin update we can not display the convince buttons at the top of page and side bars
+		// Because we are forcing a Pin update we can not display the conventional buttons at the top of page and sidebars
 		$interface->assign('isUpdatePinPage', true);
 		$interface->assign('displaySidebarMenu', false);
 

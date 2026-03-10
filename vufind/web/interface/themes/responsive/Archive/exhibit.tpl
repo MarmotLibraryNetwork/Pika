@@ -16,7 +16,7 @@
 		{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 	</h1>
 
-	<div class="lead row">
+	<div class="row">
 		<div class="col-tn-12">
 		{if $hasImageMap}
 			{$imageMap}

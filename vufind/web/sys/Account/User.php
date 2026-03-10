@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1484,8 +1483,19 @@ class User extends DB_DataObject {
 	 */
 	function staffPlacedHold($patronBarcode, $recordId, $pickupBranch, $cancelDate = null, $itemId = null, $volumeId = null, $hasHomePickupItems = false) {
 		if ($this->isStaff()){
+			global $configArray;
 			$tempPatronObject          = new User();
 			$tempPatronObject->barcode = $patronBarcode;
+			if ($configArray['Catalog']['ils'] == 'Polaris'){
+				if (!$tempPatronObject->find(true)){
+					return [
+						'success' => false,
+						'message' => 'Patron not found in Pika. For Polaris, the patron is required to have logged into the catalog before.',
+					];
+					//TODO: We would need a method that fetches ilsId & home location id from Polaris without
+					// need patron pin to remove this requirement.
+				}
+			}
 
 			if (empty($cancelDate)){
 				//Set not need after date, if not supplied, based on library settings
@@ -1493,7 +1503,6 @@ class User extends DB_DataObject {
 			}
 
 			global $offlineMode;
-			global $configArray;
 			$useOfflineHolds = $configArray['Catalog']['useOfflineHoldsInsteadOfRegularHolds'] ?? false;
 			if ($offlineMode || $useOfflineHolds){
 				$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'] ?? false;

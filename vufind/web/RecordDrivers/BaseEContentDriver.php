@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +39,7 @@ abstract class BaseEContentDriver extends MarcRecord {
 		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null, $volumeData = null){
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null, $volumeData = null){
 		return $this->createActionsFromUrls($relatedUrls);
 	}
 

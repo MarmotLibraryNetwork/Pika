@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -57,7 +57,7 @@ foreach ($itemNumbers as $itemId){
 //	$response = $solr->getRecordByIsbn([$itemId], $fieldsToReturn);
 //	$response = $solr->getRecord($itemId, $fieldsToReturn);
 	$itemId   = str_replace('i', '.i', $itemId);
-	$response = $solr->getRecordByAlternateIds($itemId, $fieldsToReturn);
+	$response = $solr->getRecordByAlternateId($itemId, $fieldsToReturn);
 	if (empty($response)){
 		$results[] = $itemId . ',' . "\r\n";
 		$noItemNumberMatch++;
@@ -112,7 +112,7 @@ function initCache(){
  * @param null|string $fieldsToReturn An optional list of fields to return separated by commas
  * @return array An array of the Solr document fields of the grouped Work
  */
-function getRecordByAlternateIds($id, $fieldsToReturn = null){
+function getRecordByAlternateId($id, $fieldsToReturn = null){
 	/** @var Memcache $memCache */
 	global $memCache;
 	global $solrScope;

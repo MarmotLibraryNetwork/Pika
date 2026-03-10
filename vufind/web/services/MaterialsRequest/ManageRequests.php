@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -447,7 +446,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					}
 					$activeSheet->setCellValue([$curCol++, $curRow], $value);
 				}
-				$activeSheet->setCellValue([$curCol++, $curRow], translate($request->status));
+				$activeSheet->setCellValue([$curCol++, $curRow], $request->status);
 				$activeSheet->setCellValue([$curCol++, $curRow], date('m/d/Y', $request->dateCreated));
 				$activeSheet->setCellValue([$curCol, $curRow], $request->assignedTo);
 			}

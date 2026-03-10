@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1080,6 +1079,7 @@ class ExploreMore {
 }
 
 function sortBrandingResults($a, $b){
+	//TODO: add handling when 'sortIndex' isn't set
 	if ($a['sortIndex'] == $b['sortIndex']){
 		return strcasecmp($a['label'], $b['label']);
 	}

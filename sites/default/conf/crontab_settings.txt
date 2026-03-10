@@ -1,9 +1,9 @@
 ###################
-## Crontab setting from a 'configuration' file
+## Crontab configuration file
 ##
-## to save current crontab to file: crontab -l > crontab_settings.txt
+## To save current crontab to file: sudo crontab -l > crontab_settings.txt
 ##
-## to set the current crontab from a file : crontab < crontab_settings.txt
+## To set the current crontab from a file : sudo crontab < crontab_settings.txt
 ##
 ##################
 

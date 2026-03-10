@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2024  Marmot Library Network
- *
+ * Copyright (C) 2025  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -673,15 +672,17 @@ class Polaris extends PatronDriverInterface implements DriverInterface
             'autocomplete' => 'postal-code',
         ];
 
-        $fields[] = [
-            'property' => 'PhoneVoice1',
-            'type' => 'tel',
-            'label' => 'Primary phone (XXX-XXX-XXXX)',
-            'description' => 'Your primary phone number.',
-            'maxLength' => 20,
-            'required' => false,
-            'autocomplete' => 'tel-national',
-        ];
+			$fields[] = [
+				'property'     => 'PhoneVoice1',
+				//'type'         => 'tel', // input telephone doesn't allow dashes on iPhones. See D-5229
+				'type'         => 'text',
+				'label'        => 'Primary phone (XXX-XXX-XXXX)',
+				'description'  => 'Your primary phone number.',
+				'maxLength'    => 20,
+				'required'     => false,
+				'simplePhoneUS' => true, // Enforces the xxx-xxx-xxxx format
+				'autocomplete' => 'tel-national',
+				];
 
         $fields[] = [
             'property' => 'Phone1CarrierID',
@@ -2354,7 +2355,7 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
 
     /**
-     *
+
      * @inheritDoc
      */
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null, $hasHomePickupItems = false)

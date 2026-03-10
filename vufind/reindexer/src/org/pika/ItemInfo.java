@@ -141,6 +141,7 @@ public class ItemInfo {
 		this.format = format;
 	}
 
+	//TODO: Document when this is called & for what purpose. Does it get involved in search relevancy score?
 	int getNumCopies() {
 		//TODO: yeah, rethink this for OverDrive. It should indicate number of available copies;
 		// currently indicates total copies, if not set to 1 below.

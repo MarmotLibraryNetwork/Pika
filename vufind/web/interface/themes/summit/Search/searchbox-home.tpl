@@ -71,13 +71,13 @@
 										{/foreach}
 										<li class="divider ebscoType"></li>
 									{/if}
-
-									<li class="catalogType">
-										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
-											{translate text="Advanced"}
-										</a>
-									</li>
-
+									{if $showAdvancedSearchbox}
+										<li class="catalogType">
+											<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
+												{translate text="Advanced"}
+											</a>
+										</li>
+									{/if}
 									{* Link to Search Tips Help *}
 									<li>
 										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="modalDialogTrigger">

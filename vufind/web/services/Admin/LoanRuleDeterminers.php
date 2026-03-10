@@ -29,14 +29,16 @@ class LoanRuleDeterminers extends ObjectEditor {
 			die;
 		}elseif ($objectAction == 'doLoanRuleDeterminerReload'){
 			$loanRuleDeterminerData = $_REQUEST['loanRuleDeterminerData'];
-			//Truncate the current data
-			$loanRuleDeterminer = new LoanRuleDeterminer();
-            $logger = new Logger('LoanRuleDeterminers');
-            try {
-                $loanRuleDeterminer->query('TRUNCATE table ' . $loanRuleDeterminer->__table);
-            } catch (Exception $e) {
-                $logger->warning($e->getMessage());
-            }
+			$loanRuleDeterminer     = new LoanRuleDeterminer();
+			$countBefore            = $loanRuleDeterminer->count();
+			try {
+				// Truncate the current data
+				$loanRuleDeterminer->query('TRUNCATE table ' . $loanRuleDeterminer->__table);
+			} catch (Exception $e) {
+				global $pikaLogger;
+				$logger = $pikaLogger->withName(__CLASS__);
+				$logger->warning($e->getMessage());
+			}
 
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleDeterminerData);
@@ -55,6 +57,12 @@ class LoanRuleDeterminers extends ObjectEditor {
 				}
 			}
 			$loanRuleDeterminer->setFullReindexMarker();
+			$countAfter = $loanRuleDeterminer->count();
+			$difference = $countAfter - $countBefore;
+			if ($difference < -9){
+				global $interface;
+				$interface->assign('lastError', 'The number of loan rule determiners is ' . -$difference /* make number positive */ . ' smaller after the reload. Please reload the loan rule determiners if this is an error.');
+			}
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'list';

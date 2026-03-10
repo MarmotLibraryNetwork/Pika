@@ -28,9 +28,17 @@ class LoanRules extends ObjectEditor {
 			die;
 		}elseif ($objectAction == 'doLoanRuleReload'){
 			$loanRuleData = $_REQUEST['loanRuleData'];
-			//Truncate the current data
-			$loanRule = new LoanRule();
-			$loanRule->query('TRUNCATE table ' . $loanRule->__table);
+			$loanRule    = new LoanRule();
+			$countBefore = $loanRule->count();
+
+			try {
+				// Truncate the current data
+				$loanRule->query('TRUNCATE table ' . $loanRule->__table);
+			} catch (Exception $e) {
+				global $pikaLogger;
+				$logger = $pikaLogger->withName(__CLASS__);
+				$logger->warning($e->getMessage());
+			}
 
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleData);
@@ -38,7 +46,7 @@ class LoanRules extends ObjectEditor {
 				if (!empty($dataRow)){
 					$dataFields                    = preg_split('/\\t/', $dataRow);
 					$loanRuleNew                   = new LoanRule();
-					$loanRuleNew->loanRuleId       = $dataFields[0];
+					$loanRuleNew->loanRuleId       = trim($dataFields[0]);
 					$loanRuleNew->name             = trim($dataFields[1]);
 					$loanRuleNew->code             = trim($dataFields[2]);
 					$loanRuleNew->normalLoanPeriod = trim($dataFields[3]);
@@ -50,6 +58,12 @@ class LoanRules extends ObjectEditor {
 				}
 			}
 			$loanRule->setFullReindexMarker();
+			$countAfter = $loanRule->count();
+			$difference = $countAfter - $countBefore;
+			if ($difference < -9){
+				global $interface;
+				$interface->assign('lastError', 'The number of loan rules is ' . -$difference /* make number positive */ . ' smaller after the reload. Please reload the loan rules if this is an error.');
+			}
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'list';

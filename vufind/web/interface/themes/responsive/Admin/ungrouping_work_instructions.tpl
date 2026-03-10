@@ -13,7 +13,7 @@ For more information on how to ungroup works, see the <a href="https://marmot-su
 			<li>The title of the record to un-group</li>
 			<li>Your initials</li>
 			<li>Your library name</li>
-			<li>The Date</li>
+			<li>The date</li>
 		</ul>
 	</div>
 	{*</div>*}

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -60,7 +59,7 @@ class Novelist3{
 	}
 
 	public function getRawNovelistJSON($isbn){
-		global $timer;
+		//global $timer;
 		$requestUrl = $this->apiUrl . "/Data/ContentByQuery?profile={$this->profile}&password={$this->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 		try{
 			//Get the JSON from the service
@@ -68,13 +67,13 @@ class Novelist3{
 			$curl->setDefaultDecoder('json_decode');
 			$data = $curl->get($requestUrl);
 			if ($curl->isError()) {
-				$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+				$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 
 				$this->logger->warning($message);
 				//No enrichment for this isbn, go to the next one
 
 			}
-			$timer->logTime("Made call to Novelist to get info for: $isbn");
+			//$timer->logTime("Made call to Novelist to get info for: $isbn");
 			return $data;
 
 		}catch (Exception $e) {
@@ -173,7 +172,7 @@ class Novelist3{
 						$curl->setDefaultDecoder('json_decode');
 						$data = $curl->get($requestUrl);
 						if ($curl->isError()) {
-							$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+							$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 							$this->logger->warning($message);
 							//No enrichment for this isbn, go to the next one
 							continue;
@@ -283,7 +282,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage() . ' URL : '. $requestUrl;
 
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
@@ -307,7 +307,7 @@ class Novelist3{
 							}else{
 
 								//log the incorrect ISBN
-								$this->logger->warning("Novelist ISBN for record " . $groupedRecordId . " does not match local holdings");
+								$this->logger->warning('Novelist ISBN for record ' . $groupedRecordId . ' does not match local holdings');
 								//$this->loadSeriesInfoMissingISBN($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$groupedWorkDriver = new GroupedWorkDriver($groupedRecordId);
@@ -421,7 +421,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -492,7 +493,7 @@ class Novelist3{
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;
 
-		//When loading full data, we aways need to load the data since we can't cache due to terms of sevice
+		//When loading full data, we always need to load the data since we can't cache due to terms of sevice
 		if (!$doFullUpdate && !isset($_REQUEST['reload']) && !empty($novelistData->primaryISBN)){
 			//Just check the primary ISBN since we know that was good.
 			$ISBNs = [$novelistData->primaryISBN];
@@ -511,14 +512,15 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;
 					}
 
 					global $timer;
-					$timer->logTime("Made call to Novelist for enrichment information");
+					$timer->logTime('Made call to Novelist for enrichment information');
 
 					//Related ISBNs
 					if (!empty($data->FeatureContent)){
@@ -536,7 +538,6 @@ class Novelist3{
 						break;
 					}
 				}catch (Exception $e) {
-
 					$this->logger->error("Error fetching data from NoveList $e");
 					if (isset($response)){
 						$this->logger->debug($response);
@@ -615,8 +616,8 @@ class Novelist3{
 					$curl->setDefaultDecoder('json_decode');
 					$data = $curl->get($requestUrl);
 					if ($curl->isError()) {
-						$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
-
+						//$message = 'curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage();
+						$message =  __FUNCTION__ . ' curl/http error:' . $curl->getErrorCode().': ' .$curl->getErrorMessage()  . ' URL : '. $requestUrl;
 						$this->logger->warning($message);
 						//No enrichment for this isbn, go to the next one
 						continue;

@@ -158,12 +158,14 @@
 	{literal}
 	$(function(){
 		$('#zip').rules('add', {zipcodeUS:true});
+		$('#primaryphone.simplePhoneUS').rules('add', {simplePhoneUS:true});
 		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}{literal}});
 		$('#pin').rules('add', {maxlength:{/literal}{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}{literal}});
 		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 		{/literal}
 		{if $selfRegStateRegex && $selfRegStateMessage}
 		{* Add state validation *}
+		{* Validator has a "pattern" rule that can be fed an regex test. There error message is "Invalid format" *}
 		jQuery.validator.addMethod("stateCheck", function(value, element) {ldelim}
 			return this.optional( element ) || {$selfRegStateRegex}.test( value );
 			{rdelim}, '{$selfRegStateMessage}');

@@ -325,7 +325,7 @@ public class HooplaExportMain {
 			addNoteToHooplaExportLog("Error exporting hoopla data " + e);
 			return false;
 		}
-		// UpdateTitlesInDB can also have errors. If it does it sets updateTitlesInDBHadErrors to true;
+		// UpdateTitlesInDB can also have errors. If it does, it sets updateTitlesInDBHadErrors to true;
 		return !updateTitlesInDBHadErrors;
 	}
 

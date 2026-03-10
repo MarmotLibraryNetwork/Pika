@@ -18,9 +18,9 @@ package org.pika;
  * Pika
  *
  * Simple Class to handle ISBNs
- * 10 digit isbns are converted to 13 digit isbns
+ * 10 digit ISBNs are converted to 13 digit ISBNs
  *
- * @author pbrammeier
+ * @author Pascal Brammeier
  * 		Date:   10/31/2019
  */
 public class ISBN {
@@ -69,11 +69,11 @@ public class ISBN {
 		for (char c: isbn.toCharArray()){
 			int curDigit = Character.getNumericValue(c);
 			sumOfDigits += useMultiplier ? 3 * curDigit : curDigit;
-			useMultiplier = !useMultiplier;  // multiple by 3 every other digit
+			useMultiplier = !useMultiplier;  // multiply by 3 every other digit
 		}
 //		int sumOfDigits = 0;
 //		for (int i = 0; i < 12; i++) {
-//			int multiplier = (i % 2 == 1) ? 3 : 1; // multiple the value of every second digit by 3
+//			int multiplier = (i % 2 == 1) ? 3 : 1; // multiply the value of every second digit by 3
 //			int curDigit   = Integer.parseInt(Character.toString(isbn.charAt(i)));
 //			sumOfDigits += multiplier * curDigit;
 //		}

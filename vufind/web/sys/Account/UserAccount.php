@@ -676,6 +676,8 @@ class UserAccount {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !PEAR_Singleton::isError($tmpUser)){
 					return $tmpUser;
+				}else{
+					self::getLogger()->notice('barcode ' . $patronBarcode . ' was not found in ILS');
 				}
 			}
 		}

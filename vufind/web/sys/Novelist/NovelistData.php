@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,6 +26,8 @@
  */
 
 class NovelistData extends DB_DataObject{
+	public $__table = 'novelist_data';
+
 	public $id;
 	public $groupedWorkPermanentId;
 	public $lastUpdate;
@@ -43,8 +44,6 @@ class NovelistData extends DB_DataObject{
 	public $similarTitleCountOwned;
 	public $similarTitles;
 
-	public $__table = 'novelist_data';
-
 	static function doesGroupedWorkHaveCachedSeries($groupedRecordId){
 		if (!empty($groupedRecordId)){
 			$novelistData                         = new NovelistData();
@@ -56,4 +55,31 @@ class NovelistData extends DB_DataObject{
 		return false;
 	}
 
+	static function removeNovelistCachedSeriesEntry($groupedRecordId) :bool{
+		if (!empty($groupedRecordId)){
+			$novelistData                         = new NovelistData();
+			$novelistData->groupedWorkPermanentId = $groupedRecordId;
+			$novelistData->limit(1);   // Set a limit so that we only delete a single entry
+			$r = $novelistData->delete(); // returns number of deleted rows on success;
+			$success = $r !== false;      // only false is a failure; 0 would be no match or no deletion needed
+			if ($success){
+				// Clear Any memcached entries for the work
+				/** @var Memcache $memCache */
+				global $memCache;
+				global $solrScope;
+				foreach (
+					[
+						"novelist_series_{$groupedRecordId}_{$solrScope}",
+						"novelist_enrichment_basic_$groupedRecordId",
+						"novelist_enrichment_$groupedRecordId",
+						"novelist_similar_titles_$groupedRecordId",
+						"novelist_similar_authors_$groupedRecordId",
+					] as $memCacheKey){
+					$memCache->delete($memCacheKey);
+				}
+			}
+			return $success;
+		}
+		return false;
+	}
 }

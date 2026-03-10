@@ -54,7 +54,7 @@
 	{/if}
 </div>
 {/strip}
-{if !offline}
+{if !$offline}
 <script>
 	{if $promptForBirthDateInSelfReg}
 

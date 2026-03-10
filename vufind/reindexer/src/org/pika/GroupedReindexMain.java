@@ -136,13 +136,13 @@ public class GroupedReindexMain {
 						try (ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery()) {
 							if (infoAboutWork.next()) {
 								groupedWorkIndexer.deleteRecord(individualWorkToProcess);
-								groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
+								groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), infoAboutWork.getString("grouping_language"), null, null);
 							} else {
-								logger.error("Could not find a work with id " + individualWorkToProcess);
+								logger.error("Could not find a work with id {}", individualWorkToProcess);
 							}
 						}
 					} catch (Exception e) {
-						logger.error("Unable to process individual work " + individualWorkToProcess, e);
+						logger.error("Unable to process individual work {}", individualWorkToProcess, e);
 					}
 				}else if(profileToIndex != null && !profileToIndex.isEmpty()) {
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(profileToIndex);

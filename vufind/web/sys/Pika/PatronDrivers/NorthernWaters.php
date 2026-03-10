@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -71,7 +70,7 @@ class NorthernWaters extends Sierra {
 	 * @param \Library $libraryIgnored Parameter not used
 	 * @return array
 	 */
-	protected function getSelfRegHomeLocations($libraryIgnored): array{
+	protected function getSelfRegHomeLocations(\Library $libraryIgnored): array{
 		$loc                        = new Location();
 		$loc->validHoldPickupBranch = '1';
 		$loc->orderBy('displayName');

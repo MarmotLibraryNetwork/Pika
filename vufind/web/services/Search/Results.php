@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -138,7 +137,8 @@ class Search_Results extends Union_Results {
 		//This must be done before we process each result
 
 		$showRatings                 = $library->showRatings ?? 1;
-		$enableProspectorIntegration = $library->enableProspectorIntegration ?? $configArray['Content']['Prospector'] ?? false;
+		$enableProspectorIntegration = $configArray['Content']['Prospector'] && $library->enableProspectorIntegration ?? false;
+		// Use config.ini setting as switch to turn off Prospector when it is down
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);
 			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());

@@ -29,15 +29,13 @@
 		</div>
 
 		<div class="row">
-				{if $showBookshelf}
-					<div class="col-tn-1 col-sm-1" aria-live="polite">
-						<input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf">
-					</div>
-				{/if}
+			{if $showBookshelf}
+				<div class="col-tn-1 col-sm-1" aria-live="polite">
+					<input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf">
+				</div>
+			{/if}
 			{if $showCovers}
-
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
-
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="Book cover{if $summTitle} for &quot;{$summTitle|escape}&quot;.{/if}">
@@ -52,9 +50,9 @@
 						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 						>
 							{if $summRating.user}
-							<div class="text-left small">Your rating: {$summRating.user} stars</div>
+								<div class="text-left small">Your rating: {$summRating.user} stars</div>
 							{else}
-							<div class="text-left small">Rate this title: </div>	 
+								<div class="text-left small">Rate this title: </div>
 							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>

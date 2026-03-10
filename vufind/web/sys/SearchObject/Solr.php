@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1187,13 +1186,17 @@ class SearchObject_Solr extends SearchObject_Base {
 			}
 
 			if (isset($_REQUEST['basicType'])){
-				if ($_REQUEST['basicType'] == 'AllFields'){
-					$_REQUEST['basicType'] = 'Keyword';
-				}
 				if (is_array($_REQUEST['basicType'])){
 					$_REQUEST['basicType'] = reset($_REQUEST['basicType']);
 				}
-				$params[] = 'basicType=' . $_REQUEST['basicType'];
+				if ($_REQUEST['basicType'] == 'AllFields'){
+					$_REQUEST['basicType'] = 'Keyword';
+				}
+				if (in_array($_REQUEST['basicType'], array_keys($this->basicTypes))){
+					$params[] = 'basicType=' . $_REQUEST['basicType'];
+				} else {
+					$params[] = 'basicType=Keyword';
+				}
 			}elseif (isset($_REQUEST['type'])){
 				if ($_REQUEST['type'] == 'AllFields'){
 					$_REQUEST['type'] = 'Keyword';
@@ -2391,6 +2394,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	function getMoreLikeThese($ids, $notInterestedIds){
 		global $configArray;
 		// Query String Parameters
+		//TODO: set q.op=OR so that separator string can be single space character ' '
 		$idString = implode(' OR ', $ids);
 		$options  = [
 			'q'                    => "id:($idString)",
@@ -2400,6 +2404,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		];
 
 		if (!empty($notInterestedIds)){
+			//TODO: test if q.op works on filter query parameter also
 			$notInterestedString = implode(' OR ', $notInterestedIds);
 			$options['fq'][]     = "-id:($notInterestedString)";
 		}

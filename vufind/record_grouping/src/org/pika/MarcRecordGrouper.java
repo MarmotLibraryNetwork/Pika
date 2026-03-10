@@ -166,7 +166,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 				}
 			}
 		} else if (fullRegrouping && logger.isInfoEnabled()){
-			logger.info("Missing 008 for grouping language : " + identifier.toString());
+			logger.info("Missing 008 for grouping language : {}", identifier);
 		}
 		if (languageCode == null) {
 			if (hasSierraLanguageFixedField) {
@@ -237,11 +237,11 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 					if (!recordNumber.contains("/") && !recordNumber.contains("\\")) {
 						identifier = new RecordIdentifier(recordSource, recordNumber);
 						if (recordNumberFields.size() > 1){
-							logger.warn("Record found with multiple recordNumber Tags for " + identifier);
+							logger.warn("Record found with multiple recordNumber Tags for {}", identifier);
 						}
 						break;
 					} else {
-						logger.warn("Record number contained a / or \\ character for " + recordSource + " : " + recordNumber + "; Skipping grouping for this record.");
+						logger.warn("Record number contained a / or \\ character for {}:{}; Skipping grouping for this record.", recordSource, recordNumber);
 					}
 				}
 			}

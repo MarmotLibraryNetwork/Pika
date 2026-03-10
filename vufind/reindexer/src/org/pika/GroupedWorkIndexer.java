@@ -58,7 +58,8 @@ public class GroupedWorkIndexer {
 	private       OverDriveProcessor                       overDriveProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
 	// The file based translation Maps
-	private final HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
+//	private final HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
+//	private final HashMap<String, LexileTitle>             lexileInformationSpanish              = new HashMap<>();
 	private final HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
 	private final String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
 	private final String                                   baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
@@ -246,11 +247,11 @@ public class GroupedWorkIndexer {
 									break;
 								case "MLN1":
 								case "Marmot":
-									indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									indexingRecordProcessors.put(sourceName, new MLN1RecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "MLN2":
 								case "Flatirons":
-									indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									indexingRecordProcessors.put(sourceName, new MLN2RecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 									break;
 								case "Lion":
 									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
@@ -295,7 +296,7 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		loadLexileData();
+		//loadLexileData();
 		loadAcceleratedReaderData();
 
 		if (fullReindex){
@@ -655,59 +656,108 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadLexileData() {
-		String   lexileExportPath = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
-		String[] lexileFields     = new String[0];
-		int      curLine          = 0;
-		try {
-			File lexileData = new File(lexileExportPath);
-			if (lexileData.exists()) {
-				logger.info("Starting to read lexile data");
-
-				try (CSVReader lexileReader = new CSVReader(new FileReader(lexileData), '\t')) {
-					//Skip over the header
-					lexileReader.readNext();
-					lexileFields = lexileReader.readNext();
-					curLine++;
-					while (lexileFields != null) {
-						LexileTitle titleInfo = new LexileTitle();
-						if (lexileFields.length >= 11) {
-							ISBN isbn = new ISBN(lexileFields[3]);
-							if (isbn.isValidIsbn()) {
-								titleInfo.setTitle(lexileFields[0]);
-								titleInfo.setAuthor(lexileFields[1]);
-								titleInfo.setLexileCode(lexileFields[4]);
-								try {
-									titleInfo.setLexileScore(lexileFields[5]);
-								} catch (NumberFormatException e) {
-									logger.warn("Failed to parse lexile score {}", lexileFields[5], e);
-								}
-								if (!lexileFields[10].equalsIgnoreCase("none")) {
-									titleInfo.setSeries(lexileFields[10]);
-								}
-								if (lexileFields.length >= 12) {
-									titleInfo.setAwards(lexileFields[11]);
-								}
-//								if (lexileFields.length >= 13) {
-//									titleInfo.setDescription(lexileFields[12]);
+	/**
+	 * Processing the tsv file received directly from Metametrics
+	 */
+//	private void loadLexileData() {
+//		String lexileExportPath        = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
+//		String lexileSpanishExportPath = PikaConfigIni.getIniValue("Reindex", "lexileSpanishExportPath");
+//		try {
+//			File lexileData = new File(lexileExportPath);
+//			if (lexileData.exists()) {
+//				logger.warn("Starting to read english lexile data");
+//				parseLexileFile("English", lexileData, lexileInformation);
+//			}
+////			else if (fullReindex) {
+////				logger.warn("Lexile English data file not found : {}", lexileExportPath);
+////			}
+//			lexileData = new File(lexileSpanishExportPath);
+//			if (lexileData.exists()) {
+//				logger.warn("Starting to read spanish lexile data");
+//				parseLexileFile("Spanish", lexileData, lexileInformationSpanish);
+//			}
+////			else if (fullReindex) {
+////				logger.warn("Lexile Spanish data file not found : {}", lexileExportPath);
+////			}
+//		} catch (Exception e) {
+//			logger.error("Error loading lexile file",  e);
+//		}
+//	}
+//
+//	private void parseLexileFile(String lexileLanguage, File lexileData, HashMap<String, LexileTitle> lexileInformation) throws IOException {
+//		int      curLine = 0;
+//		String[] lexileFields;
+//		try (CSVReader lexileReader = new CSVReader(new FileReader(lexileData), '\t')) {
+//			//Skip over the header
+//			lexileReader.readNext();
+//			lexileFields = lexileReader.readNext();
+//			curLine++;
+//			while (lexileFields != null) {
+//				LexileTitle titleInfo = new LexileTitle();
+//				if (lexileFields.length >= 17) {
+//					if (lexileLanguage.equals(lexileFields[16])) {
+//						//if (lexileFields.length >= 5) {
+//						// Include info if it has the lexile score column
+//						// (Previously the check was >= 11;
+//						// it may be needed because the summary columns might end up parsing incorrectly into
+//						// rows of their own.)
+//						ISBN isbn = new ISBN(lexileFields[2]);
+//						if (isbn.isValidIsbn() && !lexileInformation.containsKey(isbn.toString())) {
+//							// Populating entries from the "Related ISBNs" will allow us to skip over
+//							// subsequent, largely duplicate entries
+//							titleInfo.setTitle(lexileFields[0]);
+//							titleInfo.setAuthor(lexileFields[1]);
+//							try {
+////								if (lexileFields[4].contains("-")){
+////									logger.warn("Found negative score {} for {}, {}", lexileFields[4], lexileFields[0], isbn);
+////								}
+//								titleInfo.setLexileScore(lexileFields[4]);
+//							} catch (NumberFormatException e) {
+//								logger.error("Failed to parse lexile score {} with isbn {}", lexileFields[4], isbn, e);
+//								curLine++;
+//								continue; // If we have a bad score, skip to reading the next row
+//							}
+//
+//							if (!lexileFields[3].isEmpty()) {
+//								titleInfo.setLexileCode(lexileFields[3]);
+//							}
+//							if (!lexileFields[9].isEmpty() && !lexileFields[9].equalsIgnoreCase("none")) {
+//								titleInfo.setSeries(lexileFields[9]);
+//							}
+//							//TODO subseries now available in column 10
+//							//if (lexileFields.length >= 12/* && !lexileFields[11].isEmpty() //( this gets checked inside setAwards() )*/) {
+//								titleInfo.setAwards(lexileFields[11]);
+//							//}
+//							//TODO: lexile data has min & max age columns as well as word count column
+//							lexileInformation.put(isbn.toString(), titleInfo);
+//
+//							// Second to last column "Related ISBNs" is list of ISBNs found in
+//							// subsequent, largely duplicate rows for the title
+//							if (lexileFields.length >= 23) {
+//								if (!lexileFields[22].isEmpty()){
+//									String[] ISBNs = lexileFields[22].split(",");
+//									for (String isbnString: ISBNs){
+//										ISBN relatedISBN = new ISBN(isbnString);
+//										if (relatedISBN.isValidIsbn()){
+//											lexileInformation.put(relatedISBN.toString(), titleInfo);
+//										}
+//									}
 //								}
-								lexileInformation.put(isbn.toString(), titleInfo);
-							}
-						}
-						lexileFields = lexileReader.readNext();
-						curLine++;
-					}
-				}
-				if (logger.isInfoEnabled()) {
-					logger.info("Read {} lines of lexile data", lexileInformation.size());
-				}
-			} else if (fullReindex) {
-				logger.warn("Lexile data file not found : {}", lexileExportPath);
-			}
-		} catch (Exception e) {
-			logger.error("Error loading lexile data on {} {}", curLine, Arrays.toString(lexileFields), e);
-		}
-	}
+//
+//							}
+//						}
+//					}
+//				} else {
+//					logger.debug("Line {} did not have enough columns for language check", curLine);
+//				}
+//				lexileFields = lexileReader.readNext();
+//				curLine++;
+//			}
+//		}
+//		if (logger.isInfoEnabled()) {
+//			logger.info("Read {} lines of {} lexile data for {} lexile title entries", curLine, lexileLanguage, lexileInformation.size());
+//		}
+//	}
 
 	private void clearIndex() {
 		logger.info("Clearing all documents from index");
@@ -1060,11 +1110,12 @@ public class GroupedWorkIndexer {
 				long   id                = groupedWorks.getLong("id");
 				String permanentId       = groupedWorks.getString("permanent_id");
 				String grouping_category = groupedWorks.getString("grouping_category");
+				String groupingLanguage  = groupedWorks.getString("grouping_language");
 				Long   lastUpdated       = groupedWorks.getLong("date_updated");
 				if (groupedWorks.wasNull()){
 					lastUpdated = null;
 				}
-				processGroupedWork(id, permanentId, grouping_category, siteMapsByScope, uniqueGroupedWorks);
+				processGroupedWork(id, permanentId, grouping_category, groupingLanguage, siteMapsByScope, uniqueGroupedWorks);
 
 				numWorksProcessed++;
 				if (numWorksProcessed % 1000 == 0){
@@ -1155,11 +1206,12 @@ public class GroupedWorkIndexer {
 					long   primaryIdentifierId = groupedWorks.getLong("id");
 					String permanentId         = groupedWorks.getString("permanent_id");
 					String grouping_category   = groupedWorks.getString("grouping_category");
+					String groupingLanguage    = groupedWorks.getString("grouping_language");
 					Long   lastUpdated         = groupedWorks.getLong("date_updated");
 					if (groupedWorks.wasNull()) {
 						lastUpdated = null;
 					}
-					processGroupedWork(primaryIdentifierId, permanentId, grouping_category);
+					processGroupedWork(primaryIdentifierId, permanentId, grouping_category, groupingLanguage);
 
 					numWorksProcessed++;
 					if (numWorksProcessed % 500 == 0) {
@@ -1202,7 +1254,7 @@ public class GroupedWorkIndexer {
 	 * @param uniqueGroupedWorks
 	 * @throws SQLException
 	 */
-	void processGroupedWork(Long id, String permanentId, String grouping_category, HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) throws SQLException {
+	void processGroupedWork(Long id, String permanentId, String grouping_category, String groupingLanguage, HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -1255,7 +1307,7 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
+			//loadLexileDataForWork(groupedWork, loadedNovelistSeries, groupingLanguage);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
 
@@ -1315,7 +1367,7 @@ public class GroupedWorkIndexer {
 	 * @param grouping_category grouping category of the work
 	 * @throws SQLException
 	 */
-	void processGroupedWork(Long primaryIdentifierId, String permanentId, String grouping_category) throws SQLException {
+	void processGroupedWork(Long primaryIdentifierId, String permanentId, String grouping_category, String groupingLanguage) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -1367,7 +1419,7 @@ public class GroupedWorkIndexer {
 			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
-			loadLexileDataForWork(groupedWork, loadedNovelistSeries);
+			//loadLexileDataForWork(groupedWork, loadedNovelistSeries, groupingLanguage);
 			//Load accelerated reader data for the work
 			loadAcceleratedDataForWork(groupedWork);
 
@@ -1404,63 +1456,72 @@ public class GroupedWorkIndexer {
 		return lexileDataMatches;
 	}
 
-	private void loadLexileDataForWork(GroupedWorkSolr groupedWork, boolean loadedNovelistSeries) {
-		for (String isbn : groupedWork.getIsbns()) {
-			if (lexileInformation.containsKey(isbn)) {
-				LexileTitle lexileTitle = lexileInformation.get(isbn);
-				String      lexileCode  = lexileTitle.getLexileCode();
-				if (!lexileCode.isEmpty()) {
-					groupedWork.setLexileCode(this.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
-				}
-				groupedWork.setLexileScore(lexileTitle.getLexileScore());
-				groupedWork.addAwards(lexileTitle.getAwards());
-				if (!loadedNovelistSeries) {
-					final String lexileSeries = lexileTitle.getSeries();
-					if (lexileSeries != null && !lexileSeries.isEmpty()) {
-						groupedWork.addSeries(lexileSeries.replace("Ser.", "Series"), "");
-					}
-				}
-				lexileDataMatches++;
-				if (fullReindex && logger.isDebugEnabled()) {
-					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
-					String       groupTitle           = groupedWork.getTitle();
-					final String groupWorkPermanentId = groupedWork.getId();
-					String       lexTitle             = lexileTitle.getTitle();
-					if (groupTitle.length() > 10) {
-						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
-						groupTitle = groupTitle.toLowerCase();
-						if (lexTitle != null && !lexTitle.isEmpty()) {
-							lexTitle = lexTitle.toLowerCase();
-							int titleMatches = score.fuzzyScore(groupTitle, lexTitle);
-							if (titleMatches < 10) {
-
-								// A large piece of the mismatches are where the ArTitle is the work subtitle instead
-								// So we test the subtitle too, if it is long enough
-								String groupSubTitle = groupedWork.getSubTitle();
-
-								if (groupSubTitle != null && groupSubTitle.length() > 10) {
-									groupSubTitle = groupSubTitle.toLowerCase();
-									int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
-									if (subTitleMatches < 10) {
-										logger.debug("Possible mismatch of Lexile Data for grouped work {} title '{}' with subtitle '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, groupSubTitle, isbn, lexTitle);
-									}
-								} else {
-									logger.debug("Possible mismatch of Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
-								}
-							} else {
-								logger.debug("Matched Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
-							}
-						} else if (logger.isDebugEnabled()) {
-							logger.debug("Lexile match had no title for isbn {} on group work {}", isbn, groupWorkPermanentId);
-						}
-					} else {
-						logger.debug("Matched Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
-					}
-				}
-				break;
-			}
-		}
-	}
+//	private void loadLexileDataForWork(GroupedWorkSolr groupedWork, boolean loadedNovelistSeries, String groupingLanguage) {
+//		if (groupingLanguage.equals("eng")) {
+//			findLexileMatches(groupedWork, lexileInformation, loadedNovelistSeries);
+//		} else if (groupingLanguage.equals("spa")) {
+//			findLexileMatches(groupedWork, lexileInformationSpanish, loadedNovelistSeries);
+//		}
+//	}
+//
+//	private void findLexileMatches(GroupedWorkSolr groupedWork, HashMap<String, LexileTitle> lexileInformation, boolean loadedNovelistSeries) {
+//		for (String isbn : groupedWork.getIsbns()) {
+//			if (lexileInformation.containsKey(isbn)) {
+//				LexileTitle lexileTitle = lexileInformation.get(isbn);
+//				String      lexileCode  = lexileTitle.getLexileCode();
+//				if (lexileCode != null && !lexileCode.isEmpty()) {
+//					groupedWork.setLexileCode(this.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
+//				}
+//				groupedWork.setLexileScore(lexileTitle.getLexileScore());
+//				groupedWork.addAwards(lexileTitle.getAwards());
+//				if (!loadedNovelistSeries) {
+//					final String lexileSeries = lexileTitle.getSeries();
+//					if (lexileSeries != null && !lexileSeries.isEmpty()) {
+//						groupedWork.addSeries(lexileSeries.replace("Ser.", "Series"), "");
+//					}
+//				}
+//				lexileDataMatches++;
+//				if (fullReindex && logger.isDebugEnabled()) {
+//					logger.debug("Lexile match for {} with score {} using isbn {}", lexileTitle.getTitle(), lexileTitle.getLexileScore(), isbn);
+//					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
+//					String       groupTitle           = groupedWork.getTitle();
+//					final String groupWorkPermanentId = groupedWork.getId();
+//					String       lexTitle             = lexileTitle.getTitle();
+//					if (groupTitle.length() > 10) {
+//						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
+//						groupTitle = groupTitle.toLowerCase();
+//						if (lexTitle != null && !lexTitle.isEmpty()) {
+//							lexTitle = lexTitle.toLowerCase();
+//							int titleMatches = score.fuzzyScore(groupTitle, lexTitle);
+//							if (titleMatches < 10) {
+//
+//								// A large piece of the mismatches are where the ArTitle is the work subtitle instead
+//								// So we test the subtitle too, if it is long enough
+//								String groupSubTitle = groupedWork.getSubTitle();
+//
+//								if (groupSubTitle != null && groupSubTitle.length() > 10) {
+//									groupSubTitle = groupSubTitle.toLowerCase();
+//									int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
+//									if (subTitleMatches < 10) {
+//										logger.debug("Possible mismatch of Lexile Data for grouped work {} title '{}' with subtitle '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, groupSubTitle, isbn, lexTitle);
+//									}
+//								} else {
+//									logger.debug("Possible mismatch of Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
+//								}
+//							} else {
+//								logger.debug("Matched Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
+//							}
+//						} else {
+//							logger.debug("Lexile match had no title for isbn {} on group work {}", isbn, groupWorkPermanentId);
+//						}
+//					} else {
+//						logger.debug("Matched Lexile Data for grouped work {} title '{}' for isbn {}, Lexile Title {}", groupWorkPermanentId, groupTitle, isbn, lexTitle);
+//					}
+//				}
+//				break;
+//			}
+//		}
+//	}
 
 	private long ARDataMatches = 0;
 

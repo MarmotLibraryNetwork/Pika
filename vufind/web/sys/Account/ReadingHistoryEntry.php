@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +26,6 @@ class ReadingHistoryEntry extends DB_DataObject {
 	public $id;
 	public $userId;
 	public $groupedWorkPermanentId;
-	public $ilsHistoryId;
 	public $source;
 	public $sourceId;
 	public $title;
