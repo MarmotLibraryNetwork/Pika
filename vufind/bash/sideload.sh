@@ -18,14 +18,14 @@ if [[ $# -ne 1 ]]; then
 	exit
 fi
 
-site=$1 
+site=$1
 #echo $site
 confpwd=/usr/local/pika/sites/$site/conf/config.pwd.ini
 #echo $confpwd
-if [ ! -f $confpwd ]; then
+if [ ! -f "$confpwd" ]; then
 	confpwd=/usr/local/pika/sites/$site/conf/config.pwd.ini
 	#echo $confpwd
-	if [ ! -f $confpwd ]; then
+	if [ ! -f "$confpwd" ]; then
 		echo "Please check spelling of site $site; conf.pwd.ini not found at $confpwd"
 		exit
 	fi
@@ -44,7 +44,7 @@ function trim()
 declare -A collections
 section=false
 
-while read line; do
+while IFS= read -r line; do
 	if [[ $line =~ ^\[Sideload\] ]]; then
 		section=true;
 	fi
@@ -65,15 +65,14 @@ while read line; do
 done < "$confpwd"
 
 # Truncate logFile
-: > $logFile;
+: > "$logFile"
 
 # Execute MARC download commands found in config.pwd.ini
 
-for key in ${!collections[@]}; do
+for key in "${!collections[@]}"; do
 #	echo ${collections[${key}]}
 #	eval ${collections[${key}]}
-	eval ${collections[${key}]} >> $logFile;
+	eval "${collections[${key}]}" >> "$logFile";
 done
 
 exit 0
-
