@@ -1820,20 +1820,33 @@ class Solr implements IndexEngine {
 		}
 	}
 
+	/**
+	 * Send a request to a named Solr request handler.
+	 *
+	 * Automatically switches from GET to POST when the query string exceeds
+	 * 8000 characters to avoid HTTP 414 "URI Too Long" errors (Jetty limit is 8192 bytes).
+	 *
+	 * @param string $requestHandler The Solr request handler name (e.g. 'morelikethese', 'morelikethis2')
+	 * @param array  $options        Associative array of Solr query parameters; array values
+	 *                               (e.g. multiple fq filters) are expanded into repeated parameters
+	 * @return array|null The decoded Solr JSON response as an associative array
+	 */
 	public function callRequestHandler(string $requestHandler, $options = []){
-		$url    = $this->host . '/' . $requestHandler;
-		if (!empty($options['fq'])){
-			// Since http_build_query() builds url parameters as array eg. fq[0]=foo&fq[1]=bla
-			// Solr does not seem to be able to handle this; and so our filter queries don't get applied.
-			// The below builds repeating url parameters that solr accepts eg. fq=foo&fq=bla  See also  _select()
-			$url .= '?fq=' . urlencode(array_shift($options['fq']));
-			foreach ($options['fq'] as $option){
-				$url .= '&fq=' . urlencode($option);
-			}
-			unset($options['fq']);
-		}
+		$url = $this->host . '/' . $requestHandler;
+
+		// buildSolrQueryString handles array parameters (like fq) by repeating the
+		// parameter name, which is the format Solr expects (eg. fq=foo&fq=bla)
+		$queryString = $this->buildSolrQueryString($options);
+
 		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
-		$result = $this->client->get($url, $options);
+		if (strlen($queryString) > 8000){
+			// For extremely long queries, we will get an error: "URI Too Long"
+			// Official limit on JETTY is 8192 bytes
+			$this->logger->debug("Using POST for $requestHandler request, query string length: " . strlen($queryString));
+			$result = $this->client->post($url, $queryString);
+		}else{
+			$result = $this->client->get($url, $queryString);
+		}
 		if ($this->client->isError()) {
 			PEAR_Singleton::raiseError($this->client->getErrorMessage());
 		}
