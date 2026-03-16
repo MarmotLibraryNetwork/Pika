@@ -123,18 +123,16 @@
 							return $('span', td).attr("data-date");
 						});
 					}
-					$(document).ready(function(){
+					$(function(){
 						$('#notInterestedTable').DataTable({
 							"columns":[
 								{"orderDataType": "dom-ni-date"},
 								null,
 								null,
 								{"orderable": false}
-
 							],
 							pageLength: 10,
 							"order": [[0, "desc"]]
-
 						});
 					});
 

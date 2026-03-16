@@ -83,7 +83,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	/**
 	 * Alias of deleteUserReview()
 	 *
-	 * @return string
+	 * @return array
 	 */
 	function clearUserRating(){
 		return $this->deleteUserReview();
@@ -106,6 +106,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}else{
 					$result['message'] = 'Sorry, we could not find that review in the system.';
 				}
+			} else {
+				$result['message'] = 'Invalid ID.';
 			}
 		}
 
