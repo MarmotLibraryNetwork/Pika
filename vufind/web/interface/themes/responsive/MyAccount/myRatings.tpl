@@ -21,6 +21,7 @@
 						<th>{translate text='Title'}</th>
 						<th>{translate text='Author'}</th>
 						<th style="min-width: 130px;">{translate text='Star Rating'}</th>
+						<th>&nbsp;</th>
 					</tr>
 					</thead>
 					<tbody>
@@ -51,6 +52,9 @@
 								</div>
 								<p>{$rating.review}</p>
 							</td>
+							<td>
+								<span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</span>
+							</td>
 						</tr>
 					{/foreach}
 					</tbody>
@@ -74,7 +78,8 @@
 								{"orderDataType": "dom-date"},
 								null,
 								null,
-								{"orderDataType": "dom-rating"}
+								{"orderDataType": "dom-rating"},
+								{"orderable": false}
 							],
 							pageLength: 10,
 							"order": [[0, "desc"]]

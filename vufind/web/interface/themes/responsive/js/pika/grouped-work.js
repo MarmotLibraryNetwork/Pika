@@ -29,7 +29,11 @@ Pika.GroupedWork = (function(){
 			$.getJSON(url, function(data){
 				if (data.result == true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
-					$('#myRating' + groupedWorkId).hide();
+					if ($.fn.DataTable.isDataTable('#myRatingsTable')) {
+						$('#myRatingsTable').DataTable().row('#myRating' + groupedWorkId).remove().draw();
+					} else {
+						$('#myRating' + groupedWorkId).hide();
+					}
 					Pika.showMessage('Success', data.message, true);
 				}else{
 					Pika.showMessage('Sorry', data.message);
