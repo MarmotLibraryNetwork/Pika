@@ -16,18 +16,31 @@
 </div>
 {literal}
     <script>
-        document.getElementById('archive-audio-player').textTracks[0].mode = "showing";
+        (function() {
+            var player = document.getElementById('archive-audio-player');
+            var box    = document.getElementById('vtt-text');
+            var track  = player.textTracks && player.textTracks[0];
 
-        document.getElementById('archive-audio-player').addEventListener('play', function() {
-            document.getElementById('vtt-text').style.display = "block";
-        });
+            if (!track) return;
 
-        document.getElementById('archive-audio-player').addEventListener('pause', function() {
-            //document.getElementById('vtt-text').style.display = "none";
-        });
+            track.mode = 'showing';
 
-        document.getElementById('archive-audio-player').textTracks[0].addEventListener('cuechange', function() {
-            document.getElementById('vtt-text').innerText = this.activeCues[0].text;
-        });
+            track.addEventListener('cuechange', function() {
+                if (this.activeCues && this.activeCues.length > 0) {
+                    box.innerText = this.activeCues[0].text;
+                    box.style.display = 'block';
+                } else {
+                    //box.style.display = 'none';
+                }
+            });
+
+            // Detect when the user toggles captions off via the native browser controls.
+            // There is no dedicated event for track mode changes, so timeupdate is used.
+            player.addEventListener('timeupdate', function() {
+                if (track.mode !== 'showing') {
+                    box.style.display = 'none';
+                }
+            });
+        }());
     </script>
 {/literal}

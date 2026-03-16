@@ -14,7 +14,7 @@ do
 	# Make sure we are not running a Full Record Group/Reindex process
 	hasConflicts=$(checkConflictingProcesses "full_update.sh" 30)
 	#If we did get a conflict, restart the loop to make sure that all tests run
-	if (($? != 0)); then
+	if (( hasConflicts != 0 )); then
 		continue
 	fi
 
@@ -32,19 +32,19 @@ do
 	#####
 
 	# reset the output file each round
-	: > $OUTPUT_FILE;
+	: > "$OUTPUT_FILE"
 
 	#export from koha (items, holds)
-	cd /usr/local/pika/vufind/koha_export/
-	nice -n -10 java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	cd /usr/local/pika/vufind/koha_export/ || exit
+	nice -n -10 java -server -XX:+UseG1GC -jar koha_export.jar "${PIKASERVER}" >> "${OUTPUT_FILE}"
 
 	# Pause if another reindexer is running; check in 10 second intervals
-	paused=$(checkConflictingProcesses "reindexer.jar" 10)
 	# push output into a variable to avoid so it doesn't echo out of the script
+	checkConflictingProcesses "reindexer.jar" 10 > /dev/null
 
 	#run reindex
-	cd /usr/local/pika/vufind/reindexer
-	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	cd /usr/local/pika/vufind/reindexer || exit
+	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar "${PIKASERVER}" >> "${OUTPUT_FILE}"
 	checkForDBCrash $?
 
 	# send notice of any issues

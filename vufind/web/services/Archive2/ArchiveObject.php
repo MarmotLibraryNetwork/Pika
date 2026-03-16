@@ -210,6 +210,7 @@ class ArchiveObject extends \Action
 
     protected function getViewerForModel(?string $model): ?string
     {
+        // TODO: This needs to be flushed out
         if ($model === null || $model === '') {
             return null;
         }
