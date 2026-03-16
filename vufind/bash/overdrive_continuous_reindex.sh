@@ -14,7 +14,7 @@ do
 	# Make sure we are not running a Full Record Group/Reindex process
 	hasConflicts=$(checkConflictingProcesses "full_update.sh" 30)
 	#If we did get a conflict, restart the loop to make sure that all tests run
-	if (($? != 0)); then
+	if (( hasConflicts != 0 )); then
 		continue
 	fi
 
@@ -32,20 +32,20 @@ do
 	#####
 
 	# reset the output file each round
-	: > $OUTPUT_FILE;
+	: > "$OUTPUT_FILE"
 
 	#export from overdrive
-	cd /usr/local/pika/vufind/overdrive_api_extract/
-	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	cd /usr/local/pika/vufind/overdrive_api_extract/ || exit
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar "${PIKASERVER}" >> "${OUTPUT_FILE}"
 
 	# Pause if another reindexer is running; check in 11 second intervals
 	# (this is 1 sec longer than the sierra continuous so that process will take priority if both finished at the same time.)
-	paused=$(checkConflictingProcesses "reindexer.jar" 11)
 	# push output into a variable to avoid so it doesn't echo out of the script
+	checkConflictingProcesses "reindexer.jar" 11 > /dev/null
 
 	#run reindex
-	cd /usr/local/pika/vufind/reindexer
-	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	cd /usr/local/pika/vufind/reindexer || exit
+	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar "${PIKASERVER}" >> "${OUTPUT_FILE}"
 	checkForDBCrash $?
 
 	# send notice of any issues

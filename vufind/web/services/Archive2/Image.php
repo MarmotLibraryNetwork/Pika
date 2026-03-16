@@ -33,13 +33,13 @@ class Image extends ArchiveObject
         $serviceFileUrl = null;
 
         # if CORS becomes an issue see vufind/web/services/Archive/AJAX.php fetchCantaloupeMaifest()
-        if ($serviceFile && isset($serviceFile->fileUrl)) {
+        if ($serviceFile && !empty($serviceFile->fileUrl)) {
             $baseUrl = $configArray['Islandora2']['url'] ?? '';
             if (empty($baseUrl)) {
                 $this->logger->error('Islandora2 URL not configured; cannot build image viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
             } else {
                 $baseUrl = rtrim($baseUrl, '/');
-                $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+                $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl) . "/info.json";
             }
         } else {
             $this->logger->warning('Service file not found for image node.', ['nid' => $this->mediaObject->getNodeId()]);
