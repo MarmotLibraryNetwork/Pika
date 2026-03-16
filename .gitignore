@@ -139,4 +139,5 @@ vufind/web/solrIndex.json
 
 # Claude Files #
 ################
+/.claude
 CLAUDE.md
