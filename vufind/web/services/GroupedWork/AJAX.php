@@ -619,7 +619,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}elseif (empty($_REQUEST['id'])){
 			$result['success'] = false;
 			$result['message'] = 'ID for the item to review is required.';
-		} elseif (GroupedWork::validGroupedWorkId($_REQUEST['id'])){
+		} elseif (!GroupedWork::validGroupedWorkId($_REQUEST['id'])){
 			$result['success'] = false;
 			$result['message'] = 'Invalid ID.';
 		}else{
