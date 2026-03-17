@@ -13,6 +13,9 @@
 		<br>
 
 		<div class="page">
+			{if $maxRatings}
+				<div class="alert alert-info">Only the latest 1,000 ratings are listed.</div>
+			{/if}
 			{if $ratings}
 				<table class="table table-striped" id="myRatingsTable">
 					<thead>
@@ -92,6 +95,9 @@
 				<div class="alert alert-info">You have not rated any titles yet.</div>
 			{/if}
 
+			{if $maxNotInterested}
+				<div class="alert alert-info">Only the latest 1,000 not interested titles are listed.</div>
+			{/if}
 			{if $notInterested}
 				<h2 class="h3">{translate text='Not Interested'}</h2>
 				<table class="myAccountTable table stripe" id="notInterestedTable">
