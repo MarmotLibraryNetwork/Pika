@@ -101,6 +101,8 @@
 			<tr style="display:none"><td></td></tr>
 		{/foreach}
 		</tbody>
+	{* Separate tbody for newly added rows so DataTables filtering/redraws don't hide them *}
+	<tbody id="{$propName}NewRows"></tbody>
 	</table>
 
 	<div class="{$propName}Actions">
@@ -155,7 +157,7 @@
 		var numAdditional{$propName} = 0;
 		function addNew{$propName}{literal}(){
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} -1;
-			var newRow = "<tr>";
+			var newRow = "<tr class='newRow success'>"; /*success class makes the new row visually distinct from the other rows */
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}
@@ -199,7 +201,7 @@
 			{/foreach}
 			newRow += "</tr>";
 			{literal}
-			$('#{/literal}{$propName}{literal} tr:last').after(newRow);
+			$('#{/literal}{$propName}{literal}NewRows').append(newRow);
 			$('.datepicker').datepicker({format:"yyyy-mm-dd"});
 			return false;
 		}
@@ -269,8 +271,10 @@
 							});
 					});
 					// When a dropdown selection changes, invalidate DataTables' cached
-					// filter data so the column search reflects the new selected value
-					$('#translationMapValues tbody').on('change', 'select', function(){
+					// filter data so the column search reflects the new selected value.
+					// Scoped to DataTables-managed tbody only; new rows live in a
+					// separate tbody (#translationMapValuesNewRows) and are excluded.
+					$('#translationMapValues tbody:not(#translationMapValuesNewRows)').on('change', 'select', function(){
 						api.rows().invalidate().draw(false);
 					});
 				}
