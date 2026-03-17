@@ -63,7 +63,7 @@
 				{* link to delete*}
 				<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
 					{* link to delete *}
-				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required');updateDeleteNotice{$propName}(){literal}}{/literal};return false;">
 					{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
 					<span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
 				</a>
@@ -104,6 +104,12 @@
 	{* Separate tbody for newly added rows so DataTables filtering/redraws don't hide them *}
 	<tbody id="{$propName}NewRows"></tbody>
 	</table>
+
+	{* Notice displayed when rows are marked for deletion but not yet saved *}
+	<div id="{$propName}DeleteNotice" class="alert alert-warning" role="alert" style="display:none; margin-top:5px;">
+		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp;
+		<strong><span class="warning" id="{$propName}DeleteCount"></span></strong> item(s) marked for deletion. Click <strong>Save Changes</strong> to process.
+	</div>
 
 	<div class="{$propName}Actions">
 		<button onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</button>
@@ -154,6 +160,15 @@
 		{/if}
 		{literal}$('.datepicker').datepicker({format:"yyyy-mm-dd"});{/literal}
 		{literal}});{/literal}
+		function updateDeleteNotice{$propName}{literal}(){
+			var count = $('input[name^="{/literal}{$propName}{literal}Deleted"][value="true"]').length;
+			if (count > 0) {
+				$('#{/literal}{$propName}{literal}DeleteCount').text(count);
+				$('#{/literal}{$propName}{literal}DeleteNotice').show();
+			} else {
+				$('#{/literal}{$propName}{literal}DeleteNotice').hide();
+			}
+		}{/literal}
 		var numAdditional{$propName} = 0;
 		function addNew{$propName}{literal}(){
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} -1;
@@ -205,6 +220,28 @@
 			$('.datepicker').datepicker({format:"yyyy-mm-dd"});
 			return false;
 		}
+		{/literal}
+	</script>
+	{* Warn the user if they try to navigate away with unsaved deletions.
+	   When a row is marked for deletion, its hidden "{$propName}Deleted" input
+	   is set to "true". The beforeunload handler checks for these and triggers
+	   the browser's native confirmation dialog. The warning is bypassed when
+	   the form is submitted (save button). *}
+	<script>
+		{literal}
+		$(function(){
+			var formSubmitting = false;
+			$('#objectEditor').on('submit', function(){
+				formSubmitting = true;
+			});
+			$(window).on('beforeunload', function(){
+				if (formSubmitting) return;
+				var hasDeleted = $('input[name^="{/literal}{$propName}{literal}Deleted"][value="true"]').length > 0;
+				if (hasDeleted) {
+					return 'You have pending deletions that have not been saved.';
+				}
+			});
+		});
 		{/literal}
 	</script>
 	{if $propName == "translationMapValues"}
