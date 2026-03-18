@@ -813,13 +813,13 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * @param array $orderedListOfIDs  Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
-	 * @return array
+	 * Get an array of list widget titles, optionally ordered by a provided list of IDs.
+	 * @param array $orderedListOfIDs The order the titles should be sorted into (for later merging)
+ * @return array
 	 */
-	public function getListWidgetTitles($orderedListOfIDs = array()){
-		$widgetTitles = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+	public function getListWidgetTitles(array $orderedListOfIDs = []){
+		$widgetTitles = [];
+		foreach ($this->indexResult['response']['docs'] as &$current) {
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)){
 				if (method_exists($record, 'getListWidgetTitle')){
@@ -835,7 +835,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					$widgetTitles[] = 'List Widget Title not available';
 				}
 			}else{
-				$widgetTitles[] = "Unable to find record";
+				$widgetTitles[] = 'Unable to find record';
 			}
 		}
 		return $widgetTitles;

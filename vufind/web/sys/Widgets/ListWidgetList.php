@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -114,6 +113,11 @@ class ListWidgetList extends DB_DataObject {
 		return null;
 	}
 
+	/**
+	 * Get the full link for the current list widget.
+	 * This is called on listWidgetTabs.tpl template.
+	 * @return string
+	 */
 	function fullListLink(){
 		require_once ROOT_DIR . '/services/API/ListAPI.php';
 		$listAPI   = new ListAPI();
