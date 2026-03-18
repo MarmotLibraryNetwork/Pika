@@ -49,8 +49,15 @@ class CompoundObjectObject extends I2Object
 
         // Build children from raw node data
         $children = [];
-        foreach($this->children as $child) {
-            $nid = $child['nid'];
+        $rawChildren = $this->children;
+        if (!is_array($rawChildren)) {
+            return [];
+        }
+        foreach($rawChildren as $child) {
+            $nid = $child['nid'] ?? null;
+            if (!is_numeric($nid) || $nid <= 0) {
+                continue;
+            }
             $mediaObject = new I2ObjectFactory()->fromNodeId($nid);
             if($mediaObject) {
                 $children[] = $mediaObject;

@@ -28,12 +28,12 @@ function getObjRelativeUrl(I2Object $obj): string
     if ($obj->getNodeId() <= 0) {
         return '#';
     }
-    $displayModel = strtolower($obj->getDisplayModel());
+    $displayModel = strtolower($obj->getDisplayModel() ?? '');
     if (array_key_exists($displayModel, Islandora2Driver::DISPLAY_MODEL_URL_MAP)) {
         $displayModel = Islandora2Driver::DISPLAY_MODEL_URL_MAP[$displayModel];
     }
 
-    return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->nid);
+    return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->getNodeId());
 }
 
 function getObjAbsoluteUrl(I2Object $obj)

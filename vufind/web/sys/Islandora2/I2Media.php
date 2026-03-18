@@ -45,7 +45,7 @@ class I2Media
     public string $thumbnailMime = '';
     public string $langName = '';
     public string $langCode = '';
-    public int $created;
+    public int $created = 0;
 
     /**
       * @param array       $media   Islandora media extracted from JSON.

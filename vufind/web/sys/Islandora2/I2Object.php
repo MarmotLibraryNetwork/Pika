@@ -75,17 +75,6 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Allow subclasses to perform light-weight normalisation before storage.
-     *
-     * @param array $node
-     * @return array
-     */
-    protected function normalizeNode(array $node): array
-    {
-        return $node;
-    }
-
-    /**
      * Retrieve the stored Islandora node payload.
      *
      * @param bool $withoutFieldPrefix When true (default) removes leading "field_" prefixes.
@@ -373,7 +362,7 @@ abstract class I2Object implements MediaObjectInterface
      * @param I2Media[] $mediaItems
      * @return I2Media[]
      */
-    public function sortMediaByCreatedDate(array $mediaItems): array
+    protected function sortMediaByCreatedDate(array $mediaItems): array
     {
         usort($mediaItems, static function (I2Media $a, I2Media $b): int {
             return $b->created <=> $a->created;
@@ -388,7 +377,7 @@ abstract class I2Object implements MediaObjectInterface
      * @return array 
      */
     private function loadMedia():array {
-        $rawMedia = $this->nodeWithoutFieldPrefix['media'];
+        $rawMedia = $this->nodeWithoutFieldPrefix['media'] ?? [];
         $media = [];
         foreach($rawMedia as $m) {
             $media[] = new I2Media($m);
@@ -405,10 +394,14 @@ abstract class I2Object implements MediaObjectInterface
      */
     protected static function getObjectModelFromNode(array $node): ?string
     {
-        if(array_key_exists('tid', $node['field_model'])) {
-            return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
-        } elseif (array_key_exists('tid', $node['field_model'][0])){
-            return isset($node['field_model'][0]['name']) ? strtolower($node['field_model'][0]['name']) : null;
+        $fieldModel = $node['field_model'] ?? null;
+        if (!is_array($fieldModel)) {
+            return null;
+        }
+        if (array_key_exists('tid', $fieldModel)) {
+            return isset($fieldModel['name']) ? strtolower($fieldModel['name']) : null;
+        } elseif (isset($fieldModel[0]) && is_array($fieldModel[0]) && array_key_exists('tid', $fieldModel[0])) {
+            return isset($fieldModel[0]['name']) ? strtolower($fieldModel[0]['name']) : null;
         }
         return null;
     }

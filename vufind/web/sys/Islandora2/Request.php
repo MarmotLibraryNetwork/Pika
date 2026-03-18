@@ -27,7 +27,7 @@ class Request
     private $api_url;
     private $logger;
     protected ?int $nodeId;
-		private $userAgent;
+    private $userAgent;
 
     public function __construct($nodeId = null)
     {
@@ -38,7 +38,7 @@ class Request
         $this->logger = new Logger(__CLASS__);
         $baseUrl = $configArray['Islandora2']['url'] ?? '';
         $this->api_url = $baseUrl ? rtrim($baseUrl, '/') . '/pika-json/node/' : '';
-				$this->userAgent = $configArray['Islandora2']['userAgent'];
+	        $this->userAgent = $configArray['Islandora2']['userAgent'] ?? '';
     }
 
     /**
@@ -52,9 +52,6 @@ class Request
         if (!$nodeId) {
             $nodeId = $this->nodeId;
         }
-        if ($nodeId !== $this->nodeId) {
-            $this->nodeId = $nodeId;
-        }
         if ($nodeId <= 0) {
             $this->logger->warning('Attempted to fetch Islandora node with invalid id.', ['nodeId' => $nodeId]);
             return null;
@@ -65,13 +62,12 @@ class Request
             return null;
         }
 
-        $url       = $this->api_url . $nodeId;
-        $curl      = new Curl();
-        $response  = null;
+        $url  = $this->api_url . $nodeId;
+        $curl = new Curl();
         $curl->setUserAgent($this->userAgent);
-        
+
         try {
-            $response = $curl->get($url);
+            $body = $curl->get($url);
             /* Error checks */
             if ($curl->isCurlError()) {
                 $this->logger->error('Curl error while fetching Islandora node.', [
@@ -100,23 +96,6 @@ class Request
                 return null;
             }
             
-            /* Load the JSON payload */
-            $body = null;
-            
-            $body = $curl->response;
-
-            if ($body === null) {
-                $body = $curl->getResponse();
-            }
-
-            if ($body === null) {
-                $body = $curl->getRawResponse();
-            }
-
-            if ($body === null && $response !== null) {
-                $body = $response;
-            }
-
             $rawStringBody = is_string($body) ? $body : $curl->getRawResponse();
             if (!$this->validateContentLength($curl, $rawStringBody, (int)$nodeId)) {
                 return null;
@@ -207,9 +186,9 @@ class Request
 
         $headers = $curl->getResponseHeaders();
 
-        // if (!is_array($headers)) {
-        //     return null;
-        // }
+        if (!is_array($headers)) {
+            return null;
+        }
 
         foreach ($headers as $name => $value) {
             if (strcasecmp((string)$name, 'Content-Length') !== 0) {

@@ -32,6 +32,7 @@ require_once ROOT_DIR . '/sys/Islandora2/DigitalDocumentObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/ImageObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/NewspaperObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/PagedContentObject.php';
+require_once ROOT_DIR . '/sys/Islandora2/PageObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/PublicationIssueObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/VideoObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/Request.php';
@@ -162,6 +163,18 @@ class I2ObjectFactory
     public static function unregisterType(string $key): void
     {
         unset(self::$registry[$key]);
+    }
+
+    /**
+     * Reset the factory to an unbootstrapped state.
+     *
+     * Clears the type registry and the bootstrapped flag so that the next
+     * instantiation re-runs bootstrap(). Intended for use in tests only.
+     */
+    public static function resetBootstrap(): void
+    {
+        self::$registry     = [];
+        self::$bootstrapped = false;
     }
 
     /**
