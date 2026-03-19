@@ -1,14 +1,15 @@
 {* Add Google Analytics*}
-
+{*NOTE: OBSOLETE NOW*}
 <!-- Respect browser do not track setting -->
-<script>var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;</script>
+{*<script>var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;</script>*}
 
-{if $archivePage}
+{*{if $archivePage}*}
 	{*
 	* Archive specific tracking code
 	* Track analytics for custom dimensions related to the Marmot Archive.
 	* Send analytics to both archive GA account and library specific GA account
 	*}
+{*
 {literal}
 	<!-- Google Analytics -->
 <script>
@@ -31,7 +32,9 @@
 </script>{/literal}
 	<!-- End Google Analytics -->
 {else}
+
 	{if $googleAnalyticsId}
+*}
 	{* OPAC and Library specific tracking code
 	Besides standard page tracking included is:
 	* Browse catagory click tracking
@@ -41,6 +44,7 @@
 			* The first sends title and format
 			* The second sends title and grouped work ID
 	*}
+{*
 	{literal}
 <script>
 	// Track a browse category title click
@@ -107,7 +111,9 @@
 		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 		ga('create', '{/literal}{$googleAnalyticsId}{literal}', 'auto', 'opacTracker');{/literal}
-		{if $googleAnalyticsLibraryId} {* Library tracking code *}{literal}
+		{if $googleAnalyticsLibraryId} *}
+{* Library tracking code *}{*
+{literal}
 		ga('create', '{/literal}{$googleAnalyticsLibraryId}{literal}', 'auto', 'libraryTracker');
 		ga('libraryTracker.set', 'dimension1', {/literal}'{$pType}'{literal}); // Patron Type
 		ga('libraryTracker.set', 'dimension2', {/literal}'{$homeLibrary}'{literal}); // Home Library
@@ -126,4 +132,4 @@
 </script>{/literal}
 
 	{/if}
-{/if}
+{/if}*}

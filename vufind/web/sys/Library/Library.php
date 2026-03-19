@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -120,7 +120,7 @@ class Library extends DB_DataObject {
 	public $hooplaLibraryID;
 
 	/* GOOGLE ANALYTICS */
-	public $gaTrackingId;
+//	public $gaTrackingId;
 
 	/* USER PROFILE */
 	public $showPatronBarcodeImage;
@@ -1076,14 +1076,14 @@ class Library extends DB_DataObject {
 				],
 			],
 
-			'googleAnalyticsSection' => [
+/*			'googleAnalyticsSection' => [
 				'property'   => 'googleAnalyticsSection', 'type' => 'section', 'label' => 'Google Analytics', 'hideInLists' => true,
 				// TODO: Add documentation link.
 				//'helpLink'   => '',
 				'properties' => [
 					'gaTrackingId' => ['property' => 'gaTrackingId', 'type' => 'text', 'label' => 'Tracking ID', 'description' => 'For use with library GA account.', 'hideInLists' => true, 'default' => ''],
 				],
-			],
+			],*/
 
 			'NewspaperAuthenticationSection' => [
 				'property'   => 'NewspaperAuthenticationSection', 'type' => 'section', 'label' => 'Newspaper Authentication', 'hideInLists' => true,
@@ -1213,7 +1213,7 @@ class Library extends DB_DataObject {
 			unset($structure['hooplaSection']);
 			unset($structure['casSection']);
 			unset($structure['interLibraryLoanSection']);
-			unset($structure['googleAnalyticsSection']);
+//			unset($structure['googleAnalyticsSection']);
 		}
 		return $structure;
 	}
