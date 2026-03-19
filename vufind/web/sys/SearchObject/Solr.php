@@ -23,7 +23,7 @@ require_once ROOT_DIR . '/RecordDrivers/Factory.php';
  * Search Object class
  *
  * This is the default implementation of the SearchObjectBase class, providing the
- * Solr-driven functionality used by VuFind's standard Search module.
+ * Solr-driven functionality used by Pika's standard Search module.
  */
 class SearchObject_Solr extends SearchObject_Base {
 	// Publicly viewable version
@@ -127,13 +127,14 @@ class SearchObject_Solr extends SearchObject_Base {
 		if (isset($searchSettings['General']['default_view'])){
 			$this->defaultView = $searchSettings['General']['default_view'];
 		}
+/* Both of the settings appear to be orphaned
 		if (isset($searchSettings['General']['default_limit'])){
 			$this->defaultLimit = $searchSettings['General']['default_limit'];
 		}
 		if (isset($searchSettings['General']['retain_filters_by_default'])){
 			$this->retainFiltersByDefault
 				= $searchSettings['General']['retain_filters_by_default'];
-		}
+		}*/
 		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])){
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
