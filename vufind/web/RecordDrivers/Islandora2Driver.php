@@ -19,6 +19,7 @@
 
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Islandora2\I2Object;
 use Islandora2\I2ObjectFactory;
@@ -41,17 +42,6 @@ class Islandora2Driver extends RecordInterface
     private int $nodeId = 0;
     private ?I2Object $i2Object = null;
     private bool $i2ObjectLoaded = false;
-
-	public const DISPLAY_MODEL_URL_MAP = [
-        'audio' => 'Audio',
-        'book' => 'Book',
-        'compound object' => 'Compound',
-        'digital document' => 'DigitalDocument',
-        'image' => 'Image',
-        'paged content' => 'PagedContent',
-        'postcard' => 'Postcard',
-        'video' => 'Video',
-    ];
 
     /**
      * @param int|string|array $recordData
@@ -283,9 +273,7 @@ class Islandora2Driver extends RecordInterface
             return '#';
         }
 		$displayModel = strtolower($obj->getDisplayModel());
-		if(array_key_exists($displayModel, self::DISPLAY_MODEL_URL_MAP)) {
-			$displayModel = self::DISPLAY_MODEL_URL_MAP[$displayModel];
-		}
+		$displayModel = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
 
         return '/Archive2/' . $displayModel . '/' . urlencode((string)$this->nodeId);
     }

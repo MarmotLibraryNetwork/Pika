@@ -17,21 +17,46 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/TaxonomyObjectInterface.php';
 
 use Islandora2\I2Object;
+use Islandora2\TaxonomyObjectInterface;
+
+/**
+ * Maps Islandora 2 display model names (lower-cased) to their Archive2 URL action segments.
+ * Used by getObjRelativeUrl() and any controller that builds object links.
+ */
+const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
+    'audio'            => 'Audio',
+    'book'             => 'Book',
+    'compound object'  => 'Compound',
+    'digital document' => 'DigitalDocument',
+    'image'            => 'Image',
+    'paged content'    => 'PagedContent',
+    'postcard'         => 'Postcard',
+    'video'            => 'Video',
+];
+
+/**
+ * Maps taxonomy vocabulary machine names to their Archive2 URL action segments.
+ * Used by getTaxonomyRelativeUrl() and any controller that builds taxonomy links.
+ */
+const ISLANDORA2_VOCAB_URL_MAP = [
+    'person'         => 'Person',
+    'corporate_body' => 'Organization',
+    'geo_location'   => 'Place',
+    'event'          => 'Event',
+];
 
 function getObjRelativeUrl(I2Object $obj): string
 {
-    
     if ($obj->getNodeId() <= 0) {
         return '#';
     }
+
     $displayModel = strtolower($obj->getDisplayModel() ?? '');
-    if (array_key_exists($displayModel, Islandora2Driver::DISPLAY_MODEL_URL_MAP)) {
-        $displayModel = Islandora2Driver::DISPLAY_MODEL_URL_MAP[$displayModel];
-    }
+    $displayModel = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
 
     return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->getNodeId());
 }
