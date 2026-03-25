@@ -23,7 +23,7 @@
 						<th style="min-width: 80px;">{translate text='Date'}</th>
 						<th>{translate text='Title'}</th>
 						<th>{translate text='Author'}</th>
-						<th style="min-width: 130px;">{translate text='Star Rating'}</th>
+						<th style="min-width: 130px; white-space: nowrap;">{translate text='Star Rating'}</th>
 						<th>&nbsp;</th>
 					</tr>
 					</thead>
@@ -43,7 +43,7 @@
 							<td class="myAccountCell">
 								{$rating.author}
 							</td>
-							<td class="myAccountCell">
+							<td class="myAccountCell" style="white-space: nowrap;">
 								{* include file='GroupedWork/title-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData *}
 								<div class="title-rating"
 								     data-user_rating="{$rating.ratingData.user}"
@@ -53,7 +53,7 @@
 								>
 									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData ratingTitle=$rating.title}
 								</div>
-								<p>{$rating.review}</p>
+								<p style="white-space: normal">{$rating.review}</p>
 							</td>
 							<td>
 								<span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</span>
