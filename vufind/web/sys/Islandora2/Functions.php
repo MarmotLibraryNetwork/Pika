@@ -75,3 +75,27 @@ function getObjAbsoluteUrl(I2Object $obj)
     return rtrim($baseUrl, '/') . getObjRelativeUrl($obj);
 }
 
+/**
+ * Return the relative display URL for an Islandora 2 taxonomy term.
+ *
+ * Maps vocabulary machine names to their Archive2 action segment:
+ *   person           → /Archive2/Person
+ *   corporate_body   → /Archive2/Organization
+ *   geo_location     → /Archive2/Location
+ *   event            → /Archive2/Event
+ *
+ * @param TaxonomyObjectInterface $term
+ * @return string  Relative URL, or '#' when the term has no valid ID.
+ */
+function getTaxonomyRelativeUrl(TaxonomyObjectInterface $term): string
+{
+    $tid = $term->getTid();
+    if (!$tid || $tid <= 0) {
+        return '#';
+    }
+
+    $vocab   = strtolower($term->getVocabularyMachineName() ?? '');
+    $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'TaxonomyTerm';
+
+    return '/Archive2/' . $segment . '?tid=' . urlencode((string)$tid);
+}
