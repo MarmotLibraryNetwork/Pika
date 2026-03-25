@@ -417,7 +417,7 @@ class Islandora2Driver extends RecordInterface
         return [];
     }
 
-    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $relatedUrls = null)
+    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null)
     {
         return [];
     }
