@@ -106,8 +106,8 @@ class I2ObjectFactory
             return null;
         }
 
-        $request = new Request($nodeId);
-        $node = $request->fetch();
+        $request = new Request();
+        $node = $request->fetch('node', $nodeId);
 
         if ($node === null) {
             $this->logger->warning('Failed to fetch Islandora 2 node for factory.', ['nodeId' => $nodeId]);
