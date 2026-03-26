@@ -143,7 +143,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         $candidates = [
             //$this->rawTerm['field_person_notes'] ?? null,
             $this->rawTerm['field_description'] ?? null,
-            //$this->rawTerm['description'] ?? null,
+            $this->rawTerm['description'] ?? null,
         ];
 
         foreach ($candidates as $candidate) {
