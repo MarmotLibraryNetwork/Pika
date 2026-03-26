@@ -73,11 +73,15 @@ class TaxonomyObject extends \Action
     public function launch()
     {
         global $interface;
+        global $configArray;
 
         if ($this->taxonomyObject === null) {
             $this->logger->error('Attempted to launch taxonomy page with null taxonomyObject.');
             return;
         }
+
+        // Maps key
+        $mapsKey = $configArray['Maps']['apiKey'] ?? '';
 
         // Expose all term fields (with field_ prefix stripped) to templates.
         $termData = $this->taxonomyObject->getTermWithoutFieldPrefix();
@@ -98,6 +102,7 @@ class TaxonomyObject extends \Action
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
         $interface->assign('archivePage',            true);
         $interface->assign('relatedObjects',         $this->loadRelatedObjects());
+        $interface->assign('maps_key',               $mapsKey);
     }
 
     /**
