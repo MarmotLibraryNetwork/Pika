@@ -14,7 +14,7 @@
 					{include file="Archive2/partials/fieldRow.tpl" label="Legacy PID"      value=$pid}
 					{include file="Archive2/partials/fieldRow.tpl" label="Owner"           value=$owner_id}
 					{include file="Archive2/partials/fieldRow.tpl" label="Language Code"   value=$langcode}
-					{include file="Archive2/partials/fieldRow.tpl" label="Status"          value=$status}
+					{include file="Archive2/partials/fieldRow.tpl" label="Published"       value=$status}
 					{include file="Archive2/partials/fieldRow.tpl" label="Last Modified"   value=$changed}
 				</div>
 			</div>
