@@ -143,4 +143,7 @@
 
 		</div>
 	</div>
+	{include file="Archive2/taxonomy_related_objects.tpl"}
+
+	{include file="Archive2/taxonomy_metadata.tpl"}
 {/strip}
