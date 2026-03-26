@@ -91,16 +91,24 @@ class PersonTaxonomy extends I2Taxonomy
         return $this->termWithoutFieldPrefix['race_ethnicity'] ?? null;
     }
 
-    /** Military branch of service (field_military_branch). */
+    /** Military branch of service name (field_military_branch). */
     public function getMilitaryBranch(): ?string
     {
-        return $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
-    /** Military conflict or war (field_military_conflict). */
+    /** Military conflict or war name (field_military_conflict). */
     public function getMilitaryConflict(): ?string
     {
-        return $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
     /** Military rank (field_military_rank). */
