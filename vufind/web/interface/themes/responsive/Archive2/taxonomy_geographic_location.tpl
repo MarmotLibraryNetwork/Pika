@@ -109,6 +109,22 @@
 					</div>
 				</div>
 			{/if}
+			{if $notes}
+				<div class="panel active" id="geoNotesPanel">
+					<a data-toggle="collapse" href="#geoNotesPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Notes</h2>
+						</div>
+					</a>
+					<div id="geoNotesPanelBody" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-sm-12">{$notes}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{/if}
 
 			{if $related_place}
 				<div class="panel" id="geoRelatedPlacePanel">
