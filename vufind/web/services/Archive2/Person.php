@@ -89,6 +89,6 @@ class Person extends TaxonomyObject
         $interface->assign('taxonomy_type_template', 'taxonomy_person');
 
         $title = $this->taxonomyObject->getTitle();
-        parent::display('taxonomy_wrapper.tpl', $title);
+        parent::display('taxonomy_person.tpl', $title);
     }
 }
