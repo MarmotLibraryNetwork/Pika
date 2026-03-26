@@ -49,7 +49,8 @@ class SearchAPI extends AJAXHandler {
 	const LAST_EXTRACT_INTERVAL_CRITICAL      = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
-	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)
+	const SOLR_RESTART_INTERVAL_WARN_PRODUCTION = 86400;  // 24 Hours (in seconds)
+	const SOLR_RESTART_INTERVAL_WARN_TEST     = 172800; // 48 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_CRITICAL      = 172800; // 48 Hours (in seconds)
 	const OVERDRIVE_DELETED_ITEMS_WARN        = 300;
 	const OVERDRIVE_DELETED_ITEMS_CRITICAL    = 1000;
@@ -110,7 +111,7 @@ class SearchAPI extends AJAXHandler {
 					$fullIndexCriticalInterval = $fullIndexCriticalIntervalVar->value;
 				}
 				$status[] = ($lastFullIndexVariable->value < ($currentTime - $fullIndexCriticalInterval)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-				$notes[]  = 'Full Index last finished ' . date('m-d-Y H:i:s', $lastFullIndexVariable->value) . ' - ' . round(($currentTime - $lastFullIndexVariable->value) / 3600, 2) . ' hours ago';
+				$notes[]  = 'Full Index last finished ' . date('m-d-Y H:i', $lastFullIndexVariable->value) . ' - ' . round(($currentTime - $lastFullIndexVariable->value) / 3600, 2) . ' hours ago';
 			}
 		}else{
 			$status[]              = self::STATUS_WARN;
@@ -302,12 +303,21 @@ class SearchAPI extends AJAXHandler {
 				$data = json_decode($json, true);
 
 				// Solr Restart Checks
+				$isProduction = (bool) $configArray['Site']['isProduction'];
 				$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
 				$solrStartTime = strtotime($data['status']['grouped']['startTime']);
-				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
-					//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'Solr Index last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+				if ($isProduction){
+					if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN_PRODUCTION){ // Grouped Index
+						//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$status[] = self::STATUS_WARN;
+						$notes[]  = 'Solr Searcher Core last restarted ' . date('m-d-Y H:i', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+					}
+				}else{
+					if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN_TEST){ // Grouped Index
+						//$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+						$status[] = self::STATUS_WARN;
+						$notes[]  = 'Solr Searcher Core last restarted ' . date('m-d-Y H:i', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
+					}
 				}
 
 				// Solr Level Check
