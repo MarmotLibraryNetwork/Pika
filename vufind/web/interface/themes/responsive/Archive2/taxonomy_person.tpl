@@ -35,7 +35,7 @@
 			</div>
 		</div>
 	{/if}
-	<br>
+	
 	<div class="taxonomy-detail taxonomy-person">
 		<div id="person-detail-accordion" class="panel-group">
 
@@ -55,7 +55,34 @@
 					</div>
 				</div>
 			{/if}
-
+			{if $obituaries}
+				<div class="panel active" id="personObituariesPanel">
+					<a data-toggle="collapse" href="#personObituariesPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Obituaries</h2>
+						</div>
+					</a>
+					<div id="personObituariesPanelBody" class="panel-collapse collapse in">
+						<div class="panel-body">
+							{foreach from=$obituaries item=obituary}
+								<p class="obituaryTitle">
+									{$obituary->source}{if $obituary->sourcePage} page {$obituary->sourcePage}{/if}{if $obituary->formattedObitDate()} - {$obituary->formattedObitDate()}{/if}
+								</p>
+								{if $obituary->picture}
+									<p class="obituaryPicture">
+										<a href="{$obituary->getImageUrl('large')}"><img class="obitPicture" src="{$obituary->getImageUrl('medium')}" alt="Image of Obituary Text"></a>
+									</p>
+									<div class="clearer"></div>
+								{/if}
+								{if $obituary->contents}
+									<p class="obituaryText">{$obituary->contents|escape|replace:"\r":"<br>"}</p>
+									<div class="clearer"></div>
+								{/if}
+							{/foreach}
+						</div>
+					</div>
+				</div>
+			{/if}
 			{if $military}
 				<div class="panel" id="personMilitaryPanel">
 					<a data-toggle="collapse" href="#personMilitaryPanelBody">
@@ -120,6 +147,7 @@
 					</div>
 				</div>
 			{/if}
+
 		</div>
 	</div>
 	{include file="Archive2/taxonomy_related_objects.tpl"}

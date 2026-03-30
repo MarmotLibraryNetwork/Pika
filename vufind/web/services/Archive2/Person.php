@@ -84,11 +84,41 @@ class Person extends TaxonomyObject
 
         $interface->assign('related_place', $person->getRelatedPlace());
 
+        // Obituary data from the Genealogy database, linked via field_genealogy_link
+        $interface->assign('obituaries', $this->loadObituaries($person));
+
         parent::launch();
 
         $interface->assign('taxonomy_type_template', 'taxonomy_person');
 
         $title = $this->taxonomyObject->getTitle();
         parent::display('taxonomy_person.tpl', $title);
+    }
+
+    /**
+     * Load obituaries for this person from the Genealogy database.
+     *
+     * Looks up the Genealogy personId via field_genealogy_link on the taxonomy
+     * term, then fetches all Obituary records for that person.
+     *
+     * @param PersonTaxonomy $person
+     * @return \Obituary[]|null  Array of Obituary objects, or null when no link exists.
+     */
+    private function loadObituaries(PersonTaxonomy $person): ?array
+    {
+        $personId = $person->getGenealogyPersonId();
+        if (!$personId) {
+            return null;
+        }
+
+        require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+        $genealogyPerson           = new \Person();
+        $genealogyPerson->personId = $personId;
+        if (!$genealogyPerson->find(true)) {
+            return null;
+        }
+
+        $obituaries = $genealogyPerson->obituaries;
+        return !empty($obituaries) ? $obituaries : null;
     }
 }
