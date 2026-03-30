@@ -204,6 +204,34 @@ class PersonTaxonomy extends I2Taxonomy
     }
 
     /**
+     * Extract the Genealogy person ID from field_genealogy_link.
+     *
+     * The field value is expected to be a URL matching the pattern used by
+     * the old Islandora 1 marmotGenealogy linked-data type, e.g.:
+     *   https://pika.example.org/Person/Home?personId=42
+     * or the archive format:
+     *   https://pika.example.org/Person/42
+     *
+     * Returns the integer personId, or null when the field is absent or
+     * the URL cannot be parsed.
+     *
+     * @return int|null
+     */
+    public function getGenealogyPersonId(): ?int
+    {
+        $raw = $this->rawTerm['field_genealogy_link'] ?? null;
+        if (empty($raw)) {
+            return null;
+        }
+        $url = is_array($raw) ? ($raw['uri'] ?? $raw['url'] ?? '') : (string)$raw;
+        // Match /Person/<digits> or personId=<digits>
+        if (preg_match('/[\/=](\d+)\/?$/', $url, $m)) {
+            return (int)$m[1];
+        }
+        return null;
+    }
+
+    /**
      * Normalize a related taxonomy term reference to a consistent array shape.
      *
      * @param mixed $raw Raw value from $termWithoutFieldPrefix.
