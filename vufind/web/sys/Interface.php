@@ -338,6 +338,7 @@ class UInterface extends Smarty {
     }
 
     //Set up google maps integrations
+		//TODO: apiKey and browserKey can be consolidated
     if (!empty($configArray['Maps']['apiKey'])){
       $mapsKey = $configArray['Maps']['apiKey'];
       $this->assign('mapsKey', $mapsKey);
