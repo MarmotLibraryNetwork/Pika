@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,12 +27,13 @@ require_once ROOT_DIR . '/sys/Location/Location.php';
  * Solr-driven functionality used by VuFind's standard Search module.
  */
 class SearchObject_Genealogy extends SearchObject_Base {
+	protected string $searchIni = 'genealogySearches';
+	protected string $searchSource = 'genealogy';
 	// Publicly viewable version
 	private $publicQuery = null;
+
 	// Facets
-	private $facetLimit = 30;
 	private $facetOffset = null;
-	private $facetPrefix = null;
 	private $facetSort = null;
 
 	// Index
@@ -43,29 +43,15 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	// HTTP Method
 	private $method = 'GET';
 //	private $method = 'POST';
-	// Result
-	private $indexResult;
 
 	// OTHER VARIABLES
-	// Index
-	/** @var Solr */
-	private $indexEngine = null;
-	// Facets information
-	private $allFacetSettings = [];    // loaded from facets.ini
-
-	// Spelling
-	private $spellingLimit = 3;
-	private $spellQuery = [];
-	private $dictionary = 'default';
-	private $spellSimple = false;
-	private $spellSkipNumeric = true;
 
 	// In each class, set the specific range filters based on the Search Object
 	protected $rangeFilters = [];
 	protected $dateFilters = ['birthYear', 'deathYear'];
 
 	/**
-	 * Constructor. Initialise some details about the server
+	 * Constructor. Initialize some details about the server
 	 *
 	 * @access  public
 	 */
@@ -78,9 +64,9 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		$this->searchType      = 'genealogy';
 		$this->basicSearchType = 'genealogy';
-		$this->searchSource    = 'genealogy'; // This is required so that saved genealogy searches can be restored with the correct source
+		//$this->searchSource    = 'genealogy'; // This is required so that saved genealogy searches can be restored with the correct source
 
-		// Initialise the index
+		// Initialize the index
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
 		require_once ROOT_DIR . "/sys/Search/$class.php";
@@ -90,17 +76,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
 		$this->facetConfig      = [];
-		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)){
-			$this->facetLimit = $facetLimit;
-		}
+
+		$this->initFacetLimit();
+
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
 		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
 		}
 
-		// Load search preferences:
-		$searchSettings     = getExtraConfigArray('genealogySearches');
+		// Load search preferences
+		$searchSettings     = getExtraConfigArray($this->searchIni);
 		$this->defaultIndex = 'GenealogyKeyword';
 		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
@@ -132,29 +117,28 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$this->spellcheck       = $configArray['Spelling']['enabled'];
 		$this->spellingLimit    = $configArray['Spelling']['limit'];
 		$this->spellSimple      = $configArray['Spelling']['simple'];
-		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-			$configArray['Spelling']['skip_numeric'] : true;
+		$this->spellSkipNumeric = $configArray['Spelling']['skip_numeric'] ?? true;
 
 		// Debugging
 		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
-		$this->recommendIni = 'genealogySearches';
+		$this->recommendIni = $this->searchIni;
 
 
 		$timer->logTime('Setup Solr Search Object');
 	}
 
 	/**
-	 * Initialise the object from the global
+	 * Initialize the object from the global
 	 *  search parameters in $_REQUEST.
 	 *
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init($searchSource = 'genealogy'){
+	public function init($searchSource = null){
 		// Call the standard initialization routine in the parent:
-		parent::init('genealogy');
+		parent::init($searchSource);
 
 		//********************
 		// Check if we have a saved search to restore -- if restored successfully,
@@ -189,7 +173,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	} // End init()
 
 	/**
-	 * Initialise the object for retrieving advanced
+	 * Initialize the object for retrieving advanced
 	 *   search screen facet data from inside solr.
 	 *
 	 * @access  public
@@ -201,11 +185,8 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		//********************
 		// Adjust facet options to use advanced settings
-		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : [];
-		$facetLimit        = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)){
-			$this->facetLimit = $facetLimit;
-		}
+		$this->facetConfig = $this->allFacetSettings['Advanced'] ?? [];
+		$this->initFacetLimit('Advanced_Settings');
 
 		// Spellcheck is not needed for facet data!
 		$this->spellcheck = false;
@@ -218,26 +199,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		];
 
 		return true;
-	}
-
-	/**
-	 * Return the specified setting from the facets.ini file.
-	 *
-	 * @access  public
-	 * @param string $section The section of the facets.ini file to look at.
-	 * @param string $setting The setting within the specified file to return.
-	 * @return  string    The value of the setting (blank if none).
-	 */
-	public function getFacetSetting($section, $setting){
-		return isset($this->allFacetSettings[$section][$setting]) ?
-			$this->allFacetSettings[$section][$setting] : '';
-	}
-
-	public function getDebugTiming() {
-		if ($this->debug && isset($this->indexResult['debug'])){
-			return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
-		}
-		return null;
 	}
 
 	/**
@@ -262,14 +223,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 */
 	public function useBasicDictionary(){
 		$this->dictionary = 'basicSpell';
-	}
-
-	public function getQuery(){
-		return $this->query;
-	}
-
-	public function getIndexEngine(){
-		return $this->indexEngine;
 	}
 
 	/**
@@ -324,23 +277,16 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	}
 
 	/**
-	 * Set an overriding array of record IDs.
+	 * Set an search query of the Id field
 	 *
 	 * @access  public
 	 * @param array $ids Record IDs to load
 	 */
 	public function setQueryIDs($ids){
-		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
-	}
-
-	/**
-	 * Set an overriding string.
-	 *
-	 * @access  public
-	 * @param string $newQuery Query string
-	 */
-	public function setQueryString($newQuery){
-		$this->query = $newQuery;
+		$this->query = self::IDFIELD . ':(' . implode(' ', $ids) . ')';
+		//$this->query = 'id:(' . implode(' ', $ids) . ')';
+		// separating by a single space is the equivalent of adding explicit ORs
+		// because the default q.op is OR
 	}
 
 	/**
@@ -357,19 +303,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		if ($newSort == 'count' || $newSort == 'index'){
 			$this->facetSort = $newSort;
 		}
-	}
-
-	/**
-	 * Add a prefix to facet requirements. Serves to
-	 *    limits facet sets to smaller subsets.
-	 *
-	 *  eg. all facet data starting with 'R'
-	 *
-	 * @access  public
-	 * @param string $prefix Data for prefix
-	 */
-	public function addFacetPrefix($prefix){
-		$this->facetPrefix = $prefix;
 	}
 
 	/**
@@ -420,7 +353,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *   query used in the search (not the filters).
 	 *
 	 * @access  public
-	 * @return  string   user friendly version of 'query'
+	 * @return  string   user-friendly version of 'query'
 	 */
 	public function displayQuery(){
 		// Maybe this is a restored object...
@@ -464,17 +397,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// Base URL is different for author searches:
 //		return $this->serverUrl . '/Genealogy/Results?';
 		return $this->serverUrl . '/Union/Search?';
-	}
-
-	/**
-	 * Get error message from index response, if any.  This will only work if
-	 * processSearch was called with $returnIndexErrors set to true!
-	 *
-	 * @access  public
-	 * @return  mixed       false if no error, error string otherwise.
-	 */
-	public function getIndexError(){
-		return $this->indexResult['error'] ?? false;
 	}
 
 	/**
@@ -542,12 +464,14 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// Build a list of facets we want from the index
 		$facetSet = [];
 		if (!empty($this->facetConfig)){
-			$facetSet['limit'] = $this->facetLimit;
 			foreach ($this->facetConfig as $facetField => $facetName){
 				$facetSet['field'][] = $facetField;
 			}
 			if ($this->facetOffset != null){
 				$facetSet['offset'] = $this->facetOffset;
+			}
+			if ($this->facetLimit != null) {
+				$facetSet['limit'] = $this->facetLimit;
 			}
 			if ($this->facetPrefix != null){
 				$facetSet['prefix'] = $this->facetPrefix;
@@ -580,7 +504,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// Get time before the query
 		$this->startQueryTimer();
 
-		// The "relevance" sort option is a VuFind reserved word; we need to make
+		// The "relevance" sort option is a Pika reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
 
@@ -653,32 +577,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	}
 
 	/**
-	 * Adapt the search query to a spelling query
-	 *
-	 * @access  private
-	 * @return  string    Spelling query
-	 */
-	private function buildSpellingQuery(){
-		$this->spellQuery = [];
-
-		// Basic search
-		if ($this->searchType == $this->basicSearchType){
-			return $this->query; // Just the search query is fine
-
-			// Advanced search
-		}else{
-			foreach ($this->searchTerms as $search){
-				foreach ($search['group'] as $field){
-					// Add just the search terms to the list
-					$this->spellQuery[] = $field['lookfor'];
-				}
-			}
-			// Return the list put together as a string
-			return implode(' ', $this->spellQuery);
-		}
-	}
-
-	/**
 	 * Process spelling suggestions from the results object
 	 *
 	 * @access  private
@@ -728,7 +626,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 			// Make sure it has suggestions and is valid
 			if (count($newList) > 0 && $validTerm){
-				// Did we get more suggestions then our limit?
+				// Did we get more suggestions than our limit?
 				if ($count > $this->spellingLimit){
 					// Cut the list at the limit
 					array_splice($newList, $this->spellingLimit);
@@ -770,60 +668,10 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	}
 
 	/**
-	 * Try running spelling against the basic dictionary.
-	 *   This function should ensure it doesn't return
-	 *   single word suggestions that have been accounted
-	 *   for in the shingle suggestions above.
-	 *
-	 * @access  private
-	 * @return  array     Suggestions array
-	 */
-	private function basicSpelling(){
-		// TODO: There might be a way to run the search against both dictionaries from
-		//   inside solr. Investigate. Currently submitting a second search for this.
-
-		// Create a new search object
-		/** @var SearchObject_Genealogy $newSearch */
-		$newSearch = SearchObjectFactory::initSearchObject('Genealogy');
-		$newSearch->deminify($this->minify());
-
-		// Activate the basic dictionary
-		$newSearch->useBasicDictionary();
-		// We don't want it in the search history
-		$newSearch->disableLogging();
-
-		// Run the search
-		$newSearch->processSearch();
-		// Get the spelling results
-		$newList = $newSearch->getRawSuggestions();
-
-		// If there were no shingle suggestions
-		if (count($this->suggestions) == 0){
-			// Just use the basic ones as provided
-			$this->suggestions = $newList;
-
-			// Otherwise
-		}else{
-			// For all the new suggestions
-			foreach ($newList as $word => $data){
-				// Check the old suggestions
-				$found = false;
-				foreach ($this->suggestions as $k => $v){
-					// Make sure it wasn't part of a shingle which has been suggested at a higher level.
-					$found = preg_match("/\b$word\b/", $k) ? true : $found;
-				}
-				if (!$found){
-					$this->suggestions[$word] = $data;
-				}
-			}
-		}
-	}
-
-	/**
 	 * Process facets from the results object
 	 *
 	 * @access  public
-	 * @param array $filter Array of field => on-screen description
+	 * @param array|null $filter Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @param bool $expandingLinks If true, we will include expanding URLs
@@ -832,7 +680,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false){
+	public function getFacetList(array|null $filter = null, bool $expandingLinks = false) :array{
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)){
 			$filter = $this->facetConfig;
@@ -915,14 +763,14 @@ class SearchObject_Genealogy extends SearchObject_Base {
 			}
 
 			//How many facets should be shown by default
-			$list[$field]['valuesToShow'] = 5;
+			$list[$field]['valuesToShow'] = parent::NUM_FACET_VALUES_TO_SHOW;
 
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
-			$list[$field]['showAlphabetically'] = false;
-			if ($list[$field]['showAlphabetically']){
-				ksort($list[$field]['list']);
-			}
+//			$list[$field]['showAlphabetically'] = false;
+//			if ($list[$field]['showAlphabetically']){
+//				ksort($list[$field]['list']);
+//			}
 		}
 		return $list;
 	}
@@ -990,7 +838,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
 
-		if (count($this->filterList) > 0){
+		if ($this->hasAppliedFacets()){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
 		}else{
@@ -1118,11 +966,6 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$params = parent::getSearchParams();
 		$params[] = 'genealogyType=' . ($_REQUEST['genealogyType'] ?? 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
 		return $params;
-	}
-
-	public function setPrimarySearch($flag){
-		parent::setPrimarySearch($flag);
-		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
 	public function getNextPrevLinks(){

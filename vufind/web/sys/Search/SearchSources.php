@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -87,6 +87,7 @@ class SearchSources {
 			$searchGenealogy      = $library->enableGenealogy;
 			$repeatCourseReserves = $library->enableCourseReserves == 1;
 			$searchArchive        = $library->enableArchive == 1 && !empty($configArray['Islandora']['enabled']);
+			$searchArchive2       = $library->enableArchive == 1 && !empty($configArray['Islandora2']['enabled']);
 			// Enable archive search if the archive is enabled
 			//$searchEbsco = $library->edsApiProfile != '';
 			//TODO: Re-enable once we do full EDS integration
@@ -207,6 +208,14 @@ class SearchSources {
 				'name'        => 'Local Digital Archive',
 				'description' => 'Local Digital Archive in Colorado',
 				'catalogType' => 'islandora'
+			];
+		}
+
+		if ($searchArchive2){
+			$searchOptions['islandora2'] = [
+				'name'        => 'Marmot Digital Archive',
+				'description' => 'Marmot Digital Archive in Colorado',
+				'catalogType' => 'islandora2'
 			];
 		}
 
@@ -429,7 +438,7 @@ class SearchSources {
 			$arrayIndex = 0;
 		}else {
 			$arrayIndex = abs($sharedCollectionId) - 1;
-			// convert to positive number; subtract one to use an array index
+			// convert to a positive number; subtract one to use an array index
 		}
 		global $configArray;
 		$overDriveUrls = explode(',', $configArray['OverDrive']['url']);

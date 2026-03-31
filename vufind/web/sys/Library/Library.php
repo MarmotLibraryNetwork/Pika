@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,8 @@ require_once 'DB/DataObject.php';
 require_once ROOT_DIR . '/sys/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/sys/Library/LibraryFacetSetting.php';
-require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
+//require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchive2SearchFacetSetting.php';
 require_once ROOT_DIR . '/sys/Library/LibraryCombinedResultSection.php';
 require_once ROOT_DIR . '/sys/Library/LibraryMoreDetails.php';
 require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
@@ -357,7 +358,7 @@ class Library extends DB_DataObject {
 		unset($facetSettingStructure['showAsDropDown']);
 		//unset($facetSettingStructure['sortMode']);
 
-		$archiveSearchfacetSettingStructure = LibraryArchiveSearchFacetSetting::getObjectStructure();
+		$archiveSearchfacetSettingStructure = LibraryArchive2SearchFacetSetting::getObjectStructure();
 		unset($archiveSearchfacetSettingStructure['weight']);
 		unset($archiveSearchfacetSettingStructure['libraryId']);
 		unset($archiveSearchfacetSettingStructure['numEntriesToShowByDefault']);
@@ -956,7 +957,7 @@ class Library extends DB_DataObject {
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
 				'archivePid'                           => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
-				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide', 'description' => 'Specific collections to hide.', 'hideInLists' => true],
+				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],
 				'defaultArchiveCollectionBrowseMode'   => [
 					'property' => 'defaultArchiveCollectionBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Archive Collections (Exhibits)', 'description' => 'Sets how archive collections will be displayed by default when users haven\'t chosen a mode themselves.', 'hideInLists' => true,
@@ -1048,7 +1049,7 @@ class Library extends DB_DataObject {
 					//						'helpLink'                   => '',
 					'keyThis'                    => 'libraryId',
 					'keyOther'                   => 'libraryId',
-					'subObjectType'              => 'LibraryArchiveSearchFacetSetting',
+					'subObjectType'              => 'LibraryArchive2SearchFacetSetting',
 					'structure'                  => $archiveSearchfacetSettingStructure,
 					'sortable'                   => true,
 					'storeDb'                    => true,
@@ -1352,7 +1353,7 @@ class Library extends DB_DataObject {
 				return $this->facets;
 			case 'archiveSearchFacets':
 				if (!isset($this->archiveSearchFacets)){
-					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
+					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchive2SearchFacetSetting', 'weight');
 				}
 				return $this->archiveSearchFacets;
 			case 'libraryLinks':
@@ -1837,7 +1838,7 @@ class Library extends DB_DataObject {
 	}
 
 	public function clearArchiveSearchFacets(){
-		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting');
+		$this->clearOneToManyOptions('LibraryArchive2SearchFacetSetting');
 		$this->archiveSearchfacets = [];
 	}
 
@@ -2032,6 +2033,32 @@ class Library extends DB_DataObject {
 		return $defaultFacets;
 	}
 
+	/**
+	 * Build the default set of Islandora2 archive search facets for a library.
+	 *
+	 * Iterates over {@see LibraryArchive2SearchFacetSetting::$defaultFacetList},
+	 * creates a {@see LibraryArchive2SearchFacetSetting} side-facet object for each
+	 * entry, assigns it to the given library, and returns the ordered list.
+	 * Facets are collapsed by default and weighted sequentially starting at 1.
+	 *
+	 * @param  int   $libraryId  The libraryId to assign to each facet; -1 for none.
+	 * @return LibraryArchive2SearchFacetSetting[]  Ordered array of default facet objects.
+	 */
+	static function getDefaultArchive2SearchFacets($libraryId = -1){
+		$defaultFacets     = [];
+		$defaultFacetsList = LibraryArchive2SearchFacetSetting::$defaultFacetList;
+		foreach ($defaultFacetsList as $facetName => $facetDisplayName){
+			$facet = new LibraryArchive2SearchFacetSetting();
+			$facet->setupSideFacet($facetName, $facetDisplayName, false);
+			$facet->libraryId         = $libraryId;
+			$facet->collapseByDefault = true;
+			$facet->weight            = count($defaultFacets) + 1;
+			$defaultFacets[]          = $facet;
+		}
+
+		return $defaultFacets;
+	}
+
 	static function getDefaultArchiveSearchFacets($libraryId = -1){
 		$defaultFacets     = [];
 		$defaultFacetsList = LibraryArchiveSearchFacetSetting::$defaultFacetList;
@@ -2058,7 +2085,7 @@ class Library extends DB_DataObject {
 	}
 
 	/**
-	 * Return array of library names and ids to populate partner box
+	 * Return an array of library names and ids to populate the partner box
 	 * @return array
 	 */
 	public function getLibrariesForPartner(): array{

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,21 +32,24 @@ class SearchObjectFactory {
 	 * This constructs a search object for the specified engine.
 	 *
 	 * @access  public
-	 * @param   string  $engine     The type of SearchObject to build (Solr/Summon).
+	 * @param string $engine     The type of SearchObject to build (Solr/Summon).
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function initSearchObject($engine = 'Solr'){
+	static function initSearchObject(string $engine = 'Solr'): mixed{
 		$path =  ROOT_DIR . "/sys/SearchObject/$engine.php";
+		// Options: Solr, Genealogy, Islandora, Islandora2, UserListSolr, UserListIslandora, UserListIslandora2
 		if (is_readable($path)){
 			require_once $path;
 			$class = 'SearchObject_' . $engine;
 			if (class_exists($class)){
-				/** @var SearchObject_UserListIslandora|SearchObject_UserListSolr|SearchObject_Base|SearchObject_Solr|SearchObject_Genealogy|SearchObject_Islandora $searchObject */
+				/** @var SearchObject_UserListIslandora|SearchObject_UserListSolr|SearchObject_Base|SearchObject_Solr|SearchObject_Genealogy|SearchObject_Islandora|SearchObject_Islandora2 $searchObject */
 				$searchObject = new $class();
 				return $searchObject;
 			}
 		}
 
+		global $pikaLogger;
+		$pikaLogger->withName(__CLASS__)->error("Failed to initialize SearchObject class for engine $engine");
 		return false;
 	}
 
@@ -57,7 +59,7 @@ class SearchObjectFactory {
 	 * Construct an appropriate Search Object from a MinSO object.
 	 *
 	 * @access  public
-	 * @param   object  $minSO      The MinSO object to use as the base.
+	 * @param   minSO  $minSO      The MinSO object to use as the base.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
 	static function deminify($minSO){
@@ -68,6 +70,9 @@ class SearchObjectFactory {
 
 		// Figure out the engine type for the object we're about to construct:
 		switch ($minSO->ty){
+			case 'islandora2' :
+				$type = 'Islandora2';
+				break;
 			case 'islandora' :
 				$type = 'Islandora';
 				break;

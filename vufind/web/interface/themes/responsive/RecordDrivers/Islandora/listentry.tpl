@@ -47,6 +47,7 @@
 				{/if}
 
 				{if $listEntryNotes}
+					{* User List Notes*}
 					<div class="row">
 						<div class="result-label col-md-3">Notes: </div>
 						<div class="user-list-entry-note result-value col-md-9">

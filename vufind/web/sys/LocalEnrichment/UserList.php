@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -180,6 +179,7 @@ class UserList extends DB_DataObject {
 			}
 			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
+			//TODO: migration of user list archive entries
 			$listEntry->whereAdd(
 				'(' .
 				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
@@ -192,6 +192,7 @@ class UserList extends DB_DataObject {
 			if($listEntry->find()){
 				while ($listEntry->fetch()){
 					if (strpos($listEntry->groupedWorkPermanentId, ':') !== false){
+						//TODO: need a mechanism to distinguish archive Ids from the catalog ids
 						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
 					}else{
 						$catalogIDs[] = $listEntry->groupedWorkPermanentId;

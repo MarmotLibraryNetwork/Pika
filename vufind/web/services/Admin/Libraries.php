@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -257,18 +256,20 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function resetArchiveSearchFacetsToDefault(){
-		$library            = new Library();
-		$libraryId          = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearArchiveSearchFacets();
+		if (ctype_digit( $_REQUEST['id'])){
+			$libraryId          = $_REQUEST['id'];
+			$library            = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)){
+				$library->clearArchiveSearchFacets();
 
-			$defaultFacets = Library::getDefaultArchiveSearchFacets($libraryId);
+				$defaultFacets = Library::getDefaultArchive2SearchFacets($libraryId);
 
-			$library->archiveSearchFacets = $defaultFacets;
-			$library->update();
+				$library->archiveSearchFacets = $defaultFacets;
+				$library->update();
 
-			$_REQUEST['objectAction'] = 'edit';
+				$_REQUEST['objectAction'] = 'edit';
+			}
 		}
 		$this->navigateToLibraryPage($libraryId);
 	}

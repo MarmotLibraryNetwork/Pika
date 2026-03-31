@@ -220,7 +220,7 @@ class AJAX extends AJAXHandler {
 //		$searchSource = isset($searchParams['searchSource']) ? $searchParams['searchSource'] : 'local';
 		$searchSource = $_REQUEST['searchSource'] ?? 'local';
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);

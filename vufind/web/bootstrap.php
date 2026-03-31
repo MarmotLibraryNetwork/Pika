@@ -347,6 +347,10 @@ function loadSearchInformation(){
 			$searchSource = 'genealogy';
 		}elseif ($module == 'Archive'){
 			$searchSource = 'islandora';
+//			$searchSource = 'islandora2';
+		}elseif ($module == 'Archive2'){
+			//$searchSource = 'islandora';
+			$searchSource = 'islandora2';
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';
 		}else{
@@ -432,6 +436,7 @@ function enableErrorHandler(){
 	$errorHandlingEnabled = true;
 }
 
+//TODO: single use; remove and replace with the basic commands
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
 }
@@ -485,18 +490,22 @@ function vufind_autoloader($class) {
 			$className = ROOT_DIR . '/services/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Covers/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
+		}elseif (file_exists('sys/Archive2/' . $class . '.php')){
+			//TODO: these two blocks probably conflict with each other
+			$className = ROOT_DIR . '/sys/Archive2/' . $class . '.php';
+			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
-		    $className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
-		    require_once $className;
-        }elseif (file_exists('sys/Account/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Account/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/' . $nameSpaceClass)){
+			$className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Account/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Account/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{
 			try {

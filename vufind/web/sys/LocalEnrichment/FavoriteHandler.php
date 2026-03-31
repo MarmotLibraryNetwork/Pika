@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -209,7 +208,7 @@ class FavoriteHandler {
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
 			require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			if ($archiveSearchObject->pingServer(false)){
@@ -351,7 +350,7 @@ class FavoriteHandler {
 		// Catalog Search
 		$catalogResourceList = [];
 		if (count($this->catalogIds) > 0){
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_UserListSolr $catalogSearchObject */
 			$catalogSearchObject               = SearchObjectFactory::initSearchObject('UserListSolr');
 			$catalogSearchObject->userListSort = $this->sort;
@@ -450,7 +449,7 @@ class FavoriteHandler {
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
 
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_UserListIslandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
 			$archiveSearchObject->userListSort = $this->sort;
@@ -482,6 +481,7 @@ class FavoriteHandler {
 
 					if (!empty($_REQUEST['filter'])){
 						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
+						//TODO: update to new Archive Ids search
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
 					} else {
@@ -617,7 +617,7 @@ class FavoriteHandler {
 		$catalogRecordSet = $archiveRecordSet = [];
 		// Retrieve records from index (currently, only Solr IDs supported):
 		if (count($this->catalogIds) > 0){
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
@@ -632,9 +632,10 @@ class FavoriteHandler {
 			//TODO: user list sorting here
 		}
 		if (count($this->archiveIds) > 0){
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			//$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
 			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
@@ -651,7 +652,7 @@ class FavoriteHandler {
 	}
 
 	function getCitations($citationFormat, $page, $pageSize, $filter=array()){
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$citations = [];
 		$offset    = ($page - 1) * $pageSize;

@@ -19,41 +19,38 @@
 require_once ROOT_DIR . '/services/Union/Results.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Genealogy_Results extends Union_Results {
+class Archive2_Results extends Union_Results {
 
 	function launch(){
 		global $interface;
-		global $configArray;
 		global $timer;
-		$user = UserAccount::getLoggedInUser();
 
-		//Check to see if a user is logged in with admin permissions
-		if (UserAccount::isLoggedIn() && UserAccount::userHasRole('genealogyContributor')){
-			$interface->assign('userIsAdmin', true);
-		}else{
-			$interface->assign('userIsAdmin', false);
-		}
-
-//		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		// Include Search Engine Class
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
+		$timer->logTime('Include search engine');
 
 		// Initialize from the current search globals
-		/** @var SearchObject_Genealogy $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
 
 		$this->processAlternateOutputs($searchObject);
 
-		// Range filters need special processing in order to be used
-		$searchObject->processAllRangeFilters();
+		$displayMode = $searchObject->getView();
+		if ($displayMode == 'covers'){
+			$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		}
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-//		$interface->setPageTitle('Search Results');  //TODO: may be for setting the title if there was error raised or exception thrown??
+//		$interface->setPageTitle('Archive Search Results');
 		$interface->assign('sortList', $searchObject->getSortList());
 		$interface->assign('rssLink', $searchObject->getRSSUrl());
 		$interface->assign('excelLink', $searchObject->getExcelUrl());
 
+		// Hide Covers when the user has set that setting on the Search Results Page
+		$this->setShowCovers();
 
 		$timer->logTime('Setup Search');
 
@@ -67,17 +64,19 @@ class Genealogy_Results extends Union_Results {
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
-		$displayQuery = $searchObject->displayQuery();
 		$interface->assign('qtime', round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('spellingSuggestions', $searchObject->getSpellingSuggestions());
-		$interface->assign('lookfor', $displayQuery);
+		//TODO: work out how spelling suggestions work
+		$interface->assign('lookfor', $searchObject->displayQuery());
 		$interface->assign('searchType', $searchObject->getSearchType());
 		// Will assign null for an advanced search
 		$interface->assign('searchIndex', $searchObject->getSearchIndex());
 
 		// We'll need recommendations no matter how many results we found:
-		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
-		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
+		$interface->assign('topRecommendations',
+			$searchObject->getRecommendationsTemplates('top'));
+		$interface->assign('sideRecommendations',
+			$searchObject->getRecommendationsTemplates('side'));
 
 		// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
@@ -93,14 +92,34 @@ class Genealogy_Results extends Union_Results {
 
 		if ($searchObject->getResultTotal() < 1){
 			// No record found
-			$interface->assign('subpage', 'Genealogy/list-none.tpl');
-			$interface->setTemplate('Genealogy/list.tpl');
+			$interface->assign('subpage', 'Archive/list-none.tpl');
+			$interface->setTemplate('list.tpl');
 			$interface->assign('recordCount', 0);
 
 			// Was the empty result set due to an error?
 			$error = $searchObject->getIndexError();
 			if ($error !== false){
-				$this->displaySolrError($error);
+				// If it's a parse error or the user specified an invalid field, we
+				// should display an appropriate message:
+				if (is_array($error)){
+					if (isset($error['msg'])){
+						//Islandora2 version of Solr
+						$errorMessage = $error['msg'];
+					} else {
+						$errorMessage = reset($error);
+					}
+				}else{
+					$errorMessage = $error;
+				}
+				if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') ||
+					preg_match('/^undefined field/', $errorMessage)){
+					$interface->assign('parseError', true);
+
+					// Unexpected error -- let's treat this as a fatal condition.
+				}else{
+					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br>' .
+						'Solr Returned: ' . $errorMessage));
+				}
 			}
 
 			$timer->logTime('no hits processing');
@@ -114,35 +133,36 @@ class Genealogy_Results extends Union_Results {
 			$interface->assign('recordStart', $summary['startRecord']);
 			$interface->assign('recordEnd', $summary['endRecord']);
 
-			// Was the empty result set due to an error?
-			$error = $searchObject->getIndexError();
-			if ($error !== false) {
-				$this->displaySolrError($error);
-			}
+//			$facetSet = $searchObject->getFacetList(); //TODO: Gets run earlier by SideFacets. Is this needed?
+//			$interface->assign('facetSet', $facetSet);
 
-			$facetSet = $searchObject->getFacetList();
-			$interface->assign('facetSet', $facetSet);
-
-			// Big one - our results
+			// Render our results
 			$recordSet = $searchObject->getResultRecordHTML();
 			$interface->assign('recordSet', $recordSet);
 			$timer->logTime('load result records');
 
 			// Setup Display
-			$interface->assign('subpage', 'Genealogy/list-list.tpl');
-			$interface->setTemplate('Genealogy/list.tpl');
+			if ($displayMode == 'covers'){
+				$displayTemplate = 'Archive/covers-list.tpl'; // structure for image tiles
+			}else{
+				$displayTemplate = 'Archive/list-list.tpl'; // structure for regular results
+				$displayMode     = 'list';                  // In case the view is not explicitly set, do so now for display & clients-side functions
+				// Process Paging
+				$link    = $searchObject->renderLinkPageTemplate();
+				$options = [
+					'totalItems' => $summary['resultTotal'],
+					'fileName'   => $link,
+					'perPage'    => $summary['perPage']
+				];
+				$pager   = new VuFindPager($options);
+				$interface->assign('pageLinks', $pager->getLinks());
+			}
 
-			// Process Paging
-			$link    = $searchObject->renderLinkPageTemplate();
-			$options = [
-				'totalItems' => $summary['resultTotal'],
-				'fileName'   => $link,
-				'perPage'    => $summary['perPage']
-			];
-			$pager   = new VuFindPager($options);
-			$interface->assign('pageLinks', $pager->getLinks());
 			$timer->logTime('finish hits processing');
+			$interface->assign('subpage', $displayTemplate);
 		}
+
+		$interface->assign('displayMode', $displayMode); // For user toggle switches
 
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
@@ -150,8 +170,20 @@ class Genealogy_Results extends Union_Results {
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
+		//Setup explore more
+		$showExploreMoreBar = true;
+		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
+			$showExploreMoreBar = false;
+		}
+		$exploreMore           = new ExploreMore();
+		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
+		$interface->assign('exploreMoreSection', 'archive');
+		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
+		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
+
 		// Done, display the page
-		$interface->assign('sectionLabel', 'Genealogy Database');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $this->setPageTitle($displayQuery), 'Search/results-sidebar.tpl');
+		$interface->assign('sectionLabel', 'Local Digital Archive Results');
+		$this->display($searchObject->getResultTotal() ? '../Archive/list.tpl' : '../Archive/list-none.tpl', 'Archive Search Results', 'Search/results-sidebar.tpl');
 	} // End launch()
 }
+

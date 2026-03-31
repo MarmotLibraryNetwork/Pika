@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -47,10 +46,11 @@ class Archive_RelatedEntities extends Action {
 		$searchObject->setDebugging(false, false);
 
 		//Get a list of objects in the archive related to this search
-		$searchObject->setSearchTerms(array(
+		$searchObject->setSearchTerms([
 			'lookfor' => $searchTerm,
 			'index' => 'IslandoraKeyword'
-		));
+		]);
+		//TODO: rework for Islandora2
 		$searchObject->clearHiddenFilters();
 		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 		$searchObject->clearFilters();
@@ -78,15 +78,6 @@ class Archive_RelatedEntities extends Action {
 		$interface->assign('shortPageTitle', $pageTitle);
 
 		//TODO: Sort and paginate facet values.
-		//  The problem with doing it now is that we are faceting based on pid which can't
-		//  be sorted on properly. We will need a field combining PID and label
-		/*$searchObject->setFacetSortOrder('index');
-		$pageSize = 24;
-		$searchObject->setFacetLimit($pageSize);
-		if (isset($_REQUEST['page'])){
-			$page = $_REQUEST['page'];
-			$searchObject->setFacetOffset($page - 1 * $pageSize);
-		}*/
 
 		$response = $searchObject->processSearch(true, false);
 		$relatedEntities = array();

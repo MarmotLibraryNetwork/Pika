@@ -1,5 +1,22 @@
 <?php
 /*
+ * Pika Discovery Layer
+ * Copyright (C) 2026  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/*
 		pDraw - class to manipulate data arrays
 
 		Version     : 2.1.3
@@ -701,7 +718,7 @@ class pData {
 		}
 	}
 
-	/* Initialise a given scatter serie */
+	/* Initialize a given scatter serie */
 	function initScatterSerie($ID){
 		if (isset($this->Data["ScatterSeries"][$ID])){
 			return 0;
@@ -724,7 +741,7 @@ class pData {
 		return true;
 	}
 
-	/* Initialise a given serie */
+	/* Initialize a given serie */
 	function initialise($Serie){
 		if (isset($this->Data["Series"])){
 			$ID = count($this->Data["Series"]);

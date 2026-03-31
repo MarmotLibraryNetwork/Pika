@@ -1241,7 +1241,6 @@ class Archive_AJAX extends AJAXHandler {
 	 */
 	public function setupTimelineFacetsAndFilters($searchObject){
 		if (isset($_REQUEST['dateFilter']) && $_REQUEST['dateFilter'] != 'all'){
-
 			$filter = '';
 			$date   = $_REQUEST['dateFilter'];
 			if ($date == 'before1880'){

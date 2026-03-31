@@ -2,7 +2,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -58,7 +57,7 @@ class CompoundObjectObject extends I2Object
             if (!is_numeric($nid) || $nid <= 0) {
                 continue;
             }
-            $mediaObject = new I2ObjectFactory()->fromNodeId($nid);
+            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
             if($mediaObject) {
                 $children[] = $mediaObject;
             }

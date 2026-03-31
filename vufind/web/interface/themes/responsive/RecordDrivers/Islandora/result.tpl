@@ -12,7 +12,9 @@
 			<h2 class="h3">
 			<span class="result-index">{$resultIndex}.</span>&nbsp;
 
-			<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
+			<a href="{$summUrl}" class="result-title notranslate">
+				{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+			</a>
 			{if $summTitleStatement}
 				&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
 			{/if}
@@ -39,6 +41,7 @@
 
 		<div class="{if !$showCovers}col-xs-12 col-sm-12{if !$viewingCombinedResults} col-md-12 col-lg-12{/if}{else}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}">
 
+{* N/A
 		{if $summAuthor}
 			<div class="row">
 				<div class="result-label col-tn-3">Author: </div>
@@ -62,6 +65,7 @@
 				</div>
 			</div>
 		{/if}
+*}
 
 		{if $summFormat}
 			<div class="row">
@@ -72,7 +76,25 @@
 			</div>
 		{/if}
 
-		{if $summPubDate}
+		{if $summModel}
+			<div class="row">
+				<div class="result-label col-tn-3">Model: </div>
+				<div class="col-tn-9 result-value">
+					{$summModel}
+				</div>
+			</div>
+		{/if}
+
+		{if $summLibrary}
+			<div class="row">
+				<div class="result-label col-tn-3">Contributing Library: </div>
+				<div class="col-tn-9 result-value">
+					{$summLibrary}
+				</div>
+			</div>
+		{/if}
+
+			{if $summPubDate}
 			<div class="row">
 				<div class="result-label col-tn-3">Pub. Date: </div>
 				<div class="col-tn-9 result-value">

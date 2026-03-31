@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +39,9 @@ class SideFacets implements RecommendationInterface {
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
 	public function __construct($searchObject, $params){
+		//TODO: break out $param into individual parameters so this is easier to follow;
+		// and we can use default values
+
 		// Save the passed-in SearchObject:
 		$this->searchObject = $searchObject;
 
@@ -52,6 +54,31 @@ class SideFacets implements RecommendationInterface {
 		if ($searchObject->getSearchType() == 'genealogy'){
 			$config           = getExtraConfigArray($iniName);
 			$this->mainFacets = $config[$mainSection] ?? [];
+		}elseif ($searchObject->getSearchType() == 'islandora2'){
+			//TODO: library overrides
+			//$searchLibrary                 = Library::getActiveLibrary();
+//			$hasArchiveSearchLibraryFacets = !empty($searchLibrary->archiveSearchFacets);
+//			if ($hasArchiveSearchLibraryFacets){
+//				$facets = $searchLibrary->archiveSearchFacets;
+//			}else{
+				$facets = Library::getDefaultArchive2SearchFacets();
+//			}
+			$this->facetSettings = [];
+			$this->mainFacets    = [];
+
+			foreach ($facets as $facet){
+				$facetName = $facet->facetName;
+
+				//Figure out if the facet should be included
+				if ($mainSection == 'Results'){
+					if ($facet->showInResults == 1 && $facet->showAboveResults == 0){
+						$this->facetSettings[$facetName] = $facet;
+						$this->mainFacets[$facetName]    = $facet->displayName;
+					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
+						$this->facetSettings[$facetName] = $facet->displayName;
+					}
+				}
+			}
 		}elseif ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary                 = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
@@ -80,6 +107,7 @@ class SideFacets implements RecommendationInterface {
 
 
 		}else{
+			// Catalog Side facets handling
 			global $locationSingleton;
 			$searchLibrary           = Library::getActiveLibrary();
 			$searchLocation          = $locationSingleton->getActiveLocation();

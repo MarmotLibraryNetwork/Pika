@@ -38,10 +38,16 @@ class Islandora2Driver extends RecordInterface
     /* TODO: Do we need a place holder image? */
     private const PLACEHOLDER_IMAGE = '/interface/themes/responsive/images/History.png';
 
-    private Logger $logger;
-    private int $nodeId = 0;
-    private ?I2Object $i2Object = null;
-    private bool $i2ObjectLoaded = false;
+	private Logger $logger;
+	private int $nodeId = 0;
+	private ?I2Object $i2Object = null;
+	private bool $i2ObjectLoaded = false;
+	protected ?float $solrScore = null;
+	protected ?string $solrExplanation = null;
+	private ?string $title = null;
+	private ?string $description = null;
+	private ?string $format = null;
+	private ?string $model = null;
 
     /**
      * @param int|string|array $recordData
@@ -59,29 +65,84 @@ class Islandora2Driver extends RecordInterface
      *
      * @param mixed $recordData
      */
-    private function initialiseFromRecordData($recordData): void
-    {
-        if (is_array($recordData)) {
-            $this->nodeId = $this->extractNodeId($recordData);
+		private function initialiseFromRecordData($recordData): void
+		{
+				if (is_array($recordData)) {
+					if (isset($recordData['ss_type'])){ // Populate fields from Solr Document values
+						$this->nodeId          = !empty($this->getSolrFieldValue($recordData, 'id')) ? (int)$this->getSolrFieldValue($recordData, 'id') : null;
+						$solrTitleValue        = $this->getSolrFirstFieldValue($recordData, 'title');
+						$this->title           = !empty($solrTitleValue) ? $solrTitleValue : null;
+						$solrDescriptionValue  = $this->getSolrFirstFieldValue($recordData, 'description');
+						$this->description     = !empty($solrDescriptionValue) ? $solrDescriptionValue : null;
+						$solrFormatValue       = $this->getSolrFirstFieldValue($recordData, 'format');
+						$this->format          = !empty($solrFormatValue) ? $solrFormatValue : null;
+						$this->model           = !empty($this->getSolrFieldValue($recordData, 'model')) ? $this->getSolrFieldValue($recordData, 'model') : null;
+						$this->solrScore       = isset($recordData['score']) ? (float)$recordData['score'] : null;
+						$this->solrExplanation = isset($recordData['explain']) ? (string)$recordData['explain'] : null;
+						$factory               = new I2ObjectFactory();
+						$obj                   = $factory->fromNodeId($this->nodeId);
+						if ($obj instanceof I2Object){
+							$this->i2Object       = $obj;
+							$this->i2ObjectLoaded = true;
+						}
+					} else{
+						$this->nodeId = $this->extractNodeId($recordData);
 
-            $nodeData = $recordData['node'] ?? ($recordData['json'] ?? null);
-            if (is_array($nodeData)) {
-                $factory  = new I2ObjectFactory();
-                $obj      = $factory->fromNode($nodeData);
-                $this->i2Object       = ($obj instanceof I2Object) ? $obj : null;
-                $this->i2ObjectLoaded = true;
-            }
-        } elseif (is_numeric($recordData)) {
-            $this->nodeId = (int)$recordData;
-        // if an int is passed as a string 
-         } elseif (is_string($recordData) && ctype_digit($recordData)) {
-             $this->nodeId = (int)$recordData;
-        }
+						$nodeData = $recordData['node'] ?? ($recordData['json'] ?? null);
+						if (is_array($nodeData)){
+							$factory              = new I2ObjectFactory();
+							$obj                  = $factory->fromNode($nodeData);
+							$this->i2Object       = ($obj instanceof I2Object) ? $obj : null;
+							$this->i2ObjectLoaded = true;
+						}
+					}
+				} elseif (is_numeric($recordData)) {
+						$this->nodeId = (int)$recordData;
+				// if an int is passed as a string
+				 } elseif (is_string($recordData) && ctype_digit($recordData)) {
+						 $this->nodeId = (int)$recordData;
+				}
 
-        if ($this->nodeId <= 0) {
-            $this->logger->warning('Islandora2Driver initialised without a valid node id.', ['recordData' => $recordData]);
-        }
-    }
+				if ($this->nodeId <= 0) {
+						$this->logger->warning('Islandora2Driver initialized without a valid node id.', ['recordData' => $recordData]);
+				}
+		}
+
+	private $solrFields = [
+		'id'          => 'its_node_id',
+		//'title'       => 'tm_X3b_en_title', //test
+		'title'       => 'twm_X3b_en_title_ws_token', // production TODO: use this field, it has punctuation, whereas the field above does not
+		'description' => 'tm_X3b_en_field_description_long',
+		'memberOf'    => 'itm_field_member_of', //node ids
+		'legacyPID'   => 'tm_X3b_en_field_pid',
+		'genre'       => 'sm_name_2',
+		'model'       => 'ss_name_1',
+		'legacyResourceType' => 'sm_name_22',
+		'format'      => 'sm_name_43',
+		'library'     => 'ss_name_23',
+		//'rightsCreator' => 'm_X3b_en_name_41',
+	];
+
+	/**
+	 * Extract solr field value using an easier to understand key
+	 * @param array $solrDoc
+	 * @param string $field
+	 * @return mixed
+	 */
+	private function getSolrFieldValue(array $solrDoc, string $field){
+		return $solrDoc[$this->solrFields[$field]];
+	}
+
+	/**
+	 * Extract a solr field value and return the first element if the value is an array.
+	 * @param array $solrDoc
+	 * @param string $field
+	 * @return mixed
+	 */
+	private function getSolrFirstFieldValue(array $solrDoc, string $field){
+		$value = $this->getSolrFieldValue($solrDoc, $field);
+		return is_array($value) ? $value[0] : $value;
+	}
 
     /**
      * Attempt to detect a node id in an array payload.
@@ -95,6 +156,7 @@ class Islandora2Driver extends RecordInterface
             'nodeId',
             'node_id',
             'nid',
+			'its_node_id', // Solr Field
             'id',
             'record_id',
             'identifier',
@@ -216,40 +278,40 @@ class Islandora2Driver extends RecordInterface
         return [];
     }
 
-    public function getListEntry($listId = null, $allowEdit = true)
-    {
-        global $interface;
+	public function getListEntry($listId = null, $allowEdit = true){
+		global $interface;
 
-        $interface->assign('summId', $this->getUniqueID());
-        $interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
-        $interface->assign('summTitle', $this->getTitle());
-        $interface->assign('summUrl', $this->getLinkUrl());
-        $interface->assign('summDescription', $this->getDescription());
-        $interface->assign('summFormat', $this->getFormat());
-        $interface->assign('summShortId', null);
-        $interface->assign('summTitleStatement', null);
-        $interface->assign('summAuthor', null);
-        $interface->assign('summPublisher', null);
-        $interface->assign('summPubDate', null);
-        $interface->assign('$summSnippets', null);
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-        $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-        $interface->assign('summAjaxStatus', false);
-        $interface->assign('recordDriver', $this);
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
+		//TODO: str_replace likely not needed now
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summFormat', $this->getFormat());
+//		$interface->assign('summShortId', null);
+//		$interface->assign('summTitleStatement', null);
+//		$interface->assign('summAuthor', null);
+//		$interface->assign('summPublisher', null);
+//		$interface->assign('summPubDate', null);
+//		$interface->assign('$summSnippets', null);
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		$interface->assign('summAjaxStatus', false);
+		$interface->assign('recordDriver', $this);
 
-        if ($listId) {
-            require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-            $listEntry                         = new UserListEntry();
-            $listEntry->groupedWorkPermanentId = $this->getUniqueID();
-            $listEntry->listId                 = $listId;
-            if ($listEntry->find(true)) {
-                $interface->assign('listEntryNotes', $listEntry->notes);
-            }
-            $interface->assign('listEditAllowed', $allowEdit);
-        }
+		if ($listId){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$listEntry                         = new UserListEntry();
+			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
+			$listEntry->listId                 = $listId;
+			if ($listEntry->find(true)){
+				$interface->assign('listEntryNotes', $listEntry->notes);
+			}
+			$interface->assign('listEditAllowed', $allowEdit);
+		}
 
-        return 'RecordDrivers/Islandora/listentry.tpl';
-    }
+		return 'RecordDrivers/Islandora/listentry.tpl';
+	}
 
     /**
      * Provide a browse tile result.
@@ -321,34 +383,58 @@ class Islandora2Driver extends RecordInterface
         ];
     }
 
-    public function getSearchResult($view = 'list')
+	public function getSearchResult($view = 'list'){
+		if ($view === 'covers'){
+			return $this->getBrowseResult();
+		}
+
+		global $interface;
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('summTitle', $this->getTitle());
+		//$interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
+		$interface->assign('jquerySafeId', $this->getUniqueID());
+		// colon replacement no longer necessary
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summFormat', $this->format);
+		$interface->assign('summModel', $this->model);
+		$interface->assign('summLibrary', $this->getContributingLibrary());
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		global $configArray;
+		if (!empty($configArray['System']['debugSolr'])){
+			$interface->assign('summScore', $this->solrScore);
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
+		return 'RecordDrivers/Islandora/result.tpl';
+	}
+
+	public function getExplain(){
+		if (!empty($this->solrExplanation)){
+			$explain = explode(', result of:', $this->solrExplanation, 2);
+			// Break query from score explanation
+			//TODO: this explode may not may sense with this version of solr
+			if (count($explain) > 1){
+				$explain[1] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[1]);
+				// highlight the solr fields and the search term of interest
+				$explain[1] = preg_replace('/computed as (.*) from:/i', 'computed as <var>$1</var> from:', $explain[1]);
+				// italicize the formula fragments
+
+				$explain[0] = preg_replace('/weight\((.*):(.*)( in \d+\))/i', 'weight(<code>$1</code>:<strong>$2</strong>$3)', $explain[0]);
+				// highlight the solr fields and the search term of interest in the query
+
+				return $explain[0] . '<br> result of : <p>' . nl2br(str_replace(' ', '&nbsp;', $explain[1])) . '</p>';
+				// Put text back together, replace spaces with non-breaking space character, so the indentation of explanation lines displays
+			}
+		}
+		return '';
+	}
+
+	public function getStaffView()
     {
-        if ($view === 'covers') {
-            return $this->getBrowseResult();
-        }
-
-        global $interface;
-        $interface->assign('summId', $this->getUniqueID());
-        $interface->assign('summTitle', $this->getTitle());
-        $interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
-        $interface->assign('summUrl', $this->getLinkUrl());
-        $interface->assign('summDescription', $this->getDescription());
-        $interface->assign('summFormat', $this->getFormat());
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-        $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-        global $configArray;
-        if (!empty($configArray['System']['debugSolr'])) {
-            // $interface->assign('summScore', $this->getScore());
-            // $interface->assign('summExplain', $this->getExplain());
-        }
-
-        return 'RecordDrivers/Islandora/result.tpl';
-    }
-
-    public function getStaffView()
-    {
-        return null;
+        return null; //TODO: Implement
     }
 
     public function getTitle()
@@ -389,7 +475,8 @@ class Islandora2Driver extends RecordInterface
 
     public function getUniqueID(): string
     {
-        return $this->nodeId > 0 ? 'islandora2:' . $this->nodeId : 'islandora2:unknown';
+        return $this->nodeId > 0 ? 'islandora2-' . $this->nodeId : 'islandora2-unknown';
+				// using dash to avoid html DOM problems when using a : colon character
     }
 
     public function hasFullText(): bool
@@ -417,8 +504,12 @@ class Islandora2Driver extends RecordInterface
         return [];
     }
 
-    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null)
-    {
-        return [];
-    }
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null){
+		return [];
+	}
+
+	private function getContributingLibrary(){
+			return null; //TODO Implement
+	}
+
 }

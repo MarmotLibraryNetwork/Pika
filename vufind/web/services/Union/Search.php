@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -60,6 +60,15 @@ class Union_Search extends Action {
 					$interface->assign('module', $module);
 					$interface->assign('action', $action);
 					$results = new Genealogy_Results();
+					$results->launch();
+					break;
+				case 'islandora2':
+					require_once ROOT_DIR . '/services/Archive2/Results.php';
+					$module = 'Archive2';
+					$action = 'Results';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new Archive2_Results();
 					$results->launch();
 					break;
 				case 'islandora':

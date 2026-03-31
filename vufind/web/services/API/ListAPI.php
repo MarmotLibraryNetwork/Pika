@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -556,7 +555,7 @@ class ListAPI extends AJAXHandler {
 				if (is_array($titles)){
 					foreach ($titles as $key => $rawData){
 						$interface->assign('key', $key);
-						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
+						// 20131206 James Staub: bookTitle is in the list API, and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
 						$titleShort = preg_replace(['/\:.*?$/', '/\s*\/$\s*/'], '', $rawData['title']);
 //						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);

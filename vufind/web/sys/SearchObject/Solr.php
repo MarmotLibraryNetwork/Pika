@@ -23,15 +23,21 @@ require_once ROOT_DIR . '/RecordDrivers/Factory.php';
  * Search Object class
  *
  * This is the default implementation of the SearchObjectBase class, providing the
- * Solr-driven functionality used by VuFind's standard Search module.
+ * Solr-driven functionality used by Pika's standard catalog Search module.
  */
+
+//TODO: classname should be refactored as SearchObject_Catalog
+// since its primary purpose is catalog searching; and Solr is the default technology
+// we chose for searching
 class SearchObject_Solr extends SearchObject_Base {
+	protected string $searchIni = 'searches';
+
+	protected string $searchSource = 'local';
+	// local is the default value for a catalog search
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
-	private $facetLimit = 30;
 	private $facetOffset = null;
-	private $facetPrefix = null;
 	private $facetSort = null;
 
 	// Index
@@ -42,24 +48,10 @@ class SearchObject_Solr extends SearchObject_Base {
 	// HTTP Method
 	private $method = 'GET';
 //	private $method = 'POST';
-	// Result
-	private $indexResult;
 
 	// OTHER VARIABLES
-	// Index
-	/** @var Solr $indexEngine */
-	private $indexEngine = null;
-	// Facets information
-	private $allFacetSettings;    // loaded from facets.ini
 	// Search types of author have two subtypes: home and search
 	private $authorSearchType  = '';
-
-	// Spelling
-	private $spellingLimit = 3;
-	private $spellQuery    = [];
-	private $dictionary    = 'default';
-	private $spellSimple   = false;
-	private $spellSkipNumeric = true;
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
@@ -76,7 +68,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 
 	/**
-	 * Constructor. Initialise some details about the server
+	 * Constructor. Initialize some details about the server
 	 *
 	 * @access  public
 	 */
@@ -92,17 +84,16 @@ class SearchObject_Solr extends SearchObject_Base {
 		$class              = $configArray['Index']['engine'];
 		$classWithExtension = $class . '.php';
 //		require_once ROOT_DIR . "/sys/" . $classWithExtension;
-		// Initialise the index
+		// Initialize the index
 		$this->indexEngine = new $class($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine');
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('facets');
 		$this->facetConfig      = [];
-		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)){
-			$this->facetLimit = $facetLimit;
-		}
+
+		$this->initFacetLimit();
+
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
 		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
@@ -112,7 +103,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 
 		// Load search preferences:
-		$searchSettings = getExtraConfigArray('searches');
+		$searchSettings = getExtraConfigArray($this->searchIni);
 		if (isset($library)){
 			if ($library->showTagging == 0){
 				unset($searchSettings['Basic_Searches']['tag']);
@@ -214,7 +205,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @param   string  $newFilter   A filter string from url : "field:value"
 	 */
-	public function addFilter($newFilter){
+	public function addFilter($newFilter) :void{
 		if (empty($newFilter)){
 			return;
 		}
@@ -306,7 +297,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Initialise the object from the global
+	 * Initialize the object from the global
 	 *  search parameters in $_REQUEST.
 	 *
 	 * @access  public
@@ -406,6 +397,8 @@ class SearchObject_Solr extends SearchObject_Base {
 				//       to get a total facet count (currently not possible).
 				$this->facetOffset = ($this->page - 1) * $this->limit;
 				$this->facetLimit = $this->limit * 10;
+				//TODO: explain this facetLimit setting
+
 				// Sorting - defaults to off with unlimited facets, so let's
 				//           be explicit here for simplicity.
 				if (isset($_REQUEST['sort']) && ($_REQUEST['sort'] == 'author')) {
@@ -448,7 +441,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Initialise the object for retrieving advanced
+	 * Initialize the object for retrieving advanced
 	 *   search screen facet data from inside solr.
 	 *
 	 * @access  public
@@ -527,10 +520,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		//********************
 
-		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)){
-			$this->facetLimit = $facetLimit;
-		}
+		$this->initFacetLimit('Advanced_Settings');
 
 		// Spellcheck is not needed for facet data!
 		$this->spellcheck = false;
@@ -546,7 +536,9 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Initialise the object for retrieving dynamic data
+	 * Only called by SolrAutoComplete
+	 *
+	 * Initialize the object for retrieving dynamic data
 	 *    for the browse screen to function.
 	 *
 	 * We don't know much at this stage, the browse AJAX
@@ -555,17 +547,15 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initBrowseScreen()
-	{
+	public function initBrowseScreen(){
 		global $configArray;
 
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
-		$this->facetConfig = array();
+		$this->facetConfig = [];
 		// Use the facet limit specified in config.ini (or default to 100):
-		$this->facetLimit = isset($configArray['Browse']['result_limit']) ?
-		$configArray['Browse']['result_limit'] : 100;
+		$this->facetLimit = $configArray['Browse']['result_limit'] ?? 100;
 		// Sorting defaults to off with unlimited facets
 		$this->setFacetSortOrder('count');
 
@@ -574,31 +564,12 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-            );
+		$this->searchTerms[] = [
+			'index'   => $this->defaultIndex,
+			'lookfor' => ""
+		];
 
-            return true;
-	}
-
-	/**
-	 * Return the specified setting from the facets.ini file.
-	 *
-	 * @access  public
-	 * @param   string $section   The section of the facets.ini file to look at.
-	 * @param   string $setting   The setting within the specified file to return.
-	 * @return  string    The value of the setting (blank if none).
-	 */
-	public function getFacetSetting($section, $setting){
-		return $this->allFacetSettings[$section][$setting] ?? '';
-	}
-
-	public function getDebugTiming() {
-		if ($this->debug && isset($this->indexResult['debug'])){
-				return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
-		}
-		return null;
+		return true;
 	}
 
 	/**
@@ -624,9 +595,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	public function useBasicDictionary() {
 		$this->dictionary = 'basicSpell';
 	}
-
-	public function getQuery()          {return $this->query;}
-	public function getIndexEngine()    {return $this->indexEngine;}
 
 	/**
 	 * Return the field (index) searched by a basic search
@@ -954,7 +922,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Set an overriding array of record IDs.
+	 * Set an search query of the Id field
 	 *
 	 * @access  public
 	 * @param   array   $ids        Record IDs to load
@@ -963,16 +931,6 @@ class SearchObject_Solr extends SearchObject_Base {
 		$this->query = 'id:(' . implode(' ', $ids) . ')';
 		// separating by a single space appears to be the equivalent of ORing as below
 //		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
-	}
-
-	/**
-	 * Set an overriding string.
-	 *
-	 * @access  public
-	 * @param   string  $newQuery   Query string
-	 */
-	public function setQueryString($newQuery){
-		$this->query = $newQuery;
 	}
 
 	/**
@@ -992,19 +950,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Add a prefix to facet requirements. Serves to
-	 *    limits facet sets to smaller subsets.
-	 *
-	 *  eg. all facet data starting with 'R'
-	 *
-	 * @access  public
-	 * @param   string  $prefix   Data for prefix
-	 */
-	public function addFacetPrefix($prefix){
-		$this->facetPrefix = $prefix;
-	}
-
-	/**
 	 * Turn the list of spelling suggestions into an array of urls
 	 *   for on-screen use to implement the suggestions.
 	 *
@@ -1021,7 +966,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		foreach ($this->suggestions as $term => $details){
 			// Find out if our suggestion is part of a token
 			$inToken    = false;
-			$targetTerm = "";
+			$targetTerm = '';
 			foreach ($tokens as $token){
 				// TODO - Do we need stricter matching here?
 				//   Similar to that in replaceSearchTerm()?
@@ -1077,7 +1022,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *   query used in the search (not the filters).
 	 *
 	 * @access  public
-	 * @return  string   user friendly version of 'query'
+	 * @return  string   user-friendly version of 'query'
 	 */
 	public function displayQuery(){
 		// Maybe this is a restored object...
@@ -1239,17 +1184,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Get error message from index response, if any.  This will only work if
-	 * processSearch was called with $returnIndexErrors set to true!
-	 *
-	 * @access  public
-	 * @return  mixed       false if no error, error string otherwise.
-	 */
-	public function getIndexError(){
-		return $this->indexResult['error'] ?? false;
-	}
-
-	/**
 	 * Actually process and submit the search
 	 *
 	 * @access  public
@@ -1321,15 +1255,14 @@ class SearchObject_Solr extends SearchObject_Base {
 		// Build a list of facets we want from the index
 		$facetSet = [];
 		if (!empty($this->facetConfig)) {
-			$facetSet['limit'] = $this->facetLimit;
 			foreach ($this->facetConfig as $facetField => $facetName) {
-				if (strpos($facetField, 'availability_toggle') === 0){
+				if (str_starts_with($facetField, 'availability_toggle')){
 					if ($availabilityByFormatFieldName){
 						$facetSet['field'][] = $availabilityByFormatFieldName;
 					}else{
 						$facetSet['field'][] = $facetField;
 					}
-				}elseif (strpos($facetField, 'available_at') === 0){
+				}elseif (str_starts_with($facetField, 'available_at')){
 					if ($availableAtByFormatFieldName){
 						$facetSet['field'][] = $availableAtByFormatFieldName;
 					}else{
@@ -1708,32 +1641,6 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Adapt the search query to a spelling query
-	 *
-	 * @access  private
-	 * @return  string    Spelling query
-	 */
-	private function buildSpellingQuery(){
-		$this->spellQuery = [];
-		// Basic search
-		if ($this->searchType == $this->basicSearchType){
-			// Just the search query is fine
-			return $this->query;
-
-			// Advanced search
-		}else{
-			foreach ($this->searchTerms as $search){
-				foreach ($search['group'] as $field){
-					// Add just the search terms to the list
-					$this->spellQuery[] = $field['lookfor'];
-				}
-			}
-			// Return the list put together as a string
-			return implode(' ', $this->spellQuery);
-		}
-	}
-
-	/**
 	 * Process spelling suggestions from the results object
 	 *
 	 * @access  private
@@ -1825,64 +1732,11 @@ class SearchObject_Solr extends SearchObject_Base {
 	}
 
 	/**
-	 * Try running spelling against the basic dictionary.
-	 *   This function should ensure it doesn't return
-	 *   single word suggestions that have been accounted
-	 *   for in the shingle suggestions above.
-	 *
-	 * @access  private
-	 * @return  array     Suggestions array
-	 */
-	private function basicSpelling(){
-		// TODO: There might be a way to run the
-		//   search against both dictionaries from
-		//   inside solr. Investigate. Currently
-		//   submitting a second search for this.
-
-		// Create a new search object
-		$newSearch = SearchObjectFactory::initSearchObject('Solr');
-		$newSearch->deminify($this->minify());
-
-		// Activate the basic dictionary
-		$newSearch->useBasicDictionary();
-		// We don't want it in the search history
-		$newSearch->disableLogging();
-
-		// Run the search
-		$newSearch->processSearch();
-		// Get the spelling results
-		$newList = $newSearch->getRawSuggestions();
-
-		// If there were no shingle suggestions
-		if (count($this->suggestions) == 0) {
-			// Just use the basic ones as provided
-			$this->suggestions = $newList;
-
-			// Otherwise
-		} else {
-			// For all the new suggestions
-			foreach ($newList as $word => $data) {
-				// Check the old suggestions
-				$found = false;
-				foreach ($this->suggestions as $k => $v) {
-					// Make sure it wasn't part of a shingle
-					//   which has been suggested at a higher
-					//   level.
-					$found = preg_match("/\b$word\b/", $k) ? true : $found;
-				}
-				if (!$found) {
-					$this->suggestions[$word] = $data;
-				}
-			}
-		}
-	}
-
-	/**
 	 * Process facets from the results object
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
-	 *                                  listing all of the desired facet fields;
+	 * @param array|null $filter         Array of field => on-screen description
+	 *                                  listing all the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @param   bool    $expandingLinks If true, we will include expanding URLs
 	 *                                  (i.e. get all matches for a facet, not
@@ -1890,7 +1744,7 @@ class SearchObject_Solr extends SearchObject_Base {
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false){
+	public function getFacetList(array|null $filter = null, bool $expandingLinks = false) :array{
 		global $solrScope;
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)){
@@ -2123,20 +1977,20 @@ class SearchObject_Solr extends SearchObject_Base {
 			}elseif ($field == 'available_at_' . $solrScope){
 				$list[$field]['valuesToShow'] = count($list[$field]['list']);
 			}else{
-				$list[$field]['valuesToShow'] = 5;
+				$list[$field]['valuesToShow'] = parent::NUM_FACET_VALUES_TO_SHOW;
 			}
 
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
 			global $solrScope;
 			if (in_array($field, ['owning_library_' . $solrScope, 'owning_location_' . $solrScope, 'available_at_' . $solrScope])  && isset($currentLibrary) ){
-				$list[$field]['showAlphabetically'] = true;
-			}else{
-				$list[$field]['showAlphabetically'] = false;
-			}
-			if ($list[$field]['showAlphabetically']){
+				//$list[$field]['showAlphabetically'] = true;
 				ksort($list[$field]['list']);
 			}
+//			else{
+//				$list[$field]['showAlphabetically'] = false;
+//			}
+
 		}
 		return $list;
 	}
@@ -2147,13 +2001,13 @@ class SearchObject_Solr extends SearchObject_Base {
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
+	 * @param string|false $preferredSection Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false){
+	public function activateAllFacets(string|false $preferredSection = false){
 		foreach ($this->allFacetSettings as $section => $values){
 			foreach ($values as $key => $value){
 				$this->addFacet($key, $value);
@@ -2214,7 +2068,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 		global $interface;
 		$lookFor = $this->displayQuery();
-		if (count($this->filterList) > 0){
+		if ($this->hasAppliedFacets()){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookFor . " (" . translate('with filters') . ")");
 		}else{
@@ -2525,11 +2379,6 @@ class SearchObject_Solr extends SearchObject_Base {
 		return $fieldsToReturn;
 	}
 
-	public function setPrimarySearch($flag){
-		parent::setPrimarySearch($flag);
-		$this->indexEngine->isPrimarySearch = $flag;
-	}
-
 	public function __destruct(){
 		if (isset($this->indexEngine)){
 			$this->indexEngine = null;
@@ -2537,15 +2386,11 @@ class SearchObject_Solr extends SearchObject_Base {
 		}
 	}
 
-	public function pingServer($failOnError = true){
-		return $this->indexEngine->pingServer($failOnError);
-	}
-
 	public function getNextPrevLinks(){
 		global $interface;
 		global $timer;
 		//Setup next and previous links based on the search results.
-		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+		if (!empty($_REQUEST['searchId']) && !empty($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s     = new SearchEntry();
 			$s->id = $_REQUEST['searchId'];
