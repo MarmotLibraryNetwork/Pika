@@ -297,12 +297,12 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 	}
 
 	/**
-	 *  Set target audience based on last character of the item location code
+	 *  Set a target audience based on the last character of the item location code
 	 *
 	 * @param groupedWork Solr Document object
 	 * @param record Marc record object
 	 * @param printItems  applicable print items for this bib
-	 * @param identifier  Id for the marc record
+	 * @param identifier  ID for the marc record
 	 */
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
@@ -311,7 +311,8 @@ class MLN2RecordProcessor extends SierraRecordProcessor {
 			String locationCode = printItem.getLocationCode();
 			if (locationCode.length() > 2) {
 				// MLN2 location codes longer than 2 characters have valid trailing target audience characters
-				if (!printItem.isOrderItem() && !locationCode.equals("none")) { // don't use order record fake location "none"
+				if (!printItem.isOrderItem() && !locationCode.equals("none") && !locationCode.equals("cbpcx")) { // don't use order record fake location "none"
+					// Exclude Clearview Bookmobile location code from target audience determination
 					String lastCharacter = locationCode.substring(locationCode.length() - 1);
 					targetAudienceCodes.add(lastCharacter);
 				}
