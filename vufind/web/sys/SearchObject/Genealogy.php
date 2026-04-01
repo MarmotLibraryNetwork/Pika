@@ -38,6 +38,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 	// Index
 	private $index = null;
+	protected ?string $defaultIndex = "GenealogyKeyword";
 	// Field List
 	private $fields = '*,score';
 	// HTTP Method
@@ -86,7 +87,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 
 		// Load search preferences
 		$searchSettings     = getExtraConfigArray($this->searchIni);
-		$this->defaultIndex = 'GenealogyKeyword';
+		//$this->defaultIndex = 'GenealogyKeyword'; // Shouldn't need to be set in constructor now
 		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}

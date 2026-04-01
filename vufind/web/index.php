@@ -659,13 +659,6 @@ function setUpSearchDisplayOptions($module, $action){
 		$interface->assign('basicSearchIndex', $_REQUEST['basicType'] ?? 'Keyword');
 	}
 
-	if (isset($_REQUEST['genealogyType'])){
-		//TODO: validate $_REQUEST['genealogyType'] is one of the valid types
-		$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
-	}else{
-		$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
-	}
-
 	global $searchSource;
 	$interface->assign('searchSource', $searchSource);
 	// Set $_REQUEST['type']
@@ -716,6 +709,11 @@ function setUpSearchDisplayOptions($module, $action){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		if ($genealogySearchObject != false){
 			$interface->assign('genealogySearchTypes', $genealogySearchObject->getBasicTypes() ?? []);
+			if (isset($_REQUEST['genealogyType']) && in_array($_REQUEST['genealogyType'], $genealogySearchObject->getBasicTypes())){
+				$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
+			}else{
+				$interface->assign('genealogySearchIndex', $genealogySearchObject->getDefaultIndex());
+			}
 		}
 	}
 
