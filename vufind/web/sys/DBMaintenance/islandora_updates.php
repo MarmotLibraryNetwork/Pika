@@ -79,7 +79,17 @@ function getIslandoraUpdates(): array{
 function convertCollectionsToHidePidsToNodeIds(): bool {
 	// Populate this array: key = legacy PID, value = nodeId integer
 	$pidToNodeId = [
-		// 'namespace:1234' => 5678,
+		'adams:12'        => 680,
+		'ccu:2'           => 149191,
+		'evld:5206'       => 18524,
+		'evld:5208'       => 18523,
+		'evld:5958'       => 18533,
+		'fortlewis:12699' => 35830,
+		'fortlewis:12700' => 35836,
+		'fortlewis:12701' => 35833,
+		'fortlewis:12702' => 35832,
+		'fortlewis:12703' => 35835,
+		'salida:555'      => 49867,
 	];
 
 	require_once ROOT_DIR . '/sys/Library/Library.php';
