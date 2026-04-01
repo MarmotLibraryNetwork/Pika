@@ -1145,6 +1145,7 @@ abstract class SearchObject_Base {
 	public function getQuery()          {return $this->query;}
 	public function getSearchTerms()    {return $this->searchTerms;}
 	public function getSearchType()     {return $this->searchType;}
+	public function getDefaultIndex()   {return $this->defaultIndex;}
 	public function getSort()           {return $this->sort;}
 	public function getStartTime()      {return $this->initTime;}
 	public function getTotalSpeed()     {return $this->totalTime;}

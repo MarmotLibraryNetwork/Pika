@@ -728,6 +728,7 @@ function setUpSearchDisplayOptions($module, $action){
 		if ($islandoraSearchObject != false){
 			$interface->assign('islandoraSearchTypes', $islandoraSearchObject->getBasicTypes() ?? []);
 			$interface->assign('enableArchive', true);
+			$interface->assign('islandoraSearchIndex', $_REQUEST['islandoraType'] ?? $islandoraSearchObject->getDefaultIndex());
 		}
 	}
 

@@ -194,6 +194,10 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 		//********************
 		// Basic Search logic
+		// Map islandoraType to type so initBasicSearch() picks up the correct search index
+		if (!empty($_REQUEST['islandoraType']) && empty($_REQUEST['type'])){
+			$_REQUEST['type'] = $_REQUEST['islandoraType'];
+		}
 		if (!$this->initBasicSearch()){
 			$this->initAdvancedSearch();
 		}
