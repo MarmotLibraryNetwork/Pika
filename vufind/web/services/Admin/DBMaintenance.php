@@ -178,7 +178,7 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	protected function getSQLUpdates(){
-		global $configArray;
+//		global $configArray;
 
 		require_once ROOT_DIR . '/sys/DBMaintenance/library_location_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/user_updates.php';
@@ -188,7 +188,7 @@ class DBMaintenance extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/DBMaintenance/hoopla_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/browse_category_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/list_widget_updates.php';
-		//require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
+		require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
 
 		$updates = array_merge(
 			getLibraryLocationUpdates(),
