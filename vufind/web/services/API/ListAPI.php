@@ -530,7 +530,7 @@ class ListAPI extends AJAXHandler {
 
 		// Determine the caching parameters
 		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
-		$listId   = $_REQUEST['id'];
+		$listId   = $_REQUEST['id']; // Source ID of list widget, not list widget ID (e.g., search:xxxx, list:xxxx)
 		if (empty($listId)){
 			return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
 		}
