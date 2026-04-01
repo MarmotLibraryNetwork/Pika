@@ -1393,11 +1393,13 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		//TODO: standard filters to apply to search results
 		// exclude boulder items, some of the strange islandora solr docs
 		$filters = [
-			'ss_type:islandoraobject', // ignore other drupal things
-			'!ss_name_1:Page',         // Hide Page objects
-			'!ss_name_23:Boulder',     // Hide Boulder Objects
+			'ss_type:islandoraobject',   // ignore other drupal things
+			'!ss_name_1:Page',           // Hide Page objects
+			'!its_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
+			//TODO: do we need to use itm_field_library instead?
+			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 			'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
-			'!itm_field_member_of:530', //BD test?
+			'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
 			'!itm_field_member_of:640', // BD test?
 		];
 
@@ -1429,7 +1431,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 					if (strlen($filter) > 0){
 						$filter .= ' AND ';
 					}
-					$filter .= "!its_field_member_of:$privateCollection";
+					$filter .= "!itm_field_member_of:$privateCollection";
 				}
 			}
 			if (strlen($filter) > 0){
