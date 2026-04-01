@@ -91,16 +91,24 @@ class PersonTaxonomy extends I2Taxonomy
         return $this->termWithoutFieldPrefix['race_ethnicity'] ?? null;
     }
 
-    /** Military branch of service (field_military_branch). */
+    /** Military branch of service name (field_military_branch). */
     public function getMilitaryBranch(): ?string
     {
-        return $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
-    /** Military conflict or war (field_military_conflict). */
+    /** Military conflict or war name (field_military_conflict). */
     public function getMilitaryConflict(): ?string
     {
-        return $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
     /** Military rank (field_military_rank). */
@@ -193,6 +201,34 @@ class PersonTaxonomy extends I2Taxonomy
     public function getRelatedOrganization(): mixed
     {
         return $this->termWithoutFieldPrefix['related_organization'] ?? null;
+    }
+
+    /**
+     * Extract the Genealogy person ID from field_genealogy_link.
+     *
+     * The field value is expected to be a URL matching the pattern used by
+     * the old Islandora 1 marmotGenealogy linked-data type, e.g.:
+     *   https://pika.example.org/Person/Home?personId=42
+     * or the archive format:
+     *   https://pika.example.org/Person/42
+     *
+     * Returns the integer personId, or null when the field is absent or
+     * the URL cannot be parsed.
+     *
+     * @return int|null
+     */
+    public function getGenealogyPersonId(): ?int
+    {
+        $raw = $this->rawTerm['field_genealogy_link'] ?? null;
+        if (empty($raw)) {
+            return null;
+        }
+        $url = is_array($raw) ? ($raw['uri'] ?? $raw['url'] ?? '') : (string)$raw;
+        // Match /Person/<digits> or personId=<digits>
+        if (preg_match('/[\/=](\d+)\/?$/', $url, $m)) {
+            return (int)$m[1];
+        }
+        return null;
     }
 
     /**
