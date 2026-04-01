@@ -49,6 +49,16 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
+		'Islandora2_convert_privateCollections_pids_to_nodeIds' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert archive_private_collections PIDs to nodeIds',
+			'description'     => 'Converts archive_private_collections.privateCollections entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
+			'continueOnError' => false,
+			'sql'             => [
+				'convertPrivateCollectionsPidsToNodeIds'
+			]
+		],
+
 		'Islandora2_library_archive_search_facet_setting_migration' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Migrate Archive Search Facet Settings to Islandora2',
@@ -75,6 +85,44 @@ function getIslandoraUpdates(): array{
 }
 
 // Functions definitions that get executed by any of the updates above
+
+function convertPrivateCollectionsPidsToNodeIds(): bool {
+	// Populate this array: key = legacy PID, value = nodeId integer
+	$pidToNodeId = [
+		// 'namespace:1234' => 5678,
+		'cmc:3'           => 149225,
+		// These fortlewis items are objects, not collections, that are also included in the collections to hide setting for the library
+		'fortlewis:12699' => 35830,
+		'fortlewis:12700' => 35836,
+		'fortlewis:12701' => 35833,
+		'fortlewis:12702' => 35832,
+		'fortlewis:12703' => 35835,
+	];
+
+	require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
+	$collection = new ArchivePrivateCollection();
+	$collection->find(true); // single row
+
+	if (empty($collection->privateCollections)) {
+		return true;
+	}
+
+	$entries   = explode("\n", $collection->privateCollections);
+	$converted = array_map(function ($entry) use ($pidToNodeId) {
+		$trimmed = trim($entry);
+		return isset($pidToNodeId[$trimmed])
+			? (string) $pidToNodeId[$trimmed]
+			: $trimmed;
+	}, $entries);
+
+	$newValue = implode("\n", $converted);
+	if ($newValue === $collection->privateCollections) {
+		return true;
+	}
+
+	$collection->privateCollections = $newValue;
+	return $collection->update() !== false;
+}
 
 function convertCollectionsToHidePidsToNodeIds(): bool {
 	// Populate this array: key = legacy PID, value = nodeId integer
