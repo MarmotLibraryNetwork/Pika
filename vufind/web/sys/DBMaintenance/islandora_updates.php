@@ -62,7 +62,7 @@ function getIslandoraUpdates(): array{
 		'Islandora2_library_archive_search_facet_setting_migration' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Migrate Archive Search Facet Settings to Islandora2',
-			'description'     => 'Updates facetName values in library_archive_search_facet_setting from legacy Islandora (MODS) field names to their Islandora2 Solr field equivalents.',
+			'description'     => 'DONT RUN TILL FACET CONFIGURATION DONE; Updates facetName values in library_archive_search_facet_setting from legacy Islandora (MODS) field names to their Islandora2 Solr field equivalents.',
 			'continueOnError' => true,
 			'sql'             => [
 				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_field_subject' WHERE facetName = 'mods_subject_topic_ms';",
