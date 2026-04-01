@@ -299,6 +299,7 @@ class API_ArchiveAPI extends AJAXHandler {
 	 * @return array
 	 */
 	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize){
+		//TODO: update for Islandora2
 //Query for collections that should not be exported to DPLA
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
