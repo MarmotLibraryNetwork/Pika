@@ -44,7 +44,7 @@ class TaxonomyObject extends \Action
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
-        $this->tid    = (int)($_GET['tid'] ?? 0);
+        $this->tid    = (int)($_GET['id'] ?? 0);
 
         if ($this->tid <= 0) {
             $this->logger->warning('Invalid or missing tid in request.', ['tid' => $_GET['tid'] ?? null]);

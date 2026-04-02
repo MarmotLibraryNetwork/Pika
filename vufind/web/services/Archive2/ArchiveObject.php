@@ -48,9 +48,9 @@ class ArchiveObject extends \Action
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
-        $nid = (int)($_GET['nid'] ?? 0);
+        $nid = (int)($_GET['id'] ?? 0);
         if ($nid <= 0) {
-            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['nid'] ?? null]);
+            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['id'] ?? null]);
             // TODO: redirect to 404;
             return;
         }
