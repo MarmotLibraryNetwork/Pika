@@ -45,20 +45,20 @@ class Organization extends TaxonomyObject
 
         $org = $this->taxonomyObject;
 
-        $interface->assign('alternate_name',    $org->getAlternateName());
-        $interface->assign('founded_year',      $org->getFoundedYear());
-        $interface->assign('dissolved_year',    $org->getDissolvedYear());
-        $interface->assign('notes',             $org->getNotes());
-        $interface->assign('organization_type', $org->getOrganizationType());
-        $interface->assign('organization_url',  $org->getOrganizationUrl());
-        $interface->assign('related_place',     $org->getRelatedPlace());
-        $interface->assign('related_organization', $org->getRelatedOrganization());
-
         parent::launch();
+
+        $interface->assign('alternate_name',       $org->getAlternateName());
+        $interface->assign('founded_year',         $org->getFoundedYear());
+        $interface->assign('dissolved_year',       $org->getDissolvedYear());
+        $interface->assign('notes',                $org->getNotes());
+        $interface->assign('organization_type',    $org->getOrganizationType());
+        $interface->assign('organization_url',     $org->getOrganizationUrl());
+        $interface->assign('related_place',        $org->getRelatedPlace());
+        $interface->assign('related_organization', $org->getRelatedOrganization());
 
         $interface->assign('taxonomy_type_template', 'taxonomy_corporate_body');
 
         $title = $this->taxonomyObject->getTitle();
-        parent::display('taxonomy_wrapper.tpl', $title);
+        parent::display('taxonomy_corporate_body.tpl', $title);
     }
 }
