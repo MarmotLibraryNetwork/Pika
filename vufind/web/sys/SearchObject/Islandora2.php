@@ -28,7 +28,7 @@ use Solr;
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 
 class SearchObject_Islandora2 extends \SearchObject_Base {
-	protected string $searchIni = 'Islandora2searches';
+	protected string $searchIni = 'Islandora2Searches';
 	protected string $searchSource = 'islandora2';
 	protected ?string $defaultIndex = 'Islandora2Keyword';
 
