@@ -28,7 +28,7 @@ use Solr;
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 
 class SearchObject_Islandora2 extends \SearchObject_Base {
-	protected string $searchIni = 'Islandora2searches';
+	protected string $searchIni = 'Islandora2Searches';
 	protected string $searchSource = 'islandora2';
 	protected ?string $defaultIndex = 'Islandora2Keyword';
 
@@ -1395,12 +1395,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$filters = [
 			'ss_type:islandoraobject',   // ignore other drupal things
 			'!ss_name_1:Page',           // Hide Page objects
-			'!its_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
+			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
 			//TODO: do we need to use itm_field_library instead?
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 			'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
 			'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
 			'!itm_field_member_of:640', // BD test?
+			//'bs_pika_show_in_search:1', // Show in search pika options
+			//'ss_pika_usage:"yes" OR ss_pika_usage:"testOnly"' //Show in pika option
 		];
 
 		// Collections Hidden by the Current Library's Interface
@@ -1413,7 +1415,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 					if (strlen($filter) > 0){
 						$filter .= ' AND ';
 					}
-					$filter .= "!its_field_member_of:$collection";
+					$filter .= "!itm_field_member_of:$collection";
 				}
 			}
 			$filters[] = $filter;
@@ -1422,6 +1424,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Collections Hidden to All Libraries
 		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
+		$privateCollectionsObj->type = 'collection';
 		if ($privateCollectionsObj->find(true)){
 			$filter = '';
 			$privateCollections = explode("\r\n", $privateCollectionsObj->privateCollections);
@@ -1432,6 +1435,26 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 						$filter .= ' AND ';
 					}
 					$filter .= "!itm_field_member_of:$privateCollection";
+				}
+			}
+			if (strlen($filter) > 0){
+				$filters[] = $filter;
+			}
+		}
+
+		// Objects Hidden to All Libraries
+		$privateObjectsObj = new ArchivePrivateCollection();
+		$privateObjectsObj->type = 'object';
+		if ($privateObjectsObj->find(true)){
+			$filter = '';
+			$privateObjects = explode("\r\n", $privateObjectsObj->privateCollections);
+			foreach ($privateObjects as $privateObject){
+				$privateObject = trim($privateObject);
+				if (!empty($privateObject) && ctype_digit($privateObject)){
+					if (strlen($filter) > 0){
+						$filter .= ' AND ';
+					}
+					$filter .= "!its_node_id:$privateObject";
 				}
 			}
 			if (strlen($filter) > 0){

@@ -17,29 +17,57 @@
  */
 
 /**
- * Collections to Exclude from Archive Search. Currently single entry table
+ * Collections and Objects to Exclude from Archive Search.
   */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
-//Use ArchivePrivateCollection; //TODO: test this
 class Admin_ArchivePrivateCollections extends Admin_Admin{
 
 	function launch() {
-		$privateCollections = new ArchivePrivateCollection();
-		$privateCollections->find(true);
+		$collectionsRow = new ArchivePrivateCollection();
+		$collectionsRow->type = 'collection';
+		$collectionsRow->find(true);
+
+		$objectsRow = new ArchivePrivateCollection();
+		$objectsRow->type = 'object';
+		$objectsRow->find(true);
+
 		if (isset($_POST['privateCollections'])){
-			$privateCollections->privateCollections = strip_tags($_POST['privateCollections']);
-			//TODO: validate contains only id numbers and line returns; strip spaces
-			if ($privateCollections->id){
-				$privateCollections->update();
+			$collectionsRow->privateCollections = $this->sanitizeNodeIds($_POST['privateCollections']);
+			if ($collectionsRow->id){
+				$collectionsRow->update();
 			}else{
-				$privateCollections->insert();
+				$collectionsRow->insert();
 			}
 		}
+
+		if (isset($_POST['privateObjects'])){
+			$objectsRow->privateCollections = $this->sanitizeNodeIds($_POST['privateObjects']);
+			if ($objectsRow->id){
+				$objectsRow->update();
+			}else{
+				$objectsRow->insert();
+			}
+		}
+
 		global /** @var UInterface $interface */ $interface;
-		$interface->assign('privateCollections', $privateCollections->privateCollections);
+		$interface->assign('privateCollections', $collectionsRow->privateCollections);
+		$interface->assign('privateObjects',     $objectsRow->privateCollections);
 
 		$this->display('archivePrivateCollections.tpl', 'Archive Private Collections');
+	}
+
+	/** Strip each line to digits only; discard lines that are not purely numeric. */
+	private function sanitizeNodeIds(string $input): string {
+		$lines = preg_split('/[\r\n]+/', $input);
+		$valid = [];
+		foreach ($lines as $line){
+			$line = trim($line);
+			if (ctype_digit($line)){
+				$valid[] = $line;
+			}
+		}
+		return implode("\r\n", $valid);
 	}
 
 	function getAllowableRoles() {

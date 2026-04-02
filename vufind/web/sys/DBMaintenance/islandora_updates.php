@@ -59,6 +59,16 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
+		'Islandora2_archive_private_collections_add_type' => [
+			'release'         => 'Islandora2',  // TODO: change to release number
+			'title'           => 'Add type column to archive_private_collections',
+			'description'     => 'Adds an enum type column to distinguish collection vs object entries; tags the existing row as type=collection.',
+			'continueOnError' => false,
+			'sql'             => [
+				"ALTER TABLE archive_private_collections ADD COLUMN type ENUM('collection','object') NOT NULL DEFAULT 'collection' AFTER id",
+			]
+		],
+
 		'Islandora2_library_archive_search_facet_setting_migration' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Migrate Archive Search Facet Settings to Islandora2',
