@@ -89,13 +89,35 @@ class CorporateBodyTaxonomy extends I2Taxonomy
     }
 
     /**
-     * Raw related place reference (field_related_place).
+     * Related place references merged with additional info (field_related_place +
+     * field_related_place_addl_info), matched by array index.
      *
-     * @return mixed Term reference array or null.
+     * Each entry is the place term array optionally merged with its corresponding
+     * addl_info array. Extra entries from either array are included as-is.
+     *
+     * @return array[]|null
      */
-    public function getRelatedPlace(): mixed
+    public function getRelatedPlace(): ?array
     {
-        return $this->termWithoutFieldPrefix['related_place'] ?? null;
+        $places   = $this->termWithoutFieldPrefix['related_place'] ?? null;
+        $addlInfo = $this->termWithoutFieldPrefix['related_place_addl_info'] ?? null;
+
+        if (empty($places) && empty($addlInfo)) {
+            return null;
+        }
+
+        $places   = is_array($places)   ? array_values($places)   : [];
+        $addlInfo = is_array($addlInfo) ? array_values($addlInfo) : [];
+
+        $count  = max(count($places), count($addlInfo));
+        $merged = [];
+        for ($i = 0; $i < $count; $i++) {
+            $place = $places[$i] ?? [];
+            $extra = $addlInfo[$i] ?? [];
+            $merged[] = array_merge($place, $extra);
+        }
+
+        return $merged;
     }
 
     /**
