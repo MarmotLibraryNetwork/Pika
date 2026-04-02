@@ -399,7 +399,7 @@
 							<div class="adminMenuLink{if $action == "ArchiveUsageByContentType"} active{/if}"><a href="/Admin/ArchiveUsageByContentType">Archive Usage by Content Type</a></div>
 							{if in_array('archives', $userRoles) && in_array('opacAdmin', $userRoles)}
 								<hr class="menu">
-								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="/Admin/ArchivePrivateCollections">Archive Private Collections</a></div>
+								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="/Admin/ArchivePrivateCollections">Archive Private Collections and Objects</a></div>
 								<div class="adminMenuLink{if $action == "ClearArchiveCache"} active{/if}"><a href="/Admin/ClearArchiveCache">Clear Cache</a></div>
 							{/if}
 						</div>

@@ -1424,6 +1424,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Collections Hidden to All Libraries
 		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
+		$privateCollectionsObj->type = 'collection';
 		if ($privateCollectionsObj->find(true)){
 			$filter = '';
 			$privateCollections = explode("\r\n", $privateCollectionsObj->privateCollections);
@@ -1434,6 +1435,26 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 						$filter .= ' AND ';
 					}
 					$filter .= "!itm_field_member_of:$privateCollection";
+				}
+			}
+			if (strlen($filter) > 0){
+				$filters[] = $filter;
+			}
+		}
+
+		// Objects Hidden to All Libraries
+		$privateObjectsObj = new ArchivePrivateCollection();
+		$privateObjectsObj->type = 'object';
+		if ($privateObjectsObj->find(true)){
+			$filter = '';
+			$privateObjects = explode("\r\n", $privateObjectsObj->privateCollections);
+			foreach ($privateObjects as $privateObject){
+				$privateObject = trim($privateObject);
+				if (!empty($privateObject) && ctype_digit($privateObject)){
+					if (strlen($filter) > 0){
+						$filter .= ' AND ';
+					}
+					$filter .= "!its_node_id:$privateObject";
 				}
 			}
 			if (strlen($filter) > 0){
