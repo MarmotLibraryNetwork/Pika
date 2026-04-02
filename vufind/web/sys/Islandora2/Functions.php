@@ -36,6 +36,7 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'paged content'    => 'PagedContent',
     'postcard'         => 'Postcard',
     'video'            => 'Video',
+    'academic paper'   => 'DigitalDocument'
 ];
 
 /**
