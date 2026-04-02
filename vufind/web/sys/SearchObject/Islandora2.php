@@ -1099,6 +1099,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				$currentFacetValueSettings['value'] = $value;
 				//TODO: is collection facet check
 				if ($isNIDFacet){
+					//TODO: NID facet handling
 
 				} elseif ($isTranslationFacet){
 					//TODO: Contributing Library Look up
