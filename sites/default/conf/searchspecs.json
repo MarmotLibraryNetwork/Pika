@@ -814,6 +814,9 @@
       "tm_X3b_en_field_pid": [
         ["exact", 2000]
       ],
+      "ss_legacy_pid" : [
+        ["exact", 2000]
+      ],
       "sm_field_local_identifier": [ /*Local Indentifier (string)*/ /*confirmed search of identifier string works*/
         ["onePhrase", 2000]
       ],
