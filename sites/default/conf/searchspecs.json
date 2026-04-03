@@ -796,7 +796,10 @@
       "ss_field_album_title": [ /*TODO: needs a text field */
         ["onePhrase", 1100]
       ],
-      "sm_title_2": [/* collection string */
+      "sm_title_2": [/* collection string TODO:remove */
+        ["onePhrase", 800]
+      ],
+      "sm_collection": [/* collection string */
         ["onePhrase", 800]
       ],
       /* Description Fields */
@@ -811,7 +814,7 @@
       "its_node_id": [ /*TODO: new munge: intergerOnly*/
         ["exact", 10000]
       ],
-      "tm_X3b_en_field_pid": [
+      "tm_X3b_en_field_pid": [ /*TODO: remove */
         ["exact", 2000]
       ],
       "ss_legacy_pid" : [
@@ -839,21 +842,32 @@
       "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
         ["and", 300]
       ],
-      /*TODO: search genre/format field? */
       /* Related Marmot Entities */
-      "tm_X3b_en_name_39": [ /*Related Organizations */
+      "tm_X3b_en_name_39": [ /*Related Organizations TODO: remove */
+        ["and", 10]
+      ],
+      "tm_X3b_en_field_related_organization": [ /*Related Organizations */
         ["and", 10]
       ],
       "tm_X3b_en_field_linked_agent_fulltext" : [ /*Linked Agent (Contributors) */
         ["and", 10]
       ],
-      "tm_X3b_en_name_40" : [ /* Related Places */
+      "tm_X3b_en_name_40" : [ /* Related Places TODO: remove */
         ["and", 10]
       ],
-      "tm_X3b_en_name_38" : [ /* Related Events */
+      "tm_X3b_en_txt_related_place" : [ /* Related Places */
         ["and", 10]
       ],
-      "sm_name_8": [ /* Related People: TODO use text field (none currently) */
+      "tm_X3b_en_name_38" : [ /* Related Events TODO: remove */
+        ["and", 10]
+      ],
+      "tm_X3b_en_txt_related_event" : [ /* Related Events */
+        ["and", 10]
+      ],
+      "sm_name_8": [ /* Related People: TODO remove */
+        ["and", 10]
+      ],
+      "tm_X3b_en_txt_related_person": [ /* Related People  */
         ["and", 10]
       ],
       "sm_field_display_title" : [ /* Related Objects (Paragraph) */
@@ -928,8 +942,11 @@
       "tm_X3b_en_field_citation_notes": [ /* Citation Notes */
         ["and", 10]
       ],
-      "sm_field_rel_materials_note": [ /* Materials Note TODO: needs to be a text field */
+      "sm_field_rel_materials_note": [ /* Materials Note TODO: Remove */
         ["exact", 10]
+      ],
+      "tm_X3b_en_txt_materials_note": [ /* Materials Note  */
+        ["and", 10]
       ],
       "tm_X3b_en_field_record_origin": [
         ["exact", 20],
@@ -1005,21 +1022,32 @@
       "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
         ["exact", 300]
       ],
-      /*TODO: search genre/format field? */
       /* Related Marmot Entities */
-      "tm_X3b_en_name_39": [ /*Related Organizations */
+      "tm_X3b_en_name_39": [ /*Related Organizations TODO: remove */
+        ["exact", 10]
+      ],
+      "tm_X3b_en_field_related_organization": [ /*Related Organizations */
         ["exact", 10]
       ],
       "tm_X3b_en_field_linked_agent_fulltext" : [ /*Linked Agent (Contributors) */
         ["exact", 10]
       ],
-      "tm_X3b_en_name_40" : [ /* Related Places */
+      "tm_X3b_en_name_40" : [ /* Related Places TODO: remove */
         ["exact", 10]
       ],
-      "tm_X3b_en_name_38" : [ /* Related Events */
+      "tm_X3b_en_txt_related_place" : [ /* Related Places */
         ["exact", 10]
       ],
-      "sm_name_8": [ /* Related People: TODO use text field (none currently) */
+      "tm_X3b_en_name_38" : [ /* Related Events TODO: remove */
+        ["exact", 10]
+      ],
+      "tm_X3b_en_txt_related_event" : [ /* Related Events */
+        ["exact", 10]
+      ],
+      "sm_name_8": [ /* Related People: TODO remove */
+        ["exact", 10]
+      ],
+      "tm_X3b_en_txt_related_person": [ /* Related People  */
         ["exact", 10]
       ],
       "sm_field_display_title" : [ /* Related Objects (Paragraph) */
