@@ -52,7 +52,7 @@ if (!str_contains($_GET['image'], DIR_SEP) && file_exists($fileName)){
 else{
 	if (str_contains($_GET['image'], DIR_SEP)){
 		global $pikaLogger;
-		$pikaLogger->warn("Image contained invalid character /", $_GET['image']);
+		$pikaLogger->warn("Image contained invalid character /", array($_GET['image']));
 	}
 	return false;
 }
