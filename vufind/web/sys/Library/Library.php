@@ -216,6 +216,7 @@ class Library extends DB_DataObject {
 	public $sidebarMenuButtonText;
 	public $enableArchive;
 	public $archiveNamespace;
+	public $libraryTid;
 	public $archivePid;
 	public $allowRequestsForArchiveMaterials;
 	public $archiveRequestMaterialsHeader;
@@ -955,7 +956,8 @@ class Library extends DB_DataObject {
 			'archiveSection' => ['property' =>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink' =>'https://marmot-support.atlassian.net/l/c/RdAMY41Q', 'properties' => [
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
-				'archivePid'                           => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				'libraryTid'                           => ['property' => 'libraryTid', 'type' => 'integer', 'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],

@@ -79,6 +79,18 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
+		'Islandora2_convert_archiveNamespace_to_libraryTid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert library.archiveNamespace to libraryTid',
+			'description'     => 'Adds a libraryTid column, looks up each library\'s archivePid entity PID in Islandora2 Solr to find its taxonomy term ID, stores the result, then alters the column to INT UNSIGNED.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ADD COLUMN libraryTid INT UNSIGNED NULL AFTER archivePid",
+				'convertArchiveNamespaceToLibraryTid',
+				"ALTER TABLE library MODIFY COLUMN libraryTid INT UNSIGNED",
+			]
+		],
+
 		'Islandora2_library_archive_search_facet_setting_migration' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Migrate Archive Search Facet Settings to Islandora2',
@@ -219,6 +231,33 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 			if ($library->update() === false) {
 				$success = false;
 			}
+		}
+	}
+	return $success;
+}
+
+function convertArchiveNamespaceToLibraryTid(): bool {
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Islandora2.php';
+	require_once ROOT_DIR . '/sys/SearchObjectFactory.php';
+
+	/** @var SearchObject_Islandora2 $searchObject */
+	$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+
+	$library = new Library();
+	$library->whereAdd('archivePid IS NOT NULL');
+	$library->whereAdd("archivePid != ''");
+	$library->find();
+
+	$success = true;
+	while ($library->fetch()) {
+		$tids = $searchObject->getLegacyEntitiesTID([$library->archivePid]);
+		if (empty($tids)) {
+			continue;
+		}
+		$library->libraryTid = (int) $tids[0];
+		if ($library->update() === false) {
+			$success = false;
 		}
 	}
 	return $success;

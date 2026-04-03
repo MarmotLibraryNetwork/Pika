@@ -673,15 +673,16 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Search Solr for legacy PIDs and return their Islandora2 node IDs.
+	 * Search Solr for legacy PIDs and return a single ID field from matching documents.
 	 *
-	 * @param string[] $pids      Legacy PID strings to search for (e.g. 'namespace:id')
-	 * @param string $pidField    Solr field to search against. Possible values: 'ss_legacy_pid', 'ss_legacy_entity_pid'
-	 * @param array|null $filters Optional search filters to apply
-	 * @param int $batchSize      Number of PIDs to query per request
-	 * @return array              Array of its_node_id values for matching documents
+	 * @param string[] $pids         Legacy PID strings to search for (e.g. 'namespace:id')
+	 * @param string $pidField       Solr field to search against. Possible values: 'ss_legacy_pid', 'ss_legacy_entity_pid'
+	 * @param array|null $filters    Optional search filters to apply
+	 * @param int $batchSize         Number of PIDs to query per request
+	 * @param string $returnField    Solr field to return from matching documents (e.g. 'its_node_id', 'its_tid')
+	 * @return array                 Array of $returnField values for matching documents
 	 */
-	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100){
+	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
 		$solrDocArray = [];
 		$numIds       = count($pids);
 		if ($numIds) {
@@ -705,7 +706,7 @@ class Solr implements IndexEngine {
 				$options  = [
 					'q'    => "$pidField:($idString)",
 					'q.op' => 'OR',
-					'fl'   => 'its_node_id',
+					'fl'   => $returnField,
 					'rows' => $batchSize,
 					'wt'   => 'json'
 				];
@@ -725,7 +726,7 @@ class Solr implements IndexEngine {
 					$this->logger->error('getLegacyPIDs: ' . $this->client->getErrorMessage());
 				} else {
 					$result       = $this->_process($result);
-					$tempArray    = array_column($result['response']['docs'], 'its_node_id');
+					$tempArray    = array_column($result['response']['docs'], $returnField);
 					$solrDocArray = array_merge($solrDocArray, $tempArray);
 				}
 

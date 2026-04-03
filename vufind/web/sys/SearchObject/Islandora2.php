@@ -1328,6 +1328,19 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
+	 * Retrieve taxonomy term IDs (TIDs) for an array of legacy Islandora 1 entity PIDs.
+	 *
+	 * Queries the ss_legacy_entity_pid field without applying any search filters and
+	 * returns its_tid values from matching taxonomy term Solr documents (not archive objects).
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 entity PIDs to look up
+	 * @return int[]          Array of its_tid values for matching taxonomy term documents
+	 */
+	function getLegacyEntitiesTID($pids):array{
+		return $this->indexEngine->getLegacyPIDs($pids, 'ss_legacy_entity_pid', null, 100, 'its_tid');
+	}
+
+	/**
 	 * Retrieve a single Solr document by Islandora2 node ID.
 	 *
 	 * Uses {@see \Solr::getIslandora2NodeIds()} which queries against the its_node_id
