@@ -39,6 +39,16 @@ function getIslandoraUpdates(): array{
 
 	return [
 
+		'Islandora2_convert_objectsToHide_pids_to_nodeIds' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert objectsToHide PIDs to nodeIds',
+			'description'     => 'Converts library.objectsToHide entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
+			'continueOnError' => false,
+			'sql'             => [
+				'convertObjectsToHidePidsToNodeIds'
+			]
+		],
+
 		'Islandora2_convert_collectionsToHide_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Convert collectionsToHide PIDs to nodeIds',
@@ -132,6 +142,43 @@ function convertPrivateCollectionsPidsToNodeIds(): bool {
 
 	$collection->privateCollections = $newValue;
 	return $collection->update() !== false;
+}
+
+function convertObjectsToHidePidsToNodeIds(): bool {
+	// Populate this array: key = legacy PID, value = nodeId integer
+	$pidToNodeId = [
+		'fortlewis:12699' => 35830,
+		'fortlewis:12700' => 35836,
+		'fortlewis:12701' => 35833,
+		'fortlewis:12702' => 35832,
+		'fortlewis:12703' => 35835,
+	];
+
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	$library = new Library();
+	$library->whereAdd('objectsToHide IS NOT NULL');
+	$library->whereAdd("objectsToHide != ''");
+	$library->find();
+
+	$success = true;
+	while ($library->fetch()) {
+		$entries   = explode("\r\n", $library->objectsToHide);
+		$converted = array_map(function ($entry) use ($pidToNodeId) {
+			$trimmed = trim($entry);
+			return isset($pidToNodeId[$trimmed])
+				? (string) $pidToNodeId[$trimmed]
+				: $trimmed;
+		}, $entries);
+
+		$newValue = implode("\r\n", $converted);
+		if ($newValue !== $library->objectsToHide) {
+			$library->objectsToHide = $newValue;
+			if ($library->update() === false) {
+				$success = false;
+			}
+		}
+	}
+	return $success;
 }
 
 function convertCollectionsToHidePidsToNodeIds(): bool {
