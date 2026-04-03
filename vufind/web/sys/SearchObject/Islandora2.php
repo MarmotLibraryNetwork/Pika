@@ -438,7 +438,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Get error message from index response, if any.  This will only work if
+	 * Get an error message from index response, if any.  This will only work if
 	 * processSearch was called with $returnIndexErrors set to true!
 	 *
 	 * @access  public
@@ -446,6 +446,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function getIndexError(){
 		//TODO: further refine error return
+		//probably return $this->indexResult['error']['msg']
 		return $this->indexResult['error'] ?? false;
 	}
 
@@ -966,7 +967,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * Set an overriding array of archive Node Ids.
 	 *
 	 * @access  public
-	 * @param   array  $ids archive PIDs to load
+	 * @param   array  $ids archive Node IDs to load
 	 */
 	public function setQueryIDs($ids){
 		$this->query = self::IDFIELD . ':(' . implode(' ', $ids) . ')';
@@ -1296,25 +1297,50 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 //		unset($objPHPExcel);
 	}
 
-	function getRecord($nid):array{
-		//TODO: Have to confirm is the node id populates the SOLR 'ids' index
-		// if not, we would have to do a specific Id searches
-		//CONFIRMED: nid is not in Islandora2 ids index
-		return $this->indexEngine->getRecord($nid);
-	}
-
 
 	/**
-	 * TODO: probably need to create a new method in the SOLR search class
+	 * Retrieve Solr documents for an array of legacy Islandora 1 PIDs.
 	 *
-	 * Retrieves Solr Documents for an array of PIDs
-	 * @param string[] $ids  The PIDs of the Solr document to retrieve
-	 * @return array of filtered PIDs
+	 * Queries against the PID field (e.g. 'namespace:id' format) with the current
+	 * standard filters applied. Use for lookups by legacy PID, not Islandora2 node IDs.
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 PIDs to retrieve (e.g. 'fortlewis:12699')
+	 * @return array          Array of matching Solr document arrays
 	 */
-	function getFilteredPIDs($ids):array{
+	function getLegacyFilteredPIDs($pids):array{
 		$filterQuery = $this->setFinalFilterQuery();
-		return $this->indexEngine->getFilteredPIDs($ids, $filterQuery);
+		return $this->indexEngine->getFilteredPIDs($pids, $filterQuery);
 	}
+
+	/**
+	 * Retrieve full Solr documents for an array of Islandora2 node IDs, with standard filters applied.
+	 *
+	 * Delegates to {@see \Solr::getIslandora2NodeIds()} which queries the its_node_id
+	 * field via /select. Standard search filters (library visibility, private collections, etc.)
+	 * are applied via {@see setFinalFilterQuery()}.
+	 *
+	 * @param int[]|string[] $nids  Islandora2 node IDs to retrieve
+	 * @return array                Array of matching Solr document arrays
+	 */
+	function getFilteredNodeIds($nids):array{
+		$filterQuery = $this->setFinalFilterQuery();
+		return $this->indexEngine->getIslandora2NodeIds($nids, $filterQuery);
+	}
+
+	/**
+	 * Retrieve a single Solr document by Islandora2 node ID.
+	 *
+	 * Uses {@see \Solr::getIslandora2NodeIds()} which queries against the its_node_id
+	 * field via /select — the /get endpoint cannot be used because Islandora2 node IDs
+	 * are not stored in the Solr 'ids' index.
+	 *
+	 * @param int|string $nid  The Islandora2 node ID
+	 * @return array           Array of matching Solr document arrays (normally one entry)
+	 */
+	function getRecord($nid):array{
+		return $this->indexEngine->getIslandora2NodeIds([$nid]);
+	}
+
 
 	protected $params;
 	/**
