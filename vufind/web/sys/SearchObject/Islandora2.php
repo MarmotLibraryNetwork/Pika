@@ -1391,82 +1391,74 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * @return array
 	 */
 	private function getStandardFilters(){
-		//TODO: standard filters to apply to search results
-		// exclude boulder items, some of the strange islandora solr docs
+		global $configArray;
 		$filters = [
 			'ss_type:islandoraobject',   // ignore other drupal things
+			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
 			'!ss_name_1:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
-			//TODO: do we need to use itm_field_library instead?
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 			'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
 			'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
 			'!itm_field_member_of:640', // BD test?
-			//'bs_pika_show_in_search:1', // Show in search pika options
-			//'ss_pika_usage:"yes" OR ss_pika_usage:"testOnly"' //Show in pika option
 		];
+
+		// Pika Search Options
+		// Pika Usage
+		$filters[] = $configArray['Site']['isProduction']
+			? "!ss_pika_usage:(no OR testOnly)"
+			: "!ss_pika_usage:no";
 
 		// Collections Hidden by the Current Library's Interface
 		global /** @var \Library $library */ $library;
-		if (!empty($library->collectionsToHide)){
-			$collectionsToHide = explode("\r\n", $library->collectionsToHide);
-			$filter = '';
-			foreach ($collectionsToHide as $collection){
-				if (!empty($collection) && ctype_digit($collection)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!itm_field_member_of:$collection";
-				}
-			}
-			$filters[] = $filter;
-		}
+		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
+		if ($filter) $filters[] = $filter;
+
+		// Objects Hidden by the Current Library's Interface
+		$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
+		if ($filter) $filters[] = $filter;
 
 		// Collections Hidden to All Libraries
 		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
 		$privateCollectionsObj->type = 'collection';
 		if ($privateCollectionsObj->find(true)){
-			$filter = '';
-			$privateCollections = explode("\r\n", $privateCollectionsObj->privateCollections);
-			foreach ($privateCollections as $privateCollection){
-				$privateCollection = trim($privateCollection);
-				if (!empty($privateCollection) && ctype_digit($privateCollection)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!itm_field_member_of:$privateCollection";
-				}
-			}
-			if (strlen($filter) > 0){
-				$filters[] = $filter;
-			}
+			$filter = $this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of');
+			if ($filter) $filters[] = $filter;
 		}
 
 		// Objects Hidden to All Libraries
 		$privateObjectsObj = new ArchivePrivateCollection();
 		$privateObjectsObj->type = 'object';
 		if ($privateObjectsObj->find(true)){
-			$filter = '';
-			$privateObjects = explode("\r\n", $privateObjectsObj->privateCollections);
-			foreach ($privateObjects as $privateObject){
-				$privateObject = trim($privateObject);
-				if (!empty($privateObject) && ctype_digit($privateObject)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!its_node_id:$privateObject";
-				}
-			}
-			if (strlen($filter) > 0){
-				$filters[] = $filter;
-			}
+			$filter = $this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id');
+			if ($filter) $filters[] = $filter;
 		}
 
 		return $filters;
 	}
 
 
+
+	/**
+	 * Build a compound Solr filter from a newline-separated list of numeric node IDs.
+	 *
+	 * @param string|null $nodeIdField  Raw \r\n-separated node ID string (e.g. $library->objectsToHide)
+	 * @param string      $solrFilter   Solr filter prefix, e.g. '!its_node_id' or '!itm_field_member_of'
+	 * @return string|null              Combined filter string, or null if no valid IDs found
+	 */
+	private function nodeIdsToFilter(?string $nodeIdField, string $solrFilter): ?string {
+		if (empty($nodeIdField)){
+			return null;
+		}
+		$parts = [];
+		foreach (explode("\r\n", $nodeIdField) as $nodeId){
+			if (!empty($nodeId) && ctype_digit($nodeId)){
+				$parts[] = "$solrFilter:$nodeId";
+			}
+		}
+		return empty($parts) ? null : implode(' AND ', $parts);
+	}
 
 	/**
 	 * Fetch Facet Configuration settings
