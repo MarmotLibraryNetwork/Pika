@@ -43,7 +43,7 @@ switch ($_GET['size']){
 
 global $configArray;
 $fileName = $configArray['Site']['coverPath'] .DIR_SEP. $sizeFolder . DIR_SEP . $_GET['image'];
-if (file_exists($fileName)){
+if (!str_contains($_GET['image'], '/') && file_exists($fileName)){
 	[,,$imageType] = getimagesize($fileName);
 	header("Content-type: " . image_type_to_mime_type($imageType));
 	readfile($fileName);
