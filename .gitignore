@@ -148,3 +148,7 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 # Output file for PRTG sensor #
 ###############################
 vufind/web/solrIndex.json
+
+# Claude
+.claude
+.claude/*
