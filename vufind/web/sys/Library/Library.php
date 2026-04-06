@@ -58,9 +58,9 @@ class Library extends DB_DataObject {
 	public $restrictSearchByLibrary;
 	public $archiveOnlyInterface;
 	public $partnerOfSystem;
-	public $allowProfileUpdates;   //tinyint(4)
-	public $allowFreezeHolds;   //tinyint(4)
-	public $scope; 					//smallint(6) // The Sierra OPAC scope
+	public $allowProfileUpdates;  		//tinyint(4)
+	public $allowFreezeHolds;     		//tinyint(4)
+	public $scope;      							//smallint(6) // The Sierra OPAC scope
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -214,10 +214,12 @@ class Library extends DB_DataObject {
 	public $sideBarOnRight;
 	public $showSidebarMenu;
 	public $sidebarMenuButtonText;
+
+	// Digital Archive Settings
 	public $enableArchive;
-	public $archiveNamespace;
-	public $libraryTid;
-	public $archivePid;
+	public $archiveNamespace; // Islandora1 TODO: remove
+	public $libraryTid;  // Islandora2
+	public $archivePid;  // Islandora1 TODO: remove
 	public $allowRequestsForArchiveMaterials;
 	public $archiveRequestMaterialsHeader;
 	public $claimAuthorshipHeader;
@@ -226,28 +228,40 @@ class Library extends DB_DataObject {
 	public $collectionsToHide;
 	public $objectsToHide;
 	public $defaultArchiveCollectionBrowseMode;
+
+	// Subjects
 	public $showLCSubjects; // Library of Congress Subjects
 	public $showBisacSubjects;
 	public $showFastAddSubjects;
 	public $showOtherSubjects;
 	public $maxFinesToAllowAccountUpdates;
+
+	// EDS
 	public $edsApiProfile;
 	public $edsApiUsername;
 	public $edsApiPassword;
 	public $edsSearchProfile;
+
 	protected $patronNameDisplayStyle; // Needs to be protected so __get and __set are called
 	private $patronNameDisplayStyleChanged = false; // Track changes so we can clear values for existing patrons
+
 	public $includeAllRecordsInShelvingFacets;
 	public $includeAllRecordsInDateAddedFacets;
 	public $includeOnOrderRecordsInDateAddedFacetValues;
 	public $alwaysShowSearchResultsMainDetails;
+
+	// CAS Authentication
 	public $casHost;
 	public $casPort;
 	public $casContext;
+
 	public $showPikaLogo;
+
+	// Masquerade
 	public $masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
+
 	public $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public $materialsRequestDaysToPreserve;
 	public $showGroupedHoldCopiesCount;

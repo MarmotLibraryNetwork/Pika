@@ -236,21 +236,41 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 }
 
 function convertArchiveNamespaceToLibraryTid(): bool {
-	/** @var SearchObject_Islandora2 $searchObject */
-	$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+	// Maps library subdomain (= archiveNamespace) to the Islandora2 contributing-library taxonomy term ID (TID).
+	// These TIDs correspond to the ss_library facet, not the legacy entity PIDs.
+	$namespaceTidMap = [
+		'adams'           => 303,
+		'ccu'             => 428,
+		'cmc'             => 112135,
+		'englewood'       => 315,
+		'evld'            => 337,
+		'fortlewis'       => 249,
+		'garfield'        => 324,
+		'gunnison'        => 24147,
+		'lafayette'       => 354,
+		'mesa'            => 261,
+		'montrose'        => null,
+		'pineriver'       => 243,
+		'pitkin'          => 351,
+		'salida'          => 365,
+		'steamboatlibrary'=> 277,
+		'vail'            => 294,
+		'western'         => 433,
+		'wilkinson'       => 30940,
+	];
 
 	$library = new Library();
-	$library->whereAdd('archivePid IS NOT NULL');
-	$library->whereAdd("archivePid != ''");
+	$library->whereAdd('archiveNamespace IS NOT NULL');
+	$library->whereAdd("archiveNamespace != ''");
 	$library->find();
 
 	$success = true;
 	while ($library->fetch()) {
-		$tids = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
-		if (empty($tids)) {
+		$tid = $namespaceTidMap[$library->archiveNamespace] ?? null;
+		if ($tid === null) {
 			continue;
 		}
-		$library->libraryTid = (int) $tids[0];
+		$library->libraryTid = $tid;
 		if ($library->update() === false) {
 			$success = false;
 		}

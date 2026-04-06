@@ -1447,8 +1447,13 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			? "!ss_pika_usage:(no OR testOnly)"
 			: "!ss_pika_usage:no";
 
-		// Collections Hidden by the Current Library's Interface
 		global /** @var \Library $library */ $library;
+		// Hide All other libraries' objects
+		if ($library->hideAllCollectionsFromOtherLibraries && !empty($library->libraryTid)){
+			$filters[] = "itm_field_library:$library->libraryTid";
+		}
+
+		// Collections Hidden by the Current Library's Interface
 		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
 		if ($filter) $filters[] = $filter;
 
