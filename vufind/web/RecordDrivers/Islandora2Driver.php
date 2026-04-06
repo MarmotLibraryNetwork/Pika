@@ -331,7 +331,7 @@ class Islandora2Driver extends RecordInterface
     public function getRecordUrl()
     {
 		$obj = $this->ensureI2Object();
-        if ($this->nodeId <= 0) {
+        if ($this->nodeId <= 0 || is_null($obj)) {
             return '#';
         }
 		$displayModel = strtolower($obj->getDisplayModel());
