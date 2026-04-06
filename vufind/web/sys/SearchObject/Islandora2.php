@@ -1444,7 +1444,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Pika Search Options
 		// Pika Usage
 		$filters[] = $configArray['Site']['isProduction']
-			? "!ss_pika_usage:(no OR testOnly)"
+			? "!ss_pika_usage:(no OR testonly)" // 'testonly' is lower-case in test rather than camelcase
 			: "!ss_pika_usage:no";
 
 		global /** @var \Library $library */ $library;
