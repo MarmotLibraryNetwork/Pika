@@ -86,8 +86,7 @@ function getIslandoraUpdates(): array{
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE library ADD COLUMN libraryTid INT UNSIGNED NULL AFTER archivePid",
-				'convertArchiveNamespaceToLibraryTid',
-				"ALTER TABLE library MODIFY COLUMN libraryTid INT UNSIGNED",
+				'convertArchiveNamespaceToLibraryTid'
 			]
 		],
 
@@ -237,10 +236,6 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 }
 
 function convertArchiveNamespaceToLibraryTid(): bool {
-	require_once ROOT_DIR . '/sys/Library/Library.php';
-	require_once ROOT_DIR . '/sys/SearchObject/Islandora2.php';
-	require_once ROOT_DIR . '/sys/SearchObjectFactory.php';
-
 	/** @var SearchObject_Islandora2 $searchObject */
 	$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 
