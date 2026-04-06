@@ -246,7 +246,7 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 
 	$success = true;
 	while ($library->fetch()) {
-		$tids = $searchObject->getLegacyEntitiesTID([$library->archivePid]);
+		$tids = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
 		if (empty($tids)) {
 			continue;
 		}

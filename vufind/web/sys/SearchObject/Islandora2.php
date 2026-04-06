@@ -1297,21 +1297,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 //		unset($objPHPExcel);
 	}
 
-
-	/**
-	 * Retrieve Solr documents for an array of legacy Islandora 1 PIDs.
-	 *
-	 * Queries against the PID field (e.g. 'namespace:id' format) with the current
-	 * standard filters applied. Use for lookups by legacy PID, not Islandora2 node IDs.
-	 *
-	 * @param string[] $pids  Legacy Islandora 1 PIDs to retrieve (e.g. 'fortlewis:12699')
-	 * @return array          Array of matching Solr document arrays
-	 */
-	function getLegacyFilteredPIDs($pids):array{
-		$filterQuery = $this->setFinalFilterQuery();
-		return $this->indexEngine->getFilteredPIDs($pids, $filterQuery);
-	}
-
 	/**
 	 * Retrieve full Solr documents for an array of Islandora2 node IDs, with standard filters applied.
 	 *
@@ -1336,8 +1321,22 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * @param string[] $pids  Legacy Islandora 1 entity PIDs to look up
 	 * @return int[]          Array of its_tid values for matching taxonomy term documents
 	 */
-	function getLegacyEntitiesTID($pids):array{
+	function getLegacyEntitiesTIDs($pids):array{
 		return $this->indexEngine->getLegacyPIDs($pids, 'ss_legacy_entity_pid', null, 100, 'its_tid');
+	}
+
+	/**
+	 * Retrieve Islandora2 node IDs for an array of legacy Islandora 1 PIDs.
+	 *
+	 * Queries the ss_legacy_pid field without applying any search filters and
+	 * returns its_node_id values from matching Solr documents.
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 PIDs to look up (e.g. 'fortlewis:12699')
+	 * @return int[]          Array of its_node_id values for matching documents
+	 */
+	function getNodeIdsbyLegacyPIDs(array $pids):array{
+		//TODO: apply standard filters
+		return $this->indexEngine->getLegacyPIDs($pids, 'ss_legacy_pid');
 	}
 
 	/**
