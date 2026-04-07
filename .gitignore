@@ -148,3 +148,11 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 # Output file for PRTG sensor #
 ###############################
 vufind/web/solrIndex.json
+vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
+
+# VSCode
+.vscode/settings.json
+.vscode/pika.code-workspace
+.vscode/launch.json
+.vscode/launch.json
+
