@@ -18,7 +18,7 @@
     <p>
       You will be redirected automatically in
       <strong><span id="legacy-redirect-countdown">5</span></strong>
-      second{if true}s{/if}.
+      seconds.
     </p>
 
     <script>
