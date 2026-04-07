@@ -84,10 +84,10 @@
 								{foreach from=$related_place item=place}
 									<div class="row archive-field-row">
 										<div class="result-label col-sm-4">
-											{$place.relation_label|escape} {*if $place.start_date_rel_place|escape*}{$place.start_date_rel_place} -{*/if*} {if $place.end_date_rel_place}{$place.end_date_rel_place}{/if}
+											{$place.relation_label|escape} {if $place.start_date_rel_place|escape}{$place.start_date_rel_place} -{/if} {if $place.end_date_rel_place}{$place.end_date_rel_place}{/if}
 										</div>
 										<div class="result-value col-sm-8">
-											<a href="/Archive2/Place?tid={$place.tid}">{$place.name|escape}</a>
+											<a href="/Archive2/Place/{$place.tid}">{$place.name|escape}</a>
 										</div>
 									</div>
 								{/foreach}
