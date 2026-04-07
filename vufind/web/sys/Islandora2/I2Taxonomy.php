@@ -250,6 +250,8 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         $thumbnail = $this->termWithoutFieldPrefix['thumbnail'] ?? null;
         if (is_array($thumbnail) && !empty($thumbnail['url'])) {
             return $thumbnail;
+        } elseif (isset($this->default_thumbnail)) {
+            return $this->default_thumbnail;
         }
         return null;
     }
