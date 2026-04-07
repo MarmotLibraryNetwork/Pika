@@ -7,13 +7,13 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-6">
+		<div class="col-xs-4">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail"
 					style="max-width:400px; margin:0; float: left;">
 			{/if}
 		</div>
-		<div class="col-xs-6">
+		<div class="col-xs-8">
 			{if $alternate_name}
 				{* TODO: this should handle an array names *}
 				{if is_array($alternate_name)}

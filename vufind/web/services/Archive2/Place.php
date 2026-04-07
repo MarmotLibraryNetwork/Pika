@@ -59,6 +59,6 @@ class Place extends TaxonomyObject
         $interface->assign('taxonomy_type_template', 'taxonomy_geographic_location');
 
         $title = $this->taxonomyObject->getTitle();
-        parent::display('taxonomy_geographic_location.tpl', $title);
+        parent::display('taxonomy_place.tpl', $title);
     }
 }
