@@ -212,6 +212,14 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    public function getDateCreated($format='m/d/Y') {
+        $created = $this->created;
+        if (empty($created)) {
+            return null;
+        }
+        return date($format, $created);
+    }
+
     /**
      * Return the description for this node, preferring the long form when available.
      *

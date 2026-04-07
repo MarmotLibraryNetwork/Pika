@@ -454,6 +454,17 @@ class Islandora2Driver extends RecordInterface
         return $title !== '' ? $title : ($this->nodeId > 0 ? 'Islandora Node ' . $this->nodeId : '');
     }
 
+    public function getDateCreated($format='d/m/Y')
+    {
+        $obj = $this->ensureI2Object();
+        if (!$obj) {
+            return $this->nodeId > 0 ? 'Islandora Node ' . $this->nodeId : '';
+        }
+        return $obj->getDateCreated($format);
+    }
+
+
+
     public function getDescription(): string
     {
         $obj = $this->ensureI2Object();
