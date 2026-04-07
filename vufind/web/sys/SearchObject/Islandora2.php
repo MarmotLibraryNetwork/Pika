@@ -76,7 +76,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	const string IDFIELD = 'its_node_id';
 
 	// Display Modes //
-	public $viewOptions = ['list'/*, 'covers'*/];
+	public $viewOptions = ['list', 'covers'];
 	private Logger $logger;
 
 	public function __construct(){

@@ -324,15 +324,16 @@ class Islandora2Driver extends RecordInterface
      *
      * @return string
      */
-    public function getBrowseResult()
-    {
-        global $interface;
-        $interface->assign('summId', $this->getUniqueID());
-        $interface->assign('summTitle', $this->getTitle());
-        $interface->assign('summUrl', $this->getLinkUrl());
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
-        return 'RecordDrivers/Islandora/browse_result.tpl';
-    }
+	public function getBrowseResult(){
+		global $interface;
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/Islandora/browse_result.tpl';
+	}
 
     public function getRecordUrl()
     {
