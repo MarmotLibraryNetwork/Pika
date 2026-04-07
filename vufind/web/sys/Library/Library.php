@@ -58,9 +58,9 @@ class Library extends DB_DataObject {
 	public $restrictSearchByLibrary;
 	public $archiveOnlyInterface;
 	public $partnerOfSystem;
-	public $allowProfileUpdates;   //tinyint(4)
-	public $allowFreezeHolds;   //tinyint(4)
-	public $scope; 					//smallint(6) // The Sierra OPAC scope
+	public $allowProfileUpdates;  		//tinyint(4)
+	public $allowFreezeHolds;     		//tinyint(4)
+	public $scope;      							//smallint(6) // The Sierra OPAC scope
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -214,9 +214,12 @@ class Library extends DB_DataObject {
 	public $sideBarOnRight;
 	public $showSidebarMenu;
 	public $sidebarMenuButtonText;
+
+	// Digital Archive Settings
 	public $enableArchive;
-	public $archiveNamespace;
-	public $archivePid;
+	public $archiveNamespace; // Islandora1 TODO: remove
+	public $libraryTid;  // Islandora2
+	public $archivePid;  // Islandora1 TODO: remove
 	public $allowRequestsForArchiveMaterials;
 	public $archiveRequestMaterialsHeader;
 	public $claimAuthorshipHeader;
@@ -225,28 +228,40 @@ class Library extends DB_DataObject {
 	public $collectionsToHide;
 	public $objectsToHide;
 	public $defaultArchiveCollectionBrowseMode;
+
+	// Subjects
 	public $showLCSubjects; // Library of Congress Subjects
 	public $showBisacSubjects;
 	public $showFastAddSubjects;
 	public $showOtherSubjects;
 	public $maxFinesToAllowAccountUpdates;
+
+	// EDS
 	public $edsApiProfile;
 	public $edsApiUsername;
 	public $edsApiPassword;
 	public $edsSearchProfile;
+
 	protected $patronNameDisplayStyle; // Needs to be protected so __get and __set are called
 	private $patronNameDisplayStyleChanged = false; // Track changes so we can clear values for existing patrons
+
 	public $includeAllRecordsInShelvingFacets;
 	public $includeAllRecordsInDateAddedFacets;
 	public $includeOnOrderRecordsInDateAddedFacetValues;
 	public $alwaysShowSearchResultsMainDetails;
+
+	// CAS Authentication
 	public $casHost;
 	public $casPort;
 	public $casContext;
+
 	public $showPikaLogo;
+
+	// Masquerade
 	public $masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
+
 	public $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public $materialsRequestDaysToPreserve;
 	public $showGroupedHoldCopiesCount;
@@ -955,7 +970,8 @@ class Library extends DB_DataObject {
 			'archiveSection' => ['property' =>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink' =>'https://marmot-support.atlassian.net/l/c/RdAMY41Q', 'properties' => [
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
-				'archivePid'                           => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				'libraryTid'                           => ['property' => 'libraryTid', 'type' => 'integer', 'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],

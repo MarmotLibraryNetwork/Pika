@@ -452,6 +452,7 @@ class FavoriteHandler {
 			// Initialize from the current search globals
 			/** @var SearchObject_UserListIslandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+			//TODO: 'UserListIslandora2'
 			$archiveSearchObject->userListSort = $this->sort;
 			if ($isPageSizeParamSet){
 				$archiveSearchObject->userListPageSize = $recordsPerPage;
@@ -481,7 +482,7 @@ class FavoriteHandler {
 
 					if (!empty($_REQUEST['filter'])){
 						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
-						//TODO: update to new Archive Ids search
+						//TODO: Likely user (Islandora2 Search object)->getFilteredNodeIds
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
 					} else {

@@ -67,21 +67,21 @@
 		{/if}
 *}
 
-		{if $summFormat}
+		{if $summFormat || $summModel}
 			<div class="row">
-				<div class="result-label col-tn-3">Format: </div>
-				<div class="col-tn-9 result-value">
-					{$summFormat}
-				</div>
-			</div>
-		{/if}
-
-		{if $summModel}
-			<div class="row">
-				<div class="result-label col-tn-3">Model: </div>
-				<div class="col-tn-9 result-value">
-					{$summModel}
-				</div>
+				{if $summFormat && $summModel && $summFormat == $summModel}
+					<div class="result-label col-tn-3">Format/Model: </div>
+					<div class="col-tn-9 result-value">{$summFormat}</div>
+				{else}
+					{if $summFormat}
+						<div class="result-label col-tn-3">Format: </div>
+						<div class="col-tn-9 result-value">{$summFormat}</div>
+					{/if}
+					{if $summModel}
+						<div class="result-label col-tn-3">Model: </div>
+						<div class="col-tn-9 result-value">{$summModel}</div>
+					{/if}
+				{/if}
 			</div>
 		{/if}
 

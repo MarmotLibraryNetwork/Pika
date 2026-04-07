@@ -39,6 +39,16 @@ function getIslandoraUpdates(): array{
 
 	return [
 
+		'Islandora2_convert_objectsToHide_pids_to_nodeIds' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert objectsToHide PIDs to nodeIds',
+			'description'     => 'Converts library.objectsToHide entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
+			'continueOnError' => false,
+			'sql'             => [
+				'convertObjectsToHidePidsToNodeIds'
+			]
+		],
+
 		'Islandora2_convert_collectionsToHide_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Convert collectionsToHide PIDs to nodeIds',
@@ -66,6 +76,17 @@ function getIslandoraUpdates(): array{
 			'continueOnError' => false,
 			'sql'             => [
 				"ALTER TABLE archive_private_collections ADD COLUMN type ENUM('collection','object') NOT NULL DEFAULT 'collection' AFTER id",
+			]
+		],
+
+		'Islandora2_convert_archiveNamespace_to_libraryTid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert library.archiveNamespace to libraryTid',
+			'description'     => 'Adds a libraryTid column, looks up each library\'s archivePid entity PID in Islandora2 Solr to find its taxonomy term ID, stores the result, then alters the column to INT UNSIGNED.',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE library ADD COLUMN libraryTid INT UNSIGNED NULL AFTER archivePid",
+				'convertArchiveNamespaceToLibraryTid'
 			]
 		],
 
@@ -134,6 +155,43 @@ function convertPrivateCollectionsPidsToNodeIds(): bool {
 	return $collection->update() !== false;
 }
 
+function convertObjectsToHidePidsToNodeIds(): bool {
+	// Populate this array: key = legacy PID, value = nodeId integer
+	$pidToNodeId = [
+		'fortlewis:12699' => 35830,
+		'fortlewis:12700' => 35836,
+		'fortlewis:12701' => 35833,
+		'fortlewis:12702' => 35832,
+		'fortlewis:12703' => 35835,
+	];
+
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	$library = new Library();
+	$library->whereAdd('objectsToHide IS NOT NULL');
+	$library->whereAdd("objectsToHide != ''");
+	$library->find();
+
+	$success = true;
+	while ($library->fetch()) {
+		$entries   = explode("\r\n", $library->objectsToHide);
+		$converted = array_map(function ($entry) use ($pidToNodeId) {
+			$trimmed = trim($entry);
+			return isset($pidToNodeId[$trimmed])
+				? (string) $pidToNodeId[$trimmed]
+				: $trimmed;
+		}, $entries);
+
+		$newValue = implode("\r\n", $converted);
+		if ($newValue !== $library->objectsToHide) {
+			$library->objectsToHide = $newValue;
+			if ($library->update() === false) {
+				$success = false;
+			}
+		}
+	}
+	return $success;
+}
+
 function convertCollectionsToHidePidsToNodeIds(): bool {
 	// Populate this array: key = legacy PID, value = nodeId integer
 	$pidToNodeId = [
@@ -172,6 +230,49 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 			if ($library->update() === false) {
 				$success = false;
 			}
+		}
+	}
+	return $success;
+}
+
+function convertArchiveNamespaceToLibraryTid(): bool {
+	// Maps library subdomain (= archiveNamespace) to the Islandora2 contributing-library taxonomy term ID (TID).
+	// These TIDs correspond to the ss_library facet, not the legacy entity PIDs.
+	$namespaceTidMap = [
+		'adams'           => 303,
+		'ccu'             => 428,
+		'cmc'             => 112135,
+		'englewood'       => 315,
+		'evld'            => 337,
+		'fortlewis'       => 249,
+		'garfield'        => 324,
+		'gunnison'        => 24147,
+		'lafayette'       => 354,
+		'mesa'            => 261,
+		'montrose'        => null,
+		'pineriver'       => 243,
+		'pitkin'          => 351,
+		'salida'          => 365,
+		'steamboatlibrary'=> 277,
+		'vail'            => 294,
+		'western'         => 433,
+		'wilkinson'       => 30940,
+	];
+
+	$library = new Library();
+	$library->whereAdd('archiveNamespace IS NOT NULL');
+	$library->whereAdd("archiveNamespace != ''");
+	$library->find();
+
+	$success = true;
+	while ($library->fetch()) {
+		$tid = $namespaceTidMap[$library->archiveNamespace] ?? null;
+		if ($tid === null) {
+			continue;
+		}
+		$library->libraryTid = $tid;
+		if ($library->update() === false) {
+			$success = false;
 		}
 	}
 	return $success;

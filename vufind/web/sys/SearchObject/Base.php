@@ -150,17 +150,18 @@ abstract class SearchObject_Base {
 		// Debugging
 		if ($configArray['System']['debugSolr']){
 			//Verify that the ip is ok
-			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
-				global $locationSingleton;
-				$activeIp     = $locationSingleton->getActiveIp();
-				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
-				if (in_array($activeIp, $allowableIps)){
+			//TODO: re-enable after development is done
+//			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
+//				global $locationSingleton;
+//				$activeIp     = $locationSingleton->getActiveIp();
+//				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
+//				if (in_array($activeIp, $allowableIps)){
 					$this->debug = true;
 					if ($configArray['System']['debugSolrQuery'] == true){
 						$this->debugSolrQuery = true;
 					}
-				}
-			}
+//				}
+//			}
 		}
 		$timer->logTime('Setup Base Search Object');
 	}

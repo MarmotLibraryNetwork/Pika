@@ -76,7 +76,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	const string IDFIELD = 'its_node_id';
 
 	// Display Modes //
-	public $viewOptions = ['list'/*, 'covers'*/];
+	public $viewOptions = ['list', 'covers'];
 	private Logger $logger;
 
 	public function __construct(){
@@ -438,7 +438,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Get error message from index response, if any.  This will only work if
+	 * Get an error message from index response, if any.  This will only work if
 	 * processSearch was called with $returnIndexErrors set to true!
 	 *
 	 * @access  public
@@ -446,6 +446,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function getIndexError(){
 		//TODO: further refine error return
+		//probably return $this->indexResult['error']['msg']
 		return $this->indexResult['error'] ?? false;
 	}
 
@@ -966,7 +967,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * Set an overriding array of archive Node Ids.
 	 *
 	 * @access  public
-	 * @param   array  $ids archive PIDs to load
+	 * @param   array  $ids archive Node IDs to load
 	 */
 	public function setQueryIDs($ids){
 		$this->query = self::IDFIELD . ':(' . implode(' ', $ids) . ')';
@@ -1099,6 +1100,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				$currentFacetValueSettings['value'] = $value;
 				//TODO: is collection facet check
 				if ($isNIDFacet){
+					//TODO: NID facet handling
 
 				} elseif ($isTranslationFacet){
 					//TODO: Contributing Library Look up
@@ -1295,25 +1297,62 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 //		unset($objPHPExcel);
 	}
 
-	function getRecord($nid):array{
-		//TODO: Have to confirm is the node id populates the SOLR 'ids' index
-		// if not, we would have to do a specific Id searches
-		//CONFIRMED: nid is not in Islandora2 ids index
-		return $this->indexEngine->getRecord($nid);
+	/**
+	 * Retrieve full Solr documents for an array of Islandora2 node IDs, with standard filters applied.
+	 *
+	 * Delegates to {@see \Solr::getIslandora2NodeIds()} which queries the its_node_id
+	 * field via /select. Standard search filters (library visibility, private collections, etc.)
+	 * are applied via {@see setFinalFilterQuery()}.
+	 *
+	 * @param int[]|string[] $nids  Islandora2 node IDs to retrieve
+	 * @return array                Array of matching Solr document arrays
+	 */
+	function getFilteredNodeIds($nids):array{
+		$filterQuery = $this->setFinalFilterQuery();
+		return $this->indexEngine->getIslandora2NodeIds($nids, $filterQuery);
 	}
-
 
 	/**
-	 * TODO: probably need to create a new method in the SOLR search class
+	 * Retrieve taxonomy term IDs (TIDs) for an array of legacy Islandora 1 entity PIDs.
 	 *
-	 * Retrieves Solr Documents for an array of PIDs
-	 * @param string[] $ids  The PIDs of the Solr document to retrieve
-	 * @return array of filtered PIDs
+	 * Queries the ss_legacy_entity_pid field without applying any search filters and
+	 * returns its_tid values from matching taxonomy term Solr documents (not archive objects).
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 entity PIDs to look up
+	 * @return int[]          Array of its_tid values for matching taxonomy term documents
 	 */
-	function getFilteredPIDs($ids):array{
-		$filterQuery = $this->setFinalFilterQuery();
-		return $this->indexEngine->getFilteredPIDs($ids, $filterQuery);
+	function getLegacyEntitiesTIDs($pids):array{
+		return $this->indexEngine->getLegacyPIDs($pids, 'ss_legacy_entity_pid', null, 100, 'its_tid');
 	}
+
+	/**
+	 * Retrieve Islandora2 node IDs for an array of legacy Islandora 1 PIDs.
+	 *
+	 * Queries the ss_legacy_pid field without applying any search filters and
+	 * returns its_node_id values from matching Solr documents.
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 PIDs to look up (e.g. 'fortlewis:12699')
+	 * @return int[]          Array of its_node_id values for matching documents
+	 */
+	function getNodeIdsbyLegacyPIDs(array $pids):array{
+		//TODO: apply standard filters
+		return $this->indexEngine->getLegacyPIDs($pids, 'ss_legacy_pid');
+	}
+
+	/**
+	 * Retrieve a single Solr document by Islandora2 node ID.
+	 *
+	 * Uses {@see \Solr::getIslandora2NodeIds()} which queries against the its_node_id
+	 * field via /select — the /get endpoint cannot be used because Islandora2 node IDs
+	 * are not stored in the Solr 'ids' index.
+	 *
+	 * @param int|string $nid  The Islandora2 node ID
+	 * @return array           Array of matching Solr document arrays (normally one entry)
+	 */
+	function getRecord($nid):array{
+		return $this->indexEngine->getIslandora2NodeIds([$nid]);
+	}
+
 
 	protected $params;
 	/**
@@ -1390,82 +1429,80 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * @return array
 	 */
 	private function getStandardFilters(){
-		//TODO: standard filters to apply to search results
-		// exclude boulder items, some of the strange islandora solr docs
+		global $configArray;
 		$filters = [
 			'ss_type:islandoraobject',   // ignore other drupal things
-			'!ss_name_1:Page',           // Hide Page objects
+			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
+//			'!ss_name_1:Page',           // Hide Page objects
+			'!ss_model:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
-			//TODO: do we need to use itm_field_library instead?
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 			'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
 			'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
 			'!itm_field_member_of:640', // BD test?
-			//'bs_pika_show_in_search:1', // Show in search pika options
-			//'ss_pika_usage:"yes" OR ss_pika_usage:"testOnly"' //Show in pika option
 		];
 
-		// Collections Hidden by the Current Library's Interface
+		// Pika Search Options
+		// Pika Usage
+		$filters[] = $configArray['Site']['isProduction']
+			? "!ss_pika_usage:(no OR testonly)" // 'testonly' is lower-case in test rather than camelcase
+			: "!ss_pika_usage:no";
+
 		global /** @var \Library $library */ $library;
-		if (!empty($library->collectionsToHide)){
-			$collectionsToHide = explode("\r\n", $library->collectionsToHide);
-			$filter = '';
-			foreach ($collectionsToHide as $collection){
-				if (!empty($collection) && ctype_digit($collection)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!itm_field_member_of:$collection";
-				}
-			}
-			$filters[] = $filter;
+		// Hide All other libraries' objects
+		if ($library->hideAllCollectionsFromOtherLibraries && !empty($library->libraryTid)){
+			$filters[] = "itm_field_library:$library->libraryTid";
 		}
+
+		// Collections Hidden by the Current Library's Interface
+		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
+		if ($filter) $filters[] = $filter;
+
+		// Objects Hidden by the Current Library's Interface
+		$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
+		if ($filter) $filters[] = $filter;
 
 		// Collections Hidden to All Libraries
 		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
 		$privateCollectionsObj->type = 'collection';
 		if ($privateCollectionsObj->find(true)){
-			$filter = '';
-			$privateCollections = explode("\r\n", $privateCollectionsObj->privateCollections);
-			foreach ($privateCollections as $privateCollection){
-				$privateCollection = trim($privateCollection);
-				if (!empty($privateCollection) && ctype_digit($privateCollection)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!itm_field_member_of:$privateCollection";
-				}
-			}
-			if (strlen($filter) > 0){
-				$filters[] = $filter;
-			}
+			$filter = $this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of');
+			if ($filter) $filters[] = $filter;
 		}
 
 		// Objects Hidden to All Libraries
 		$privateObjectsObj = new ArchivePrivateCollection();
 		$privateObjectsObj->type = 'object';
 		if ($privateObjectsObj->find(true)){
-			$filter = '';
-			$privateObjects = explode("\r\n", $privateObjectsObj->privateCollections);
-			foreach ($privateObjects as $privateObject){
-				$privateObject = trim($privateObject);
-				if (!empty($privateObject) && ctype_digit($privateObject)){
-					if (strlen($filter) > 0){
-						$filter .= ' AND ';
-					}
-					$filter .= "!its_node_id:$privateObject";
-				}
-			}
-			if (strlen($filter) > 0){
-				$filters[] = $filter;
-			}
+			$filter = $this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id');
+			if ($filter) $filters[] = $filter;
 		}
 
 		return $filters;
 	}
 
 
+
+	/**
+	 * Build a compound Solr filter from a newline-separated list of numeric node IDs.
+	 *
+	 * @param string|null $nodeIdField  Raw \r\n-separated node ID string (e.g. $library->objectsToHide)
+	 * @param string      $solrFilter   Solr filter prefix, e.g. '!its_node_id' or '!itm_field_member_of'
+	 * @return string|null              Combined filter string, or null if no valid IDs found
+	 */
+	private function nodeIdsToFilter(?string $nodeIdField, string $solrFilter): ?string {
+		if (empty($nodeIdField)){
+			return null;
+		}
+		$parts = [];
+		foreach (explode("\r\n", $nodeIdField) as $nodeId){
+			if (!empty($nodeId) && ctype_digit($nodeId)){
+				$parts[] = "$solrFilter:$nodeId";
+			}
+		}
+		return empty($parts) ? null : implode(' AND ', $parts);
+	}
 
 	/**
 	 * Fetch Facet Configuration settings

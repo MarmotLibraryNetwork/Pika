@@ -597,13 +597,13 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Retrieves Solr Documents for an array of Islandora PIDs
+	 * Retrieves Solr Documents for an array of Islandora1 PIDs
 	 *
 	 * The getFilteredIds() doesn't filter with the special /get request and ids field for
-	 * the current version of Islandora so we have to do a regular /select request with a query against
+	 * the current version of Islandora1, so we have to do a regular /select request with a query against
 	 * PID field
 	 *
-	 * @param string[] $ids The Id of the Solr document to retrieve
+	 * @param string[] $ids The ID of the Solr document to retrieve
 	 * @param array|null $filters Any search filters to apply to query
 	 * @param int $batchSize
 	 * @param string $idFieldToReturn
@@ -645,12 +645,12 @@ class Solr implements IndexEngine {
 				if (!empty($filters)){
 					$options['fq'] = $filters;
 				}
-				// Build query string for use with GET or POST, with special handling for repeated parameters
+				// Build a query string for use with GET or POST, with special handling for repeated parameters
 				$queryString = $this->buildSolrQueryString($options);
 
 				// Send Request
 				if (strlen($queryString) > 8000){
-					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					// For extremely long queries, like lists, we will get an error: "URI Too Long"
 					$result = $this->client->post($this->host . '/select', $queryString);
 				}else{
 					$result = $this->client->get($this->host . '/select', $queryString);
@@ -662,6 +662,137 @@ class Solr implements IndexEngine {
 					$result       = $this->_process($result);
 					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
 					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
+	 * Search Solr for legacy PIDs and return a single ID field from matching documents.
+	 *
+	 * @param string[] $pids         Legacy PID strings to search for (e.g. 'namespace:id')
+	 * @param string $pidField       Solr field to search against. Possible values: 'ss_legacy_pid', 'ss_legacy_entity_pid'
+	 * @param array|null $filters    Optional search filters to apply
+	 * @param int $batchSize         Number of PIDs to query per request
+	 * @param string $returnField    Solr field to return from matching documents (e.g. 'its_node_id', 'its_tid')
+	 * @return array                 Array of $returnField values for matching documents
+	 */
+	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
+		$solrDocArray = [];
+		$numIds       = count($pids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true);
+
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds   = array_slice($pids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds);
+				$idString = str_replace(':', '\:', $idString); // escape colon characters in PIDs
+				$options  = [
+					'q'    => "$pidField:($idString)",
+					'q.op' => 'OR',
+					'fl'   => $returnField,
+					'rows' => $batchSize,
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				$queryString = $this->buildSolrQueryString($options);
+
+				if (strlen($queryString) > 8000){
+					$result = $this->client->post($this->host . '/select', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					$this->logger->error('getLegacyPIDs: ' . $this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], $returnField);
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
+	 * Retrieve full Solr documents for an array of Islandora2 node IDs.
+	 *
+	 * Uses a /select query against the its_node_id field rather than the /get
+	 * endpoint (which does not work for Islandora2 node IDs).
+	 *
+	 * @param int[]|string[] $nids   Node IDs to retrieve
+	 * @param array|null     $filters Optional search filters to apply
+	 * @param int            $batchSize Number of node IDs per request
+	 * @return array         Array of Solr document arrays
+	 */
+	function getIslandora2NodeIds(array $nids, array $filters = null, int $batchSize = 100): array {
+		$solrDocArray = [];
+		$numIds       = count($nids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true);
+
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds   = array_slice($nids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds); // integers — no colon escaping needed
+				$options  = [
+					'q'    => "its_node_id:($idString)",
+					'q.op' => 'OR',
+					'fl'   => '*',
+					'rows' => $batchSize,
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				$queryString = $this->buildSolrQueryString($options);
+
+				if (strlen($queryString) > 8000){
+					$result = $this->client->post($this->host . '/select', $queryString);
+				} else {
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					$this->logger->error('getIslandora2NodeIds: ' . $this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$solrDocArray = array_merge($solrDocArray, $result['response']['docs']);
 				}
 
 				if (!$lastBatch) {

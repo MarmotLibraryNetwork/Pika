@@ -156,3 +156,7 @@ vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
 .vscode/launch.json
 .vscode/launch.json
 
+
+# Claude
+.claude
+.claude/*

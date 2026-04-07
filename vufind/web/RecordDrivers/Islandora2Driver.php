@@ -115,12 +115,18 @@ class Islandora2Driver extends RecordInterface
 		'description' => 'tm_X3b_en_field_description_long',
 		'memberOf'    => 'itm_field_member_of', //node ids
 		'legacyPID'   => 'tm_X3b_en_field_pid',
-		'genre'       => 'sm_name_2',
-		'model'       => 'ss_name_1',
-		'legacyResourceType' => 'sm_name_22',
-		'format'      => 'sm_name_43',
-		'library'     => 'ss_name_23',
-		//'rightsCreator' => 'm_X3b_en_name_41',
+		//'genre'       => 'sm_name_2',
+		'genre'       => 'sm_genre',
+		//'model'       => 'ss_name_1',
+		'model'       => 'ss_model',
+		//'legacyResourceType' => 'sm_name_22',
+		'legacyResourceType' => 'sm_legacy_resource_type',
+		//'format'      => 'sm_name_43',
+		'format'      => 'sm_format',
+		//'library'     => 'ss_name_23',
+		'library'     => 'ss_library',
+		//'rightsCreator' => 'tm_X3b_en_name_41',
+		'rightsCreator' => 'sm_rights_creator',
 	];
 
 	/**
@@ -318,20 +324,21 @@ class Islandora2Driver extends RecordInterface
      *
      * @return string
      */
-    public function getBrowseResult()
-    {
-        global $interface;
-        $interface->assign('summId', $this->getUniqueID());
-        $interface->assign('summTitle', $this->getTitle());
-        $interface->assign('summUrl', $this->getLinkUrl());
-        $interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
-        return 'RecordDrivers/Islandora/browse_result.tpl';
-    }
+	public function getBrowseResult(){
+		global $interface;
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/Islandora/browse_result.tpl';
+	}
 
     public function getRecordUrl()
     {
 		$obj = $this->ensureI2Object();
-        if ($this->nodeId <= 0) {
+        if ($this->nodeId <= 0 || is_null($obj)) {
             return '#';
         }
 		$displayModel = strtolower($obj->getDisplayModel());
