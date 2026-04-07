@@ -26,6 +26,11 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Taxonomy.php';
  */
 class EventTaxonomy extends I2Taxonomy
 {
+    protected $default_thumbnail = [
+        'url'=>'/interface/themes/responsive/images/events.png',
+        'mime'=>'image/png',
+        'filename'=>'events.png'];
+
     /** @inheritDoc */
     public static function supports(array $term): bool
     {

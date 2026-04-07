@@ -26,6 +26,11 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Taxonomy.php';
  */
 class CorporateBodyTaxonomy extends I2Taxonomy
 {
+    protected $default_thumbnail = [
+        'url'=>'/interface/themes/responsive/images/organization.png',
+        'mime'=>'image/png',
+        'filename'=>'organization.png'];
+
     /** @inheritDoc */
     public static function supports(array $term): bool
     {
