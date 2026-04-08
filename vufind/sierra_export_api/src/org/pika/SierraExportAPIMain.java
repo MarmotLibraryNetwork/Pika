@@ -1963,6 +1963,7 @@ public class SierraExportAPIMain {
 		boolean suppressOrderRecordsThatAreReceivedAndCataloged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
 		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
 		boolean suppressOrderRecordsThatAreReceived             = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
+		Integer orderReceivedDateAgeLimit                       = PikaConfigIni.getIntIniValue("Catalog", "orderReceivedDateAgeLimit");
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
 		if (orderStatusesToExport == null) {
@@ -1976,23 +1977,28 @@ public class SierraExportAPIMain {
 			}
 			orderStatusCodesSQL.append(" order_status_code = '").append(orderStatusesToExportVal).append("'");
 		}
-		String activeOrderSQL = "SELECT bib_view.record_num AS bib_record_num, order_view.record_num AS order_record_num, accounting_unit_code_num, order_status_code, copies, location_code, catalog_date_gmt, received_date_gmt " +
-				"FROM sierra_view.order_view " +
-				"INNER JOIN sierra_view.bib_record_order_record_link ON bib_record_order_record_link.order_record_id = order_view.record_id " +
-				"INNER JOIN sierra_view.bib_view ON sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
-				"INNER JOIN sierra_view.order_record_cmf ON order_record_cmf.order_record_id = order_view.id " +
-				"WHERE (" + orderStatusCodesSQL + ") AND order_view.is_suppressed = 'f' AND location_code != 'multi' AND ocode4 != 'n'";
+		String activeOrderSQL = "SELECT bib_view.record_num AS bib_record_num, order_view.record_num AS order_record_num, accounting_unit_code_num, order_status_code, copies, location_code, catalog_date_gmt, received_date_gmt, order_date_gmt " +
+						"FROM sierra_view.order_view " +
+						"INNER JOIN sierra_view.bib_record_order_record_link ON bib_record_order_record_link.order_record_id = order_view.record_id " +
+						"INNER JOIN sierra_view.bib_view ON sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
+						"INNER JOIN sierra_view.order_record_cmf ON order_record_cmf.order_record_id = order_view.id " +
+						"WHERE (" + orderStatusCodesSQL + ") AND order_view.is_suppressed = 'f' AND location_code != 'multi' AND ocode4 != 'n'";
 
-			if (suppressOrderRecordsThatAreCataloged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
-//				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
-				activeOrderSQL += " AND catalog_date_gmt IS NULL";
-			} else if (suppressOrderRecordsThatAreReceived) { // Ignore entries with a set received date more than a day old ( a day to allow for the transition from order item to regular item)
-//				activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
-				activeOrderSQL += " AND received_date_gmt IS NULL";
-			} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
-//				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
-				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR received_date_gmt IS NULL)";
-			}
+		if (orderReceivedDateAgeLimit != null && orderReceivedDateAgeLimit > 0) { // Only include orders where received_date_gmt is within orderReceivedDateAgeLimit days of now
+			//This setting is not compatible with the other suppression settings,
+			//so the others should be ignored when this is set.
+			activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '" + orderReceivedDateAgeLimit + " DAYS'::INTERVAL)";
+		} else if (suppressOrderRecordsThatAreCataloged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
+			//activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+			activeOrderSQL += " AND catalog_date_gmt IS NULL";
+		} else if (suppressOrderRecordsThatAreReceived) { // Ignore entries with a set received date more than a day old ( a day to allow for the transition from order item to regular item)
+			//activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
+			activeOrderSQL += " AND received_date_gmt IS NULL";
+		} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
+			//activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+			activeOrderSQL += " AND (catalog_date_gmt IS NULL OR received_date_gmt IS NULL)";
+		}
+
 
 		int numBibsToProcess     = 0;
 		int numBibsOrdersAdded   = 0;
