@@ -270,7 +270,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers', 'NovelistInfo'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers', 'NovelistInfo', 'ActiveOrders'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -293,6 +293,9 @@
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="/Admin/AuthorEnrichment">Author Enrichment</a></div>
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
 							<div class="adminMenuLink{if $action == "NovelistInfo"} active{/if}"><a href="/Admin/NovelistInfo">NoveList Information</a></div>
+							{if $ils == 'Sierra'}
+								<div class="adminMenuLink{if $action == "ActiveOrders"} active{/if}"><a href="/Admin/ActiveOrders">Active Orders</a></div>
+							{/if}
 						</div>
 					</div>
 				</div>
