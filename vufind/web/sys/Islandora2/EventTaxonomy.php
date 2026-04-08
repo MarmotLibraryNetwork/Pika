@@ -46,7 +46,7 @@ class EventTaxonomy extends I2Taxonomy
     /**
      * Start year string (field_cat_date_begin).
      */
-    public function getStartYear(): ?string
+    public function getStartDate(): ?string
     {
         return $this->termWithoutFieldPrefix['cat_date_begin'] ?? null;
     }
@@ -54,7 +54,7 @@ class EventTaxonomy extends I2Taxonomy
     /**
      * End year string (field_cat_date_end).
      */
-    public function getEndYear(): ?string
+    public function getEndDate(): ?string
     {
         return $this->termWithoutFieldPrefix['cat_date_end'] ?? null;
     }
