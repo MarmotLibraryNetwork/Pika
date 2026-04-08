@@ -90,16 +90,6 @@ class GeographicLocationTaxonomy extends I2Taxonomy
     }
 
     /**
-     * Raw related place reference (field_related_place).
-     *
-     * @return mixed Term reference array or null.
-     */
-    public function getRelatedPlace(): mixed
-    {
-        return $this->termWithoutFieldPrefix['related_place'] ?? null;
-    }
-
-    /**
      * Raw related address reference (field_location_taxonomy).
      *
      * @return mixed Term reference array or null.
