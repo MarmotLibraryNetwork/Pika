@@ -62,7 +62,7 @@ class TaxonomyFactory
             return;
         }
 
-        self::registerType('person',               PersonTaxonomy::class);
+        self::registerType('person',                PersonTaxonomy::class);
         self::registerType('corporate_body',        CorporateBodyTaxonomy::class);
         self::registerType('geo_location',          GeographicLocationTaxonomy::class);
         self::registerType('event',                 EventTaxonomy::class);
