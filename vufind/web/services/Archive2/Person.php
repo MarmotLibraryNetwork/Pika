@@ -48,15 +48,18 @@ class Person extends TaxonomyObject
         $person = $this->taxonomyObject;
 
         // Identity fields
-        $interface->assign('family_name',    $person->getFamilyName());
-        $interface->assign('given_name',     $person->getGivenName());
-        $interface->assign('middle_name',    $person->getMiddleName());
-        $interface->assign('maiden_name',    $person->getMaidenName());
-        $interface->assign('alternate_name', $person->getAlternateName());
-        $interface->assign('birth_year',     $person->getBirthYear());
-        $interface->assign('death_year',     $person->getDeathYear());
-        $interface->assign('notes',          $person->getNotes());
-        $interface->assign('race_ethnicity', $person->getRaceEthnicity());
+        $interface->assign('family_name',         $person->getFamilyName());
+        $interface->assign('given_name',          $person->getGivenName());
+        $interface->assign('middle_name',         $person->getMiddleName());
+        $interface->assign('maiden_name',         $person->getMaidenName());
+        $interface->assign('alternate_name',      $person->getAlternateName());
+        $interface->assign('birth_year',          $person->getBirthYear());
+        $interface->assign('death_year',          $person->getDeathYear());
+        $interface->assign('notes',               $person->getNotes());
+        $interface->assign('race_ethnicity',      $person->getRaceEthnicity());
+        $interface->assign('related_place',       $person->getRelatedPlace());
+        $interface->assign('related_organization',$person->getRelatedOrganization());
+        $interface->assign('related_person',      $person->getRelatedPerson());
 
         // Military data — only assign the block if any field is populated
         if ($person->hasMilitaryData()) {

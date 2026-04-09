@@ -55,6 +55,7 @@ class Organization extends TaxonomyObject
         $interface->assign('organization_url',     $org->getOrganizationUrl());
         $interface->assign('related_place',        $org->getRelatedPlace());
         $interface->assign('related_organization', $org->getRelatedOrganization());
+        $interface->assign('related_person',       $org->getRelatedPerson());
 
         $interface->assign('taxonomy_type_template', 'taxonomy_corporate_body');
 

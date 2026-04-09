@@ -47,15 +47,18 @@ class Place extends TaxonomyObject
 
         $place = $this->taxonomyObject;
 
-        $interface->assign('alternate_name',   $place->getAlternateName());
-        $interface->assign('broader_location', $place->getBroaderLocation());
-        $interface->assign('start_date',       $place->getStartDate());
-        $interface->assign('end_date',         $place->getEndDate());
-        $interface->assign('notes',            $place->getNotes());
-        $interface->assign('geolocation',      $place->getGeolocation());
-        $interface->assign('related_place',    $place->getRelatedPlace());
-        $interface->assign('address',          $place->getAddress());
-
+        $interface->assign('alternate_name',      $place->getAlternateName());
+        $interface->assign('broader_location',    $place->getBroaderLocation());
+        $interface->assign('start_date',          $place->getStartDate());
+        $interface->assign('end_date',            $place->getEndDate());
+        $interface->assign('notes',               $place->getNotes());
+        $interface->assign('geolocation',         $place->getGeolocation());
+        $interface->assign('related_place',       $place->getRelatedPlace());
+        $interface->assign('address',             $place->getAddress());
+        $interface->assign('related_place',       $place->getRelatedPlace());
+        $interface->assign('related_organization',$place->getRelatedOrganization());
+        $interface->assign('related_person',      $place->getRelatedPerson());
+        
         $interface->assign('taxonomy_type_template', 'taxonomy_geographic_location');
 
         $title = $this->taxonomyObject->getTitle();
