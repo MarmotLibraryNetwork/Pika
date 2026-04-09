@@ -43,6 +43,8 @@ class Place extends TaxonomyObject
             return;
         }
 
+        parent::launch();
+
         $place = $this->taxonomyObject;
 
         $interface->assign('alternate_name',   $place->getAlternateName());
@@ -53,8 +55,6 @@ class Place extends TaxonomyObject
         $interface->assign('geolocation',      $place->getGeolocation());
         $interface->assign('related_place',    $place->getRelatedPlace());
         $interface->assign('address',          $place->getAddress());
-
-        parent::launch();
 
         $interface->assign('taxonomy_type_template', 'taxonomy_geographic_location');
 

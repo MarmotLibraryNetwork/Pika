@@ -43,6 +43,8 @@ class Person extends TaxonomyObject
             return;
         }
 
+        parent::launch();
+        
         $person = $this->taxonomyObject;
 
         // Identity fields

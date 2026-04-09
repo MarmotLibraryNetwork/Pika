@@ -43,9 +43,9 @@ class Organization extends TaxonomyObject
             return;
         }
 
-        $org = $this->taxonomyObject;
-
         parent::launch();
+
+        $org = $this->taxonomyObject;
 
         $interface->assign('alternate_name',       $org->getAlternateName());
         $interface->assign('founded_year',         $org->getFoundedYear());
