@@ -28,12 +28,17 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
+require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
+require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
+
+use Islandora2\I2ObjectFactory;
+use Archive2\ExploreMore;
 
 class Archive2_AJAX extends AJAXHandler {
 
 	/** Methods that return a plain JSON object (no result-wrapper envelope). */
 	protected $methodsThatRespondWithJSONUnstructured = [
-		// e.g. 'getObjectInfo',
+		'getExploreMoreContent',
 	];
 
 	/** Methods that return a structured JSON result wrapper {result, message, ...}. */
@@ -50,5 +55,40 @@ class Archive2_AJAX extends AJAXHandler {
 	protected $methodsThatRespondThemselves = [
 		// e.g. 'fetchManifest',
 	];
+
+	/**
+	 * Build and return the rendered Explore More sidebar HTML for an Islandora2 object.
+	 * Called via: /Archive2/AJAX?method=getExploreMoreContent&id={nid}
+	 */
+	function getExploreMoreContent(): array {
+		$nid = (int)($_REQUEST['id'] ?? 0);
+		if ($nid <= 0) {
+			return ['success' => false, 'message' => 'A valid node id is required.'];
+		}
+
+		global $interface;
+		global $timer;
+
+		$factory = new I2ObjectFactory();
+		$i2Object = $factory->fromNodeId($nid);
+		if ($i2Object === null) {
+			$this->logger->error('Failed to create I2Object for nid.', ['nid' => $nid]);
+			return ['success' => false, 'message' => "Could not load Islandora2 object for nid $nid."];
+		}
+		$timer->logTime('ExploreMore: loaded I2Object');
+
+		$exploreMore     = new ExploreMore();
+		$sections        = $exploreMore->loadExploreMoreSidebar($i2Object);
+		$timer->logTime('ExploreMore: loadSidebar complete');
+
+		$interface->assign('exploreMoreSections', $sections);
+		$interface->assign('exploreMoreSettings', ExploreMore::buildSettings());
+		$interface->assign('archiveSections',     ExploreMore::SECTIONS);
+
+		return [
+			'success'     => true,
+			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
+		];
+	}
 
 }

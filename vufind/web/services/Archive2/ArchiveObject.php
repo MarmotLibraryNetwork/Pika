@@ -2,7 +2,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -90,7 +89,10 @@ class ArchiveObject extends \Action
 			$interface->assign($field, $value);
 		}
 
-        // legacy ID 
+        // Node ID (Islandora2) — explicitly assigned so templates always have $nid
+        $interface->assign('nid', $this->mediaObject->getNodeId());
+
+        // legacy ID
         $interface->assign('pid', $this->mediaObject->pid);
         
         // Media

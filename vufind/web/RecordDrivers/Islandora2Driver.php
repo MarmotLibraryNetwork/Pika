@@ -533,4 +533,147 @@ class Islandora2Driver extends RecordInterface
 			return null; //TODO Implement
 	}
 
+	// -------------------------------------------------------------------------
+	// Related Pika Works
+	// -------------------------------------------------------------------------
+
+	private ?array $relatedPikaWorks = null;
+
+	/**
+	 * Return catalog GroupedWork records linked to this object via field_pika_related_link,
+	 * including any links inherited from parent collection(s).
+	 *
+	 * Each entry: ['label' => string, 'link' => string, 'image' => string, 'id' => string]
+	 *
+	 * @return array[]
+	 */
+	public function getRelatedPikaWorks(): array {
+		if ($this->relatedPikaWorks !== null) {
+			return $this->relatedPikaWorks;
+		}
+		$this->relatedPikaWorks = $this->collectRelatedPikaWorks([$this->nodeId]);
+		return $this->relatedPikaWorks;
+	}
+
+	/**
+	 * Recursive helper: collect related Pika works from this object and its parents.
+	 *
+	 * $visitedNids prevents infinite loops if the member_of hierarchy contains cycles.
+	 *
+	 * @param int[] $visitedNids Node IDs already processed in this branch
+	 * @return array[]
+	 */
+	private function collectRelatedPikaWorks(array $visitedNids): array {
+		$obj = $this->ensureI2Object();
+		if (!$obj) {
+			return [];
+		}
+
+		$works = $this->fetchGroupedWorks(
+			$this->extractGroupedWorkIds($obj->pika_related_link)
+		);
+
+		// Inherit links from parent collection(s)
+		$memberOf = $obj->member_of;
+		if (!empty($memberOf)) {
+			if (!is_array($memberOf)) {
+				$memberOf = [$memberOf];
+			}
+			foreach ($memberOf as $entry) {
+				$nid = is_array($entry) ? ($entry['id'] ?? ($entry['nid'] ?? null)) : $entry;
+				if (!is_numeric($nid)) {
+					continue;
+				}
+				$nid = (int)$nid;
+				if ($nid <= 0 || in_array($nid, $visitedNids, true)) {
+					continue; // cycle guard
+				}
+				$visitedNids[] = $nid;
+				$parentDriver  = new self($nid);
+				$works         = array_merge($works, $parentDriver->collectRelatedPikaWorks($visitedNids));
+			}
+		}
+
+		return $works;
+	}
+
+	/**
+	 * Extract GroupedWork UUIDs from a field_pika_related_link value.
+	 *
+	 * Drupal link fields arrive as a bare URL string, a single ['uri'|'url' => ...]
+	 * array, or an indexed array of such items.
+	 *
+	 * @param mixed $fieldValue
+	 * @return string[]
+	 */
+	private function extractGroupedWorkIds(mixed $fieldValue): array {
+		if (empty($fieldValue)) {
+			return [];
+		}
+
+		// Normalize to a flat list of URL strings
+		$urls = [];
+		if (is_string($fieldValue)) {
+			$urls = [$fieldValue];
+		} elseif (is_array($fieldValue)) {
+			if (isset($fieldValue['uri']) || isset($fieldValue['url'])) {
+				// Single link entry
+				$urls = [$fieldValue['uri'] ?? $fieldValue['url']];
+			} else {
+				// Indexed array of link entries
+				foreach ($fieldValue as $item) {
+					if (is_string($item)) {
+						$urls[] = $item;
+					} elseif (is_array($item)) {
+						$url = $item['uri'] ?? ($item['url'] ?? null);
+						if ($url) {
+							$urls[] = $url;
+						}
+					}
+				}
+			}
+		}
+
+		$ids = [];
+		foreach ($urls as $url) {
+			if (preg_match('/\/GroupedWork\/([a-f0-9\-]{36})/i', $url, $m)) {
+				$ids[] = $m[1];
+			}
+		}
+		return array_unique($ids);
+	}
+
+	/**
+	 * Fetch GroupedWork display data from the catalog Solr index.
+	 *
+	 * @param string[] $workIds Grouped work UUIDs
+	 * @return array[]
+	 */
+	private function fetchGroupedWorks(array $workIds): array {
+		if (empty($workIds)) {
+			return [];
+		}
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		/** @var \SearchObject_Solr $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+		$records      = $searchObject->getRecords($workIds);
+		$searchObject = null;
+
+		$works = [];
+		foreach ($records as $workData) {
+			$driver = new \GroupedWorkDriver($workData);
+			if ($driver->isValid) {
+				$works[] = [
+					'label' => $driver->getTitle(),
+					'link'  => $driver->getLinkUrl(),
+					'image' => $driver->getBookcoverUrl('medium'),
+					'id'    => $driver->getPermanentId(),
+				];
+			}
+		}
+		return $works;
+	}
+
 }

@@ -23,7 +23,22 @@ Pika.Archive2 = (function(){
 
 	return {
 
-		// ajaxUrl: '/Archive2/AJAX',
+		/**
+		 * Load the Explore More sidebar for an Islandora2 object page.
+		 * Injects the rendered HTML into #explore-more-body and initialises carousels.
+		 *
+		 * @param {number} nid  Islandora2 node ID
+		 */
+		loadExploreMore: function(nid) {
+			$.getJSON('/Archive2/AJAX?method=getExploreMoreContent&id=' + encodeURIComponent(nid),
+				function(data) {
+					if (data.success) {
+						$('#explore-more-body').html(data.exploreMore);
+						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
 
 	};
 })();

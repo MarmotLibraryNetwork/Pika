@@ -35,7 +35,7 @@
 {literal}
 <script>
 $().ready(function(){
-	Pika.Archive.loadExploreMore('{/literal}{$pid|urlencode}{literal}');
+	Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
 });
 </script>
 {/literal}
