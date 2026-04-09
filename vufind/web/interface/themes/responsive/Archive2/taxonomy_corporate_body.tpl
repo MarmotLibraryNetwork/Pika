@@ -97,20 +97,7 @@
 				</div>
 			{/if}
 
-			{if $related_organization}
-				<div class="panel" id="corpBodyRelatedOrgPanel">
-					<a data-toggle="collapse" href="#corpBodyRelatedOrgPanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Related Organization</h2>
-						</div>
-					</a>
-					<div id="corpBodyRelatedOrgPanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Organization" value=$related_organization}
-						</div>
-					</div>
-				</div>
-			{/if}
+			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
 
 		</div>
 	</div>

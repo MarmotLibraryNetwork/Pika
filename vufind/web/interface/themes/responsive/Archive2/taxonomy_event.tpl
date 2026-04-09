@@ -67,46 +67,10 @@
 				</div>
 			{/if}
 
-			{if $related_place}
-				<div class="panel" id="eventRelatedPlacePanel">
-					<a data-toggle="collapse" href="#eventRelatedPlacePanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Related Place</h2>
-						</div>
-					</a>
-					<div id="eventRelatedPlacePanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div class="row archive-field-row">
-								<div class="result-label col-sm-4">
-									{if $related_place.relation_label}{$related_place.relation_label}{else}Place{/if}:
-								</div>
-								<div class="result-value col-sm-8">
-									<a href="{$related_place.url}">{$related_place.name|escape}</a>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			{/if}
-
-			{if $related_organization}
-				<div class="panel" id="eventRelatedOrgPanel">
-					<a data-toggle="collapse" href="#eventRelatedOrgPanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Related Organization</h2>
-						</div>
-					</a>
-					<div id="eventRelatedOrgPanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Organization" value=$related_organization}
-						</div>
-					</div>
-				</div>
-			{/if}
-
+			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
+			
 		</div>
 	</div>
 	{include file="Archive2/taxonomy_related_objects.tpl"}
-
 	{include file="Archive2/taxonomy_metadata.tpl"}
 {/strip}
