@@ -79,12 +79,9 @@ class Islandora2Driver extends RecordInterface
 						$this->model           = !empty($this->getSolrFieldValue($recordData, 'model')) ? $this->getSolrFieldValue($recordData, 'model') : null;
 						$this->solrScore       = isset($recordData['score']) ? (float)$recordData['score'] : null;
 						$this->solrExplanation = isset($recordData['explain']) ? (string)$recordData['explain'] : null;
-						$factory               = new I2ObjectFactory();
-						$obj                   = $factory->fromNodeId($this->nodeId);
-						if ($obj instanceof I2Object){
-							$this->i2Object       = $obj;
-							$this->i2ObjectLoaded = true;
-						}
+						// Do NOT eagerly fetch the I2Object here. ensureI2Object() lazy-loads it on
+						// the first method call that actually needs it, avoiding an HTTP API round-trip
+						// for every object in list/carousel contexts where only Solr fields are used.
 					} else{
 						$this->nodeId = $this->extractNodeId($recordData);
 
@@ -446,6 +443,12 @@ class Islandora2Driver extends RecordInterface
 
     public function getTitle()
     {
+        // When constructed from a Solr document the title is already available without
+        // an API call — use it directly to avoid triggering ensureI2Object().
+        if (!empty($this->title)) {
+            return $this->title;
+        }
+
         $obj = $this->ensureI2Object();
         if (!$obj) {
             return $this->nodeId > 0 ? 'Islandora Node ' . $this->nodeId : '';
