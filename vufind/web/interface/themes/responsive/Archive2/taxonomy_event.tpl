@@ -14,8 +14,12 @@
 			{/if}
 		</div>
 		<div class="col-xs-8">
-			{include file="Archive2/partials/fieldRow.tpl" label="Stard Date"         value=$start_date}
-			{include file="Archive2/partials/fieldRow.tpl" label="End Date"           value=$end_date}
+			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
+			{include file="Archive2/partials/fieldRow.tpl" label="Stard Date"     value=$start_date}
+			{include file="Archive2/partials/fieldRow.tpl" label="End Date"       value=$end_date}
+			{include file="Archive2/partials/fieldRow.tpl" label="City"           value=$event_city}
+			{include file="Archive2/partials/fieldRow.tpl" label="County"         value=$event_county}
+			{include file="Archive2/partials/fieldRow.tpl" label="State"          value=$event_state}
 		</div>
 	</div>
 	<br class="clearfix">
@@ -29,27 +33,9 @@
 			</div>
 		</div>
 	{/if}
+
 	<div class="taxonomy-detail taxonomy-event">
 		<div id="event-detail-accordion" class="panel-group">
-
-			<div class="panel" id="eventDetailsPanel">
-				<a data-toggle="collapse" href="#eventDetailsPanelBody">
-					<div class="panel-heading">
-						<h2 class="panel-title">Event Details</h2>
-					</div>
-				</a>
-				<div id="eventDetailsPanelBody" class="panel-collapse collapse in">
-					<div class="panel-body">
-						{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-						{include file="Archive2/partials/fieldRow.tpl" label="Start Year"     value=$start_year}
-						{include file="Archive2/partials/fieldRow.tpl" label="End Year"       value=$end_year}
-						{include file="Archive2/partials/fieldRow.tpl" label="City"           value=$event_city}
-						{include file="Archive2/partials/fieldRow.tpl" label="County"         value=$event_county}
-						{include file="Archive2/partials/fieldRow.tpl" label="State"          value=$event_state}
-					</div>
-				</div>
-			</div>
-
 			{if $notes}
 				<div class="panel" id="eventNotesPanel">
 					<a data-toggle="collapse" href="#eventNotesPanelBody">
