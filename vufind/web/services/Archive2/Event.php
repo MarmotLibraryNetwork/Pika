@@ -46,20 +46,20 @@ class Event extends TaxonomyObject
         $event = $this->taxonomyObject;
 
         $interface->assign('alternate_name',      $event->getAlternateName());
-        $interface->assign('start_year',          $event->getStartYear());
-        $interface->assign('end_year',            $event->getEndYear());
+        $interface->assign('start_date',          $event->getStartDate());
+        $interface->assign('end_date',            $event->getEndDate());
         $interface->assign('notes',               $event->getNotes());
         $interface->assign('event_city',          $event->getEventCity());
         $interface->assign('event_county',        $event->getEventCounty());
         $interface->assign('event_state',         $event->getEventState());
         $interface->assign('related_place',       $event->getRelatedPlace());
-        $interface->assign('related_organization', $event->getRelatedOrganization());
+        $interface->assign('related_organization',$event->getRelatedOrganization());
 
         parent::launch();
 
         $interface->assign('taxonomy_type_template', 'taxonomy_event');
 
         $title = $this->taxonomyObject->getTitle();
-        parent::display('taxonomy_wrapper.tpl', $title);
+        parent::display('taxonomy_event.tpl', $title);
     }
 }

@@ -179,6 +179,55 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     }
 
     /**
+     * Return related place references as a list of normalized arrays, or null when none exist.
+     *
+     * Merges field_related_place with field_related_place_addl_info by index so that
+     * extra relation metadata from addl_info is folded into each place entry.
+     *
+     * Each entry shape: ['tid' => int|null, 'name' => string, 'url' => string,
+     *                    'relation' => string|null, 'relation_label' => string|null]
+     *
+     * @return array[]|null
+     */
+    public function getRelatedPlace(): ?array
+    {
+        $places   = $this->termWithoutFieldPrefix['related_place'] ?? null;
+        $addlInfo = $this->termWithoutFieldPrefix['related_place_addl_info'] ?? null;
+
+        if (empty($places) && empty($addlInfo)) {
+            return null;
+        }
+
+        // A single place arrives as an associative array with a 'tid' key; wrap it.
+        if (is_array($places) && isset($places['tid'])) {
+            $places = [$places];
+        }
+        $places   = is_array($places)   ? array_values($places)   : [];
+        $addlInfo = is_array($addlInfo) ? array_values($addlInfo) : [];
+
+        $count  = max(count($places), count($addlInfo));
+        $result = [];
+        for ($i = 0; $i < $count; $i++) {
+            $raw     = array_merge($places[$i] ?? [], $addlInfo[$i] ?? []);
+            $tid     = $raw['tid'] ?? null;
+            $vocab   = strtolower($raw['vocabulary'] ?? '');
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? null;
+            $url     = ($segment && !empty($tid))
+                ? '/Archive2/' . $segment . '/' . urlencode((string)$tid)
+                : '#';
+            $result[] = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $raw['name'] ?? '',
+                'url'            => $url,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+        }
+
+        return $result ?: null;
+    }
+
+    /**
      * Return the relative URL for this taxonomy term's display page.
      *
      * @return string

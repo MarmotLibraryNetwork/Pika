@@ -46,7 +46,7 @@ class EventTaxonomy extends I2Taxonomy
     /**
      * Start year string (field_cat_date_begin).
      */
-    public function getStartYear(): ?string
+    public function getStartDate(): ?string
     {
         return $this->termWithoutFieldPrefix['cat_date_begin'] ?? null;
     }
@@ -54,7 +54,7 @@ class EventTaxonomy extends I2Taxonomy
     /**
      * End year string (field_cat_date_end).
      */
-    public function getEndYear(): ?string
+    public function getEndDate(): ?string
     {
         return $this->termWithoutFieldPrefix['cat_date_end'] ?? null;
     }
@@ -82,41 +82,6 @@ class EventTaxonomy extends I2Taxonomy
     public function getEventState(): ?string
     {
         return $this->termWithoutFieldPrefix['event_state'] ?? null;
-    }
-
-    /**
-     * Return the related place as a normalized array or null.
-     *
-     * Shape: ['tid' => int, 'name' => string, 'url' => string,
-     *         'relation' => string|null, 'relation_label' => string|null]
-     */
-    public function getRelatedPlace(): ?array
-    {
-        $raw = $this->termWithoutFieldPrefix['related_place'] ?? null;
-        if (empty($raw)) {
-            return null;
-        }
-        if (is_array($raw) && isset($raw['tid'])) {
-            $vocab   = strtolower($raw['vocabulary'] ?? '');
-            $vocabMap = [
-                'person'         => 'Person',
-                'corporate_body' => 'CorporateBody',
-                'geo_location'   => 'GeographicLocation',
-                'event'          => 'Event',
-            ];
-            $segment = $vocabMap[$vocab] ?? null;
-            $url     = ($segment && !empty($raw['tid']))
-                ? '/Archive2/' . $segment . '?tid=' . urlencode((string)$raw['tid'])
-                : '#';
-            return [
-                'tid'            => (int)$raw['tid'],
-                'name'           => $raw['name'] ?? '',
-                'url'            => $url,
-                'relation'       => $raw['relation'] ?? null,
-                'relation_label' => $raw['relation_label'] ?? null,
-            ];
-        }
-        return null;
     }
 
     /**
