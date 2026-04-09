@@ -1167,6 +1167,7 @@ class Solr implements IndexEngine {
 		// it as-is:
 		if (strstr($query, ':')){
 			//TODO: something more sophisticated is needed for search phrases that happen to contain a colon character.
+			// also "*:*" comes here
 			return $query;
 		}
 

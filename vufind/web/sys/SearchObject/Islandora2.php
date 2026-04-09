@@ -464,8 +464,11 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 		// Build Query
 		if ($preventQueryModification){
-			$query = $search;
+			//$query = $search;
+			$query = $search[0]['lookfor'];
+			// We end up here when looking up library's archive name label from the Archive Homepage.
 			//TODO Islandora1 version uses: $query = $search[0]['lookfor'];
+			//TODO: Note any other examples that prevent Query Modification
 		}else{
 			$query = $this->indexEngine->buildQuery($search, false);
 		}
@@ -1437,9 +1440,11 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			'!ss_model:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
-			'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
-			'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
-			'!itm_field_member_of:640', // BD test?
+
+			// these shouldn't show due to pika controls
+			//'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
+			//'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
+			//'!itm_field_member_of:640', // BD test?
 		];
 
 		// Pika Search Options
@@ -1462,20 +1467,36 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
 		if ($filter) $filters[] = $filter;
 
-		// Collections Hidden to All Libraries
+		// Private Collections — hidden from all libraries except the owning library.
+		// withOwningLibraryEscape() wraps each NOT filter so that documents belonging to the
+		// current library (matched via itm_field_library) are exempt from the exclusion.
 		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
-		$privateCollectionsObj = new ArchivePrivateCollection();
+		$privateCollectionsObj       = new ArchivePrivateCollection();
 		$privateCollectionsObj->type = 'collection';
 		if ($privateCollectionsObj->find(true)){
-			$filter = $this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of');
+			// Exclude objects that are members of private collections
+			$filter = $this->withOwningLibraryEscape(
+				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of'),
+				$library->libraryTid
+			);
+			if ($filter) $filters[] = $filter;
+
+			// Exclude the collection nodes themselves
+			$filter = $this->withOwningLibraryEscape(
+				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!its_node_id'),
+				$library->libraryTid
+			);
 			if ($filter) $filters[] = $filter;
 		}
 
-		// Objects Hidden to All Libraries
-		$privateObjectsObj = new ArchivePrivateCollection();
+		// Private Objects — hidden from all libraries except the owning library
+		$privateObjectsObj       = new ArchivePrivateCollection();
 		$privateObjectsObj->type = 'object';
 		if ($privateObjectsObj->find(true)){
-			$filter = $this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id');
+			$filter = $this->withOwningLibraryEscape(
+				$this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id'),
+				$library->libraryTid
+			);
 			if ($filter) $filters[] = $filter;
 		}
 
@@ -1485,7 +1506,41 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 
 	/**
+	 * Wrap a NOT filter with an OR escape for the current library's TID, so the owning
+	 * library can still see its own private collections/objects.
+	 *
+	 * Transforms:  !field:(X OR Y OR Z)
+	 * Into:       ((*:* -field:(X OR Y OR Z)) OR itm_field_library:$libraryTid)
+	 *
+	 * The inner (*:* -field:...) uses the standard Solr "all-docs-minus-exclusions" idiom.
+	 * A bare (-field:X OR field2:Y) produces no results in Solr because Lucene requires at
+	 * least one MUST clause to anchor a MUST NOT; without it the negative clause is ignored
+	 * or the group matches nothing. The *:* provides that anchor.
+	 *
+	 * The outer OR lets the owning library (matched by itm_field_library) bypass the exclusion.
+	 * Falls back to the plain filter when $libraryTid is not set or $filter is null.
+	 *
+	 * @param string|null $filter      A NOT filter produced by nodeIdsToFilter(), e.g. '!field:(X OR Y)'
+	 * @param mixed       $libraryTid  Current library's Islandora2 taxonomy term ID ($library->libraryTid)
+	 * @return string|null
+	 */
+	private function withOwningLibraryEscape(?string $filter, mixed $libraryTid): ?string {
+		if ($filter === null || !is_numeric($libraryTid)){
+			return $filter;
+		}
+		// Strip the leading '!' and rewrap using the *:* anchor idiom:
+		// (*:* -field:(...)) OR itm_field_library:TID
+		$positive = ltrim($filter, '!');
+		return "((*:* -$positive) OR itm_field_library:$libraryTid)";
+	}
+
+	/**
 	 * Build a compound Solr filter from a newline-separated list of numeric node IDs.
+	 *
+	 * When $solrFilter starts with '!' (negation), the IDs are combined into a single
+	 * grouped NOT expression — e.g. "!field:(id1 OR id2 OR id3)" — which is functionally
+	 * equivalent to "!field:id1 AND !field:id2 AND !field:id3" but is more concise and
+	 * easier for Solr to parse into a single filter-cache entry.
 	 *
 	 * @param string|null $nodeIdField  Raw \r\n-separated node ID string (e.g. $library->objectsToHide)
 	 * @param string      $solrFilter   Solr filter prefix, e.g. '!its_node_id' or '!itm_field_member_of'
@@ -1495,13 +1550,22 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		if (empty($nodeIdField)){
 			return null;
 		}
-		$parts = [];
+		$ids = [];
 		foreach (explode("\r\n", $nodeIdField) as $nodeId){
 			if (!empty($nodeId) && ctype_digit($nodeId)){
-				$parts[] = "$solrFilter:$nodeId";
+				$ids[] = $nodeId;
 			}
 		}
-		return empty($parts) ? null : implode(' AND ', $parts);
+		if (empty($ids)){
+			return null;
+		}
+		// Negation filters collapse to a single grouped expression: !field:(id1 OR id2 OR ...)
+		// This is equivalent to repeated AND !field:id terms but produces one filter-cache entry.
+		if (str_starts_with($solrFilter, '!')){
+			$field = substr($solrFilter, 1);
+			return "!$field:(" . implode(' OR ', $ids) . ')';
+		}
+		return implode(' AND ', array_map(fn($id) => "$solrFilter:$id", $ids));
 	}
 
 	/**
