@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h1 role="heading" aria-level="1" class="h2">Active Orders</h1>
+	<h1 role="heading" aria-level="1" class="h2">Sierra Active Orders</h1>
 	{if $notSierra}
 		<div class="alert alert-info">Active Orders is only available for Sierra ILS systems.</div>
 	{elseif $noFile}
@@ -16,6 +16,7 @@
 				</select>
 			</form>
 		{/if}
+		<div class="alert alert-info">Large numbers of order records will take a while to load.</div>
 		<p class="text-muted">File last updated: {$fileDate|date_format:"%F %T"}</p>
 		{if $rows}
 			<div class="table-responsive">
