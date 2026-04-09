@@ -126,27 +126,7 @@
 				</div>
 			{/if}
 
-			{if $related_place}
-				<div class="panel" id="personRelatedPlacePanel">
-					<a data-toggle="collapse" href="#personRelatedPlacePanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Related Place</h2>
-						</div>
-					</a>
-					<div id="personRelatedPlacePanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div class="row archive-field-row">
-								<div class="result-label col-sm-4">
-									{if $related_place.relation_label}{$related_place.relation_label}{else}Place{/if}:
-								</div>
-								<div class="result-value col-sm-8">
-									<a href="{$related_place.url}">{$related_place.name|escape}</a>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			{/if}
+			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
 
 		</div>
 	</div>

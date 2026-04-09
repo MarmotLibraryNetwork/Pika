@@ -179,6 +179,34 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     }
 
     /**
+     * Return related person references, or null when none exist.
+     *
+     * @return array[]|null
+     */
+    public function getRelatedPerson(): ?array
+    {
+        $person = $this->rawTerm['field_related_person_paragraph'] ?? null;
+        
+        if($person === null)
+            return null;
+
+        // Only a single related person
+        if(array_key_exists('field_related_person', $person)) {
+            return [$person['field_related_person']];
+        }
+
+        // Multipule related people 
+        // Only return the related person part.
+        $people = [];
+         
+        foreach($person as $p) {
+            $people[] = $p['field_related_person'];
+        }
+
+        return $people;
+    }
+
+    /**
      * Return related place references as a list of normalized arrays, or null when none exist.
      *
      * Merges field_related_place with field_related_place_addl_info by index so that
@@ -202,6 +230,9 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         if (is_array($places) && isset($places['tid'])) {
             $places = [$places];
         }
+        if (is_array($addlInfo) && isset($addlInfo['id'])) {
+            $addlInfo = [$addlInfo];
+        }
         $places   = is_array($places)   ? array_values($places)   : [];
         $addlInfo = is_array($addlInfo) ? array_values($addlInfo) : [];
 
@@ -224,7 +255,49 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
             ];
         }
 
+        if(array_key_exists('tid', $result)) {
+            $result = [$result];
+        }
+
         return $result ?: null;
+    }
+
+    /**
+     * Raw related organization reference (field_related_organization).
+     *
+     * @return array[]|null Term reference array or null.
+     */
+    public function getRelatedOrganization(): ?array
+    {
+        $related_orgs = $this->termWithoutFieldPrefix['related_organization'] ?? null;
+
+        if($related_orgs === null)
+            return null;
+
+        if(array_key_exists('tid', $related_orgs)) {
+            $related_orgs = [$related_orgs];
+        }
+
+        return $related_orgs;
+    }
+
+    /**
+     * Raw related event reference (field_related_event).
+     *
+     * @return array[]|null Term reference array or null.
+     */
+    public function getRelatedEvent(): ?array
+    {
+        $related_event = $this->termWithoutFieldPrefix['related_event'] ?? null;
+
+        if($related_event === null)
+            return null;
+
+        if(array_key_exists('tid', $related_event)) {
+            $related_event = [$related_event];
+        }
+
+        return $related_event;
     }
 
     /**

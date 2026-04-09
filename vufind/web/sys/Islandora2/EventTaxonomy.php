@@ -69,38 +69,18 @@ class EventTaxonomy extends I2Taxonomy
     /** City where the event occurred (field_event_city). */
     public function getEventCity(): ?string
     {
-        return $this->termWithoutFieldPrefix['event_city'] ?? null;
+        return $this->termWithoutFieldPrefix['event_city']['name'] ?? null;
     }
 
     /** County where the event occurred (field_event_county). */
     public function getEventCounty(): ?string
     {
-        return $this->termWithoutFieldPrefix['event_county'] ?? null;
+        return $this->termWithoutFieldPrefix['event_county']['name'] ?? null;
     }
 
     /** State where the event occurred (field_event_state). */
     public function getEventState(): ?string
     {
-        return $this->termWithoutFieldPrefix['event_state'] ?? null;
-    }
-
-    /**
-     * Raw related organization reference (field_related_organization).
-     *
-     * @return mixed Term reference array or null.
-     */
-    public function getRelatedOrganization(): mixed
-    {
-        return $this->termWithoutFieldPrefix['related_organization'] ?? null;
-    }
-
-    /**
-     * Raw related event reference (field_related_event).
-     *
-     * @return mixed Term reference array or null.
-     */
-    public function getRelatedEvent(): mixed
-    {
-        return $this->termWithoutFieldPrefix['related_event'] ?? null;
+        return $this->termWithoutFieldPrefix['event_state']['name'] ?? null;
     }
 }

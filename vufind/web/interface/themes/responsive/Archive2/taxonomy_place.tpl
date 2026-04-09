@@ -125,21 +125,8 @@
 					</div>
 				</div>
 			{/if}
-
-			{if $related_place}
-				<div class="panel" id="geoRelatedPlacePanel">
-					<a data-toggle="collapse" href="#geoRelatedPlacePanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Related Place</h2>
-						</div>
-					</a>
-					<div id="geoRelatedPlacePanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Place" value=$related_place}
-						</div>
-					</div>
-				</div>
-			{/if}
+			
+			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
 
 		</div>
 	</div>

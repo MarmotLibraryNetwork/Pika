@@ -43,6 +43,8 @@ class Event extends TaxonomyObject
             return;
         }
 
+        parent::launch();
+
         $event = $this->taxonomyObject;
 
         $interface->assign('alternate_name',      $event->getAlternateName());
@@ -54,8 +56,7 @@ class Event extends TaxonomyObject
         $interface->assign('event_state',         $event->getEventState());
         $interface->assign('related_place',       $event->getRelatedPlace());
         $interface->assign('related_organization',$event->getRelatedOrganization());
-
-        parent::launch();
+        $interface->assign('related_person',      $event->getRelatedPerson());
 
         $interface->assign('taxonomy_type_template', 'taxonomy_event');
 
