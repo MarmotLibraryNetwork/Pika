@@ -93,13 +93,4 @@ class CorporateBodyTaxonomy extends I2Taxonomy
         return null;
     }
 
-    /**
-     * Raw related organization reference (field_related_organization).
-     *
-     * @return mixed Term reference array or null.
-     */
-    public function getRelatedOrganization(): mixed
-    {
-        return $this->termWithoutFieldPrefix['related_organization'] ?? null;
-    }
 }

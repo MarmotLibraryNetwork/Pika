@@ -189,26 +189,6 @@ class PersonTaxonomy extends I2Taxonomy
     }
 
     /**
-     * Return the related place as an array with tid, name, url, relation, relation_label,
-     * or null when not set.
-     */
-    public function getRelatedPlace(): ?array
-    {
-        $raw = $this->termWithoutFieldPrefix['related_place'] ?? null;
-        return $this->normalizeRelatedTerm($raw);
-    }
-
-    /**
-     * Raw related organization reference (field_related_organization).
-     *
-     * @return mixed Term reference array or null.
-     */
-    public function getRelatedOrganization(): mixed
-    {
-        return $this->termWithoutFieldPrefix['related_organization'] ?? null;
-    }
-
-    /**
      * Extract the Genealogy person ID from field_genealogy_link.
      *
      * The field value is expected to be a URL matching the pattern used by
