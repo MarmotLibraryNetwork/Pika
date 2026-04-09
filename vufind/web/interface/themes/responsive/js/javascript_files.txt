@@ -14,6 +14,7 @@ pika/base.min.js
 pika/account.min.js
 pika/admin.min.js
 pika/archive.min.js
+pika/archive2.min.js
 pika/browse.min.js
 pika/dpla.min.js
 pika/grouped-work.min.js

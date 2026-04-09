@@ -59,10 +59,10 @@ class Archive_AJAX extends AJAXHandler {
 			$pid         = urldecode($_REQUEST['collectionId']);
 			$interface->assign('exhibitPid', $pid);
 
-			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$page = $_REQUEST['page'] ?? 1;
 			$interface->assign('page', $page);
 
-			$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'title';
+			$sort = $_REQUEST['sort'] ?? 'title';
 			$interface->assign('sort', $sort);
 
 			if (isset($_REQUEST['reloadHeader'])){
@@ -94,7 +94,7 @@ class Archive_AJAX extends AJAXHandler {
 			$this->setupTimelineSorts($sort, $searchObject);
 			//TODO: Do these sorts work for a basic exhibit?
 
-			$relatedObjects = array();
+			$relatedObjects = [];
 			$response       = $searchObject->processSearch(true, false);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
