@@ -171,7 +171,8 @@ public class FormatDetermination {
 			econtentRecord.setFormatBoost(specifiedFormatBoost);
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, econtentRecord);
-			if (!this.translationMaps.isEmpty()){
+			if (!this.translationMaps.isEmpty() && (this.translationMaps.containsKey("format") || this.translationMaps.containsKey("format_category") || this.translationMaps.containsKey("format_boost"))){
+				// Only use translations if any of the format translation maps exist, otherwise use default format determination is switch() below
 				String firstFormat    = printFormats.iterator().next();
 				String formatBoostStr = translateValue("format_boost", firstFormat, econtentRecord.getRecordIdentifier());
 				econtentItem.setFormat(translateValue("format", firstFormat, econtentRecord.getRecordIdentifier()));
