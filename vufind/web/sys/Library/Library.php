@@ -2149,6 +2149,7 @@ class Library extends DB_DataObject {
 		foreach ($terms as $term) {
 			$choices[$term['tid']] = $term['name'];
 		}
+		$choices = array_merge(array('0'=>'Choose Taxonomy Library'), $choices);
 		return $choices;
 	}
 
