@@ -1964,6 +1964,7 @@ public class SierraExportAPIMain {
 		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
 		boolean suppressOrderRecordsThatAreReceived             = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
 		Integer orderReceivedDateAgeLimit                       = PikaConfigIni.getIntIniValue("Catalog", "orderReceivedDateAgeLimit");
+		logger.info("orderReceivedDateAgeLimit: {}", orderReceivedDateAgeLimit);
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
 		if (orderStatusesToExport == null) {
