@@ -51,7 +51,7 @@ class ExploreMore {
 		'relatedArchiveData'    => 'From the Archive',
 		'relatedCatalog'        => 'More From the Catalog', // Catalog Solr search by subject terms
 		'relatedSubjects'       => 'Related Subjects',
-		// TODO: 'dpla'                 => 'Digital Public Library of America', // DPLA API results
+		// TODO: 'dpla'                 => 'Digital Public Library of America', // DPLA API results // Only shown for Marmot Entities
 		// TODO: 'acknowledgements'     => 'Acknowledgements',   // Donor/funder branding
 	];
 

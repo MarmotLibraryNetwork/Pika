@@ -1228,7 +1228,7 @@
     ]
   },
 
-  "IslandoraTitle": {
+  "IslandoraTitle": { /* Used by ExploreMore class method loadExactEntityMatches() */
     "QueryFields": {
       "mods_titleInfo_title_t": [
         ["onePhrase", 1200],
