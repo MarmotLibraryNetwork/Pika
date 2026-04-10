@@ -1964,7 +1964,8 @@ public class SierraExportAPIMain {
 		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
 		boolean suppressOrderRecordsThatAreReceived             = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
 		Integer orderReceivedDateAgeLimit                       = PikaConfigIni.getIntIniValue("Catalog", "orderReceivedDateAgeLimit");
-		logger.info("orderReceivedDateAgeLimit: {}", orderReceivedDateAgeLimit);
+		logger.info("Active order suppression settings -- orderReceivedDateAgeLimit: {}, suppressOrderRecordsThatAreReceived: {}, suppressOrderRecordsThatAreCataloged: {}, suppressOrderRecordsThatAreReceivedAndCataloged: {}",
+				orderReceivedDateAgeLimit, suppressOrderRecordsThatAreReceived, suppressOrderRecordsThatAreCataloged, suppressOrderRecordsThatAreReceivedAndCataloged);
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
 		if (orderStatusesToExport == null) {
@@ -1978,6 +1979,7 @@ public class SierraExportAPIMain {
 			}
 			orderStatusCodesSQL.append(" order_status_code = '").append(orderStatusesToExportVal).append("'");
 		}
+		logger.info("Extract order record statuses: {}", orderStatusCodesSQL.toString());
 		String activeOrderSQL = "SELECT bib_view.record_num AS bib_record_num, order_view.record_num AS order_record_num, accounting_unit_code_num, order_status_code, copies, location_code, catalog_date_gmt, received_date_gmt, order_date_gmt " +
 						"FROM sierra_view.order_view " +
 						"INNER JOIN sierra_view.bib_record_order_record_link ON bib_record_order_record_link.order_record_id = order_view.record_id " +
