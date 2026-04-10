@@ -53,8 +53,102 @@ class Archive2_AJAX extends AJAXHandler {
 
 	/** Methods that write their own output and headers (e.g. binary streams, VTT). */
 	protected $methodsThatRespondThemselves = [
-		// e.g. 'fetchManifest',
+		'fetchVtt',
+		'fetchManifest',
+		'fetchCantaloupeManifest',
 	];
+
+	/**
+	 * Proxy a WebVTT caption file from the Islandora2 server to avoid CORS issues.
+	 * Called via: /Archive2/AJAX?method=fetchVtt&path={encoded_path}
+	 */
+	function fetchVtt(): void {
+		global $configArray;
+		$baseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+		$path    = urldecode($_REQUEST['path'] ?? '');
+
+		if (!$path) {
+			$this->logger->error('fetchVtt called without a path parameter.');
+			return;
+		}
+
+		$response = $this->proxyCurl($baseUrl . $path);
+		if ($response !== null) {
+			header('Content-Type: text/vtt');
+			echo $response;
+		}
+	}
+
+	/**
+	 * Proxy a IIIF manifest from the Islandora2 server.
+	 * Called via: /Archive2/AJAX?method=fetchManifest&nid={nid}
+	 */
+	function fetchManifest(): void {
+		global $configArray;
+		$baseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+		$nid     = (int)($_REQUEST['nid'] ?? 0);
+
+		if (!$nid) {
+			$this->logger->error('fetchManifest called without a valid nid.');
+			return;
+		}
+
+		$response = $this->proxyCurl($baseUrl . '/node/' . $nid . '/manifest');
+		if ($response !== null) {
+			header('Content-Type: application/ld+json');
+			echo $response;
+		}
+	}
+
+	/**
+	 * Proxy a IIIF image manifest from the Cantaloupe image server.
+	 * Called via: /Archive2/AJAX?method=fetchCantaloupeManifest&sf={encoded_service_file_url}
+	 */
+	function fetchCantaloupeManifest(): void {
+		global $configArray;
+		$baseUrl        = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+		$serviceFileUrl = urlencode(urldecode($_REQUEST['sf'] ?? ''));
+
+		$response = $this->proxyCurl($baseUrl . '/cantaloupe/iiif/2/' . $serviceFileUrl);
+		if ($response !== null) {
+			header('Content-Type: application/json;charset=utf-8');
+			echo $response;
+		}
+	}
+
+	/**
+	 * Execute a cURL GET request and return the response body, or null on failure.
+	 *
+	 * @param string $url
+	 * @return string|null
+	 */
+	private function proxyCurl(string $url): ?string {
+		global $configArray;
+		$ch = curl_init($url);
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'] ?? '',
+			CURLOPT_TIMEOUT        => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+		]);
+
+		$response   = curl_exec($ch);
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$curlError  = curl_error($ch);
+		curl_close($ch);
+
+		if ($response === false || $statusCode !== 200) {
+			$this->logger->error('proxyCurl failed.', [
+				'url'        => $url,
+				'statusCode' => $statusCode,
+				'curlError'  => $curlError,
+			]);
+			return null;
+		}
+
+		return $response;
+	}
 
 	/**
 	 * Build and return the rendered Explore More sidebar HTML for an Islandora2 object.

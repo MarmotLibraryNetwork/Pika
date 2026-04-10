@@ -81,7 +81,7 @@
             captions.forEach((caption, idx) => {
                 const track = document.createElement('track');
                 track.kind = 'captions';
-                track.src = '/Archive/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath);
+                track.src = '/Archive2/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath);
                 track.label = caption.langName || 'Captions';
                 track.srclang = caption.langCode || 'en';
                 if (idx === 0) {
