@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -47,7 +47,7 @@ class ExploreMore {
 					/** @var IslandoraDriver $parentDriver */
 					$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
 
-					//If the parent object is a section then get the parent again
+					//If the parent object is a section, then get the parent again
 					/** @var IslandoraDriver $parentOfParent */
 					$parentOfParent = $parentDriver->getParentObject();
 					if ($parentOfParent != null ){
@@ -287,8 +287,8 @@ class ExploreMore {
 					$foundDuplicatePids = true;
 					while ($foundDuplicatePids){
 						$foundDuplicatePids = false;
-						$indexToRemove = -1;
-						$keys = array_keys($brandingResults);
+						$indexToRemove      = -1;
+						$keys               = array_keys($brandingResults);
 						for ($i = 0; $i < count($brandingResults) - 1; $i++){
 							for ($j = $i + 1; $j < count($brandingResults); $j++ ){
 								if ($brandingResults[$keys[$i]]['pid'] == $brandingResults[$keys[$j]]['pid']){
