@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +20,6 @@
  * Description goes here
  *
  * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 7/21/2016
- * Time: 4:05 PM
  */
 class ClaimAuthorshipRequest extends DB_DataObject{
 	public $__table = 'claim_authorship_requests';
@@ -36,15 +32,14 @@ class ClaimAuthorshipRequest extends DB_DataObject{
 	public $dateRequested;
 
 	public static function getObjectStructure(){
-		$structure = array(
-				array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'Name', 'maxLength' => 100, 'required' => true),
-				array('property'=>'phone', 'type'=>'text', 'label'=>'Phone', 'description'=>'Phone', 'maxLength' => 20, 'required' => true),
-				array('property'=>'email', 'type'=>'email', 'label'=>'E-mail Address', 'description'=>'E-mail Address', 'maxLength' => 100, 'required' => true),
-				array('property'=>'message', 'type'=>'text', 'label'=>'Additional Information', 'description'=>'Additional information about your request for authorship', 'maxLength' => 255, 'required' => false),
-				'pid' => array('property'=>'pid', 'type'=>'hidden', 'label'=>'PID of Object', 'description'=>'ID of the object in ', 'maxLength' => 50, 'required' => true),
-				'dateRequested' => array('property'=>'dateRequested', 'type'=>'hidden', 'label'=>'The date this request was made'),
-
-		);
+		$structure = [
+			['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name', 'maxLength' => 100, 'required' => true],
+			['property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'Phone', 'maxLength' => 20, 'required' => true],
+			['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
+			['property' => 'message', 'type' => 'text', 'label' => 'Additional Information', 'description' => 'Additional information about your request for authorship', 'maxLength' => 255, 'required' => false],
+			'pid'           => ['property' => 'pid', 'type' => 'hidden', 'label' => 'PID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true],
+			'dateRequested' => ['property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'],
+		];
 		return $structure;
 	}
 

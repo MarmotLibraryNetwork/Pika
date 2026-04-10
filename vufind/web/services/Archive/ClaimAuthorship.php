@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,17 +35,17 @@ class Archive_ClaimAuthorship extends Action{
 			PEAR_Singleton::raiseError('No id provided, you must select which object you want to claim authorship for');
 		}
 
-		$pid = $_REQUEST['pid'];
+		$pid                                    = $_REQUEST['pid'];
 		$archiveRequestFields['pid']['default'] = $pid;
 
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$archiveObject = FedoraUtils::getInstance()->getObject($pid);
+		$archiveObject   = FedoraUtils::getInstance()->getObject($pid);
 		$requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('requestedObject', $requestedObject);
 
 		//Find the owning library
 		$owningLibrary = new Library();
-		list($namespace) = explode(':', $pid);
+		[$namespace]   = explode(':', $pid);
 
 		$owningLibrary->archiveNamespace = $namespace;
 		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
@@ -67,10 +66,10 @@ class Archive_ClaimAuthorship extends Action{
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 
-				// Pre-fill form with user supplied data
+				// Pre-fill form with user-supplied data
 				foreach ($archiveRequestFields as &$property) {
 					if (isset($_REQUEST[$property['property']])){
-						$uservalue = $_REQUEST[$property['property']];
+						$uservalue           = $_REQUEST[$property['property']];
 						$property['default'] = $uservalue;
 					}
 				}
@@ -87,23 +86,19 @@ class Archive_ClaimAuthorship extends Action{
 
 					//Find the owning library
 					$owningLibrary = new Library();
-					list($namespace) = explode(':', $newObject->pid);
+					[$namespace]   = explode(':', $newObject->pid);
 
 					$owningLibrary->archiveNamespace = $namespace;
 					if ($owningLibrary->find(true) && $owningLibrary->N == 1){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
 							require_once ROOT_DIR . '/sys/Mailer.php';
-							$mail = new VuFindMailer();
-							$subject = 'New Authorship Claim for Archive Content';
+							$body        .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
+							$mail        = new VuFindMailer();
+							$subject     = 'New Authorship Claim for Archive Content';
 							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
 
 							if ($emailResult === true){
-								$result = array(
-									'result' => true,
-									'message' => 'Your e-mail was sent successfully.'
-								);
 							} elseif (PEAR_Singleton::isError($emailResult)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
 							} else {
@@ -133,7 +128,7 @@ class Archive_ClaimAuthorship extends Action{
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
 
-		// Set up captcha to limit spam self registrations
+		// Set up captcha to limit spam submissions
 		if (isset($configArray['ReCaptcha']['publicKey'])) {
 			$captchaCode        = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
@@ -162,14 +157,14 @@ class Archive_ClaimAuthorship extends Action{
 				} else {
 					$errorDescription = 'Unknown error';
 				}
-				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
+				$pikaLogger->error('Could not insert new object ' . $ret . ' ' . $errorDescription);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 				return false;
 			}
 		} else {
 			global $pikaLogger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$pikaLogger->debug('Could not validate new object Claim Authorship Request ' . $errorDescription);
+			$pikaLogger->error('Could not validate new object Claim Authorship Request ' . $errorDescription);
 			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 			return false;
 		}
