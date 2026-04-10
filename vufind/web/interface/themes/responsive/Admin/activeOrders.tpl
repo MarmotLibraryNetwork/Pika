@@ -16,9 +16,16 @@
 				</select>
 			</form>
 		{/if}
-		<div class="alert alert-info">Large numbers of order records will take a while to load.</div>
 		<p class="text-muted">File last updated: {$fileDate|date_format:"%F %T"}</p>
-		{if $rows}
+		{if $tooManyRows}
+			<div class="alert alert-warning">
+				This file contains {$rowCount|number_format} order records, which is too large to display in the browser.
+				<a href="/Admin/ActiveOrders?id={$selectedId}&amp;download=1" class="btn btn-primary" style="margin-left:1em;">
+					Download active_orders.csv
+				</a>
+			</div>
+		{elseif $rows}
+			<div class="alert alert-info">Large numbers of order records will take a while to load.</div>
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered table-condensed" id="activeOrdersTable">
 					<thead>

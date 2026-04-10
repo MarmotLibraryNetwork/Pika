@@ -69,22 +69,39 @@ class Admin_ActiveOrders extends Admin_Admin {
 		$profile->get($selectedId);
 		$csvPath = $profile->marcPath . DIR_SEP . 'active_orders.csv';
 
-		$headers = [];
-		$rows    = [];
+		// Stream the file directly for download requests
+		if (!empty($_REQUEST['download'])) {
+			header('Content-Type: text/csv');
+			header('Content-Disposition: attachment; filename="active_orders.csv"');
+			header('Content-Length: ' . filesize($csvPath));
+			readfile($csvPath);
+			return;
+		}
+
+		$rowLimit = 10000;
+		$headers  = [];
+		$rows     = [];
+		$rowCount = 0;
 		$fh = fopen($csvPath, 'r');
 		if ($fh) {
 			$headers = fgetcsv($fh);
 			while (($row = fgetcsv($fh)) !== false) {
-				$rows[] = $row;
+				$rowCount++;
+				if ($rowCount <= $rowLimit) {
+					$rows[] = $row;
+				}
 			}
 			fclose($fh);
 		}
 
-		$interface->assign('profiles',   $profileList);
-		$interface->assign('selectedId', $selectedId);
-		$interface->assign('headers',    $headers);
-		$interface->assign('rows',       $rows);
-		$interface->assign('fileDate',   filemtime($csvPath));
+		$tooManyRows = $rowCount > $rowLimit;
+		$interface->assign('profiles',     $profileList);
+		$interface->assign('selectedId',   $selectedId);
+		$interface->assign('headers',      $headers);
+		$interface->assign('rows',         $tooManyRows ? [] : $rows);
+		$interface->assign('rowCount',     $rowCount);
+		$interface->assign('tooManyRows',  $tooManyRows);
+		$interface->assign('fileDate',     filemtime($csvPath));
 		$this->display('activeOrders.tpl', 'Active Orders');
 	}
 }
