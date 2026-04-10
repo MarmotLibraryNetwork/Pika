@@ -20,12 +20,15 @@
 		{if $tooManyRows}
 			<div class="alert alert-warning">
 				This file contains {$rowCount|number_format} order records, which is too large to display in the browser.
-				<a href="/Admin/ActiveOrders?id={$selectedId}&amp;download=1" class="btn btn-primary" style="margin-left:1em;">
-					Download active_orders.csv
-				</a>
 			</div>
+			<a href="/Admin/ActiveOrders?id={$selectedId}&amp;download=1" class="btn btn-primary">
+				Download active_orders.csv
+			</a>
 		{elseif $rows}
-			<div class="alert alert-info">Large numbers of order records will take a while to load.</div>
+			<div class="alert alert-info">
+				<p>These are the order record items extracted from Sierra DNA to populate as On Order items displayed in the catalog.</p>
+				<p>Large numbers of order records will take a while to load.</p>
+			</div>
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered table-condensed" id="activeOrdersTable">
 					<thead>

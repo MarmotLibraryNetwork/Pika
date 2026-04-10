@@ -294,7 +294,8 @@
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
 							<div class="adminMenuLink{if $action == "NovelistInfo"} active{/if}"><a href="/Admin/NovelistInfo">NoveList Information</a></div>
 							{if $ils == 'Sierra'}
-								<div class="adminMenuLink{if $action == "ActiveOrders"} active{/if}"><a href="/Admin/ActiveOrders">Active Orders</a></div>
+								<hr class="menu">
+								<div class="adminMenuLink{if $action == "ActiveOrders"} active{/if}"><a href="/Admin/ActiveOrders">Sierra Active Orders</a></div>
 							{/if}
 						</div>
 					</div>
