@@ -971,7 +971,7 @@ class Library extends DB_DataObject {
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
 				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
-				'libraryTid'                           => ['property' => 'libraryTid', 'type' => 'integer', 'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
+				'libraryTid'                           => ['property' => 'libraryTid', 'type' => 'enum', 'values'=> self::getLibraryTidChoices(),'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],
@@ -2128,6 +2128,28 @@ class Library extends DB_DataObject {
 		$location            = new Location;
 		$location->libraryId = $this->libraryId;
 		return $location->fetchAll('locationId');
+	}
+
+	/**
+	 * Return a TID => name map of library taxonomy terms for use as
+	 * an enum select in the admin settings. Returns an empty array when the
+	 * Islandora2 URL is not configured or the request fails.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function getLibraryTidChoices(): array
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('library');
+		if (empty($terms)) {
+			return [];
+		}
+		$choices = [];
+		foreach ($terms as $term) {
+			$choices[$term['tid']] = $term['name'];
+		}
+		return $choices;
 	}
 
 	public function getArchiveRequestFormStructure(){

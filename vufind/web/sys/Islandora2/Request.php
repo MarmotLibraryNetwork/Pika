@@ -192,6 +192,83 @@ class Request
 	}
 
 	/**
+	 * Fetch all taxonomy terms for a given vocabulary from the Drupal JSON:API.
+	 *
+	 * Returns an array of ['tid' => int, 'name' => string] entries sorted by name,
+	 * or null on failure. Follows JSON:API pagination via links.next.
+	 *
+	 * @param string $vocabId  Vocabulary machine name (e.g. 'corporate_body').
+	 * @return array[]|null
+	 */
+	public function fetchVocabulary(string $vocabId): ?array
+	{
+		if (empty($this->baseUrl)) {
+			$this->logger->error('Islandora2 URL is not configured.');
+			return null;
+		}
+
+		$url = $this->baseUrl . '/jsonapi/taxonomy_term/' . urlencode($vocabId)
+			. '?fields[taxonomy_term--' . urlencode($vocabId) . ']=name,drupal_internal__tid'
+			. '&sort=name'
+			. '&page[limit]=100';
+
+		$terms = [];
+
+		do {
+			$curl = new Curl();
+			$curl->setUserAgent($this->userAgent);
+
+			try {
+				$body = $curl->get($url);
+
+				if ($curl->isCurlError()) {
+					$this->logger->error('Curl error fetching vocabulary from JSON:API.', [
+						'vocabId'   => $vocabId,
+						'url'   => $url,
+						'code'  => $curl->getCurlErrorCode(),
+						'error' => $curl->getCurlErrorMessage(),
+					]);
+					return null;
+				}
+
+				if ($curl->isError()) {
+					$this->logger->warning('HTTP error from JSON:API while fetching vocabulary.', [
+						'vocab'  => $vocabId,
+						'code' => $curl->getHttpStatusCode(),
+					]);
+					return null;
+				}
+
+				$decoded = $this->decodeBody($body, 'vocabulary', 0);
+				if ($decoded === null) {
+					return null;
+				}
+
+				foreach ($decoded['data'] ?? [] as $item) {
+					$tid  = $item['attributes']['drupal_internal__tid'] ?? null;
+					$name = $item['attributes']['name'] ?? null;
+					if (is_int($tid) && is_string($name) && $name !== '') {
+						$terms[] = ['tid' => $tid, 'name' => $name];
+					}
+				}
+
+				$url = $decoded['links']['next']['href'] ?? null;
+			} catch (\Throwable $e) {
+				$this->logger->error('Exception while fetching vocabulary from JSON:API.', [
+					'vocab'     => $vocabId,
+					'message' => $e->getMessage(),
+				]);
+				return null;
+			} finally {
+				$curl->close();
+			}
+		} while ($url !== null);
+
+		return $terms;
+	}
+	
+
+	/**
 	 * Normalise a raw Curl response body to an associative array.
 	 */
 	private function decodeBody(mixed $body, string $type, int $id): ?array
