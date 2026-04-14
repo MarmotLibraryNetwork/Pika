@@ -314,6 +314,38 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     }
 
     /**
+     * Get subjects (field_geo_subjects)
+     * For vocabs that have subjects, field is named field_geo_subjects
+     * 
+     * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
+     */
+    public function getSubjects(): mixed
+    {
+        // geo_subject is the field name for event, corperate body and geo location
+        if(!array_key_exists('geo_subject', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
+        $subjects = $this->termWithoutFieldPrefix['geo_subject'] ?? null;
+        if(is_array($subjects) && array_key_exists('tid', $subjects)) {
+            $subjects = [$subjects];
+        }
+        return $subjects;
+    }
+
+
+    public function getExternalLink()
+    {
+        if(!array_key_exists('external_link', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
+        $links = $this->termWithoutFieldPrefix['external_link'] ?? null;
+        if(array_key_exists('uri', $links)) {
+            $links = [$links];
+        }
+        return $links;
+    }
+
+    /**
      * Return the relative URL for this taxonomy term's display page.
      *
      * @return string
