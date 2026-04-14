@@ -1,11 +1,11 @@
 {if $related_person}
-    <div class="panel" id="eventRelatedPersonPanel">
-        <a data-toggle="collapse" href="#eventRelatedPersonPanelBody">
+    <div class="panel" id="relatedPersonPanel">
+        <a data-toggle="collapse" href="#relatedPersonPanelBody">
             <div class="panel-heading">
                 <h2 class="panel-title">Related People</h2>
             </div>
         </a>
-        <div id="eventRelatedPersonPanelBody" class="panel-collapse collapse">
+        <div id="relatedPersonPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
                 {foreach from=$related_person item=person}
                     <div class="row archive-field-row">
@@ -22,13 +22,13 @@
     </div>
 {/if}
 {if $related_place}
-    <div class="panel" id="eventRelatedPlacePanel">
-        <a data-toggle="collapse" href="#eventRelatedPlacePanelBody">
+    <div class="panel" id="relatedPlacePanel">
+        <a data-toggle="collapse" href="#relatedPlacePanelBody">
             <div class="panel-heading">
                 <h2 class="panel-title">Related Place</h2>
             </div>
         </a>
-        <div id="eventRelatedPlacePanelBody" class="panel-collapse collapse">
+        <div id="relatedPlacePanelBody" class="panel-collapse collapse">
             <div class="panel-body">
                 {foreach from=$related_place item=place}
                     <div class="row archive-field-row">
@@ -46,13 +46,13 @@
 {/if}
 
 {if $related_organization}
-    <div class="panel" id="eventRelatedOrgPanel">
-        <a data-toggle="collapse" href="#eventRelatedOrgPanelBody">
+    <div class="panel" id="relatedOrgPanel">
+        <a data-toggle="collapse" href="#relatedOrgPanelBody">
             <div class="panel-heading">
                 <h2 class="panel-title">Related Organization</h2>
             </div>
         </a>
-        <div id="eventRelatedOrgPanelBody" class="panel-collapse collapse">
+        <div id="relatedOrgPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
                 {foreach from=$related_organization item=org}
                     <div class="row archive-field-row">
