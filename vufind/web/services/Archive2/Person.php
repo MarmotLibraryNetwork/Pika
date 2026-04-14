@@ -57,9 +57,6 @@ class Person extends TaxonomyObject
         $interface->assign('death_year',          $person->getDeathYear());
         $interface->assign('notes',               $person->getNotes());
         $interface->assign('race_ethnicity',      $person->getRaceEthnicity());
-        $interface->assign('related_place',       $person->getRelatedPlace());
-        $interface->assign('related_organization',$person->getRelatedOrganization());
-        $interface->assign('related_person',      $person->getRelatedPerson());
 
         // Military data — only assign the block if any field is populated
         if ($person->hasMilitaryData()) {

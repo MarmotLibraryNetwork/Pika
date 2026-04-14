@@ -101,8 +101,20 @@ class TaxonomyObject extends \Action
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
         $interface->assign('archivePage',            true);
-        $interface->assign('relatedObjects',         $this->loadRelatedObjects());
         $interface->assign('maps_key',               $mapsKey);
+        // Shared fields
+        $interface->assign('geolocation',            $this->taxonomyObject->getGeolocation());
+        // person, corperate_body, event related fileds
+        if($this->taxonomyObject->termWithoutFieldPrefix['vocabulary'] != "geo_location") {
+            $interface->assign('related_place',          $this->taxonomyObject->getRelatedPlace());
+            $interface->assign('related_organization',   $this->taxonomyObject->getRelatedOrganization());
+            $interface->assign('related_person',         $this->taxonomyObject->getRelatedPerson());
+        }
+        // subjects
+        if($this->taxonomyObject->termWithoutFieldPrefix['vocabulary'] != "person") {
+            $interface->assign('subjects',               $this->taxonomyObject->getSubjects());
+        }
+
     }
 
     /**
