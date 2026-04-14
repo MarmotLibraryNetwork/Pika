@@ -10,7 +10,7 @@
 		<div class="col-xs-4">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail"
-					style="max-width:400px; margin:0; float: left;">
+					style="max-width:280px; margin:0; float: left;">
 			{/if}
 		</div>
 		<div class="col-xs-8">
