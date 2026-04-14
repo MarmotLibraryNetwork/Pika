@@ -181,18 +181,21 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     /**
      * Return related person references, or null when none exist.
      *
-     * @return array[]|null
+     * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
      */
-    public function getRelatedPerson(): ?array
+    public function getRelatedPerson(): mixed
     {
-        $person = $this->rawTerm['field_related_person_paragraph'] ?? null;
+        if(!array_key_exists('related_place', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
+        $person = $this->termWithoutFieldPrefix['related_person_paragraph'] ?? null;
         
         if($person === null)
             return null;
 
         // Only a single related person
-        if(array_key_exists('field_related_person', $person)) {
-            return [$person['field_related_person']];
+        if(array_key_exists('related_person', $person)) {
+            return [$person['related_person']];
         }
 
         // Multipule related people 
@@ -200,7 +203,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         $people = [];
          
         foreach($person as $p) {
-            $people[] = $p['field_related_person'];
+            $people[] = $p['related_person'];
         }
 
         return $people;
@@ -215,10 +218,14 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
      * Each entry shape: ['tid' => int|null, 'name' => string, 'url' => string,
      *                    'relation' => string|null, 'relation_label' => string|null]
      *
-     * @return array[]|null
+     * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
      */
-    public function getRelatedPlace(): ?array
+    public function getRelatedPlace(): mixed
     {
+        if(!array_key_exists('related_place', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
+
         $places   = $this->termWithoutFieldPrefix['related_place'] ?? null;
         $addlInfo = $this->termWithoutFieldPrefix['related_place_addl_info'] ?? null;
 
@@ -265,10 +272,13 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     /**
      * Raw related organization reference (field_related_organization).
      *
-     * @return array[]|null Term reference array or null.
+     * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
      */
-    public function getRelatedOrganization(): ?array
+    public function getRelatedOrganization(): mixed
     {
+        if(!array_key_exists('related_organization', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
         $related_orgs = $this->termWithoutFieldPrefix['related_organization'] ?? null;
 
         if($related_orgs === null)
@@ -284,10 +294,13 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     /**
      * Raw related event reference (field_related_event).
      *
-     * @return array[]|null Term reference array or null.
+     * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
      */
-    public function getRelatedEvent(): ?array
+    public function getRelatedEvent(): mixed
     {
+        if(!array_key_exists('related_event', $this->termWithoutFieldPrefix)) {
+            return false;
+        }
         $related_event = $this->termWithoutFieldPrefix['related_event'] ?? null;
 
         if($related_event === null)
