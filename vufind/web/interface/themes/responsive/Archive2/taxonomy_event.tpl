@@ -52,11 +52,11 @@
 					</div>
 				</div>
 			{/if}
-
 			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
+			{include file="Archive2/panels/taxonomy_subject_panel.tpl"}
 			
 		</div>
 	</div>
-	{include file="Archive2/taxonomy_related_objects.tpl"}
-	{include file="Archive2/taxonomy_metadata.tpl"}
+	{*include file="Archive2/taxonomy_related_objects.tpl"*}
+	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
 {/strip}
