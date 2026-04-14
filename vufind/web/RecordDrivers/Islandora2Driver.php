@@ -443,7 +443,7 @@ class Islandora2Driver extends RecordInterface
 
     public function getTitle()
     {
-        // When constructed from a Solr document the title is already available without
+        // When constructed from a Solr document, the title is already available without
         // an API call — use it directly to avoid triggering ensureI2Object().
         if (!empty($this->title)) {
             return $this->title;

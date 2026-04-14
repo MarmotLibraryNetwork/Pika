@@ -1214,7 +1214,7 @@
   "Islandora2Subject": {
     /*TODO: Build Dismax Query? */
     "twm_X3b_en_subject_name_ws_token": /* Subject (text-tokenized) (displays with punctuation) */ [
-      ["onePhrase", 500]
+      ["onePhrase", 500] /* TODO: should this be searched ? */
     ],
     "tm_X3b_en_name_30": /* Subject (text) */ [
       ["onePhrase", 400],
@@ -1225,6 +1225,20 @@
       ["onePhrase", 400],
       ["and", 300],
       ["or", null]
+    ]
+  },
+
+  "Islandora2SubjectProper": {
+    /*TODO: Build Dismax Query? */
+    /*TODO: Use exact instead of onePhrase? */
+    "twm_X3b_en_subject_name_ws_token": /* Subject (text-tokenized) (displays with punctuation) */ [
+      ["onePhrase", 500]
+    ],
+    "tm_X3b_en_name_30": /* Subject (text) */ [
+      ["onePhrase", 400]
+    ],
+    "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
+      ["onePhrase", 400]
     ]
   },
 

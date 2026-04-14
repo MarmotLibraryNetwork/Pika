@@ -1459,6 +1459,9 @@ class Solr implements IndexEngine {
 				case 'Islandora2Title':
 					$handler = 'Islandora2TitleProper';
 					break;
+				case 'Islandora2Subject':
+					$handler = 'Islandora2SubjectProper';
+					break;
 				case 'IslandoraKeyword':
 					$handler = 'IslandoraKeywordProper';
 					break;
