@@ -36,7 +36,7 @@
                             {$place.relation_label}
                         </div>
                         <div class="result-value col-sm-8">
-                            <a href="/Archive2/Person/{$place.tid}">{$place.name|escape}</a>
+                            <a href="/Archive2/Place/{$place.tid}">{$place.name|escape}</a>
                         </div>
                     </div>
                 {/foreach}
