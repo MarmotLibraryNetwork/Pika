@@ -9,8 +9,9 @@ Pika.Browse = (function(){
 			grid:'home-page-browse-grid'
 		},
 
-		addToHomePage: function(searchId){
-			Pika.Account.ajaxLightbox('/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
+		addToHomePage: function(searchId, searchSource){
+			searchSource = searchSource || 'catalog';
+			Pika.Account.ajaxLightbox('/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId + '&searchSource=' + encodeURIComponent(searchSource), true);
 			return false;
 		},
 

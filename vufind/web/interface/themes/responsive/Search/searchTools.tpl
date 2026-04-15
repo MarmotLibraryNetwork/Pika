@@ -16,7 +16,7 @@
 						<br>
 						<strong>Admin {translate text='Search Tools'}:</strong>
 						&nbsp;&nbsp;<a href="#" onclick="return Pika.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>&nbsp;{translate text='Create Widget'}</a>
-						&nbsp;&nbsp;<a href="#" onclick="return Pika.Browse.addToHomePage('{$searchId}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
+						&nbsp;&nbsp;<a href="#" onclick="return Pika.Browse.addToHomePage('{$searchId}', '{$addToHomePageSearchSource|default:"catalog"}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
           {/if}
 			</div>
     {/if}

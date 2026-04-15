@@ -13,6 +13,7 @@
 				<input type="hidden" name="listId" value="{$listId}" id="listId">
 			{/if}
 			<input type="hidden" name="method" value="createBrowseCategory">
+			<input type="hidden" name="searchSource" value="{$searchSource|default:'catalog'}" id="searchSource">
 			<div class="form-group">
 				<label for="categoryName" class="control-label">New Category Name</label>
 				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required" aria-required="true">

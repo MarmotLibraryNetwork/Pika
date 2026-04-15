@@ -87,6 +87,8 @@ class Archive2_Results extends Union_Results {
 		$interface->assign('showSaved', true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
+		$interface->assign('showAdminTools', true);
+		$interface->assign('addToHomePageSearchSource', 'islandora2');
 		$currentPage = $_REQUEST['page'] ?? 1;
 		$interface->assign('page', $currentPage);
 

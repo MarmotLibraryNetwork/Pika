@@ -51,7 +51,9 @@ class Browse_AJAX extends AJAXHandler {
 		$interface->assign('property', $temp['subCategoryId']);
 
 		// Display Page
-		$searchId = strip_tags($_REQUEST['searchId']);
+		$searchId     = strip_tags($_REQUEST['searchId']);
+		$searchSource = $_REQUEST['searchSource'] ?? 'catalog';
+		$interface->assign('searchSource', $searchSource);
 		if (ctype_digit($searchId)){
 			$interface->assign('searchId', $searchId);
 			$results = [
@@ -117,10 +119,14 @@ class Browse_AJAX extends AJAXHandler {
 				}else{
 					if (!empty($_REQUEST['searchId'])){
 						if (ctype_digit($_REQUEST['searchId'])){
-							$searchId = $_REQUEST['searchId'];
-
-							/** @var SearchObject_Solr|SearchObject_Base $searchObject */
-							$searchObject = SearchObjectFactory::initSearchObject();
+							$searchId     = $_REQUEST['searchId'];
+							$searchSource = $_REQUEST['searchSource'] ?? 'catalog';
+							$engine       = match ($searchSource) {
+								'islandora2' => 'Islandora2',
+								default      => 'Solr',
+							};
+							/** @var SearchObject_Islandora2|SearchObject_Solr|SearchObject_Base $searchObject */
+							$searchObject = SearchObjectFactory::initSearchObject($engine);
 							$searchObject->init();
 							$searchObject = $searchObject->restoreSavedSearch($searchId, false, true);
 
