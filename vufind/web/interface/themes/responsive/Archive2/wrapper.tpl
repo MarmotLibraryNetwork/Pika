@@ -12,7 +12,7 @@
 
 			<div id="download-options">
 			{if $can_download}
-				<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original</a>
+				<a class="btn btn-default" href="#">Download Original</a>
 			{elseif (!$loggedIn && $allow_original_download)}
 					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive2/{$nid}/DownloadOriginal">Log in to Download Original</a>
 			{/if}
