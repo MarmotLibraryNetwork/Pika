@@ -340,6 +340,8 @@ class Islandora2Driver extends RecordInterface
         }
 		$displayModel = strtolower($obj->getDisplayModel());
 		$displayModel = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
+		//TODO: $displayModel should be checked against an array of known valid values
+		//TODO: ensure conforming capitalization of $displayModel
 
         return '/Archive2/' . $displayModel . '/' . urlencode((string)$this->nodeId);
     }
