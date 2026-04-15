@@ -98,21 +98,28 @@ class ArchiveObject extends \Action
 
         // legacy ID
         $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Overrides
+
         // Dates
-		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
-		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+        $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
+        $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
 
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
 
-        // Download permissions
-        // $interface->assign('can_download', $this->canCurrentUserDownload());
-        $logged_in_dl = ((int)$nodeData['pika_master_download'] === 1) ? true : false;
-        $interface->assign('logged_in_download', $logged_in_dl);
-        $logged_out_dl = ((int)$nodeData['pika_anon_master_download'] === 1) ? true : false;
-        $interface->assign('logged_out_download', $logged_out_dl);
+        // Download & Request permissions
+        // Can download master file
+        $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
+        // Can download intermediate file
+        $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
+
+        // Download files
+        $orignal_media = $this->mediaObject->getOriginalMedia();
+        $orignal_media_file = $orignal_media->fileUrl;
+        $interface->assign('orignal_media_file', $orignal_media_file);
+
+        $intermeidate_media = $this->mediaObject->getIntermediateFile();
+        $intermeidate_media_file = $intermeidate_media->fileUrl;
+        $interface->assign('intermediate_media_file', $intermeidate_media_file);
 
         // Language
         $languageName = null;
