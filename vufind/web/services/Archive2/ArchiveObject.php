@@ -107,7 +107,11 @@ class ArchiveObject extends \Action
         $interface->assign('can_view', $this->canCurrentUserView());
 
         // Download permissions
-        $interface->assign('can_download', $this->canCurrentUserDownload());
+        // $interface->assign('can_download', $this->canCurrentUserDownload());
+        $logged_in_dl = ((int)$nodeData['pika_master_download'] === 1) ? true : false;
+        $interface->assign('logged_in_download', $logged_in_dl);
+        $logged_out_dl = ((int)$nodeData['pika_anon_master_download'] === 1) ? true : false;
+        $interface->assign('logged_out_download', $logged_out_dl);
 
         // Language
         $languageName = null;
