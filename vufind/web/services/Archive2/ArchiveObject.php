@@ -129,28 +129,13 @@ class ArchiveObject extends \Action
         $subtitle = ($this->mediaObject->subtitle !== null) ? $this->mediaObject->subtitle : null;
         $interface->assign('subtitle', $subtitle);
 
-        // Summary
-        // TODO: Make a summary 
-        //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
 
         // Subjects
-        $subjects = $this->mediaObject->getSubjects();
-        if (is_array($subjects)) {
-            if(array_key_exists('tid', $subjects)) {
-                $subjects['url'] = "/Archive/Subject?tid=" . $subjects['tid'];
-                $subjects = [$subjects];
-            } else {
-                foreach ($subjects as $subject) {
-                    $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
-                }
-            }
-        } else {
-            $subjects = [];
-        }
-        $interface->assign('subjects_urls', $subjects);
+        $subjects = $this->mediaObject->getSubjects() ?? null;
+        $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
         $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
