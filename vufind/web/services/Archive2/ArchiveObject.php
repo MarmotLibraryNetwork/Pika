@@ -89,15 +89,14 @@ class ArchiveObject extends \Action
 			$interface->assign($field, $value);
 		}
 
+        /*********
+         * Overrides
+         */
         // Node ID (Islandora2) — explicitly assigned so templates always have $nid
         $interface->assign('nid', $this->mediaObject->getNodeId());
 
         // legacy ID
         $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Media
-		//$interface->assign('media', $nodeData['media'] ?? []);
-        //$interface->assign('viewer', $this->getViewerForModel($this->mediaObject->getObjectModel()));
         
         // Overrides
         // Dates
