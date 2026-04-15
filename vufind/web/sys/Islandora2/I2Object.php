@@ -285,6 +285,10 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getSubjects(): ?array {
         $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
+        // if it's a single subject, wrap in array 
+        if(array_key_exists('tid', $subjects)) {
+            $subjects = [$subjects];
+        }
         return $subjects;
     }
 
