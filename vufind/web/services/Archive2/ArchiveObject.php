@@ -50,7 +50,7 @@ class ArchiveObject extends \Action
         $nid = (int)($_GET['id'] ?? 0);
         if ($nid <= 0) {
             $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['id'] ?? null]);
-            // TODO: redirect to 404;
+            // TODO: redirect error;
             return;
         }
         $factory = new I2ObjectFactory();
