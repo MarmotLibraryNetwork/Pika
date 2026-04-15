@@ -11,10 +11,11 @@
 			{include file="Archive2/$viewer.tpl"}
 
 			<div id="download-options">
-			{if $can_download}
-				<a class="btn btn-default" href="#">Download Original</a>
-			{elseif (!$loggedIn && $allow_original_download)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive2/{$nid}/DownloadOriginal">Log in to Download Original</a>
+			{if $can_download_orginal}
+				<a class="btn btn-default" href="{$orignal_media_file}">Download Original File</a>
+			{/if}
+			{if $can_download_intermediate}
+				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermeidate File</a>
 			{/if}
 			{*if $allowRequestsForArchiveMaterials*}
 				<a class="btn btn-default" href="/Archive2/RequestCopy?nid={$nid}">Request Copy</a>
