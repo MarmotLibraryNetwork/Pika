@@ -143,15 +143,31 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Attempt to return the primary media file/derivative metadata.
+     * Attempt to return the orignial media file.
      *
-     * @return array|null
+     * @return I2Media|null
      */
     public function getOriginalMedia(): ?I2Media
     {
         $media = $this->getMedia();
         foreach($media as $m) {
             if($m->useIs('original file')) {
+                return $m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Attempt to return the intermediate media file.
+     *
+     * @return I2Media|null
+     */
+    public function getIntermediateFile(): ?I2Media
+    {
+        $media = $this->getMedia();
+        foreach($media as $m) {
+            if($m->useIs('intermediate file')) {
                 return $m;
             }
         }
