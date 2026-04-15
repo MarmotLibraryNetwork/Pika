@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -73,22 +72,22 @@ class ListAPI extends AJAXHandler {
 		$list         = new UserList();
 		$list->public = 1;
 		$list->find();
-		$results = array();
+		$results = [];
 		if ($list->N > 0){
 			while ($list->fetch()){
 				$userListEntries         = new UserListEntry();
 				$userListEntries->listId = $list->id;
 				$numTitles               = $userListEntries->count();
 
-				$results[] = array(
+				$results[] = [
 					'id'          => $list->id,
 					'title'       => $list->title,
 					'description' => $list->description,
 					'numTitles'   => $numTitles,
-				);
+				];
 			}
 		}
-		return array('success' => true, 'lists' => $results);
+		return ['success' => true, 'lists' => $results];
 	}
 
 	/**
@@ -100,42 +99,41 @@ class ListAPI extends AJAXHandler {
 		$password = $_REQUEST['password'];
 		$user     = UserAccount::validateAccount($username, $password);
 		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])){
-			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
+			return ['success' => false, 'message' => 'The username and password must be provided to load lists.'];
 		}
 
 		if ($user == false){
-			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+			return ['success' => false, 'message' => 'Sorry, we could not find a user with those credentials.'];
 		}
 
 		$userId = $user->id;
 
 		$list          = new UserList();
 		$list->user_id = $userId;
-		$list->find();
-		$results = array();
-		if ($list->N > 0){
+		$results       = [];
+		if ($list->find()){
 			while ($list->fetch()){
-				$results[] = array(
+				$results[] = [
 					'id'          => $list->id,
 					'title'       => $list->title,
 					'description' => $list->description,
 					'numTitles'   => $list->numValidListItems(),
 					'public'      => $list->public == 1,
-				);
+				];
 			}
 		}
 		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0){
-			$results[] = array(
+			$results[] = [
 				'id'          => 'recommendations',
 				'title'       => 'User Recommendations',
 				'description' => 'Personalized Recommendations based on ratings.',
 				'numTitles'   => count($suggestions),
 				'public'      => false,
-			);
+			];
 		}
-		return array('success' => true, 'lists' => $results);
+		return ['success' => true, 'lists' => $results];
 	}
 
 	/**
@@ -369,6 +367,8 @@ class ListAPI extends AJAXHandler {
 		if ($list->find(true)){
 			//Make sure the user has access to the list
 			if ($list->public == 0){
+				//TODO: the function used to start with 'global $user'; that was removed but this code block wasn't updated.
+				$this->logger->info("Call to non-public list $listId. Please Investigate");
 				if (!isset($user)){
 					return ['success' => false, 'message' => 'The user was invalid.  A valid user must be provided for private lists.'];
 				}elseif ($list->user_id != $user->id){
@@ -377,7 +377,7 @@ class ListAPI extends AJAXHandler {
 			}
 
 			require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
-			$user               = UserAccount::getLoggedInUser();
+			$user               = UserAccount::getLoggedInUser(); //TODO: document why $user must be initialized.
 			$favoriteHandler    = new FavoriteHandler($list, false);
 			$isMixedContentList = $favoriteHandler->isMixedUserList();
 			$orderedListOfIds   = $isMixedContentList ? $favoriteHandler->getFavorites() : [];
@@ -417,10 +417,8 @@ class ListAPI extends AJAXHandler {
 	 * @return array
 	 */
 	function getListTitles($listId = null, $numTitlesToShow = 25){
-		global $configArray;
-
 		if (!$listId){
-			if (!isset($_REQUEST['id'])){
+			if (empty($_REQUEST['id'])){
 				return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
 			}
 			$listId = $_REQUEST['id'];
@@ -449,14 +447,14 @@ class ListAPI extends AJAXHandler {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
 				if ($titles === false){ // Didn't find saved search
 					return ['success' => false, 'message' => 'The specified search could not be found.'];
-				}else{ // successful search with or without any results. (javascript can handle no results returned.)
-					return ['success' => true, 'listTitle' => $listId, 'listDescription' => "Search Results", 'titles' => $titles, 'cacheLength' => 4];
+				}else{ // successful search with or without any results. (JavaScript can handle no results returned.)
+					return ['success' => true, 'listTitle' => $listId, 'listDescription' => 'Search Results', 'titles' => $titles, 'cacheLength' => 4];
 				}
 			}else{
 				//Do a default search
 				$titles = $this->getSystemListTitles($listId, $numTitlesToShow);
 				if (count($titles) > 0){
-					return ['success' => true, 'listTitle' => $listId, 'listDescription' => "System Generated List", 'titles' => $titles, 'cacheLength' => 4];
+					return ['success' => true, 'listTitle' => $listId, 'listDescription' => 'System Generated List', 'titles' => $titles, 'cacheLength' => 4];
 				}else{
 					return ['success' => false, 'message' => 'The specified list could not be found.'];
 				}
@@ -474,9 +472,8 @@ class ListAPI extends AJAXHandler {
 			//The list is a system generated list
 			switch ($listId){
 				case 'recommendations':
-					if (!$user){
-						return ['success' => false, 'message' => 'A valid user must be provided to load recommendations.'];
-					}else{
+					if (!empty($user)){
+						global $configArray;
 						$userId = $user->id;
 						require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 						$suggestions = Suggestions::getSuggestions($userId);
@@ -484,19 +481,19 @@ class ListAPI extends AJAXHandler {
 						foreach ($suggestions as $id => $suggestion){
 							$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
 							if (isset($suggestion['titleInfo']['issn'])){
-								$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
+								$imageUrl .= '&issn=' . $suggestion['titleInfo']['issn'];
 							}
 							if (isset($suggestion['titleInfo']['isbn10'])){
-								$imageUrl .= "&isn=" . $suggestion['titleInfo']['isbn10'];
+								$imageUrl .= '&isn=' . $suggestion['titleInfo']['isbn10'];
 							}
 							if (isset($suggestion['titleInfo']['upc'])){
-								$imageUrl .= "&upc=" . $suggestion['titleInfo']['upc'];
+								$imageUrl .= '&upc=' . $suggestion['titleInfo']['upc'];
 							}
 							if (isset($suggestion['titleInfo']['format_category'])){
-								$imageUrl .= "&category=" . $suggestion['titleInfo']['format_category'];
+								$imageUrl .= '&category=' . $suggestion['titleInfo']['format_category'];
 							}
-							$smallImageUrl = $imageUrl . "&size=small";
-							$imageUrl      .= "&size=medium";
+							$smallImageUrl = $imageUrl . '&size=small';
+							$imageUrl      .= '&size=medium';
 							$titles[]      = [
 								'id'          => $id,
 								'image'       => $imageUrl,
@@ -506,31 +503,41 @@ class ListAPI extends AJAXHandler {
 							];
 						}
 						return ['success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0];
+					} else {
+						return ['success' => false, 'message' => 'A valid user must be provided to load recommendations.'];
 					}
 				case 'highestRated':
 				case 'recentlyReviewed':
 				case 'mostPopular':
 				default :
 					return ['success' => false, 'message' => 'The specified list could not be found.'];
-
 			}
 		}
 	}
 
 	/**
-	 * Fetching list widget entries
+	 * Fetch and cache list widget title entries for display in scrollers.
 	 *
-	 * @return array Data representing the list information
+	 * Results are cached in Memcache keyed by list ID, cover size, library subdomain,
+	 * and numTitlesToShow to ensure each parameter combination gets its own cache entry.
+	 *
+	 * @return array List data with 'titles' and 'currentIndex', or an error with 'error' key
 	 */
 	function getListWidgetTitles(){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 
+		// Determine the caching parameters
 		$listName = strip_tags($_GET['scrollerName'] ?? 'List' . $_GET['id']);
+		$listId   = $_REQUEST['id'];
+		if (empty($listId)){
+			return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
+		}
+		$cacheInfo = $this->getCacheInfoForListId($listId);
 
-		//Determine the caching parameters
-		$cacheInfo = $this->getCacheInfoForList();
+		$numTitlesToShow = $_REQUEST['numTitlesToShow'] ?? 25;
+		$this->logger->debug("numTitlesToShow: " . ($_REQUEST['numTitlesToShow'] ?? 'not set') . " => $numTitlesToShow");
 
 		$cacheName = $cacheInfo['cacheName'];
 		if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
@@ -538,6 +545,7 @@ class ListAPI extends AJAXHandler {
 		}
 		global $library;
 		$cacheName .= '_' . $library->subdomain;
+		$cacheName .= '_' . $numTitlesToShow;
 
 		$listData = $memCache->get($cacheName);
 		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
@@ -547,11 +555,10 @@ class ListAPI extends AJAXHandler {
 			$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
 			$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
 
-			$numTitlesToShow = $_REQUEST['numTitlesToShow'] ?? 25;
-
 			$titles = $this->getListTitles(null, $numTitlesToShow);
+			$this->logger->debug('titles count : ' . count($titles['titles'] ?? []));
 			$timer->logTime('getListTitles');
-			if ($titles['success'] == true){
+			if ($titles['success']){
 				$titles = $titles['titles'];
 				if (is_array($titles)){
 					foreach ($titles as $key => $rawData){
@@ -597,7 +604,7 @@ class ListAPI extends AJAXHandler {
 				$listData = ['titles' => [], 'currentIndex' => 0];
 				if ($titles['message']){
 					$listData['error'] = $titles['message'];
-				} // send error message to widget javascript
+				} // send error message to widget JavaScript
 			}
 		}
 		return $listData;
@@ -608,17 +615,9 @@ class ListAPI extends AJAXHandler {
 	 * and whether it is cached for all users and products (general), for a single user,
 	 * or for a single product.
 	 */
-	function getCacheInfoForList(){
-		if (!isset($_REQUEST['id'])){
-			return ['success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.'];
-		}
-
-		$listId = $_REQUEST['id'];
-		return $this->getCacheInfoForListId($listId);
-	}
-
 	function getCacheInfoForListId($listId){
 		global $configArray;
+		// TODO: I think so much of this function is obsolete. I doubt most block are ever triggered
 
 		if (is_numeric($listId) || preg_match('/list[-:](.*)/', $listId, $listInfo)){
 			if (isset($listInfo[1])){
@@ -668,6 +667,7 @@ class ListAPI extends AJAXHandler {
 				'fullListLink' => '',
 			];
 		}elseif (preg_match('/^search:(.*)/', $listId, $searchInfo)){
+			// Used by list widget with a saved search as its source
 			if (is_numeric($searchInfo[1])){
 				$searchId = $searchInfo[1];
 				return [
@@ -678,7 +678,7 @@ class ListAPI extends AJAXHandler {
 				];
 			}else{
 				$requestUri = $_SERVER['REQUEST_URI'];
-				$requestUri = str_replace("&reload", "", $requestUri);
+				$requestUri = str_replace('&reload', '', $requestUri);
 				return [
 					'cacheType'    => 'general',
 					'cacheName'    => 'list_general_search_' . md5($requestUri),
@@ -696,9 +696,9 @@ class ListAPI extends AJAXHandler {
 		}
 	}
 
-	private function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
-		$titles = array();
-		if (count($ids) > 0){
+	private function loadTitleInformationForIds(array $ids, $numTitlesToShow, $orderedListOfIds = []){
+		$titles = [];
+		if (!empty($ids)){
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
@@ -710,8 +710,8 @@ class ListAPI extends AJAXHandler {
 		return $titles;
 	}
 
-	private function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
-		$titles = array();
+	private function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = []){
+		$titles = [];
 		if (count($ids) > 0){
 			/** @var SearchObject_Islandora $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
@@ -731,16 +731,17 @@ class ListAPI extends AJAXHandler {
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
-		$memCacheKey    = 'saved_search_titles_' . $searchId;
-		$listTitles = $memCache->get($memCacheKey);
+		global $solrScope;
+		$memCacheKey = 'saved_search_titles_' . $searchId . '_' . $numTitlesToShow . '_' . $solrScope;
+		$listTitles  = $memCache->get($memCacheKey);
 		if ($listTitles == false || isset($_REQUEST['reload'])){
-			//return a random selection of 30 titles from the list.
-			/** @var SearchObject_Solr|SearchObject_Base $searchObj */
+			/** @var SearchObject_Solr $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
 			if ($searchObj){ // check that the saved search was retrieved successfully
 				if (isset($_REQUEST['numTitles'])){
+					$this->logger->error("Call with obsolete parameter, use numTitlesToShow instead. {$_SERVER['REQUEST_URI']}");
 					$searchObj->setLimit($_REQUEST['numTitles']);
 				}else{
 					$searchObj->setLimit($numTitlesToShow);
@@ -761,7 +762,7 @@ class ListAPI extends AJAXHandler {
 	 * Parameters:
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
+	 * <li>password - The password for the user. </li>
 	 * <li>title    - The title of the list to create.</li>
 	 * <li>description - A description for the list (optional).</li>
 	 * <li>public   - Set to true or 1 if the list should be public.  (optional, defaults to private).</li>
@@ -818,7 +819,7 @@ class ListAPI extends AJAXHandler {
 	 * Parameters:
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
+	 * <li>password - The password for the user. </li>
 	 * <li>listId   - The id of the list to add items to.</li>
 	 * <li>recordIds - The id of the record(s) to add to the list.</li>
 	 * <li>tags   - A comma separated string of tags to apply to the titles within the list. (optional)</li>
@@ -913,7 +914,7 @@ class ListAPI extends AJAXHandler {
 	 * Parameters:
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
+	 * <li>password - The password for the user. </li>
 	 * <li>listId   - The id of the list to add items to.</li>
 	 * </ul>
 	 *
@@ -958,13 +959,14 @@ class ListAPI extends AJAXHandler {
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
-		$listTitles = $memCache->get('system_list_titles_' . $listName);
+		global $solrScope;
+		$cacheKey   = 'system_list_titles_' . $listName . '_' . $solrScope . '_' . $numTitlesToShow;
+		$listTitles = $memCache->get($cacheKey);
 		if ($listTitles == false || isset($_REQUEST['reload'])){
-			//return a random selection of 30 titles from the list.
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
-			$searchObj->setBasicQuery("*:*");
-			if (!preg_match('/^search:/', $listName)){
+			$searchObj->setBasicQuery('*:*');
+			if (!str_starts_with($listName, 'search:')){
 				$searchObj->addFilter("system_list:$listName");
 			}
 			if (isset($_REQUEST['numTitles'])){
@@ -975,14 +977,14 @@ class ListAPI extends AJAXHandler {
 			$searchObj->processSearch(false, false);
 			$listTitles = $searchObj->getListWidgetTitles();
 
-			$memCache->set('system_list_titles_' . $listName, $listTitles, 0, $configArray['Caching']['system_list_titles']);
+			$memCache->set($cacheKey, $listTitles, 0, $configArray['Caching']['system_list_titles']);
 		}
 		return $listTitles;
 	}
 
 	/**
 	 * Retrieves the Available New York Times Lists from their API
-	 * If url parameter 'name' is set to an list_name_encoded it will return their data about that list
+	 * If url parameter 'name' is set to a list_name_encoded it will return their data about that list
 	 *
 	 * @return array|mixed
 	 */
