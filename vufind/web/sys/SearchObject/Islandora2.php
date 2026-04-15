@@ -1615,5 +1615,45 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		return $filterQuery;
 	}
 
+	/**
+	 * Set the search term for a browse category.
+	 * Parses the stored "SearchType:searchPhrase" format used by BrowseCategory::searchTerm,
+	 * falling back to $this->defaultIndex (Islandora2Keyword) for plain-text terms.
+	 *
+	 * @param string $searchTerm
+	 */
+	public function setSearchTermForBrowseCategory(string $searchTerm): void {
+		if (strpos($searchTerm, ':') > 0 && substr_count($searchTerm, ':') == 1) {
+			[$tmpType, $tempSearchTerm] = explode(':', $searchTerm, 2);
+			if (in_array($tmpType, array_keys($this->basicTypes))) {
+				$this->searchTerms[] = ['index' => $tmpType, 'lookfor' => $tempSearchTerm];
+				return;
+			}
+		}
+		$this->searchTerms[] = ['index' => $this->defaultIndex, 'lookfor' => $searchTerm];
+	}
+
+	/**
+	 * Return an array of HTML strings for each record in the current result set,
+	 * for use in browse category display.
+	 *
+	 * @return array
+	 */
+	public function getBrowseRecordHTML(): array {
+		global $interface;
+		$html = [];
+		$docs = $this->indexResult['response']['docs'] ?? [];
+		foreach ($docs as $x => $current) {
+			$interface->assign('recordIndex', $x + 1);
+			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+			$record = RecordDriverFactory::initRecordDriver($current);
+			if (!PEAR_Singleton::isError($record) && method_exists($record, 'getBrowseResult')) {
+				$html[] = $interface->fetch($record->getBrowseResult());
+			} else {
+				$html[] = 'Browse Result not available';
+			}
+		}
+		return $html;
+	}
 
 }

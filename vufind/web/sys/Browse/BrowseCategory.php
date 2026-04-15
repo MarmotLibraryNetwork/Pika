@@ -26,21 +26,23 @@
  * Time: 10:04 AM
  */
 require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
+require_once ROOT_DIR . '/sys/SearchObject/Islandora2.php';
 
 class BrowseCategory extends DB_DataObject{
 	public $__table = 'browse_category';
 	public $id;
-	public $textId;  //A textual id to make it easier to transfer browse categories between systems
+	public $textId;      //A textual id to make it easier to transfer browse categories between systems
 
-	public $userId; //The user who created the browse category
+	public $userId;      //The user who created the browse category
 
-	public $label; //A label for the browse category to be shown in the browse category listing
+	public $label;       //A label for the browse category to be shown in the browse category listing
 	public $description; //A description of the browse category
 
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
 	public $defaultSort;
+	public string $searchSource = 'catalog';
 
 	public $numTimesShown;
 	public $numTitlesClickedOn;
@@ -98,7 +100,7 @@ class BrowseCategory extends DB_DataObject{
 		$ret = parent::update();
 		if ($ret !== false){
 			$this->saveSubBrowseCategories();
-			//delete any cached results for browse category
+			//delete any cached results for the browse category
 			$this->deleteCachedBrowseCategoryResults();
 		}
 		return $ret;
@@ -233,6 +235,7 @@ class BrowseCategory extends DB_DataObject{
 			'searchTerm'         => ['property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500],
 			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Search Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
 			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The sort to apply to the search results', 'default' => 'relevance', 'hideInLists' => true],
+			'searchSource'       => ['property' => 'searchSource', 'type' => 'enum', 'values' => ['catalog' => 'Catalog', 'islandora2' => 'Archive (Islandora 2)'], 'label' => 'Search Source', 'description' => 'The search index this browse category queries.', 'required' => true, 'default' => 'catalog', 'hideInLists' => false],
 			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
 		];
 
@@ -297,6 +300,13 @@ class BrowseCategory extends DB_DataObject{
 	 * @return boolean
 	 */
 	public function updateFromSearch($searchObject) {
+		//Search Source
+		if ($searchObject instanceof SearchObject_Islandora2) {
+			$this->searchSource = 'islandora2';
+		} else {
+			$this->searchSource = 'catalog';
+		}
+
 		//Search terms
 		$searchTerms = $searchObject->getSearchTerms();
 		if (is_array($searchTerms)){
@@ -306,7 +316,7 @@ class BrowseCategory extends DB_DataObject{
 				if (count($searchTerms[0]['group']) == 1
 					&& in_array($searchTerms[0]['group'][0]['field'], $searchObject->getBasicTypes())
 				){
-					// Simplest form of an advanced search can be converted to a browse category search
+					// The simplest form of an advanced search can be converted to a browse category search
 					$this->searchTerm = $searchTerms[0]['group'][0]['field'] . ':' . $searchTerms[0]['group'][0]['lookfor'];
 				}else{
 					// Advanced search is too complex to convert to browse category
@@ -321,7 +331,7 @@ class BrowseCategory extends DB_DataObject{
 			$this->searchTerm = $searchTerms;
 		}
 
-		//Default Filter
+		// Default Filter
 		$filters          = $searchObject->getFilterList();
 		$formattedFilters = '';
 		foreach ($filters as $filter){

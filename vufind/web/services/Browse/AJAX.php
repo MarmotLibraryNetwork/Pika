@@ -312,6 +312,7 @@ class Browse_AJAX extends AJAXHandler {
 			}
 
 			$result         = ['success' => false];
+			/** @var BrowseCategory $browseCategory */
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory){
 				global $interface;
@@ -334,7 +335,12 @@ class Browse_AJAX extends AJAXHandler {
 
 					// Search Browse Category //
 				}else{
-					$this->searchObject = SearchObjectFactory::initSearchObject();
+					$engine = match ($browseCategory->searchSource) {
+						'islandora2' => 'Islandora2',
+						'islandora'  => 'Islandora',
+						default      => 'Solr',
+					};
+					$this->searchObject = SearchObjectFactory::initSearchObject($engine);
 					if ($this->searchObject->pingServer(false)){
 						$defaultFilterInfo = $browseCategory->defaultFilter;
 						$defaultFilters    = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -357,7 +363,7 @@ class Browse_AJAX extends AJAXHandler {
 						$this->searchObject->setPage($pageToLoad);
 						$this->searchObject->processSearch();
 						$records = $this->searchObject->getBrowseRecordHTML();// Do we need to initialize the ajax ratings?
-						if ($this->browseMode == 'covers'){
+						if ($this->browseMode == 'covers' && $browseCategory->searchSource === 'catalog'){
 							// Rating Settings
 							global $library;
 							/** @var Library $library */
@@ -375,7 +381,7 @@ class Browse_AJAX extends AJAXHandler {
 								$records[] = '<script>Pika.Ratings.initializeRaters()</script>';
 							}
 						}
-						$result['searchUrl'] = $this->searchObject->renderSearchUrl();// let front end know if we have reached the end of the result set
+						$result['searchUrl'] = $this->searchObject->renderSearchUrl();// let the front end know if we have reached the end of the result set
 						if ($this->searchObject->getPage() * $this->searchObject->getLimit() >= $this->searchObject->getResultTotal()){
 							$result['lastPage'] = true;
 						}// Shutdown the search object
@@ -391,7 +397,7 @@ class Browse_AJAX extends AJAXHandler {
 				}
 
 				elseif ($pageToLoad == 1){
-					// Store first page of browse category in the MemCache (if there were any results (don't cache empty results)
+					// Store the first page of the browse category in the MemCache (if there were any results (don't cache empty results)
 					global $memCache, $configArray, $solrScope;
 					$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
 					$memCache->add($key, $result, 0, $configArray['Caching']['browse_category_info']);
