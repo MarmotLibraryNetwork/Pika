@@ -340,6 +340,8 @@ class Islandora2Driver extends RecordInterface
         }
 		$displayModel = strtolower($obj->getDisplayModel());
 		$displayModel = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
+		//TODO: $displayModel should be checked against an array of known valid values
+		//TODO: ensure conforming capitalization of $displayModel
 
         return '/Archive2/' . $displayModel . '/' . urlencode((string)$this->nodeId);
     }
@@ -443,7 +445,7 @@ class Islandora2Driver extends RecordInterface
 
     public function getTitle()
     {
-        // When constructed from a Solr document the title is already available without
+        // When constructed from a Solr document, the title is already available without
         // an API call — use it directly to avoid triggering ensureI2Object().
         if (!empty($this->title)) {
             return $this->title;
