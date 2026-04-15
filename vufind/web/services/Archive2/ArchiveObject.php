@@ -50,7 +50,7 @@ class ArchiveObject extends \Action
         $nid = (int)($_GET['id'] ?? 0);
         if ($nid <= 0) {
             $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['id'] ?? null]);
-            // TODO: redirect to 404;
+            // TODO: redirect error;
             return;
         }
         $factory = new I2ObjectFactory();
@@ -89,15 +89,14 @@ class ArchiveObject extends \Action
 			$interface->assign($field, $value);
 		}
 
+        /*********
+         * Overrides
+         */
         // Node ID (Islandora2) — explicitly assigned so templates always have $nid
         $interface->assign('nid', $this->mediaObject->getNodeId());
 
         // legacy ID
         $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Media
-		//$interface->assign('media', $nodeData['media'] ?? []);
-        //$interface->assign('viewer', $this->getViewerForModel($this->mediaObject->getObjectModel()));
         
         // Overrides
         // Dates
@@ -108,7 +107,11 @@ class ArchiveObject extends \Action
         $interface->assign('can_view', $this->canCurrentUserView());
 
         // Download permissions
-        $interface->assign('can_download', $this->canCurrentUserDownload());
+        // $interface->assign('can_download', $this->canCurrentUserDownload());
+        $logged_in_dl = ((int)$nodeData['pika_master_download'] === 1) ? true : false;
+        $interface->assign('logged_in_download', $logged_in_dl);
+        $logged_out_dl = ((int)$nodeData['pika_anon_master_download'] === 1) ? true : false;
+        $interface->assign('logged_out_download', $logged_out_dl);
 
         // Language
         $languageName = null;
@@ -126,28 +129,13 @@ class ArchiveObject extends \Action
         $subtitle = ($this->mediaObject->subtitle !== null) ? $this->mediaObject->subtitle : null;
         $interface->assign('subtitle', $subtitle);
 
-        // Summary
-        // TODO: Make a summary 
-        //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
 
         // Subjects
-        $subjects = $this->mediaObject->getSubjects();
-        if (is_array($subjects)) {
-            if(array_key_exists('tid', $subjects)) {
-                $subjects['url'] = "/Archive/Subject?tid=" . $subjects['tid'];
-                $subjects = [$subjects];
-            } else {
-                foreach ($subjects as $subject) {
-                    $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
-                }
-            }
-        } else {
-            $subjects = [];
-        }
-        $interface->assign('subjects_urls', $subjects);
+        $subjects = $this->mediaObject->getSubjects() ?? null;
+        $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
         $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;

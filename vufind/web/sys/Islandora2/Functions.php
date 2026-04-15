@@ -36,7 +36,9 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'paged content'    => 'PagedContent',
     'postcard'         => 'Postcard',
     'video'            => 'Video',
-    'academic paper'   => 'DigitalDocument'
+    'academic paper'   => 'DigitalDocument',
+    'document'         => 'DigitalDocument',
+
 ];
 
 /**
@@ -82,7 +84,7 @@ function getObjAbsoluteUrl(I2Object $obj)
  * Maps vocabulary machine names to their Archive2 action segment:
  *   person           → /Archive2/Person
  *   corporate_body   → /Archive2/Organization
- *   geo_location     → /Archive2/Location
+ *   geo_location     → /Archive2/Place
  *   event            → /Archive2/Event
  *
  * @param TaxonomyObjectInterface $term
