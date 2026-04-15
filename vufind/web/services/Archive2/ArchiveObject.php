@@ -238,7 +238,6 @@ class ArchiveObject extends \Action
 
     protected function canCurrentUserDownloadOrignial(): bool
     {
-        return true;
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
         if((int)$nodeData['pika_anon_master_download'] === 1) {
@@ -255,7 +254,6 @@ class ArchiveObject extends \Action
 
     protected function canCurrentUserDownloadIntermediate(): bool
     {
-        return true;
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
         if((int)$nodeData['pika_anon_lc_download'] === 1) {
