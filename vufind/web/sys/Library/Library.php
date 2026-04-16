@@ -2154,7 +2154,7 @@ class Library extends DB_DataObject {
 	}
 
 	public function getArchiveRequestFormStructure(){
-		$defaultForm = ArchiveRequest::getObjectStructure();
+		$defaultForm = Archive2\ArchiveRequest::getObjectStructure();
 		foreach ($defaultForm as $index => &$formfield){
 			$libraryPropertyName = 'archiveRequestField' . ucfirst($formfield['property']);
 			if (isset($this->$libraryPropertyName)){
