@@ -335,6 +335,50 @@ abstract class I2Object implements MediaObjectInterface
         return $this->logger;
     }
 
+    public function getRelatedPlace(): ?array
+    {
+        $related_place = $this->nodeWithoutFieldPrefix['related_place'] ?? null;
+        if(is_array($related_place) && array_key_exists('tid', $related_place)) {
+            $related_place = [$related_place];
+        }
+        return $related_place;
+    }
+
+    public function getRelatedEvent(): ?array
+    {
+        $related_event = $this->nodeWithoutFieldPrefix['related_event'] ?? null;
+        if(is_array($related_event) && array_key_exists('tid', $related_event)) {
+            $related_event = [$related_event];
+        }
+        return $related_event;
+    }
+
+    public function getRelatedOrganization(): ?array
+    {
+        $related_org = $this->nodeWithoutFieldPrefix['related_org'] ?? null;
+        if(is_array($related_org) && array_key_exists('tid', $related_org)) {
+            $related_org = [$related_org];
+        }
+        return $related_org;
+    }
+
+    public function getRelatedPerson(): ?array
+    {
+        $related_person = $this->nodeWithoutFieldPrefix['related_person_paragraph'] ?? null;
+        // if it's a single entry
+        if(is_array($related_person) && array_key_exists('id', $related_person)) {
+            $related_person = [$related_person['related_person']];
+        // multipule persons
+        } elseif($related_person !== null) {
+            $temp_person = [];
+            foreach($related_person as $person) {
+                $temp_person[] = $person['related_person'];
+            }
+            $related_person = $temp_person;
+        }
+        return $related_person;
+    }
+
     /**
      * Remove the "field_" prefix from every string key within the array.
      *
