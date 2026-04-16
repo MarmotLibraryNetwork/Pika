@@ -34,9 +34,10 @@ class Archive2_RequestCopy extends Action{
 
 		if (!isset($_REQUEST['nid'])) {
 			PEAR_Singleton::raiseError('No id provided, you must select which object you want a copy of');
+			//TODO: log error instead of raise error
 		}
 
-		$nid = $_REQUEST['nid'];
+		$nid = $_REQUEST['nid']; //TODO: confirm as digits only
 
 
 
@@ -93,7 +94,7 @@ class Archive2_RequestCopy extends Action{
 					if ($owningLibrary->find(true) && $owningLibrary->N == 1){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
+							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl(); //TODO: need to use Islandora2Driver; use -> getAbsoluteUrl() instead
 							require_once ROOT_DIR . '/sys/Mailer.php';
 							$mail = new VuFindMailer();
 							$subject = 'New Request for Copies of Archive Content';

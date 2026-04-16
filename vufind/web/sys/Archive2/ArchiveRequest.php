@@ -21,12 +21,10 @@ namespace Archive2;
 use DB_DataObject;
 
 /**
- * Description goes here
+ * Data object class for handling Archive Requests
  *
  * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 7/21/2016
- * Time: 4:05 PM
+ * @author C.J. Ohara <pika@marmot.org>
  */
 class ArchiveRequest extends DB_DataObject
 {
@@ -42,27 +40,27 @@ class ArchiveRequest extends DB_DataObject
     public $email;
     public $format;
     public $purpose;
-    public $pid;
+    public $pid; //TODO rename to nid
     public $dateRequested;
 
     public static function getObjectStructure()
     {
-        $structure = array(
-            array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name', 'maxLength' => 100, 'required' => true),
-            array('property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 200, 'required' => false),
-            array('property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Address 2', 'maxLength' => 200, 'required' => false),
-            array('property' => 'city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 200, 'required' => false),
-            array('property' => 'state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 200, 'required' => false),
-            array('property' => 'zip', 'type' => 'text', 'label' => 'Zip/Postal Code', 'description' => 'Address', 'maxLength' => 12, 'required' => false),
-            array('property' => 'country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 50, 'required' => false, 'default' => 'United States'),
-            array('property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'Phone', 'maxLength' => 20, 'required' => true),
-            array('property' => 'alternatePhone', 'type' => 'text', 'label' => 'Alternate Phone', 'description' => 'Alternate Phone', 'maxLength' => 20, 'required' => false),
-            array('property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true),
-            array('property' => 'format', 'type' => 'text', 'label' => 'Format Required (Black and White/Color, Print/Digital, etc)', 'description' => 'Additional information about how you want the materials delivered', 'maxLength' => 255, 'required' => false),
-            array('property' => 'purpose', 'type' => 'textarea', 'label' => 'Purpose: Provide information about how this image will be used: Description, title of publication, author, publisher, date of publication, number of copies produced, etc', 'description' => 'Additional information about what you will use the copy(copies) for', 'required' => true, 'hideInLists' => true),
-            'nid' => array('property' => 'nid', 'type' => 'hidden', 'label' => 'NID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true),
-            'dateRequested' => array('property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'),
-        );
+        $structure = [
+	        ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name', 'maxLength' => 100, 'required' => true],
+	        ['property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 200, 'required' => false],
+	        ['property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Address 2', 'maxLength' => 200, 'required' => false],
+	        ['property' => 'city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 200, 'required' => false],
+	        ['property' => 'state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 200, 'required' => false],
+	        ['property' => 'zip', 'type' => 'text', 'label' => 'Zip/Postal Code', 'description' => 'Address', 'maxLength' => 12, 'required' => false],
+	        ['property' => 'country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 50, 'required' => false, 'default' => 'United States'],
+	        ['property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'Phone', 'maxLength' => 20, 'required' => true],
+	        ['property' => 'alternatePhone', 'type' => 'text', 'label' => 'Alternate Phone', 'description' => 'Alternate Phone', 'maxLength' => 20, 'required' => false],
+	        ['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
+	        ['property' => 'format', 'type' => 'text', 'label' => 'Format Required (Black and White/Color, Print/Digital, etc)', 'description' => 'Additional information about how you want the materials delivered', 'maxLength' => 255, 'required' => false],
+	        ['property' => 'purpose', 'type' => 'textarea', 'label' => 'Purpose: Provide information about how this image will be used: Description, title of publication, author, publisher, date of publication, number of copies produced, etc', 'description' => 'Additional information about what you will use the copy(copies) for', 'required' => true, 'hideInLists' => true],
+	        'nid' => ['property' => 'nid', 'type' => 'hidden', 'label' => 'NID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true],
+	        'dateRequested' => ['property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'],
+        ];
         return $structure;
     }
 
