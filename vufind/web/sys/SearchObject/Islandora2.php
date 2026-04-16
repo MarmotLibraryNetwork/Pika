@@ -1656,4 +1656,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		return $html;
 	}
 
+	public function disableSpelling(): void {
+		// Spellcheck is already disabled for Islandora2 searches ($this->spellcheck = false in constructor)
+	}
+
 }

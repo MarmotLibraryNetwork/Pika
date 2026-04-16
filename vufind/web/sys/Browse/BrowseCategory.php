@@ -42,7 +42,7 @@ class BrowseCategory extends DB_DataObject{
 	public $defaultFilter;
 	public $sourceListId;
 	public $defaultSort;
-	public string $searchSource = 'catalog';
+	public $searchSource; // = 'catalog'; Setting a default value becomes a WHERE clause when looking up an object
 
 	public $numTimesShown;
 	public $numTitlesClickedOn;
@@ -201,22 +201,54 @@ class BrowseCategory extends DB_DataObject{
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 
-		/** @var SearchObject_Solr|SearchObject_Base $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$sortOptions = $searchObject->getSortOptions();
-		foreach ($sortOptions as $key => &$value){
-			$value = translate($value);
+		global $configArray;
+		if (!empty($configArray['Islandora2']['enabled'])){
+			// Build combined sort options from both catalog and archive search objects,
+			// so admins can choose an appropriate sort regardless of searchSource.
+			/** @var SearchObject_Solr|SearchObject_Base $catalogSearchObject */
+			$catalogSearchObject = SearchObjectFactory::initSearchObject();
+			$catalogSortOptions  = $catalogSearchObject->getSortOptions();
+
+			$archiveSearchObject = new SearchObject_Islandora2();
+			$archiveSortOptions  = $archiveSearchObject->getSortOptions();
+
+			// Start with relevance (shared by both sources, no prefix needed)
+			$sortOptions = [];
+			if (isset($catalogSortOptions['relevance'])){
+				$sortOptions['relevance'] = translate($catalogSortOptions['relevance']);
+			}
+
+			// Catalog-specific sorts
+			foreach ($catalogSortOptions as $key => $value){
+				if ($key !== 'relevance'){
+					$sortOptions[$key] = 'Catalog: ' . translate($value);
+				}
+			}
+
+			// Archive-specific sorts
+			foreach ($archiveSortOptions as $key => $value){
+				if ($key !== 'relevance'){
+					$sortOptions[$key] = 'Archive: ' . translate($value);
+				}
+			}
+		} else {
+			/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$sortOptions  = $searchObject->getSortOptions();
+			foreach ($sortOptions as $key => &$value){
+				$value = translate($value);
+			}
 		}
 
 		$structure = [
-			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
-			'label'       => ['property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true],
-			'textId'      => ['property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category',
+			'id'          => ['property' => 'id',          'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
+			'label'       => ['property' => 'label',       'type' => 'text',  'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true],
+			'textId'      => ['property' => 'textId',      'type' => 'text',  'label' => 'textId', 'description' => 'A textual id to identify the category',
 			                    'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
-			'userId'      => ['property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
-			'description' => ['property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
+			'userId'      => ['property' => 'userId',      'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
+			'description' => ['property' => 'description', 'type' => 'html',  'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
 
-			// Define oneToMany interface for choosing and arranging sub-categories
+			// Define oneToMany interface for choosing and arranging subcategories
 			'subBrowseCategories' => [
 				'property'      => 'subBrowseCategories',
 				'type'          => 'oneToMany',

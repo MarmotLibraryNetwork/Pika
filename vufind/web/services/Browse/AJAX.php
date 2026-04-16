@@ -44,7 +44,7 @@ class Browse_AJAX extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp                            = SubBrowseCategories::getObjectStructure();
 		$temp['subCategoryId']['values'] = [0 => 'Select One'] + $temp['subCategoryId']['values'];
-		// add default option that denotes nothing has been selected to the options list
+		// add a default option that denotes nothing has been selected to the options list
 		// (this preserves the keys' numeric values (which is essential as they are the Id values) as well as the array's order)
 		// btw addition of arrays is kinda a cool trick.
 		$interface->assign('propName', 'addAsSubCategoryOf');
