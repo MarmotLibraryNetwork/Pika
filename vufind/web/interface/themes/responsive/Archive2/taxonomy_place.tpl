@@ -125,7 +125,7 @@
 					</div>
 				</div>
 			{/if}
-			{include file="Archive2/panels/taxonomy_related_panels.tpl"}
+			{include file="Archive2/panels/sharedRelatedPanels.tpl"}
 			{include file="Archive2/panels/subjectsPanel.tpl"}
 		</div>
 	</div>
