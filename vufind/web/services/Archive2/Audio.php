@@ -20,7 +20,7 @@ namespace Archive2;
 
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
-/* Responsible for displaying video from Islandora2 */
+/* Responsible for displaying audio from Islandora2 */
 class Audio extends ArchiveObject
 {
 
