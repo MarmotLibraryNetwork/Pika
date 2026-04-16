@@ -1,6 +1,7 @@
 <div id="archive-metadata">
     <div id="more-details-accordion" class="panel-group">
         {include file="Archive2/panels/descriptionPanel.tpl"}
+        {include file="Archive2/panels/subjectsPanel.tpl"}
         {include file="Archive2/panels/titlesDisplayPanel.tpl"}
         {*include file="Archive2/panels/locationPanel.tpl"*}
         {include file="Archive2/panels/locationGeographyPanel.tpl"}

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -71,9 +72,9 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
-	public function launch()
-	{
-		global $interface;
+    public function launch()
+    {
+        global $interface;
 
         if ($this->mediaObject === null) {
             $this->logger->error('Attempted to launch with null mediaObject.');
@@ -83,11 +84,11 @@ class ArchiveObject extends \Action
         $interface->assign('showExploreMore', true);
         $interface->assign('debug_archive_object', true);
 
-		// Expose every field from the Islandora node (with "field_" removed) to the templates.
-		$nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
-		foreach ($nodeData as $field => $value){
-			$interface->assign($field, $value);
-		}
+        // Expose every field from the Islandora node (with "field_" removed) to the templates.
+        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+        foreach ($nodeData as $field => $value) {
+            $interface->assign($field, $value);
+        }
 
         /*********
          * Overrides
@@ -97,21 +98,28 @@ class ArchiveObject extends \Action
 
         // legacy ID
         $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Overrides
+
         // Dates
-		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
-		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+        $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
+        $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
 
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
 
-        // Download permissions
-        // $interface->assign('can_download', $this->canCurrentUserDownload());
-        $logged_in_dl = ((int)$nodeData['pika_master_download'] === 1) ? true : false;
-        $interface->assign('logged_in_download', $logged_in_dl);
-        $logged_out_dl = ((int)$nodeData['pika_anon_master_download'] === 1) ? true : false;
-        $interface->assign('logged_out_download', $logged_out_dl);
+        // Download & Request permissions
+        // Can download master file
+        $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
+        // Can download intermediate file
+        $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
+
+        // Download files
+        $orignal_media = $this->mediaObject->getOriginalMedia();
+        $orignal_media_file = $orignal_media->fileUrl;
+        $interface->assign('orignal_media_file', $orignal_media_file);
+
+        $intermeidate_media = $this->mediaObject->getIntermediateFile();
+        $intermeidate_media_file = $intermeidate_media->fileUrl;
+        $interface->assign('intermediate_media_file', $intermeidate_media_file);
 
         // Language
         $languageName = null;
@@ -208,32 +216,57 @@ class ArchiveObject extends \Action
         return self::MODEL_VIEWER_MAP[$model] ?? null;
     }
 
-	private function formatDisplayDate($value): ?string {
-		if ($value === null || $value === '') {
-			return null;
-		}
+    private function formatDisplayDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
 
-		try {
-			if (is_numeric($value)) {
-				$date = new \DateTimeImmutable('@' . (int)$value);
-			}else{
-				$date = new \DateTimeImmutable((string)$value);
-			}
-		}catch (\Exception $e){
-			return null;
-		}
+        try {
+            if (is_numeric($value)) {
+                $date = new \DateTimeImmutable('@' . (int)$value);
+            } else {
+                $date = new \DateTimeImmutable((string)$value);
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
 
-		$date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-		return $date->format('m/d/Y h:i a');
-	}
-
-    protected function canCurrentUserDownload(): bool {
-        //$user = \UserAccount::getLoggedInUser();
-        // TODO: implement user download permissions
-        return true;
-
+        $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+        return $date->format('m/d/Y h:i a');
     }
 
+    protected function canCurrentUserDownloadOrignial(): bool
+    {
+        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+        // annonomys download
+        if((int)$nodeData['pika_anon_master_download'] === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if($user && ((int)$nodeData['pika_master_download'] === 1)) {
+            return true;
+        }
+        unset($nodeData);
+        return false;
+    }
+
+    protected function canCurrentUserDownloadIntermediate(): bool
+    {
+        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+        // annonomys download
+        if((int)$nodeData['pika_anon_lc_download'] === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if($user && ((int)$nodeData['pika_lc_download'] === 1)) {
+            return true;
+        }
+        unset($nodeData);
+        return false;
+    }
     /**
      * Determine if the current patron can view the object.
      */
