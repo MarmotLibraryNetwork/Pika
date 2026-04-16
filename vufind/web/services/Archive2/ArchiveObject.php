@@ -201,6 +201,12 @@ class ArchiveObject extends \Action
         $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
         $interface->assign('local_identifer', $localIdentifier);
 
+        // Related
+        $interface->assign('related_place',          $this->mediaObject->getRelatedPlace());
+        $interface->assign('related_organization',   $this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_event',          $this->mediaObject->getRelatedEvent());
+        $interface->assign('related_person',          $this->mediaObject->getRelatedPerson());
+        
         // Analytics
         $interface->assign('archivePage', true);
 
