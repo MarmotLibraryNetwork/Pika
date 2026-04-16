@@ -15,8 +15,10 @@
           {if $showAdminTools && $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 						<br>
 						<strong>Admin {translate text='Search Tools'}:</strong>
+	          {if $module != 'Archive2'} {* Disable ListWidget button for Archive2 results. *}
 						&nbsp;&nbsp;<a href="#" onclick="return Pika.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>&nbsp;{translate text='Create Widget'}</a>
-						&nbsp;&nbsp;<a href="#" onclick="return Pika.Browse.addToHomePage('{$searchId}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
+	          {/if}
+						&nbsp;&nbsp;<a href="#" onclick="return Pika.Browse.addToHomePage('{$searchId}', '{$addToHomePageSearchSource|default:"catalog"}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
           {/if}
 			</div>
     {/if}

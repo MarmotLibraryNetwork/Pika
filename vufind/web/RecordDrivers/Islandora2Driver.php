@@ -48,6 +48,7 @@ class Islandora2Driver extends RecordInterface
 	private ?string $description = null;
 	private ?string $format = null;
 	private ?string $model = null;
+	private ?string $contributingLibrary = null;
 
     /**
      * @param int|string|array $recordData
@@ -77,6 +78,7 @@ class Islandora2Driver extends RecordInterface
 						$solrFormatValue       = $this->getSolrFirstFieldValue($recordData, 'format');
 						$this->format          = !empty($solrFormatValue) ? $solrFormatValue : null;
 						$this->model           = !empty($this->getSolrFieldValue($recordData, 'model')) ? $this->getSolrFieldValue($recordData, 'model') : null;
+						$this->contributingLibrary = !empty($this->getSolrFieldValue($recordData, 'library')) ? $this->getSolrFieldValue($recordData, 'library') : null;
 						$this->solrScore       = isset($recordData['score']) ? (float)$recordData['score'] : null;
 						$this->solrExplanation = isset($recordData['explain']) ? (string)$recordData['explain'] : null;
 						// Do NOT eagerly fetch the I2Object here. ensureI2Object() lazy-loads it on
@@ -532,7 +534,7 @@ class Islandora2Driver extends RecordInterface
 	}
 
 	private function getContributingLibrary(){
-			return null; //TODO Implement
+			return $this->contributingLibrary ?? null;
 	}
 
 	// -------------------------------------------------------------------------

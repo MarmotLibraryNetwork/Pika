@@ -18,7 +18,7 @@
  */
 
 /**
- * Admin interface for creating indexing profiles
+ * Admin interface for Archive Requests
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
@@ -47,7 +47,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$object->orderBy($orderBy ?? 'dateRequested desc');
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
-			$homeLibrary = $user->getHomeLibrary();
+			$homeLibrary      = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
 		}
@@ -63,7 +63,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 	}
 	function getAllowableRoles(){
 
-		return array('opacAdmin', 'archives');
+		return ['opacAdmin', 'archives'];
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';
