@@ -121,7 +121,7 @@ class ReadingHistory extends MyAccount {
 								$patron->deleteMarkedReadingHistory($selectedTitles);
 								break;
 							default:
-								// Deprecated action; should be replaced with above action-specific calls
+								// Deprecated action; should be replaced with the above action-specific calls
 								$this->logger->warn('Call to undefined reading history action : ' . $readingHistoryAction);
 						}
 
