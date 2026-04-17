@@ -1394,21 +1394,20 @@ class MarcRecord extends IndexRecord {
 			];
 		}
 
-		// Physical Record actions with URL links, used for external reservation URLs
-		if (empty($actions) && !empty($relatedUrls) && $isExternalReservationItem){
-			// Don't display Reserve action when the item isn't available
-			// Must also be non-holdable or the hold button will
-			// display instead (caused by empty($action) checked)
-			// Replacing isAvailable check with not isHoldable, because these items can
-			// check out, and will be unavailable when checked out. Pascal 12/9/2025
+		// Physical Record actions with URL links, used for external reservation URLs.
+		// $isExternalReservationItem is only true for local (owned/library) items that are not holdable,
+		// so it is safe to show Reserve Online even when non-local holdable items have already added a
+		// hold button to $actions.
+		if (!empty($relatedUrls) && $isExternalReservationItem){
+			$reserveActions = [];
 			foreach ($relatedUrls as $relatedUrl){
-				$actions[] = [
+				$reserveActions[] = [
 					'title'        => translate('Reserve Online'),
 					'url'          => $relatedUrl['url'],
 					'requireLogin' => false,
 				];
 			}
-
+			$actions = array_merge($reserveActions, $actions);
 		}
 		return $actions;
 	}
