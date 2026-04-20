@@ -29,16 +29,16 @@ use Islandora2\TaxonomyObjectInterface;
  */
 const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'audio'            => 'Audio',
+    'voice recordings' => 'Audio',
     'book'             => 'Book',
     'compound object'  => 'Compound',
     'digital document' => 'DigitalDocument',
+    'academic paper'   => 'DigitalDocument',
+    'document'         => 'DigitalDocument',
     'image'            => 'Image',
     'paged content'    => 'PagedContent',
     'postcard'         => 'Postcard',
     'video'            => 'Video',
-    'academic paper'   => 'DigitalDocument',
-    'document'         => 'DigitalDocument',
-
 ];
 
 /**
