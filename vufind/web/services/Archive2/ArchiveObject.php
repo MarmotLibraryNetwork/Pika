@@ -93,11 +93,6 @@ class ArchiveObject extends \Action
         /*********
          * Overrides
          */
-        // Node ID (Islandora2) — explicitly assigned so templates always have $nid
-        $interface->assign('nid', $this->mediaObject->getNodeId());
-
-        // legacy ID
-        $interface->assign('pid', $this->mediaObject->pid);
 
         // Dates
         $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
