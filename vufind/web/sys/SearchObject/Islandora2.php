@@ -1436,8 +1436,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$filters = [
 			'ss_type:islandoraobject',   // ignore other drupal things
 			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
-//			'!ss_name_1:Page',           // Hide Page objects
-			'!ss_model:Page',           // Hide Page objects
+			'!ss_name_1:Page',           // Hide Page objects //TODO: temp, revert
+			//'!ss_model:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 
