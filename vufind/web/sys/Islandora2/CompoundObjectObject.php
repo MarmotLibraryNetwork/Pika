@@ -40,7 +40,7 @@ class CompoundObjectObject extends I2Object
         return 'compound object';
     }
 
-    public function getChildren() {
+    public function getChildrenNodes() {
         // Return cached children if already loaded
         if (!empty($this->childrenObjects)) {
             return $this->childrenObjects;
