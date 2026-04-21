@@ -30,6 +30,7 @@ use Islandora2\TaxonomyObjectInterface;
 const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'audio'            => 'Audio',
     'voice recordings' => 'Audio',
+    'mp4'              => 'Audio',
     'book'             => 'Book',
     'compound object'  => 'Compound',
     'digital document' => 'DigitalDocument',
@@ -37,6 +38,8 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'document'         => 'DigitalDocument',
     'image'            => 'Image',
     'paged content'    => 'PagedContent',
+    'article'          => 'PagedContent',
+    'magazine'         => 'PagedContent',
     'postcard'         => 'Postcard',
     'video'            => 'Video',
 ];
