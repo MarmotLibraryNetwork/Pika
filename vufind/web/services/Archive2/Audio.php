@@ -28,6 +28,8 @@ class Audio extends ArchiveObject
     {
         global $interface;
 
+        parent::launch();
+
         $audio = $this->mediaObject->getAudio();
         if ($audio === null) {
             $this->logger->warning('Audio media not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
@@ -52,8 +54,6 @@ class Audio extends ArchiveObject
 
         $transcripts = $this->mediaObject->getTranscripts();
         $interface->assign('transcripts', $transcripts ?? []);
-
-        parent::launch();
 
         $interface->assign('viewer', 'audio');
 

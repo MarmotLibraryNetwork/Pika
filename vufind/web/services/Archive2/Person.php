@@ -44,7 +44,7 @@ class Person extends TaxonomyObject
         }
 
         parent::launch();
-        
+
         $person = $this->taxonomyObject;
 
         // Identity fields
@@ -88,8 +88,6 @@ class Person extends TaxonomyObject
 
         // Obituary data from the Genealogy database, linked via field_genealogy_link
         $interface->assign('obituaries', $this->loadObituaries($person));
-
-        parent::launch();
 
         $interface->assign('taxonomy_type_template', 'taxonomy_person');
 
