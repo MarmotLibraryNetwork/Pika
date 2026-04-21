@@ -24,6 +24,7 @@ class LibraryArchive2SearchFacetSetting extends FacetSetting {
 	public $libraryId;
 
 	static $defaultFacetList = [
+		//TODO: remove generic field labels once Solr settings is figured out
 		'ss_name_1'               => 'Model',
 		'ss_model'                => 'Model',
 		'sm_name_43'              => 'Format',
