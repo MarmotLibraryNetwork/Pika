@@ -244,7 +244,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getDescription(): ?string
     {
        if(isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
-            return $this->nodeWithoutFieldPrefix['description_long'];
+            return htmlentities($this->nodeWithoutFieldPrefix['description_long']);
         } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
             return $this->nodeWithoutFieldPrefix['description'];
         }
@@ -286,14 +286,14 @@ abstract class I2Object implements MediaObjectInterface
     public function getSubjects(): ?array {
         $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
         // if it's a single subject, wrap in array 
-        if(array_key_exists('tid', $subjects)) {
+        if(is_array($subjects) && array_key_exists('tid', $subjects)) {
             $subjects = [$subjects];
         }
         return $subjects;
     }
 
     /**
-     * Return the media as associacted with this item as objects.
+     * Return the media associacted with this item as objects.
      * 
      * @return array Returns an empty array if no media is present
      */
