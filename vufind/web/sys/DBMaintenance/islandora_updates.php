@@ -119,7 +119,18 @@ function getIslandoraUpdates(): array{
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE archive_requests ADD COLUMN nid VARCHAR(50) NULL DEFAULT NULL AFTER pid;",
-				'convertPidToNid'
+				'convertPidToNid',
+			]
+		],
+
+		'Islandora2_add_LibraryTid_and_lookup_by_nid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'RUN AFTER "Add nid column to Archive Requests" Adds LibraryTid',
+			'description'     => 'Adds librayTid column to Archive Requests table to enable filtering',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE archive_requests ADD COLUMN libraryTid VARCHAR(50) NULL DEFAULT NULL AFTER nid;",
+				'getTidFromNid'
 			]
 		],
 
@@ -290,7 +301,6 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 }
 
 function convertPidToNid(){
-	//TODO: logic here
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('pid IS NOT NULL');
@@ -309,6 +319,30 @@ function convertPidToNid(){
 				$archiveRequest->update();
 				$success = true;
 			}
+		}else{
+			$success = false;
+		}
+	}
+	return $success;
+}
+
+function getTidFromNid(){
+	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
+	$archiveRequest = new Archive2\ArchiveRequest();
+	$archiveRequest->whereAdd('nid IS NOT NULL');
+	$archiveRequest->find();
+	$success = true;
+	while ($archiveRequest->fetch()) {
+		$nid = $archiveRequest->nid;
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+		/** @var SearchObject_Islandora2 $islandora2Search */
+		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		$islandora2Search->addFieldsToReturn(['itm_field_library']);
+		$record = $islandora2Search->getRecord($nid);
+		$libraryTid = $record[0]['itm_field_library'][0] ?? null;
+		if($libraryTid !== null){
+			$archiveRequest->libraryTid = $libraryTid;
+			$archiveRequest->update();
 		}else{
 			$success = false;
 		}
