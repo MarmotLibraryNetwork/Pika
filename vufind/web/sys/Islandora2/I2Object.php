@@ -307,6 +307,15 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return the children associacted with this item.
+     * 
+     * @return array|null Returns null if no children
+     */
+    public function getChildren(): ?array {
+        return $this->rawNode['children'] ?? null;
+    }
+
+    /**
      * Convenience accessor for the Islandora node id.
      *
      * @return int|null
