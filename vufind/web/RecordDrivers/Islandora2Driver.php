@@ -116,14 +116,14 @@ class Islandora2Driver extends RecordInterface
 		'legacyPID'   => 'tm_X3b_en_field_pid',
 		//'genre'       => 'sm_name_2',
 		'genre'       => 'sm_genre',
-		//'model'       => 'ss_name_1',
-		'model'       => 'ss_model',
+		'model'       => 'ss_name_1',
+		//'model'       => 'ss_model', TODO revert, temp
 		//'legacyResourceType' => 'sm_name_22',
 		'legacyResourceType' => 'sm_legacy_resource_type',
 		//'format'      => 'sm_name_43',
 		'format'      => 'sm_format',
-		//'library'     => 'ss_name_23',
-		'library'     => 'ss_library',
+		'library'     => 'ss_name_23',
+		//'library'     => 'ss_library', TODO revert, temp
 		//'rightsCreator' => 'tm_X3b_en_name_41',
 		'rightsCreator' => 'sm_rights_creator',
 	];

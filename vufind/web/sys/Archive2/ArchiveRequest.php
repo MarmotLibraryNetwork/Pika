@@ -40,7 +40,8 @@ class ArchiveRequest extends DB_DataObject
     public $email;
     public $format;
     public $purpose;
-    public $pid; //TODO rename to nid
+    public $pid;
+		public $nid;
     public $dateRequested;
 
     public static function getObjectStructure()
@@ -58,6 +59,7 @@ class ArchiveRequest extends DB_DataObject
 	        ['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
 	        ['property' => 'format', 'type' => 'text', 'label' => 'Format Required (Black and White/Color, Print/Digital, etc)', 'description' => 'Additional information about how you want the materials delivered', 'maxLength' => 255, 'required' => false],
 	        ['property' => 'purpose', 'type' => 'textarea', 'label' => 'Purpose: Provide information about how this image will be used: Description, title of publication, author, publisher, date of publication, number of copies produced, etc', 'description' => 'Additional information about what you will use the copy(copies) for', 'required' => true, 'hideInLists' => true],
+	        'pid' => ['property' => 'pid', 'type' => 'hidden', 'label' => 'legacy PID of the object', 'maxLength' => 50, 'required' => true],
 	        'nid' => ['property' => 'nid', 'type' => 'hidden', 'label' => 'NID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true],
 	        'dateRequested' => ['property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'],
         ];

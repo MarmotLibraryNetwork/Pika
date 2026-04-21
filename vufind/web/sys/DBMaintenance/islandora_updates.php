@@ -112,6 +112,17 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
+		'Islandora2_add_nid_and_convert_legacy_pid_to_nid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Add nid column to Archive Requests',
+			'description'     => 'Adds Node ID column to Archive Requests table to reflect the new Islandora Structure',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE archive_requests ADD COLUMN nid VARCHAR(50) NULL DEFAULT NULL AFTER pid;",
+				'convertPidToNid'
+			]
+		],
+
 	];
 }
 
@@ -272,6 +283,33 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 		}
 		$library->libraryTid = $tid;
 		if ($library->update() === false) {
+			$success = false;
+		}
+	}
+	return $success;
+}
+
+function convertPidToNid(){
+	//TODO: logic here
+	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
+	$archiveRequest = new Archive2\ArchiveRequest();
+	$archiveRequest->whereAdd('pid IS NOT NULL');
+	$archiveRequest->whereAdd("pid != ''");
+	$archiveRequest->find();
+	$success = true;
+	while ($archiveRequest->fetch()) {
+		$pid = $archiveRequest->pid;
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+		// Get the Islandora2 search object
+		/** @var SearchObject_Islandora2 $islandora2Search */
+		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+			foreach ($nids as $nid){
+				$archiveRequest->nid = $nid;
+				$archiveRequest->update();
+				$success = true;
+			}
+		}else{
 			$success = false;
 		}
 	}
