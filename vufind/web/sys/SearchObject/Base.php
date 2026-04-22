@@ -688,7 +688,29 @@ abstract class SearchObject_Base {
 		return true;
 	}
 
-	public function setSearchTerms($searchTerms){
+	/**
+	 * Replace the current search terms with a single search clause.
+	 *
+	 * $searchTerms must be an array, not a plain string. Two forms are accepted:
+	 *
+	 * Basic search:
+	 *   ['lookfor' => string, 'index' => string]
+	 *   'lookfor' is the query string; 'index' is the search handler (e.g. 'Keyword',
+	 *   'IslandoraKeyword'). 'index' may be omitted when the search object's default
+	 *   index is appropriate.
+	 *
+	 * Advanced search group:
+	 *   ['group' => [...], 'join' => 'AND'|'OR']
+	 *   See initAdvancedSearch() for the group element structure.
+	 *
+	 * Passing a plain string is not supported — Solr::buildQuery() and
+	 * SearchObject_Islandora2::processSearch() both expect array elements and will
+	 * produce an empty query or PHP warnings when given a string.
+	 * Use setBasicQuery($query, $index) as a simpler alternative for plain keyword searches.
+	 *
+	 * @param array $searchTerms  A single search clause (basic or advanced group).
+	 */
+	public function setSearchTerms(array $searchTerms){
 		$this->searchTerms   = [];
 		$this->searchTerms[] = $searchTerms;
 	}

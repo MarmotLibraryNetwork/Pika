@@ -268,7 +268,7 @@ class AJAX extends AJAXHandler {
 			'success' => $success,
 			'records' => $records,
 		];
-		// let front end know if we have reached the end of the result set
+		// let front-end know if we have reached the end of the result set
 		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
 			$result['lastPage'] = true;
 		}
@@ -278,8 +278,25 @@ class AJAX extends AJAXHandler {
 	private $validExploreMoreSections = [
 		'catalog',
 		'archive',
-		'ebsco',
+		//'ebsco',
 	];
+	/**
+	 * AJAX handler for populating the Explore More Bar on search results pages.
+	 *
+	 * Called on page 1 of any search results page. Loads cross-section tiles so
+	 * patrons can discover related content in other parts of the system:
+	 *
+	 *  - Catalog tiles  (always, unless already on the catalog section)
+	 *  - Archive tiles  (Islandora2 or legacy Islandora, unless already on the archive section)
+	 *
+	 * Request parameters:
+	 *   section    — the section the patron is currently browsing:
+	 *                'catalog' | 'archive' | 'ebsco' (defaults to 'catalog')
+	 *   searchTerm — the current search query string (URL-encoded)
+	 *   page       — current result page; bar is skipped for pages > 1
+	 *
+	 * @return array{success: bool, exploreMoreBar?: string}
+	 */
 	function loadExploreMoreBar(){
 		$result = [
 			'success' => false,
@@ -289,37 +306,52 @@ class AJAX extends AJAXHandler {
 			return $result;
 		}
 
-		global $interface;
-		$section    = $_REQUEST['section'];
+		// $section is actually the type of Search Results the request is coming from
+		$section = $_REQUEST['section'];
 		if (!in_array($section, $this->validExploreMoreSections)){
 			$section = 'catalog'; // If not a valid section, default to the catalog section
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		if (is_array($searchTerm)){
-			$this->logger->warning('loadExploreMoreBar: searchTerm is an array: ',  $searchTerm);
+			$this->logger->warning('loadExploreMoreBar: searchTerm is an array: ', $searchTerm);
 			$searchTerm = reset($searchTerm);
 		}
 		$searchTerm = urldecode(html_entity_decode($searchTerm));
 
-		global $configArray;
+		$exploreMoreOptions = [];
 
-		if ($configArray['Islandora2']['enabled']){
-			require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
-			/** @var \Archive2\ExploreMore $exploreMore */
-			$exploreMore        = new ExploreMore();
-			$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
-
-		} elseif ($configArray['Islandora']['enabled']){
-			//Load explore more data
+		// Catalog options are always loaded from the catalog (not when already on the catalog section)
+		if ($section != 'catalog'){
 			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore        = new ExploreMore();
-			$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
-			if (count($exploreMoreOptions) > 0){
-				$result = [
-					'success'        => true,
-					'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),
-				];
+			$legacyExploreMore  = new ExploreMore();
+			$exploreMoreOptions = $legacyExploreMore->loadCatalogOptions($section, $exploreMoreOptions, $searchTerm);
+		}
+
+		// Archive options: use the appropriate ExploreMore class based on which archive is enabled
+		if ($section != 'archive'){
+			global $configArray;
+			if (!empty($configArray['Islandora2']['enabled'])){
+				require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
+				$archiveExploreMore = new \Archive2\ExploreMore();
+				$exploreMoreOptions = $archiveExploreMore->loadArchiveOptions($exploreMoreOptions, $searchTerm);
+			} elseif (!empty($configArray['Islandora']['enabled'])){
+				require_once ROOT_DIR . '/sys/ExploreMore.php';
+				$legacyExploreMore  = $legacyExploreMore ?? new ExploreMore();
+				$exploreMoreOptions = $legacyExploreMore->loadLegacyArchiveOptions($exploreMoreOptions, $searchTerm);
 			}
+		}
+
+		if (count($exploreMoreOptions) > 0){
+			global $interface;
+			$interface->assign([
+				'activeSection'      => $section,
+				'exploreMoreOptions' => $exploreMoreOptions,
+			]);
+
+			$result = [
+				'success'        => true,
+				'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),
+			];
 		}
 
 		return $result;

@@ -353,36 +353,6 @@ class ExploreMore {
 	}
 
 	/**
-	 * @param string $activeSection catalog, archive, ebsco (ebsco should be obsolete)
-	 * @param $searchTerm
-	 * @return array
-	 */
-	function loadExploreMoreBar($activeSection, $searchTerm){
-		$exploreMoreOptions = [];
-
-		// On the Archive Results page, show Catalog results
-		if ($activeSection != 'catalog'){
-			$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		}
-
-		//if ($activeSection != 'ebsco'){
-		//	$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		//}
-
-		if ($activeSection != 'archive'){
-			$exploreMoreOptions = $this->loadLegacyArchiveOptions($exploreMoreOptions, $searchTerm);
-		}
-
-		global $interface;
-		$interface->assign([
-			'activeSection'      => $activeSection,
-			'exploreMoreOptions' => $exploreMoreOptions
-		]);
-
-		return $exploreMoreOptions;
-	}
-
-	/**
 	 * @param $exploreMoreOptions
 	 * @param string $searchTerm
 	 * @return array
@@ -435,7 +405,7 @@ class ExploreMore {
 	 * @param $searchTerm
 	 * @return array
 	 */
-	protected function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	public function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
 				/** @var SearchObject_Solr $searchObject */
@@ -492,7 +462,7 @@ class ExploreMore {
 	 * @param string $searchTerm
 	 * @return array
 	 */
-	protected function loadLegacyArchiveOptions($exploreMoreOptions, $searchTerm) {
+	public function loadLegacyArchiveOptions($exploreMoreOptions, $searchTerm) {
 		global $library;
 
 		$islandoraActive       = false;
@@ -513,16 +483,14 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadExactEntityMatches($exploreMoreOptions, $searchTerm);
 
 			if (!empty($searchTerm)){
-				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-				$fedoraUtils = FedoraUtils::getInstance();
-
 				$islandoraSearchObject->setDebugging(false, false);
 
 				//Get a list of objects in the archive related to this search
-				$islandoraSearchObject->setSearchTerms([
+				$searchTerms = [
 					'lookfor' => $searchTerm,
 					'index'   => 'IslandoraKeyword'
-				]);
+				];
+				$islandoraSearchObject->setSearchTerms($searchTerms);
 				$islandoraSearchObject->addFacet('mods_genre_s', 'Format');
 				$islandoraSearchObject->addFacet('RELS_EXT_isMemberOfCollection_uri_ms', 'Collection');
 				$islandoraSearchObject->addFacet('mods_extension_marmotLocal_relatedEntity_person_entityPid_ms', 'People');
@@ -531,17 +499,14 @@ class ExploreMore {
 				$islandoraSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no');
 
 				$response = $islandoraSearchObject->processSearch(true, false);
-				if ($response && $response['response']['numFound'] > 0){
-					//Related content
+				if (!empty($response['response']['numFound'])){
+					//Related content by Type
 					foreach ($response['facet_counts']['facet_fields']['mods_genre_s'] as $relatedContentType){
 						/** @var SearchObject_Islandora $searchObject2 */
 						$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 						$searchObject2->init();
 						$searchObject2->setDebugging(false, false);
-						$searchObject2->setSearchTerms([
-							'lookfor' => $searchTerm,
-							'index'   => 'IslandoraKeyword'
-						]);
+						$searchObject2->setSearchTerms($searchTerms);
 						$searchObject2->addFilter("mods_genre_s:{$relatedContentType[0]}");
 						$searchObject2->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no');
 						$response2 = $searchObject2->processSearch(true, false);
@@ -568,6 +533,9 @@ class ExploreMore {
 							}
 						}
 					}
+
+					require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+					$fedoraUtils = FedoraUtils::getInstance();
 
 					//Related collections
 					foreach ($response['facet_counts']['facet_fields']['RELS_EXT_isMemberOfCollection_uri_ms'] as $collectionInfo){
