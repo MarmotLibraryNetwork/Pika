@@ -149,7 +149,7 @@ class ArchiveObject extends \Action
         $interface->assign('library_name', $libraryName);
         $libraryTid = $this->mediaObject->library['tid'] ?? null;
         $interface->assign('library_tid', $libraryTid);
-        $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
+        $libraryUrl = "/Archive2/Library/" . $libraryTid;
         $interface->assign('library_url', $libraryUrl);
         $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
         $interface->assign('library_namespace', $libraryNamespace);
