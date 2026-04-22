@@ -24,14 +24,12 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
 class CompoundObjectObject extends I2Object
 {
-    protected array $childrenObjects = [];
-
     public static function supports(array $node): bool
     {
         if (self::mediaTypeIn($node, ['compound object'])) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -40,31 +38,4 @@ class CompoundObjectObject extends I2Object
         return 'compound object';
     }
 
-    public function getChildrenNodes() {
-        // Return cached children if already loaded
-        if (!empty($this->childrenObjects)) {
-            return $this->childrenObjects;
-        }
-
-        // Build children from raw node data
-        $children = [];
-        $rawChildren = $this->children;
-        if (!is_array($rawChildren)) {
-            return [];
-        }
-        foreach($rawChildren as $child) {
-            $nid = $child['nid'] ?? null;
-            if (!is_numeric($nid) || $nid <= 0) {
-                continue;
-            }
-            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
-            if($mediaObject) {
-                $children[] = $mediaObject;
-            }
-        }
-
-        $this->childrenObjects = $children;
-        return $children;
-
-    }
 }

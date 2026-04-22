@@ -37,6 +37,7 @@ abstract class I2Object implements MediaObjectInterface
     protected array $rawNode;
     protected array $nodeWithoutFieldPrefix;
     protected array $media = [];
+    protected array $childrenObjects = [];
 
     /**
      * Determine if the subclass can represent the supplied Islandora node.
@@ -199,18 +200,58 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media[]|null Array of thumbnail media objects, or null when none exist.
      */
-    public function getThumbnails() {
+    public function getThumbnails()
+    {
         $media = $this->getMedia();
         $thumbnails = [];
-        foreach($media as $m) {
-            if($m->useIs('thumbnail image')) {
+        foreach ($media as $m) {
+            if ($m->useIs('thumbnail image')) {
                 $thumbnails[] = $m;
             }
         }
-        if(empty($thumbnails)) {
+        if (empty($thumbnails)) {
             return null;
         }
         return $thumbnails;
+    }
+
+    /**
+     * Return all childern as I2Objects.
+     *
+     * @return array|null|false Array of thumbnail media objects, null when none exist, false if field doesn't exist.
+     */
+    public function getChildNodes(): mixed
+    {
+
+        if (!array_key_exists('children', $this->nodeWithoutFieldPrefix)) {
+            return false;
+        }
+
+        // Return cached children if already loaded
+        if (!empty($this->childrenObjects)) {
+            return $this->childrenObjects;
+        }
+
+        // Build children from raw node data
+        $children = [];
+        $rawChildren = $this->children;
+        if (!is_array($rawChildren)) {
+            return null;
+        }
+        foreach ($rawChildren as $child) {
+            $nid = $child['nid'] ?? null;
+            if (!is_numeric($nid) || $nid <= 0) {
+                continue;
+            }
+            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
+            if ($mediaObject) {
+                $children[] = $mediaObject;
+            }
+        }
+
+        $this->childrenObjects = $children;
+        return $children;
+
     }
 
     /**
@@ -218,17 +259,19 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media|null The service file media object, or null when unavailable.
      */
-    public function getServiceFile() {
+    public function getServiceFile()
+    {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('service file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('service file')) {
                 return $m;
             }
         }
         return null;
     }
 
-    public function getDateCreated($format='m/d/Y') {
+    public function getDateCreated($format = 'm/d/Y')
+    {
         $created = $this->created;
         if (empty($created)) {
             return null;

@@ -36,4 +36,9 @@ class CollectionObject extends I2Object
     {
         return 'collection';
     }
+
+    public function getCollectionDisplay(): ?string
+    {
+        return $this->nodeWithoutFieldPrefix['pika_coll_display'] ?? null;
+    }
 }
