@@ -1035,6 +1035,7 @@ class Solr implements IndexEngine {
 				}
 
 				$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
+				// Unquoted exact requires q.op = AND to work properly as an exact match;
 				$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
 				$mungedValues['and']         = $andQuery;
 				$mungedValues['or']          = $orQuery;
@@ -1412,7 +1413,7 @@ class Solr implements IndexEngine {
 		// Query String Parameters
 		$options = [
 			'q'      => $query,
-			'q.op'   => 'AND',
+			'q.op'   => 'AND', // q.op = 'AND' needed to make unquoted "exact" munge work as intended
 			'rows'   => $limit,
 			'start'  => $start,
 		];
@@ -1841,6 +1842,7 @@ class Solr implements IndexEngine {
 //		return $this->_update($xml);
 //	}
 
+	private $fullSearchURl;
 	/**
 	 * Submit REST Request to read data
 	 *
@@ -1862,7 +1864,7 @@ class Solr implements IndexEngine {
 		$this->pingServer();
 
 		$params['q.op']    ??= 'AND';    // This used to be set in the schema, but the parameter is obsolete.
-		// All of our query creation, processing, and term munging seems to be built on this assumption that terms are ANDed together.
+		// All of our query creation, processing, and term munging are built on this assumption that terms are ANDed together.
 		// The Lucene (and therefore Solr) default is to "OR" terms together.
 		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
 		$params['json.nl'] = 'arrarr'; // Needed to process faceting; arrarr breaks ordered pairs into a series of arrays
@@ -1870,7 +1872,7 @@ class Solr implements IndexEngine {
 		$queryString = $this->buildSolrQueryString($params);
 
 		if (strlen($queryString) > 8000){
-			// For extremely long queries, like lists we will get an error: "URI Too Long"
+			// For extremely long queries, like lists, we will get an error: "URI Too Long"
 			// Official limit on JETTY is 8192 bytes
 			$method = 'POST';
 		}
@@ -1880,7 +1882,7 @@ class Solr implements IndexEngine {
 		if ($this->debug && $this->debugSolrQuery && $this->isPrimarySearch){
 			global $interface;
 			if ($interface){
-				//Add debug parameter so we can see the explain section at the bottom.
+				//Add debug parameter so we can see the 'explain' section at the bottom.
 				$debugSearchUrl = $this->host . '/select/?debugQuery=on&' . $queryString;
 				$solrQueryDebug = "$method: <a href='" . $debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
 				$interface->assign('solrLinkDebug', $solrQueryDebug);
