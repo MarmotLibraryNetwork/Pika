@@ -281,31 +281,45 @@ class AJAX extends AJAXHandler {
 		'ebsco',
 	];
 	function loadExploreMoreBar(){
-		global $interface;
+		$result = [
+			'success' => false,
+		];
+		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
+			// Only populate Explore More Bar on the first page of any kind of results
+			return $result;
+		}
 
+		global $interface;
 		$section    = $_REQUEST['section'];
 		if (!in_array($section, $this->validExploreMoreSections)){
-			$section = 'catalog'; // If not a valid section, default to catalog section
+			$section = 'catalog'; // If not a valid section, default to the catalog section
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		if (is_array($searchTerm)){
+			$this->logger->warning('loadExploreMoreBar: searchTerm is an array: ',  $searchTerm);
 			$searchTerm = reset($searchTerm);
 		}
 		$searchTerm = urldecode(html_entity_decode($searchTerm));
 
-		//Load explore more data
-		require_once ROOT_DIR . '/sys/ExploreMore.php';
-		$exploreMore        = new ExploreMore();
-		$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
-		if (count($exploreMoreOptions) == 0){
-			$result = [
-				'success' => false,
-			];
-		}else{
-			$result = [
-				'success'        => true,
-				'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),
-			];
+		global $configArray;
+
+		if ($configArray['Islandora2']['enabled']){
+			require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
+			/** @var \Archive2\ExploreMore $exploreMore */
+			$exploreMore        = new ExploreMore();
+			$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
+
+		} elseif ($configArray['Islandora']['enabled']){
+			//Load explore more data
+			require_once ROOT_DIR . '/sys/ExploreMore.php';
+			$exploreMore        = new ExploreMore();
+			$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
+			if (count($exploreMoreOptions) > 0){
+				$result = [
+					'success'        => true,
+					'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),
+				];
+			}
 		}
 
 		return $result;
