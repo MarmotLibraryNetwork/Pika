@@ -197,11 +197,11 @@ class ArchiveObject extends \Action
         $interface->assign('local_identifer', $localIdentifier);
 
         // Related
-        $interface->assign('related_place',          $this->mediaObject->getRelatedPlace());
-        $interface->assign('related_organization',   $this->mediaObject->getRelatedOrganization());
-        $interface->assign('related_event',          $this->mediaObject->getRelatedEvent());
-        $interface->assign('related_person',          $this->mediaObject->getRelatedPerson());
-        
+        $interface->assign('related_place', $this->mediaObject->getRelatedPlace());
+        $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
+        $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
+
         // Analytics
         $interface->assign('archivePage', true);
 
@@ -241,12 +241,12 @@ class ArchiveObject extends \Action
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if((int)$nodeData['pika_anon_master_download'] === 1) {
+        if ((int)$nodeData['pika_anon_master_download'] === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if($user && ((int)$nodeData['pika_master_download'] === 1)) {
+        if ($user && ((int)$nodeData['pika_master_download'] === 1)) {
             return true;
         }
         unset($nodeData);
@@ -257,12 +257,12 @@ class ArchiveObject extends \Action
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if((int)$nodeData['pika_anon_lc_download'] === 1) {
+        if ((int)$nodeData['pika_anon_lc_download'] === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if($user && ((int)$nodeData['pika_lc_download'] === 1)) {
+        if ($user && ((int)$nodeData['pika_lc_download'] === 1)) {
             return true;
         }
         unset($nodeData);
