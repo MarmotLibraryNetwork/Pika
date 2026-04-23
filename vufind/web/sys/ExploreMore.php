@@ -673,40 +673,6 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	function loadExploreMoreContent(){
-		global $timer;
-		$this->getRelatedCollections();
-		$timer->logTime("Loaded related collections");
-		$relatedSubjects = array();
-		if (strlen($this->archiveObject->label) > 0) {
-			$relatedSubjects[$this->archiveObject->label] = '"' . $this->archiveObject->label . '"';
-		}
-		foreach ($this->formattedSubjects as $subject) {
-			$lowerSubject = strtolower($subject['label']);
-			//Ignore anything after a -- if it exists
-			if (strpos($lowerSubject, ' -- ') >= 0){
-				$lowerSubject = substr($lowerSubject, 0, strpos($lowerSubject, ' -- '));
-			}
-			$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
-		}
-		$relatedSubjects = array_slice($relatedSubjects, 0, 5);
-		foreach ($this->relatedPeople as $person) {
-			$label = (string)$person['label'];
-			$relatedSubjects[$label] = '"' . $label . '"';
-		}
-		$relatedSubjects = array_slice($relatedSubjects, 0, 8);
-		$timer->logTime('Loaded subjects');
-
-		$exploreMore = new ExploreMore();
-
-		//$exploreMore->loadEbscoOptions('archive', [], implode(' or ', $relatedSubjects));
-		//$timer->logTime('Loaded EBSCO options');
-
-		$searchTerm = implode(' OR ', $relatedSubjects);
-		$exploreMore->getRelatedArchiveObjects($searchTerm);
-		$timer->logTime("Loaded related archive objects");
-	}
-
 	/**
 	 * @param IslandoraDriver $archiveDriver
 	 *
