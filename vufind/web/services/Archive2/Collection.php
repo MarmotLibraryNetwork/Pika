@@ -30,12 +30,14 @@ class Collection extends ArchiveObject
 
         parent::launch();
 
-        $thumbnail = $this->mediaObject->getThumbnail();
+        $thumb = $this->mediaObject->getThumbnail();
+        $interface->assign('thumbnail', $thumb->thumbnailUrl); 
+        $interface->assign('thumbnail_link', $this->mediaObject->getCollectionThumbnailLink());
 
         $interface->assign('viewer', 'collection-basic');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        return parent::display('collection_basic.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }
