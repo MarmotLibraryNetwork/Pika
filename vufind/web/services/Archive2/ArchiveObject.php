@@ -45,6 +45,7 @@ class ArchiveObject extends \Action
         'video' => 'video',
     ];
 
+    /** Loads the media object from the `id` query parameter. */
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
@@ -61,6 +62,11 @@ class ArchiveObject extends \Action
         }
     }
 
+    /**
+     * @param string      $mainContentTemplate
+     * @param string|null $pageTitle           Defaults to the media object title.
+     * @param string      $sidebarTemplate
+     */
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
     {
         if ($this->mediaObject === null) {
@@ -72,6 +78,7 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
+    /** Assigns all template variables for the archive object detail page. */
     public function launch()
     {
         global $interface;
@@ -215,9 +222,13 @@ class ArchiveObject extends \Action
 
     }
 
+    /**
+     * Maps a content model name to its viewer identifier, or null if unmapped.
+     *
+     * @see MODEL_VIEWER_MAP
+     */
     protected function getViewerForModel(?string $model): ?string
     {
-        // TODO: This needs to be flushed out
         if ($model === null || $model === '') {
             return null;
         }
@@ -225,6 +236,11 @@ class ArchiveObject extends \Action
         return self::MODEL_VIEWER_MAP[$model] ?? null;
     }
 
+    /**
+     * Formats a Unix timestamp or date string as `m/d/Y h:i a` in the server's local timezone.
+     *
+     * @param int|string|null $value
+     */
     private function formatDisplayDate($value): ?string
     {
         if ($value === null || $value === '') {
@@ -245,6 +261,7 @@ class ArchiveObject extends \Action
         return $date->format('m/d/Y h:i a');
     }
 
+    /** Returns true if the current user may download the master (original) file. */
     protected function canCurrentUserDownloadOrignial(): bool
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
@@ -261,6 +278,7 @@ class ArchiveObject extends \Action
         return false;
     }
 
+    /** Returns true if the current user may download the intermediate (low-resolution) file. */
     protected function canCurrentUserDownloadIntermediate(): bool
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
@@ -276,6 +294,7 @@ class ArchiveObject extends \Action
         unset($nodeData);
         return false;
     }
+
     /**
      * Determine if the current patron can view the object.
      */
@@ -361,6 +380,7 @@ class ArchiveObject extends \Action
         return $canView;
     }
 
+    /** Parses the raw `pika_access_limits` field into an array of restriction strings. */
     protected function resolveViewingRestrictions(): array
     {
         $raw = $this->mediaObject->pika_access_limits ?? null;
@@ -380,6 +400,14 @@ class ArchiveObject extends \Action
         return array_values(array_filter($rawArray));
     }
 
+    /**
+     * Parses a single restriction string into a keyed array.
+     *
+     * Supports `key:value` and `key:val1,val2` forms; bare keys map to `1`.
+     *
+     * @param string $restriction
+     * @return array<string, int|string[]>
+     */
     protected function parseRestriction($restriction)
     {
         // has paramaters
