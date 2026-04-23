@@ -281,11 +281,12 @@ class ExploreMore {
 	 * @return array
 	 */
 	private function loadLibraryArchiveOptions(array $exploreMoreOptions, \Library $library): array {
-		$tid                  = (int) $library->libraryTid;
-		$libraryFilter        = "itm_field_library:$tid";
-		$formatFacetField     = 'sm_format';
-		$collectionFacetField = 'sm_title_2';
-		$emptySearchTerms     = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
+		$tid                           = (int)$library->libraryTid;
+		$libraryFilter                 = "itm_field_library:$tid";
+		$formatFacetField              = 'sm_format';
+		$collectionFacetField          = 'sm_title_2';
+		$contributingLibraryFacetField = 'ss_name_23'; // 'ss_library'
+		$emptySearchTerms              = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
 
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
@@ -302,6 +303,9 @@ class ExploreMore {
 			return $exploreMoreOptions;
 		}
 
+		// Get Library Name for Facet Filter
+		$contributingLibraryLabel = $response['response']['docs'][0][$contributingLibraryFacetField];
+
 		// Collections first (up to 5)
 		$i = 0;
 		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
@@ -315,7 +319,7 @@ class ExploreMore {
 			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
 			$collectionSearch->init();
 			$collectionSearch->setSearchTerms($emptySearchTerms);
-			$collectionSearch->addFilter($libraryFilter);
+			//$collectionSearch->addFilter("$contributingLibraryFacetField:\"$contributingLibraryLabel\""); // Collection facet filter will make this redundant (unless libraries start sharing collection objects);
 			$collectionSearch->addFilter("$collectionFacetField:\"$collection\"");
 			$collectionSearch->setSort('ds_created desc');
 			$collectionSearch->setLimit(1);
@@ -356,7 +360,7 @@ class ExploreMore {
 			$formatSearch = \SearchObjectFactory::initSearchObject('Islandora2');
 			$formatSearch->init();
 			$formatSearch->setSearchTerms($emptySearchTerms);
-			$formatSearch->addFilter($libraryFilter);
+			$formatSearch->addFilter("$contributingLibraryFacetField:\"$contributingLibraryLabel\"");
 			$formatSearch->addFilter("$formatFacetField:\"$format\"");
 			$formatSearch->setSort('ds_created desc');
 			$formatSearch->setLimit(1);
