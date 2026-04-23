@@ -56,7 +56,7 @@
 
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
 							<td>
-							{if $property.type == 'label'}
+							{if $property.type == 'label' || $property.type == 'archive2node'}
 								{if strlen($propValue) > 0}{* Don't display link with no text *}
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
 								{/if}
