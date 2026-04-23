@@ -218,45 +218,6 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return all childern as I2Objects.
-     *
-     * @return array|null|false Array of thumbnail media objects, null when none exist, false if field doesn't exist.
-     */
-    public function getChildNodes(): mixed
-    {
-
-        if (!array_key_exists('children', $this->nodeWithoutFieldPrefix)) {
-            return false;
-        }
-
-        // Return cached children if already loaded
-        if (!empty($this->childrenObjects)) {
-            return $this->childrenObjects;
-        }
-
-        // Build children from raw node data
-        $children = [];
-        $rawChildren = $this->children;
-        if (!is_array($rawChildren)) {
-            return null;
-        }
-        foreach ($rawChildren as $child) {
-            $nid = $child['nid'] ?? null;
-            if (!is_numeric($nid) || $nid <= 0) {
-                continue;
-            }
-            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
-            if ($mediaObject) {
-                $children[] = $mediaObject;
-            }
-        }
-
-        $this->childrenObjects = $children;
-        return $children;
-
-    }
-
-    /**
      * Return the service file media object for this node, if one exists.
      *
      * @return I2Media|null The service file media object, or null when unavailable.
@@ -361,9 +322,48 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return array|null Returns null if no children
      */
-    public function getChildren(): ?array
+    public function getRawChildren(): ?array
     {
         return $this->rawNode['children'] ?? null;
+    }
+
+    /**
+     * Return all childern as I2Objects.
+     *
+     * @return array|null|false Array of thumbnail media objects, null when none exist, false if field doesn't exist.
+     */
+    public function getChildObjects(): mixed
+    {
+
+        if (!array_key_exists('children', $this->nodeWithoutFieldPrefix)) {
+            return false;
+        }
+
+        // Return cached children if already loaded
+        if (!empty($this->childrenObjects)) {
+            return $this->childrenObjects;
+        }
+
+        // Build children from raw node data
+        $children = [];
+        $rawChildren = $this->children;
+        if (!is_array($rawChildren)) {
+            return null;
+        }
+        foreach ($rawChildren as $child) {
+            $nid = $child['nid'] ?? null;
+            if (!is_numeric($nid) || $nid <= 0) {
+                continue;
+            }
+            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
+            if ($mediaObject) {
+                $children[] = $mediaObject;
+            }
+        }
+
+        $this->childrenObjects = $children;
+        return $children;
+
     }
 
     /**
