@@ -70,7 +70,20 @@ class CollectionObject extends I2Object
     }
 
     /**
-     * Aggregates related people entries across all child objects in this collection.
+     * Sorts an array of items by their 'name' key in ascending alphabetical order.
+     *
+     * @param array $items Array of associative arrays, each containing a 'name' key.
+     * @return array The sorted array.
+     */
+    private function sortByName(array $items): array
+    {
+        usort($items, fn($a, $b) => strcmp($a['name'], $b['name']));
+        return $items;
+    }
+
+    /**
+     * Aggregates related people entries across all child objects in this collection,
+     * sorted by name.
      *
      * @return array Combined related-person entries from all children.
      */
@@ -88,11 +101,12 @@ class CollectionObject extends I2Object
             }
         }
 
-        return $collection_related_people;
+        return $this->sortByName($collection_related_people);
     }
 
     /**
-     * Aggregates related place entries across all child objects in this collection.
+     * Aggregates related place entries across all child objects in this collection,
+     * sorted by name.
      *
      * @return array Combined related-place entries from all children.
      */
@@ -110,11 +124,12 @@ class CollectionObject extends I2Object
             }
         }
 
-        return $collection_related_places;
+        return $this->sortByName($collection_related_places);
     }
 
     /**
-     * Aggregates related event entries across all child objects in this collection.
+     * Aggregates related event entries across all child objects in this collection,
+     * sorted by name.
      *
      * @return array Combined related-event entries from all children.
      */
@@ -132,11 +147,12 @@ class CollectionObject extends I2Object
             }
         }
 
-        return $collection_related_events;
+        return $this->sortByName($collection_related_events);
     }
 
     /**
-     * Aggregates related organization entries across all child objects in this collection.
+     * Aggregates related organization entries across all child objects in this collection,
+     * sorted by name.
      *
      * @return array Combined related-organization entries from all children.
      */
@@ -154,7 +170,7 @@ class CollectionObject extends I2Object
             }
         }
 
-        return $collection_related_orgs;
+        return $this->sortByName($collection_related_orgs);
     }
 
     /**
