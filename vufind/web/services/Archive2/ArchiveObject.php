@@ -108,13 +108,21 @@ class ArchiveObject extends \Action
         $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
 
         // Download files
-        $orignal_media = $this->mediaObject->getOriginalMedia();
-        $orignal_media_file = $orignal_media->fileUrl;
-        $interface->assign('orignal_media_file', $orignal_media_file);
+        $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
+        if ($orignal_media) {
+            $orignal_media_file = $orignal_media->fileUrl;
+            $interface->assign('orignal_media_file', $orignal_media_file);
+        } else {
+            $interface->assign('orignal_media_file', false);
+        }
 
-        $intermeidate_media = $this->mediaObject->getIntermediateFile();
-        $intermeidate_media_file = $intermeidate_media->fileUrl;
-        $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        $intermeidate_media = $this->mediaObject->getIntermediateFile() ?? null;
+        if ($intermeidate_media) {
+            $intermeidate_media_file = $intermeidate_media->fileUrl;
+            $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        } else {
+            $interface->assign('intermediate_media_file', false);
+        }
 
         // Language
         $languageName = null;
