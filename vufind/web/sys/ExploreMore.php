@@ -19,6 +19,26 @@
 class ExploreMore {
 	private $relatedCollections;
 
+	/** Filter fields whose values are not useful as explore-more search terms. */
+	private array $exploreMoreQueryExcludedFields = [
+		// Catalog
+		'literary_form',
+		'literary_form_full',
+		'target_audience',
+		'target_audience_full',
+		// Islandora1
+		'mods_genre_s',
+		// Islandora2
+		'ss_model',
+		'ss_name_1',
+		'sm_format',
+		'sm_name_43',
+		'sm_genre',
+		'sm_name_2',
+		'sm_legacy_resource_type',
+		'sm_name_22',
+	];
+
 	/**
 	 * @param string $activeSection
 	 * @param IndexRecord|IslandoraDriver $recordDriver
@@ -324,26 +344,28 @@ class ExploreMore {
 		$interface->assign('exploreMoreSections', $exploreMoreSectionsToShow);
 	}
 
+	/**
+	 * Derive a plain-text search term to drive the Explore More bar.
+	 *
+	 * Returns the current `lookfor` query string if one is present.  When the
+	 * search box is empty, falls back to the value of the first applied filter
+	 * whose field is not in {@see $exploreMoreQueryExcludedFields}
+	 * (e.g., a format facet value that was clicked).  Returns an empty string
+	 * when no usable term can be found.
+	 *
+	 * @return string
+	 */
 	function getExploreMoreQuery(){
-		if (isset($_REQUEST['lookfor'])){
-			$searchTerm = $_REQUEST['lookfor'];
-		}else{
-			$searchTerm = '';
-		}
+		$searchTerm = !empty($_REQUEST['lookfor']) ? $_REQUEST['lookfor'] : '';
 		if (!$searchTerm){
 			//No search term found, try to get a search term based on applied filters (just one)
-			if (isset($_REQUEST['filter'])){
+			if (!empty($_REQUEST['filter'])){
 				foreach ($_REQUEST['filter'] as $filter){
-					if (!is_array($filter) && strlen($filter) > 0) {
-						if (strpos($filter, ':') !== false){
-							$filterVals = explode(':', $filter, 2);
-							if ($filterVals[0] != 'mods_genre_s' &&
-									$filterVals[0] != 'literary_form' && $filterVals[0] != 'literary_form_full' &&
-									$filterVals[0] != 'target_audience' && $filterVals[0] != 'target_audience_full'
-							) {
-								$searchTerm = str_replace('"', '', $filterVals[1]);
-								break;
-							}
+					if (is_string($filter) && strlen($filter) > 0 && str_contains($filter, ':')){
+						$filterVals = explode(':', $filter, 2);  // colon character is the filter delimiter
+						if (!in_array($filterVals[0], $this->exploreMoreQueryExcludedFields)) {
+							$searchTerm = str_replace('"', '', $filterVals[1]);
+							break;
 						}
 					}
 				}
@@ -400,14 +422,12 @@ class ExploreMore {
 	}
 
 	/**
-	 * @param $activeSection
 	 * @param $exploreMoreOptions
 	 * @param $searchTerm
 	 * @return array
 	 */
-	public function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm) {
-		if ($activeSection != 'catalog') {
-			if (strlen($searchTerm) > 0) {
+	public function loadCatalogOptions($exploreMoreOptions, $searchTerm) {
+		if (!empty($searchTerm)) {
 				/** @var SearchObject_Solr $searchObject */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
@@ -425,10 +445,10 @@ class ExploreMore {
 
 				if (!empty($results['response'])) {
 					$numCatalogResultsAdded = 0;
+					$numCatalogResults      = $results['response']['numFound'];
 					foreach ($results['response']['docs'] as $doc) {
 						/** @var GroupedWorkDriver $driver */
-						$driver = RecordDriverFactory::initRecordDriver($doc);
-						$numCatalogResults = $results['response']['numFound'];
+						$driver            = RecordDriverFactory::initRecordDriver($doc);
 						if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
 							//Add a link to the remaining catalog results
 							$exploreMoreOptions[] = [
@@ -448,12 +468,10 @@ class ExploreMore {
 								'usageCount'  => 1
 							];
 						}
-
 						$numCatalogResultsAdded++;
 					}
 				}
 			}
-		}
 		return $exploreMoreOptions;
 	}
 

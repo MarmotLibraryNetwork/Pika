@@ -324,7 +324,7 @@ class AJAX extends AJAXHandler {
 		if ($section != 'catalog'){
 			require_once ROOT_DIR . '/sys/ExploreMore.php';
 			$legacyExploreMore  = new ExploreMore();
-			$exploreMoreOptions = $legacyExploreMore->loadCatalogOptions($section, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $legacyExploreMore->loadCatalogOptions($exploreMoreOptions, $searchTerm);
 		}
 
 		// Archive options: use the appropriate ExploreMore class based on which archive is enabled
