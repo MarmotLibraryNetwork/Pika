@@ -1521,11 +1521,12 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * Falls back to the plain filter when $libraryTid is not set or $filter is null.
 	 *
 	 * @param string|null $filter      A NOT filter produced by nodeIdsToFilter(), e.g. '!field:(X OR Y)'
-	 * @param mixed       $libraryTid  Current library's Islandora2 taxonomy term ID ($library->libraryTid)
+	 * @param mixed       $libraryTid  The current library's Islandora2 taxonomy term ID ($library->libraryTid)
 	 * @return string|null
 	 */
 	private function withOwningLibraryEscape(?string $filter, mixed $libraryTid): ?string {
-		if ($filter === null || !is_numeric($libraryTid)){
+		if ($filter === null || empty($libraryTid) || !is_numeric($libraryTid)){
+			// empty() check to exclude when libraryTid is zero
 			return $filter;
 		}
 		// Strip the leading '!' and rewrap using the *:* anchor idiom:

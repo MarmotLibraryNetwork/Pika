@@ -1013,15 +1013,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getAllSubjectHeadings($includeTitleAsSubject = true, $limit = 0){
 		if ($this->subjectHeadings == null){
-			require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
-			$archiveSubjects    = new ArchiveSubject();
-			$subjectsToIgnore   = [];
-			$subjectsToRestrict = [];
-			if ($archiveSubjects->find(true)){
-				$subjectsToIgnore   = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
-				$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
-			}
-
 			$subjectsWithLinks = $this->getAllSubjectsWithLinks();
 			$relatedSubjects   = [];
 			if ($includeTitleAsSubject){
@@ -1030,29 +1021,12 @@ abstract class IslandoraDriver extends RecordInterface {
 					$relatedSubjects[$title] = '"' . $title . '"';
 				}
 			}
-			for ($i = 0;$i < 2;$i++){
-				foreach ($subjectsWithLinks as $subject){
-					$searchSubject = preg_replace('/\(.*?\)/', "", $subject['label']);
-					$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
-					$lowerSubject  = strtolower($searchSubject);
-					if (!empty($searchSubject)){
-						if (!array_key_exists($lowerSubject, $subjectsToIgnore)){
-							if ($i == 0){
-								//First pass, just add primary subjects
-								if (!array_key_exists($lowerSubject, $subjectsToRestrict)){
-									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
-								}
-							}else{
-								//Second pass, add restricted subjects, but only if we don't have $limit subjects already
-								if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= $limit){
-									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
-								}
-							}
-						}
-					}
-				}
-				if ($limit == 0){ //If there isn't a limit set, there isn't a need to run a second pass for restricted subjects.
-					break;
+			foreach ($subjectsWithLinks as $subject){
+				$searchSubject = preg_replace('/\(.*?\)/', "", $subject['label']);
+				$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
+				$lowerSubject  = strtolower($searchSubject);
+				if (!empty($searchSubject)){
+					$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
 				}
 			}
 			if ($limit > 0){

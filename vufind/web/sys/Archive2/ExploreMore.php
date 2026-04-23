@@ -138,6 +138,263 @@ class ExploreMore {
 	}
 
 	// -------------------------------------------------------------------------
+	// Explore More Bar
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Build explore-more-bar tiles from the Islandora2 archive for a keyword search.
+	 *
+	 * Searches Islandora2 Solr for $searchTerm, facets by genre (sm_name_2), and
+	 * appends one tile per content type to $exploreMoreOptions.
+	 *
+	 * @param array  $exploreMoreOptions  Existing bar tiles to append to
+	 * @param string $searchTerm
+	 * @return array Array of Archive Tiles to display in the Explore More Bar
+	 */
+	public function loadArchiveOptions(array $exploreMoreOptions, string $searchTerm): array {
+		if (empty($searchTerm)) {
+			global /** @var \Library $library */ $library;
+			if (!empty($library->libraryTid) && $library->libraryTid > 0) {
+				return $this->loadLibraryArchiveOptions($exploreMoreOptions, $library);
+			}
+			return $exploreMoreOptions;
+		}
+
+		/** @var \SearchObject_Islandora2 $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchTerms = [
+			'lookfor' => $searchTerm,
+			'index'   => 'Islandora2Keyword',
+		];
+		$searchObject->setSearchTerms($searchTerms);
+
+		$formatFacetField = 'sm_format'; // Hasn't been reverted yet.
+		$collectionFacetField = 'sm_title_2';
+		$searchObject->addFacet($formatFacetField, 'Format'); // Related Formats
+		$searchObject->addFacet($collectionFacetField, 'Collection'); // Related Collections
+		$searchObject->setLimit(1);
+		$searchObject->setDebugging(false, false);
+
+		$response = $searchObject->processSearch(true, false);
+		if (empty($response['response']['numFound'])) {
+			return $exploreMoreOptions;
+		}
+
+		$formatFacetResults = $response['facet_counts']['facet_fields'][$formatFacetField] ?? [];
+		foreach ($formatFacetResults as [$format, $count]) {
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $formatSearch */
+			$formatSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$formatSearch->init();
+			$formatSearch->setSearchTerms($searchTerms);
+			$formatSearch->addFilter("$formatFacetField:\"$format\"");
+			$formatSearch->setSort('ds_created desc'); // Show newly created items
+			$formatSearch->setLimit(1);
+
+			$formatResponse = $formatSearch->processSearch(true, false);
+			if (empty($formatResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($formatResponse['response']['docs']));
+			$label       = ucwords($format);
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $label,
+					'description' => "$label related to $searchTerm",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$label ($count)",
+					'description' => "$label related to $searchTerm",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $formatSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
+
+		// Related collections
+		$i = 0;
+		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
+		foreach ($collectionFacetResults as [$collection, $count]) {
+			if (++$i > 5) break; // Only Add 5 related collections
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $collectionSearch */
+			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$collectionSearch->init();
+			$collectionSearch->setSearchTerms($searchTerms);
+			$collectionSearch->addFilter("$collectionFacetField:\"$collection\"");
+			$collectionSearch->setSort('ds_created desc'); // Show newly created collections
+			$collectionSearch->setLimit(1);
+
+			$collectionResponse = $collectionSearch->processSearch(true, false);
+			if (empty($collectionResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($collectionResponse['response']['docs']));
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $collection,
+					'description' => "$collection related to $searchTerm",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$collection ($count)",
+					'description' => "$collection related to $searchTerm",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $collectionSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
+
+		//TODO: Related People
+		//TODO: Related Places
+		//TODO: Related Events
+
+		return $exploreMoreOptions;
+	}
+
+	/**
+	 * Populate explore-more-bar tiles for a blank catalog search using the
+	 * current library's Islandora2 taxonomy term ID.
+	 *
+	 * Shows up to 5 newest collections first, then one tile per format type.
+	 *
+	 * @param array    $exploreMoreOptions  Existing bar tiles to append to
+	 * @param \Library $library
+	 * @return array
+	 */
+	private function loadLibraryArchiveOptions(array $exploreMoreOptions, \Library $library): array {
+		$tid                           = (int)$library->libraryTid;
+		$libraryFilter                 = "itm_field_library:$tid";
+		$formatFacetField              = 'sm_format';
+		$collectionFacetField          = 'sm_title_2';
+		$contributingLibraryFacetField = 'ss_name_23'; // 'ss_library'
+		$emptySearchTerms              = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
+
+		/** @var \SearchObject_Islandora2 $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->setSearchTerms($emptySearchTerms);
+		$searchObject->addFilter($libraryFilter);
+		$searchObject->addFacet($formatFacetField, 'Format');
+		$searchObject->addFacet($collectionFacetField, 'Collection');
+		$searchObject->setLimit(1);
+		$searchObject->setDebugging(false, false);
+
+		$response = $searchObject->processSearch(true, false);
+		if (empty($response['response']['numFound'])) {
+			return $exploreMoreOptions;
+		}
+
+		// Get Library Name for Facet Filter
+		$contributingLibraryLabel = $response['response']['docs'][0][$contributingLibraryFacetField];
+
+		// Collections first (up to 5)
+		$i = 0;
+		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
+		foreach ($collectionFacetResults as [$collection, $count]) {
+			if (++$i > 5) break;
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $collectionSearch */
+			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$collectionSearch->init();
+			$collectionSearch->setSearchTerms($emptySearchTerms);
+			//$collectionSearch->addFilter("$contributingLibraryFacetField:\"$contributingLibraryLabel\""); // Collection facet filter will make this redundant (unless libraries start sharing collection objects);
+			$collectionSearch->addFilter("$collectionFacetField:\"$collection\"");
+			$collectionSearch->setSort('ds_created desc');
+			$collectionSearch->setLimit(1);
+
+			$collectionResponse = $collectionSearch->processSearch(true, false);
+			if (empty($collectionResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($collectionResponse['response']['docs']));
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $collection,
+					'description' => "$collection in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$collection ($count)",
+					'description' => "$collection in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $collectionSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
+
+		// Formats second
+		$formatFacetResults = $response['facet_counts']['facet_fields'][$formatFacetField] ?? [];
+		foreach ($formatFacetResults as [$format, $count]) {
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $formatSearch */
+			$formatSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$formatSearch->init();
+			$formatSearch->setSearchTerms($emptySearchTerms);
+			$formatSearch->addFilter("$contributingLibraryFacetField:\"$contributingLibraryLabel\"");
+			$formatSearch->addFilter("$formatFacetField:\"$format\"");
+			$formatSearch->setSort('ds_created desc');
+			$formatSearch->setLimit(1);
+
+			$formatResponse = $formatSearch->processSearch(true, false);
+			if (empty($formatResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($formatResponse['response']['docs']));
+			$label       = ucwords($format);
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $label,
+					'description' => "$label in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$label ($count)",
+					'description' => "$label in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $formatSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
+
+		return $exploreMoreOptions;
+	}
+
+	// -------------------------------------------------------------------------
 	// Section builders
 	// -------------------------------------------------------------------------
 
@@ -330,7 +587,7 @@ class ExploreMore {
 		$searchObject->init();
 		//$searchObject->setDebugging(false, false);
 		//TODO: turn off debugging later
-		$searchObject->setSearchTerms(implode(' OR ', $terms));
+		$searchObject->setSearchTerms(['lookfor' => implode(' OR ', $terms)]);
 		$searchObject->setLimit(12);
 
 		// Exclude the current object

@@ -376,7 +376,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('archives', $userRoles))}
-				{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsageByNamespace', 'ArchiveUsageByContentType'))}
+				{if in_array($action, array('ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsageByNamespace', 'ArchiveUsageByContentType'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -393,7 +393,6 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "ArchiveRequests"} active{/if}"><a href="/Admin/ArchiveRequests">Archive Material Requests</a></div>
 							<div class="adminMenuLink{if $action == "AuthorshipClaims"} active{/if}"><a href="/Admin/AuthorshipClaims">Archive Authorship Claims</a></div>
-							<div class="adminMenuLink{if $action == "ArchiveSubjects"} active{/if}"><a href="/Admin/ArchiveSubjects">Archive Subject Control</a></div>
 							<hr class="menu">
 							<div class="adminMenuLink{if $action == "ArchiveUsage"} active{/if}"><a href="/Admin/ArchiveUsageByNamespace">Archive Usage by Namespace</a></div>
 							<div class="adminMenuLink{if $action == "ArchiveUsageByContentType"} active{/if}"><a href="/Admin/ArchiveUsageByContentType">Archive Usage by Content Type</a></div>

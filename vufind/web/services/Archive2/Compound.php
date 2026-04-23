@@ -37,8 +37,8 @@ class Compound extends ArchiveObject
         $firstObjectModel = null;
 
         // get child objects
-        if (method_exists($this->mediaObject, 'getChildNodes')) {
-            $childObjects = $this->mediaObject->getChildNodes();
+        if (method_exists($this->mediaObject, 'getChildObjects')) {
+            $childObjects = $this->mediaObject->getChildObjects();
 
             // First pass: check if all children are the same type
             foreach ($childObjects as $childObject) {
@@ -141,7 +141,7 @@ class Compound extends ArchiveObject
                 ];
             }
         } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
+            $this->logger->error('mediaObject does not have getChildObjects method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
         $interface->assign('children', $childrenData);

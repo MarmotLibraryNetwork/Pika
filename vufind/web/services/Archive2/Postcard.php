@@ -32,8 +32,8 @@ class Postcard extends ArchiveObject
 
         // Get manifests for child objects
         $serviceFileUrls = [];
-        if (method_exists($this->mediaObject, 'getChildren')) {
-            $childObjects = $this->mediaObject->getChildren();
+        if (method_exists($this->mediaObject, 'getRawChildren')) {
+            $childObjects = $this->mediaObject->getRawChildren();
             foreach ($childObjects as $childObject) {
                 $modelName = $childObject->model['name'] ?? null;
                 if ($modelName === null || strtolower($modelName) !== 'image') {
@@ -58,7 +58,7 @@ class Postcard extends ArchiveObject
                 $serviceFileUrls[] = $serviceFileUrl;
             }
         } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
+            $this->logger->error('mediaObject does not have getRawChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
         $interface->assign('service_file_url', $serviceFileUrls);

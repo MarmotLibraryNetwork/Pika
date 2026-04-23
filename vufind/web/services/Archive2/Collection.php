@@ -20,8 +20,7 @@
 
 namespace Archive2;
 
-//require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
-require_once ROOT_DIR . '/services/Archive2/PagedContent.php';
+require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
 class Collection extends ArchiveObject
 {
@@ -31,7 +30,9 @@ class Collection extends ArchiveObject
 
         parent::launch();
 
-        $interface->assign('viewer', 'mirador');
+        $thumbnail = $this->mediaObject->getThumbnail();
+
+        $interface->assign('viewer', 'collection-basic');
 
         $title = $this->mediaObject->getTitle();
         return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
