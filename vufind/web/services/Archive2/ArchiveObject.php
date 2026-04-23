@@ -169,16 +169,6 @@ class ArchiveObject extends \Action
         $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
         $interface->assign('library_namespace', $libraryNamespace);
 
-        // Location
-        $locatedAt = ($this->mediaObject->located_at !== null) ? $this->mediaObject->located_at : null;
-        $interface->assign('located_at', $locatedAt);
-        $locationUrl = ($this->mediaObject->location_url !== null) ? $this->mediaObject->location_url : null;
-        $interface->assign('location_url', $locationUrl);
-
-        // Shelf Location
-        $shelfLocation = ($this->mediaObject->shelf_location !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('shelf_location', $shelfLocation);
-
         // Interview Location
         // NOTE: field_location is labeled as Interview Location in UI
         $rawInterviewLocations = ($this->mediaObject->location !== null) ? $this->mediaObject->location : [];
@@ -206,10 +196,6 @@ class ArchiveObject extends \Action
             $interviewLocations[] = $interviewLocation;
         }
         $interface->assign('interview_locations', $interviewLocations);
-
-        // Local identifier
-        $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('local_identifer', $localIdentifier);
 
         // Related
         $interface->assign('related_place', $this->mediaObject->getRelatedPlace());
