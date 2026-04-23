@@ -974,6 +974,7 @@
       "tm_X3b_en_title": [
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200]
+
        ],
       "tm_X3b_en_field_subtitle": [
         ["onePhrase", 1200],
@@ -1163,6 +1164,9 @@
         ["and", 600]
       ],
       "sm_title_2": [ /* collection string */
+        ["onePhrase", 1200]
+      ],
+      "sm_collection": [ /* collection string  TODO: text field? */
         ["onePhrase", 1200]
       ],
       "ss_field_album_title": [ /*TODO: needs a text field */
