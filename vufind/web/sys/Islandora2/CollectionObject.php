@@ -24,6 +24,12 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 
 class CollectionObject extends I2Object
 {
+    /**
+     * Returns true if the given node represents a collection media type.
+     *
+     * @param array $node Raw node data from the Islandora 2 API.
+     * @return bool
+     */
     public static function supports(array $node): bool
     {
         if (self::mediaTypeIn($node, ['collection'])) {
@@ -33,13 +39,134 @@ class CollectionObject extends I2Object
         return false;
     }
 
+    /**
+     * Returns the object type identifier for this class.
+     *
+     * @return string Always 'collection'.
+     */
     public function getObjectType(): string
     {
         return 'collection';
     }
 
+    /**
+     * Returns the display mode configured for this collection, or null if not set.
+     *
+     * @return string|null Value of the `pika_coll_display` field.
+     */
     public function getCollectionDisplay(): ?string
     {
         return $this->nodeWithoutFieldPrefix['pika_coll_display'] ?? null;
+    }
+
+    /**
+     * Returns the display options configured for this collection, or null if not set.
+     *
+     * @return array|null Value of the `pika_coll_options` field.
+     */
+    public function getCollectionOptions(): ?array
+    {
+        return $this->nodeWithoutFieldPrefix['pika_coll_options'] ?? null;
+    }
+
+    /**
+     * Aggregates related people entries across all child objects in this collection.
+     *
+     * @return array Combined related-person entries from all children.
+     */
+    public function getCollectionRelatedPeople(): array
+    {
+        $collection_related_people = [];
+        foreach ($this->childrenObjects as $child) {
+            if ($child->related_person_paragraph === null) {
+                continue;
+            }
+
+            $child_people = $child->getRelatedPerson();
+            if ($child_people !== null) {
+                $collection_related_people = array_merge($collection_related_people, $child_people);
+            }
+        }
+
+        return $collection_related_people;
+    }
+
+    /**
+     * Aggregates related place entries across all child objects in this collection.
+     *
+     * @return array Combined related-place entries from all children.
+     */
+    public function getCollectionRelatedPlaces(): array
+    {
+        $collection_related_places = [];
+        foreach ($this->childrenObjects as $child) {
+            if ($child->related_place === null) {
+                continue;
+            }
+
+            $child_places = $child->getRelatedPlace();
+            if ($child_places !== null) {
+                $collection_related_places = array_merge($collection_related_places, $child_places);
+            }
+        }
+
+        return $collection_related_places;
+    }
+
+    /**
+     * Aggregates related event entries across all child objects in this collection.
+     *
+     * @return array Combined related-event entries from all children.
+     */
+    public function getCollectionRelatedEvents(): array
+    {
+        $collection_related_events = [];
+        foreach ($this->childrenObjects as $child) {
+            if ($child->related_event === null) {
+                continue;
+            }
+
+            $child_events = $child->getRelatedEvent();
+            if ($child_events !== null) {
+                $collection_related_events = array_merge($collection_related_events, $child_events);
+            }
+        }
+
+        return $collection_related_events;
+    }
+
+    /**
+     * Aggregates related organization entries across all child objects in this collection.
+     *
+     * @return array Combined related-organization entries from all children.
+     */
+    public function getCollectionRelatedOrganizations(): array
+    {
+        $collection_related_orgs = [];
+        foreach ($this->childrenObjects as $child) {
+            if ($child->related_org === null) {
+                continue;
+            }
+
+            $child_orgs = $child->getRelatedOrganization();
+            if ($child_orgs !== null) {
+                $collection_related_orgs = array_merge($collection_related_orgs, $child_orgs);
+            }
+        }
+
+        return $collection_related_orgs;
+    }
+
+    /**
+     * Get the collection thumbnail link
+     *
+     * @return string|null Uri or null if empty
+     */
+    public function getCollectionThumbnailLink(): ?string
+    {
+        if ($this->nodeWithoutFieldPrefix['pika_thumb_url'] === null) {
+            return null;
+        }
+        return $this->nodeWithoutFieldPrefix['pika_thumb_url']['uri'];
     }
 }
