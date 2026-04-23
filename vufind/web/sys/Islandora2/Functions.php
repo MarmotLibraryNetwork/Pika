@@ -33,6 +33,7 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'mp4'              => 'Audio',
     'book'             => 'Book',
     'compound object'  => 'Compound',
+    'compound'         => 'Compound',
     'digital document' => 'DigitalDocument',
     'academic paper'   => 'DigitalDocument',
     'document'         => 'DigitalDocument',

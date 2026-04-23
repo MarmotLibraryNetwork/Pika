@@ -3,6 +3,7 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,25 +18,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Islandora2;
+namespace Archive2;
 
-require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
-require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
-class CompoundObjectObject extends I2Object
+class Collection extends ArchiveObject
 {
-    public static function supports(array $node): bool
+    public function launch()
     {
-        if (self::mediaTypeIn($node, ['compound object'])) {
-            return true;
-        }
+        global $interface;
 
-        return false;
-    }
+        parent::launch();
 
-    public function getObjectType(): string
-    {
-        return 'compound object';
+        $thumbnail = $this->mediaObject->getThumbnail();
+
+        $interface->assign('viewer', 'collection-basic');
+
+        $title = $this->mediaObject->getTitle();
+        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

@@ -108,13 +108,21 @@ class ArchiveObject extends \Action
         $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
 
         // Download files
-        $orignal_media = $this->mediaObject->getOriginalMedia();
-        $orignal_media_file = $orignal_media->fileUrl;
-        $interface->assign('orignal_media_file', $orignal_media_file);
+        $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
+        if ($orignal_media) {
+            $orignal_media_file = $orignal_media->fileUrl;
+            $interface->assign('orignal_media_file', $orignal_media_file);
+        } else {
+            $interface->assign('orignal_media_file', false);
+        }
 
-        $intermeidate_media = $this->mediaObject->getIntermediateFile();
-        $intermeidate_media_file = $intermeidate_media->fileUrl;
-        $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        $intermeidate_media = $this->mediaObject->getIntermediateFile() ?? null;
+        if ($intermeidate_media) {
+            $intermeidate_media_file = $intermeidate_media->fileUrl;
+            $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        } else {
+            $interface->assign('intermediate_media_file', false);
+        }
 
         // Language
         $languageName = null;
@@ -149,7 +157,7 @@ class ArchiveObject extends \Action
         $interface->assign('library_name', $libraryName);
         $libraryTid = $this->mediaObject->library['tid'] ?? null;
         $interface->assign('library_tid', $libraryTid);
-        $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
+        $libraryUrl = "/Archive2/Library/" . $libraryTid;
         $interface->assign('library_url', $libraryUrl);
         $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
         $interface->assign('library_namespace', $libraryNamespace);
@@ -197,11 +205,11 @@ class ArchiveObject extends \Action
         $interface->assign('local_identifer', $localIdentifier);
 
         // Related
-        $interface->assign('related_place',          $this->mediaObject->getRelatedPlace());
-        $interface->assign('related_organization',   $this->mediaObject->getRelatedOrganization());
-        $interface->assign('related_event',          $this->mediaObject->getRelatedEvent());
-        $interface->assign('related_person',          $this->mediaObject->getRelatedPerson());
-        
+        $interface->assign('related_place', $this->mediaObject->getRelatedPlace());
+        $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
+        $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
+
         // Analytics
         $interface->assign('archivePage', true);
 
@@ -241,12 +249,12 @@ class ArchiveObject extends \Action
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if((int)$nodeData['pika_anon_master_download'] === 1) {
+        if ((int)$nodeData['pika_anon_master_download'] === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if($user && ((int)$nodeData['pika_master_download'] === 1)) {
+        if ($user && ((int)$nodeData['pika_master_download'] === 1)) {
             return true;
         }
         unset($nodeData);
@@ -257,12 +265,12 @@ class ArchiveObject extends \Action
     {
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if((int)$nodeData['pika_anon_lc_download'] === 1) {
+        if ((int)$nodeData['pika_anon_lc_download'] === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if($user && ((int)$nodeData['pika_lc_download'] === 1)) {
+        if ($user && ((int)$nodeData['pika_lc_download'] === 1)) {
             return true;
         }
         unset($nodeData);

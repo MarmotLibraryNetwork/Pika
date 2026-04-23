@@ -29,14 +29,16 @@ class Compound extends ArchiveObject
     {
         global $interface;
 
+        parent::launch();
+
         $childrenData = [];
         $allAudio = true;
         $allVideo = true;
         $firstObjectModel = null;
 
         // get child objects
-        if (method_exists($this->mediaObject, 'getChildren')) {
-            $childObjects = $this->mediaObject->getChildren();
+        if (method_exists($this->mediaObject, 'getChildObjects')) {
+            $childObjects = $this->mediaObject->getChildObjects();
 
             // First pass: check if all children are the same type
             foreach ($childObjects as $childObject) {
@@ -139,10 +141,8 @@ class Compound extends ArchiveObject
                 ];
             }
         } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
+            $this->logger->error('mediaObject does not have getChildObjects method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
-
-        parent::launch();
 
         $interface->assign('children', $childrenData);
         $interface->assign('viewer', 'compound');
@@ -150,5 +150,7 @@ class Compound extends ArchiveObject
         $title = $this->mediaObject->getTitle();
         return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
+
+
 
 }

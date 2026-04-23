@@ -1,4 +1,4 @@
-<video width="100%" controls poster="{$posterUrl}" id="video-player" crossorigin="anonymous">
+<video width="100%" controls controlslist="nodownload" poster="{$posterUrl}" id="video-player" crossorigin="anonymous">
     <source src="{$videoUrl}" type="{$videoMime}" >
     {if count($captions) >= 1}
         {foreach from=$captions item=i}

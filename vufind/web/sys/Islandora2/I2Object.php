@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -37,6 +38,7 @@ abstract class I2Object implements MediaObjectInterface
     protected array $rawNode;
     protected array $nodeWithoutFieldPrefix;
     protected array $media = [];
+    protected array $childrenObjects = [];
 
     /**
      * Determine if the subclass can represent the supplied Islandora node.
@@ -67,7 +69,7 @@ abstract class I2Object implements MediaObjectInterface
     {
         if (array_key_exists($name, $this->nodeWithoutFieldPrefix)) {
             return $this->nodeWithoutFieldPrefix[$name];
-        } elseif (array_key_exists($name, $this->rawNode)) {   
+        } elseif (array_key_exists($name, $this->rawNode)) {
             return $this->rawNode[$name];
         }
 
@@ -133,10 +135,10 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return string
      */
-    public function getDisplayModel(): ?string 
+    public function getDisplayModel(): ?string
     {
         $displayModel = $this->legacy_resource_type['name'] ?? null;
-        if($displayModel === null) {
+        if ($displayModel === null) {
             $displayModel = $this->getObjectModel();
         }
         return $displayModel;
@@ -150,8 +152,8 @@ abstract class I2Object implements MediaObjectInterface
     public function getOriginalMedia(): ?I2Media
     {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('original file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('original file')) {
                 return $m;
             }
         }
@@ -166,8 +168,8 @@ abstract class I2Object implements MediaObjectInterface
     public function getIntermediateFile(): ?I2Media
     {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('intermediate file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('intermediate file')) {
                 return $m;
             }
         }
@@ -179,15 +181,16 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media|null The newest thumbnail, or null when none exist.
      */
-    public function getThumbnail() {
+    public function getThumbnail()
+    {
         $media = $this->getMedia();
         $thumbnails = [];
-        foreach($media as $m) {
-            if($m->useIs('thumbnail image')) {
+        foreach ($media as $m) {
+            if ($m->useIs('thumbnail image')) {
                 $thumbnails[] = $m;
             }
         }
-        if(empty($thumbnails)) {
+        if (empty($thumbnails)) {
             return null;
         }
         $sorted = $this->sortMediaByCreatedDate($thumbnails);
@@ -199,15 +202,16 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media[]|null Array of thumbnail media objects, or null when none exist.
      */
-    public function getThumbnails() {
+    public function getThumbnails()
+    {
         $media = $this->getMedia();
         $thumbnails = [];
-        foreach($media as $m) {
-            if($m->useIs('thumbnail image')) {
+        foreach ($media as $m) {
+            if ($m->useIs('thumbnail image')) {
                 $thumbnails[] = $m;
             }
         }
-        if(empty($thumbnails)) {
+        if (empty($thumbnails)) {
             return null;
         }
         return $thumbnails;
@@ -218,17 +222,19 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media|null The service file media object, or null when unavailable.
      */
-    public function getServiceFile() {
+    public function getServiceFile()
+    {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('service file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('service file')) {
                 return $m;
             }
         }
         return null;
     }
 
-    public function getDateCreated($format='m/d/Y') {
+    public function getDateCreated($format = 'm/d/Y')
+    {
         $created = $this->created;
         if (empty($created)) {
             return null;
@@ -243,7 +249,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getDescription(): ?string
     {
-       if(isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
+        if (isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
             return htmlentities($this->nodeWithoutFieldPrefix['description_long']);
         } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
             return $this->nodeWithoutFieldPrefix['description'];
@@ -258,7 +264,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getTitle(): ?string
     {
-        if(isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
+        if (isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
             return $this->nodeWithoutFieldPrefix['display_title'];
         } elseif (isset($this->nodeWithoutFieldPrefix['title']) && $this->nodeWithoutFieldPrefix['title'] !== '') {
             return htmlentities($this->nodeWithoutFieldPrefix['title']);
@@ -271,8 +277,9 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return string|null The language name, or null when unavailable.
      */
-    public function getLanguage(): ?string {
-        if(isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
+    public function getLanguage(): ?string
+    {
+        if (isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
             return $this->nodeWithoutFieldPrefix['language']['name'];
         }
         return null;
@@ -283,12 +290,14 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return array|null Array of subject values, or null when none are present.
      */
-    public function getSubjects(): ?array {
+    public function getSubjects(): ?array
+    {
         $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
-        // if it's a single subject, wrap in array 
-        if($subjects === null)
-                return null;
-        if(is_array($subjects) && array_key_exists('tid', $subjects)) {
+        // if it's a single subject, wrap in array
+        if ($subjects === null) {
+            return null;
+        }
+        if (is_array($subjects) && array_key_exists('tid', $subjects)) {
             $subjects = [$subjects];
         }
         return $subjects;
@@ -296,12 +305,12 @@ abstract class I2Object implements MediaObjectInterface
 
     /**
      * Return the media associacted with this item as objects.
-     * 
+     *
      * @return array Returns an empty array if no media is present
      */
     public function getMedia(): array
     {
-        if(!empty($this->media)) {
+        if (!empty($this->media)) {
             return $this->media;
         }
 
@@ -310,11 +319,51 @@ abstract class I2Object implements MediaObjectInterface
 
     /**
      * Return the children associacted with this item.
-     * 
+     *
      * @return array|null Returns null if no children
      */
-    public function getChildren(): ?array {
+    public function getRawChildren(): ?array
+    {
         return $this->rawNode['children'] ?? null;
+    }
+
+    /**
+     * Return all childern as I2Objects.
+     *
+     * @return array|null|false Array of thumbnail media objects, null when none exist, false if field doesn't exist.
+     */
+    public function getChildObjects(): mixed
+    {
+
+        if (!array_key_exists('children', $this->nodeWithoutFieldPrefix)) {
+            return false;
+        }
+
+        // Return cached children if already loaded
+        if (!empty($this->childrenObjects)) {
+            return $this->childrenObjects;
+        }
+
+        // Build children from raw node data
+        $children = [];
+        $rawChildren = $this->children;
+        if (!is_array($rawChildren)) {
+            return null;
+        }
+        foreach ($rawChildren as $child) {
+            $nid = $child['nid'] ?? null;
+            if (!is_numeric($nid) || $nid <= 0) {
+                continue;
+            }
+            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
+            if ($mediaObject) {
+                $children[] = $mediaObject;
+            }
+        }
+
+        $this->childrenObjects = $children;
+        return $children;
+
     }
 
     /**
@@ -349,7 +398,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getRelatedPlace(): ?array
     {
         $related_place = $this->nodeWithoutFieldPrefix['related_place'] ?? null;
-        if(is_array($related_place) && array_key_exists('tid', $related_place)) {
+        if (is_array($related_place) && array_key_exists('tid', $related_place)) {
             $related_place = [$related_place];
         }
         return $related_place;
@@ -358,7 +407,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getRelatedEvent(): ?array
     {
         $related_event = $this->nodeWithoutFieldPrefix['related_event'] ?? null;
-        if(is_array($related_event) && array_key_exists('tid', $related_event)) {
+        if (is_array($related_event) && array_key_exists('tid', $related_event)) {
             $related_event = [$related_event];
         }
         return $related_event;
@@ -367,7 +416,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getRelatedOrganization(): ?array
     {
         $related_org = $this->nodeWithoutFieldPrefix['related_org'] ?? null;
-        if(is_array($related_org) && array_key_exists('tid', $related_org)) {
+        if (is_array($related_org) && array_key_exists('tid', $related_org)) {
             $related_org = [$related_org];
         }
         return $related_org;
@@ -377,12 +426,12 @@ abstract class I2Object implements MediaObjectInterface
     {
         $related_person = $this->nodeWithoutFieldPrefix['related_person_paragraph'] ?? null;
         // if it's a single entry
-        if(is_array($related_person) && array_key_exists('id', $related_person)) {
+        if (is_array($related_person) && array_key_exists('id', $related_person)) {
             $related_person = [$related_person['related_person']];
-        // multipule persons
-        } elseif($related_person !== null) {
+            // multipule persons
+        } elseif ($related_person !== null) {
             $temp_person = [];
-            foreach($related_person as $person) {
+            foreach ($related_person as $person) {
                 $temp_person[] = $person['related_person'];
             }
             $related_person = $temp_person;
@@ -456,13 +505,14 @@ abstract class I2Object implements MediaObjectInterface
 
     /**
      * Find media associated with node and return as array of objects
-     * 
-     * @return array 
+     *
+     * @return array
      */
-    private function loadMedia():array {
+    private function loadMedia(): array
+    {
         $rawMedia = $this->nodeWithoutFieldPrefix['media'] ?? [];
         $media = [];
-        foreach($rawMedia as $m) {
+        foreach ($rawMedia as $m) {
             $media[] = new I2Media($m);
         }
         $this->media = $media;

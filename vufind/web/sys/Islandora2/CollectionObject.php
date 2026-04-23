@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -28,12 +29,17 @@ class CollectionObject extends I2Object
         if (self::mediaTypeIn($node, ['collection'])) {
             return true;
         }
-        
+
         return false;
     }
 
     public function getObjectType(): string
     {
         return 'collection';
+    }
+
+    public function getCollectionDisplay(): ?string
+    {
+        return $this->nodeWithoutFieldPrefix['pika_coll_display'] ?? null;
     }
 }
