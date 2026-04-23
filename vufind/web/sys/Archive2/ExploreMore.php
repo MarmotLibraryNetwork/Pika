@@ -188,6 +188,7 @@ class ExploreMore {
 			$formatSearch->init();
 			$formatSearch->setSearchTerms($searchTerms);
 			$formatSearch->addFilter("$formatFacetField:\"$format\"");
+			$formatSearch->setSort('ds_created desc'); // Show newly created items
 			$formatSearch->setLimit(1);
 
 			$formatResponse = $formatSearch->processSearch(true, false);
@@ -217,8 +218,10 @@ class ExploreMore {
 		}
 
 		// Related collections
+		$i = 0;
 		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
 		foreach ($collectionFacetResults as [$collection, $count]) {
+			if (++$i > 5) break; // Only Add 5 related collections
 			if ($count == 0) {
 				continue;
 			}
@@ -228,6 +231,7 @@ class ExploreMore {
 			$collectionSearch->init();
 			$collectionSearch->setSearchTerms($searchTerms);
 			$collectionSearch->addFilter("$collectionFacetField:\"$collection\"");
+			$collectionSearch->setSort('ds_created desc'); // Show newly created collections
 			$collectionSearch->setLimit(1);
 
 			$collectionResponse = $collectionSearch->processSearch(true, false);

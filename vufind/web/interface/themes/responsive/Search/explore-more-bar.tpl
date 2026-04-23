@@ -36,7 +36,7 @@
 										</a>
 									</div>
 									<figcaption class="explore-more-category-title">
-										<strong>{$exploreMoreCategory.label|truncate:30}</strong>
+										<strong>{$exploreMoreCategory.label|truncate:40}</strong>
 									</figcaption>
 								</figure>
 							</li>
