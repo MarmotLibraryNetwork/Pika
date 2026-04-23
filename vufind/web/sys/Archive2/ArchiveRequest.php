@@ -48,6 +48,7 @@ class ArchiveRequest extends DB_DataObject
     public static function getObjectStructure()
     {
         $structure = [
+	        'nid' => ['property' =>'nid', 'type' => 'archive2node', 'label' => 'Node ID', 'description' => 'Object Node ID', 'maxLength' => 50, 'required' => true],
 	        ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name', 'maxLength' => 100, 'required' => true],
 	        ['property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 200, 'required' => false],
 	        ['property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Address 2', 'maxLength' => 200, 'required' => false],
@@ -60,10 +61,9 @@ class ArchiveRequest extends DB_DataObject
 	        ['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
 	        ['property' => 'format', 'type' => 'text', 'label' => 'Format Required (Black and White/Color, Print/Digital, etc)', 'description' => 'Additional information about how you want the materials delivered', 'maxLength' => 255, 'required' => false],
 	        ['property' => 'purpose', 'type' => 'textarea', 'label' => 'Purpose: Provide information about how this image will be used: Description, title of publication, author, publisher, date of publication, number of copies produced, etc', 'description' => 'Additional information about what you will use the copy(copies) for', 'required' => true, 'hideInLists' => true],
-	        'pid' => ['property' => 'pid', 'type' => 'hidden', 'label' => 'legacy PID of the object', 'maxLength' => 50],
-	        'nid' => ['property' => 'nid', 'type' => 'hidden', 'label' => 'NID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true],
-	        'libraryTid' => ['property' => 'libraryTid', 'type'=> 'hidden', 'label'=>'Taxonomy ID of owning library', 'required' => true, 'maxLength' =>50, 'required' => true ],
-	        'dateRequested' => ['property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'],
+	        'pid' => ['property' => 'pid', 'type' => 'hidden', 'label' => 'legacy PID of the object', 'maxLength' => 50, 'hideInLists' => true],
+	        'libraryTid' => ['property' => 'libraryTid', 'type'=> 'hidden', 'label'=>'Taxonomy ID of owning library', 'required' => true, 'maxLength' =>50, 'required' => true, 'hideInLists' => true ],
+	        'dateRequested' => ['property' => 'dateRequested', 'type' => 'dateReadOnly', 'label' => 'Request Date', 'description' => 'Date the request was made'],
         ];
         return $structure;
     }
@@ -73,4 +73,5 @@ class ArchiveRequest extends DB_DataObject
         $this->dateRequested = time();
         return parent::insert();
     }
+
 }
