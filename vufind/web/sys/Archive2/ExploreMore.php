@@ -149,10 +149,14 @@ class ExploreMore {
 	 *
 	 * @param array  $exploreMoreOptions  Existing bar tiles to append to
 	 * @param string $searchTerm
-	 * @return array
+	 * @return array Array of Archive Tiles to display in the Explore More Bar
 	 */
 	public function loadArchiveOptions(array $exploreMoreOptions, string $searchTerm): array {
 		if (empty($searchTerm)) {
+			global /** @var \Library $library */ $library;
+			if (!empty($library->libraryTid) && $library->libraryTid > 0) {
+				return $this->loadLibraryArchiveOptions($exploreMoreOptions, $library);
+			}
 			return $exploreMoreOptions;
 		}
 
@@ -262,6 +266,126 @@ class ExploreMore {
 		//TODO: Related People
 		//TODO: Related Places
 		//TODO: Related Events
+
+		return $exploreMoreOptions;
+	}
+
+	/**
+	 * Populate explore-more-bar tiles for a blank catalog search using the
+	 * current library's Islandora2 taxonomy term ID.
+	 *
+	 * Shows up to 5 newest collections first, then one tile per format type.
+	 *
+	 * @param array    $exploreMoreOptions  Existing bar tiles to append to
+	 * @param \Library $library
+	 * @return array
+	 */
+	private function loadLibraryArchiveOptions(array $exploreMoreOptions, \Library $library): array {
+		$tid                  = (int) $library->libraryTid;
+		$libraryFilter        = "itm_field_library:$tid";
+		$formatFacetField     = 'sm_format';
+		$collectionFacetField = 'sm_title_2';
+		$emptySearchTerms     = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
+
+		/** @var \SearchObject_Islandora2 $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->setSearchTerms($emptySearchTerms);
+		$searchObject->addFilter($libraryFilter);
+		$searchObject->addFacet($formatFacetField, 'Format');
+		$searchObject->addFacet($collectionFacetField, 'Collection');
+		$searchObject->setLimit(1);
+		$searchObject->setDebugging(false, false);
+
+		$response = $searchObject->processSearch(true, false);
+		if (empty($response['response']['numFound'])) {
+			return $exploreMoreOptions;
+		}
+
+		// Collections first (up to 5)
+		$i = 0;
+		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
+		foreach ($collectionFacetResults as [$collection, $count]) {
+			if (++$i > 5) break;
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $collectionSearch */
+			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$collectionSearch->init();
+			$collectionSearch->setSearchTerms($emptySearchTerms);
+			$collectionSearch->addFilter($libraryFilter);
+			$collectionSearch->addFilter("$collectionFacetField:\"$collection\"");
+			$collectionSearch->setSort('ds_created desc');
+			$collectionSearch->setLimit(1);
+
+			$collectionResponse = $collectionSearch->processSearch(true, false);
+			if (empty($collectionResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($collectionResponse['response']['docs']));
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $collection,
+					'description' => "$collection in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$collection ($count)",
+					'description' => "$collection in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $collectionSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
+
+		// Formats second
+		$formatFacetResults = $response['facet_counts']['facet_fields'][$formatFacetField] ?? [];
+		foreach ($formatFacetResults as [$format, $count]) {
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $formatSearch */
+			$formatSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$formatSearch->init();
+			$formatSearch->setSearchTerms($emptySearchTerms);
+			$formatSearch->addFilter($libraryFilter);
+			$formatSearch->addFilter("$formatFacetField:\"$format\"");
+			$formatSearch->setSort('ds_created desc');
+			$formatSearch->setLimit(1);
+
+			$formatResponse = $formatSearch->processSearch(true, false);
+			if (empty($formatResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver = \RecordDriverFactory::initRecordDriver(reset($formatResponse['response']['docs']));
+			$label       = ucwords($format);
+
+			if ($count == 1) {
+				$exploreMoreOptions[] = [
+					'label'       => $label,
+					'description' => "$label in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $firstDriver->getRecordUrl(),
+				];
+			} else {
+				$exploreMoreOptions[] = [
+					'label'       => "$label ($count)",
+					'description' => "$label in the archive",
+					'image'       => $firstDriver->getBookcoverUrl('medium'),
+					'link'        => $formatSearch->renderSearchUrl(),
+					'usageCount'  => $count,
+				];
+			}
+		}
 
 		return $exploreMoreOptions;
 	}
