@@ -67,6 +67,9 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function __get(string $name)
     {
+        if ($name === 'childrenObjects') {
+            return $this->getChildObjects();
+        }
         if (array_key_exists($name, $this->nodeWithoutFieldPrefix)) {
             return $this->nodeWithoutFieldPrefix[$name];
         } elseif (array_key_exists($name, $this->rawNode)) {
