@@ -675,48 +675,24 @@ class ExploreMore {
 
 	function loadExploreMoreContent(){
 		global $timer;
-		require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
-		$archiveSubjects    = new ArchiveSubject();
-		$subjectsToIgnore   = [];
-		$subjectsToRestrict = [];
-		if ($archiveSubjects->find(true)){
-			$subjectsToIgnore   = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
-			$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
-		}
 		$this->getRelatedCollections();
 		$timer->logTime("Loaded related collections");
 		$relatedSubjects = array();
-		$numSubjectsAdded = 0;
 		if (strlen($this->archiveObject->label) > 0) {
 			$relatedSubjects[$this->archiveObject->label] = '"' . $this->archiveObject->label . '"';
 		}
-		for ($i = 0; $i < 2; $i++){
-			foreach ($this->formattedSubjects as $subject) {
-				$lowerSubject = strtolower($subject['label']);
-				//Ignore anything after a -- if it exists
-				if (strpos($lowerSubject, ' -- ') >= 0){
-					$lowerSubject = substr($lowerSubject, 0, strpos($lowerSubject, ' -- '));
-				}
-				if (!array_key_exists($lowerSubject, $subjectsToIgnore)) {
-					if ($i == 0){
-						//First pass, just add primary subjects
-						if (!array_key_exists($lowerSubject, $subjectsToRestrict)) {
-							$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
-						}
-					}else{
-						//Second pass, add restricted subjects, but only if we don't have 5 subjects already
-						if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= 5) {
-							$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
-						}
-					}
-				}
+		foreach ($this->formattedSubjects as $subject) {
+			$lowerSubject = strtolower($subject['label']);
+			//Ignore anything after a -- if it exists
+			if (strpos($lowerSubject, ' -- ') >= 0){
+				$lowerSubject = substr($lowerSubject, 0, strpos($lowerSubject, ' -- '));
 			}
+			$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
 		}
 		$relatedSubjects = array_slice($relatedSubjects, 0, 5);
 		foreach ($this->relatedPeople as $person) {
 			$label = (string)$person['label'];
 			$relatedSubjects[$label] = '"' . $label . '"';
-			$numSubjectsAdded++;
 		}
 		$relatedSubjects = array_slice($relatedSubjects, 0, 8);
 		$timer->logTime('Loaded subjects');

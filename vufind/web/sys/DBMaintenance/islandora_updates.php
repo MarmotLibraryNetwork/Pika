@@ -39,6 +39,16 @@ function getIslandoraUpdates(): array{
 
 	return [
 
+		'Islandora2_drop_archive_subjects' => [
+			'release'         => 'Islandora2',
+			'title'           => 'Remove Archive Subjects table',
+			'description'     => 'Drop the unused archive_subjects table; the ArchiveSubject feature was never put into use.',
+			'continueOnError' => true,
+			'sql'             => [
+				'DROP TABLE IF EXISTS `archive_subjects`;',
+			],
+		],
+
 		'Islandora2_convert_objectsToHide_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Convert objectsToHide PIDs to nodeIds',
