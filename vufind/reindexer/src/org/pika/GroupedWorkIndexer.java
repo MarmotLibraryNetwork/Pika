@@ -177,6 +177,20 @@ public class GroupedWorkIndexer {
 				partialReindexRunning = aBoolean;
 			}
 			if (partialReindexRunning) {
+				// If partial_reindex_running is set at startup, retry up to 3 times with a 5-second delay
+				// between attempts before logging the warning and adding a reindex log note, to avoid false
+				// positives from a recently cleared flag.
+				for (int retry = 0; retry < 3 && partialReindexRunning; retry++) {
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+					Boolean retryCheck = systemVariables.getBooleanValuedVariable("partial_reindex_running");
+					partialReindexRunning = retryCheck != null && retryCheck;
+				}
+			}
+			if (partialReindexRunning) {
 				//Oops, a reindex is already running.
 				String note = "A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance";
 				logger.warn(note);
