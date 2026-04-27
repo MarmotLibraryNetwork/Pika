@@ -163,7 +163,7 @@ class ExploreMore {
 		$quotedSubjectsForSearching = [];
 		foreach ($subjects as $subject){
 			if (is_array($subject)){
-				$searchSubject = implode(" ", $subject);
+				$searchSubject = implode(' ', $subject);
 			}else{
 				$searchSubject = $subject;
 			}
@@ -171,8 +171,8 @@ class ExploreMore {
 			if ($separatorPosition > 0){
 				$searchSubject = substr($searchSubject, 0, $separatorPosition);
 			}
-			$searchSubject                = preg_replace('/\(.*?\)/', "", $searchSubject);
-			$searchSubject                = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
+			$searchSubject                = preg_replace('/\(.*?\)/', '', $searchSubject);
+			$searchSubject                = trim(preg_replace('/[\/|:.,"]/', '', $searchSubject));
 			$subjectsForSearching[]       = $searchSubject;
 			$quotedSubjectsForSearching[] = '"' . $searchSubject . '"';
 		}
