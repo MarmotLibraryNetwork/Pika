@@ -83,6 +83,20 @@
 	<div class="taxonomy-detail taxonomy-geographic-location">
 		<div id="geo-location-detail-accordion" class="panel-group">
 
+			{* Related Objects — populated via AJAX on page load *}
+			<div class="panel active" id="placeRelatedObjectsPanel">
+				<a data-toggle="collapse" href="#placeRelatedObjectsPanelBody">
+					<div class="panel-heading">
+						<h2 class="panel-title">Related Objects</h2>
+					</div>
+				</a>
+				<div id="placeRelatedObjectsPanelBody" class="panel-collapse collapse in">
+					<div class="panel-body" id="placeRelatedObjectsContent">
+						Loading...
+					</div>
+				</div>
+			</div>
+
 			{if $geolocation}
 				<div class="panel active" id="geoCoordinatesPanel">
 					<a data-toggle="collapse" href="#geoCoordinatesPanelBody">
@@ -131,4 +145,8 @@
 	</div>
 
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
+
+	<script>
+		Pika.Archive2.loadRelatedObjectsForPlace('{$term_title|escape:"javascript"}');
+	</script>
 {/strip}

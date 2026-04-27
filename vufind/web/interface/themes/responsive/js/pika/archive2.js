@@ -86,5 +86,18 @@ Pika.Archive2 = (function(){
 			).fail(Pika.ajaxFail);
 		},
 
+		loadRelatedObjectsForPlace: function(placeName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForPlace&name=' + encodeURIComponent(placeName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#placeRelatedObjectsContent').html(data.html);
+					} else {
+						$('#placeRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
 	};
 })();
