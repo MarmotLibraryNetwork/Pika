@@ -44,6 +44,20 @@
 	<div class="taxonomy-detail taxonomy-corporate-body">
 		<div id="corporate-body-detail-accordion" class="panel-group">
 
+			{* Related Objects — populated via AJAX on page load *}
+			<div class="panel active" id="orgRelatedObjectsPanel">
+				<a data-toggle="collapse" href="#orgRelatedObjectsPanelBody">
+					<div class="panel-heading">
+						<h2 class="panel-title">Related Objects</h2>
+					</div>
+				</a>
+				<div id="orgRelatedObjectsPanelBody" class="panel-collapse collapse in">
+					<div class="panel-body" id="orgRelatedObjectsContent">
+						Loading...
+					</div>
+				</div>
+			</div>
+
 			{if $notes}
 				<div class="panel" id="corpBodyNotesPanel">
 					<a data-toggle="collapse" href="#corpBodyNotesPanelBody">
@@ -103,4 +117,8 @@
 	</div>
 
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
+
+	<script>
+		Pika.Archive2.loadRelatedObjectsForOrganization('{$term_title|escape:"javascript"}');
+	</script>
 {/strip}

@@ -60,5 +60,18 @@ Pika.Archive2 = (function(){
 			).fail(Pika.ajaxFail);
 		},
 
+		loadRelatedObjectsForOrganization: function(orgName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForOrganization&name=' + encodeURIComponent(orgName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#orgRelatedObjectsContent').html(data.html);
+					} else {
+						$('#orgRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
 	};
 })();
