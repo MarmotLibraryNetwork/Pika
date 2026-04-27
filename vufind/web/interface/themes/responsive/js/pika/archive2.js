@@ -73,5 +73,18 @@ Pika.Archive2 = (function(){
 			).fail(Pika.ajaxFail);
 		},
 
+		loadRelatedObjectsForEvent: function(eventName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForEvent&name=' + encodeURIComponent(eventName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#eventRelatedObjectsContent').html(data.html);
+					} else {
+						$('#eventRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
 	};
 })();

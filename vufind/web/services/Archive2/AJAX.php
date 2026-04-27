@@ -41,6 +41,7 @@ class Archive2_AJAX extends AJAXHandler {
 		'getExploreMoreContent',
 		'getRelatedObjectsForPerson',
 		'getRelatedObjectsForOrganization',
+		'getRelatedObjectsForEvent',
 	];
 
 	/** Methods that return a structured JSON result wrapper {result, message, ...}. */
@@ -235,6 +236,59 @@ class Archive2_AJAX extends AJAXHandler {
 		}
 
 		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_person:' . urlencode('"' . $name . '"');
+
+		$interface->assign('relatedObjects',          $tiles);
+		$interface->assign('relatedObjectsTotal',     $total);
+		$interface->assign('relatedObjectsSearchUrl', $searchUrl);
+
+		return [
+			'success'    => true,
+			'hasResults' => true,
+			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
+		];
+	}
+
+	/**
+	 * Fetch the first 20 archive objects related to an Event taxonomy term.
+	 * Called via: /Archive2/AJAX?method=getRelatedObjectsForEvent&name={event name}
+	 */
+	function getRelatedObjectsForEvent(): array {
+		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
+		if (empty($name)) {
+			return ['success' => false, 'message' => 'Event name is required.'];
+		}
+		if (str_contains($name, '/') || str_contains($name, '\\')) {
+			$this->logger->warning('getRelatedObjectsForEvent: rejected name containing slash.', ['name' => $name]);
+			return ['success' => false, 'message' => 'Invalid event name.'];
+		}
+
+		global $interface;
+
+		/** @var \SearchObject_Islandora2 $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->addFilter('sm_related_event:"' . $name . '"');
+		$searchObject->setSort('sm_field_edtf_date_created desc');
+		$searchObject->setLimit(20);
+		$result = $searchObject->processSearch(true, false);
+
+		$total = (int)($result['response']['numFound'] ?? 0);
+		if ($total === 0) {
+			return ['success' => true, 'hasResults' => false, 'html' => ''];
+		}
+
+		$tiles = [];
+		foreach ($result['response']['docs'] as $doc) {
+			/** @var \Islandora2Driver $driver */
+			$driver  = \RecordDriverFactory::initRecordDriver($doc);
+			$tiles[] = [
+				'title' => $driver->getTitle(),
+				'image' => $driver->getBookcoverUrl('medium'),
+				'link'  => $driver->getRecordUrl(),
+			];
+		}
+
+		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_event:' . urlencode('"' . $name . '"');
 
 		$interface->assign('relatedObjects',          $tiles);
 		$interface->assign('relatedObjectsTotal',     $total);
