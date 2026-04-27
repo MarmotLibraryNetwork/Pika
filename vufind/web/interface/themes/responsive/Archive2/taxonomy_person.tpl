@@ -39,6 +39,20 @@
 	<div class="taxonomy-detail taxonomy-person">
 		<div id="person-detail-accordion" class="panel-group">
 
+			{* Related Objects — populated via AJAX on page load *}
+			<div class="panel active" id="personRelatedObjectsPanel">
+				<a data-toggle="collapse" href="#personRelatedObjectsPanelBody">
+					<div class="panel-heading">
+						<h2 class="panel-title">Related Objects</h2>
+					</div>
+				</a>
+				<div id="personRelatedObjectsPanelBody" class="panel-collapse collapse in">
+					<div class="panel-body" id="personRelatedObjectsContent">
+						Loading...
+					</div>
+				</div>
+			</div>
+
 			{if $notes}
 				<div class="panel" id="personNotesPanel">
 					<a data-toggle="collapse" href="#personNotesPanelBody">
@@ -131,5 +145,8 @@
 		</div>
 	</div>
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
-	
+
+	<script>
+		Pika.Archive2.loadRelatedObjects('{$term_title|escape:"javascript"}');
+	</script>
 {/strip}

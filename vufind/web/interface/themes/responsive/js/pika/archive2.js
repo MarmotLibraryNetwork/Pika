@@ -40,5 +40,25 @@ Pika.Archive2 = (function(){
 			).fail(Pika.ajaxFail);
 		},
 
+		/**
+		 * Load the Related Objects accordion panel for an Archive2 Person page.
+		 * Injects rendered tile HTML into #personRelatedObjectsContent, or hides
+		 * the panel when no related objects exist.
+		 *
+		 * @param {string} personName  Display name of the Person taxonomy term
+		 */
+		loadRelatedObjects: function(personName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForPerson&name=' + encodeURIComponent(personName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#personRelatedObjectsContent').html(data.html);
+					} else {
+						$('#personRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
 	};
 })();
