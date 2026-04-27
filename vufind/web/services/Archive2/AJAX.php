@@ -176,7 +176,13 @@ class Archive2_AJAX extends AJAXHandler {
 		$timer->logTime('ExploreMore: loadSidebar complete');
 
 		$interface->assign('exploreMoreSections', $sections);
-		$interface->assign('exploreMoreSettings', ExploreMore::buildSettings());
+		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
+		global $library;
+		$exploreMoreSettings = $library->exploreMoreBar;
+		if (empty($exploreMoreSettings)) {
+			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
+		}
+		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
 		$interface->assign('archiveSections',     ExploreMore::SECTIONS);
 
 		return [

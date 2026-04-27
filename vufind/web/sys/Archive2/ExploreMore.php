@@ -52,7 +52,16 @@ class ExploreMore {
 		'relatedCatalog'        => 'More From the Catalog', // Catalog Solr search by subject terms
 		'relatedSubjects'       => 'Related Subjects',
 		// TODO: 'dpla'                 => 'Digital Public Library of America', // DPLA API results // Only shown for Marmot Entities
-		// TODO: 'acknowledgements'     => 'Acknowledgements',   // Donor/funder branding
+		'acknowledgements'     => 'Acknowledgements',
+	];
+
+	/** Linked-agent relationship roles rendered as acknowledgements (not in people/orgs sections). */
+	private const BRANDING_ROLES = [
+		'owner'           => 'Owned by',
+		'donor'           => 'Donated by',
+		'funder'          => 'Funded by',
+		'sponsor'         => 'Sponsored by',
+		'acknowledgement' => '',   // shown without prefix
 	];
 
 	private Logger $logger;
@@ -91,6 +100,10 @@ class ExploreMore {
 		if ($section) $sections['relatedEvents'] = $section;
 		$timer->logTime('ExploreMore: places and events');
 
+		$section = $this->getAcknowledgements($obj);
+		if ($section) $sections['acknowledgements'] = $section;
+		$timer->logTime('ExploreMore: acknowledgements');
+
 		$section = $this->getRelatedArchiveData($obj);
 		if ($section) $sections['relatedArchiveData'] = $section;
 		$timer->logTime('ExploreMore: relatedArchiveData (Solr)');
@@ -103,13 +116,21 @@ class ExploreMore {
 			$i2Driver = new \Islandora2Driver($nid);
 		}
 
-		$section = $this->getLinkedCatalogRecords($obj, $i2Driver);
-		if ($section) $sections['linkedCatalogRecords'] = $section;
-		$timer->logTime('ExploreMore: linkedCatalogRecords (Pika works)');
+		/** @var \Library $library */
+		global $library;
+		if (!$library->archiveOnlyInterface){
+			$section = $this->getLinkedCatalogRecords($obj, $i2Driver);
+			if ($section){
+				$sections['linkedCatalogRecords'] = $section;
+			}
+			$timer->logTime('ExploreMore: linkedCatalogRecords (Pika works)');
 
-		$section = $this->getRelatedCatalog($obj, $i2Driver);
-		if ($section) $sections['relatedCatalog'] = $section;
-		$timer->logTime('ExploreMore: relatedCatalog (catalog Solr)');
+			$section = $this->getRelatedCatalog($obj, $i2Driver);
+			if ($section){
+				$sections['relatedCatalog'] = $section;
+			}
+			$timer->logTime('ExploreMore: relatedCatalog (catalog Solr)');
+		}
 
 		$section = $this->getRelatedSubjects($obj);
 		if ($section) $sections['relatedSubjects'] = $section;
@@ -477,6 +498,12 @@ class ExploreMore {
 			}
 			// 'rel' or 'role' field indicates agent type
 			$rel  = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+
+			// Branding agents are handled by getAcknowledgements()
+			if (array_key_exists($rel, self::BRANDING_ROLES)) {
+				continue;
+			}
+
 			$encodedName = urlencode('"' . $name . '"');
 
 			// Heuristic: corporate/organization roles contain 'corporate' or 'org'
@@ -497,6 +524,85 @@ class ExploreMore {
 		$orgsSection   = empty($orgs)   ? null : ['format' => 'textOnlyList', 'values' => $orgs];
 
 		return [$peopleSection, $orgsSection];
+	}
+
+	/**
+	 * Donor, funder, owner, and contributing-library acknowledgements for this object.
+	 *
+	 * Reads branding-role linked_agent entries and the object's contributing library
+	 * field. Each entry is shown as an image tile (Corporate Body taxonomy thumbnail)
+	 * linking to its /Archive2/Organization?tid=N page.
+	 *
+	 * @param I2Object $obj
+	 * @return array|null
+	 */
+	private function getAcknowledgements(I2Object $obj): ?array {
+		require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
+		$factory = new \Islandora2\TaxonomyFactory();
+		$values  = [];
+
+		// Branding agents from linked_agent
+		$linkedAgents = $obj->linked_agent;
+		if (!empty($linkedAgents) && is_array($linkedAgents)) {
+			if (isset($linkedAgents['name'])) {
+				$linkedAgents = [$linkedAgents];
+			}
+			foreach ($linkedAgents as $agent) {
+				$rel = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+				if (!array_key_exists($rel, self::BRANDING_ROLES)) {
+					continue;
+				}
+				$tid = isset($agent['tid']) ? (int)$agent['tid'] : 0;
+				if ($tid <= 0) {
+					continue;
+				}
+				$term = $factory->fromTid($tid);
+				if ($term === null) {
+					continue;
+				}
+				$prefix    = self::BRANDING_ROLES[$rel];
+				$name      = $agent['name'] ?? $term->getName();
+				$label     = $prefix ? "$prefix $name" : $name;
+				$thumbnail = $term->getThumbnail();
+				$values[]  = [
+					'label' => $label,
+					'image' => $thumbnail['url'] ?? null,
+					'link'  => $term->getUrl(),
+				];
+			}
+		}
+
+		// Contributing Library — use pre-resolved corporateBodyTid from Pika library settings
+		global /** @var \Library $library */ $library;
+		if (!empty($library->corporateBodyTid) && $library->corporateBodyTid > 0) {
+			/** @var Organization $term */
+			$term = $factory->fromTid((int)$library->corporateBodyTid);
+			if ($term !== null) {
+				$thumbnail = $term->getThumbnail();
+				$values[]  = [
+					'label' => 'Contributed by ' . $term->getName(),
+					'image' => $thumbnail['url'] ?? null,
+					'link'  => $term->getUrl(),
+				];
+			}
+		}
+		// TODO: Fallback for contributing libraries not in the Pika Library table.
+		// Lafayette on MLN1 Pika server; MLN1 libraries on MLN2 Pika server
+		//   Some objects are contributed by organizations that have a Corporate Body
+		//   taxonomy term in Islandora2 but no corresponding row in the library table
+		//   (e.g. partner institutions, historical collections donors).
+		//   Fallback approach: read $obj->library (field_library on the node), which
+		//   carries the library vocabulary tid. From that tid, find the matching
+		//   archivePid via the library Solr index or a DB lookup, then resolve to a
+		//   Corporate Body tid via getLegacyEntitiesTIDs() — or alternatively, query
+		//   Solr directly for Corporate Body terms whose ss_contributing_library field
+		//   matches the library tid, if such a field is indexed.
+
+		if (empty($values)) {
+			return null;
+		}
+
+		return ['format' => 'list', 'values' => $values, 'showTitles' => true];
 	}
 
 	/**
@@ -530,7 +636,7 @@ class ExploreMore {
 		if (empty($subjects)) {
 			return null;
 		}
-		// Normalize single subject
+		// Normalize a single subject
 		if (isset($subjects['name'])) {
 			$subjects = [$subjects];
 		}
