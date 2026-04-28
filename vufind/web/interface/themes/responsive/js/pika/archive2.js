@@ -35,9 +35,13 @@ Pika.Archive2 = (function(){
 					if (data.success) {
 						$('#explore-more-body').html(data.exploreMore);
 						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+					} else {
+						$('#explore-more-body').html(''); // remove the "loading" display on failure
 					}
 				}
-			).fail(Pika.ajaxFail);
+			).fail(function (){
+				$('#explore-more-body').html(''); // remove the "loading" display on failure
+			});
 		},
 
 		/**
@@ -81,6 +85,25 @@ Pika.Archive2 = (function(){
 						$('#eventRelatedObjectsContent').html(data.html);
 					} else {
 						$('#eventRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
+		/**
+		 * Load the Explore More sidebar for an Archive2 taxonomy term page
+		 * (Person, Place, Event, Organization). Injects rendered HTML into
+		 * #explore-more-body and initialises carousels.
+		 *
+		 * @param {number} tid  Taxonomy term ID
+		 */
+		loadTaxonomyExploreMore: function(tid) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getTaxonomyExploreMoreContent&tid=' + encodeURIComponent(tid),
+				function(data) {
+					if (data.success) {
+						$('#explore-more-body').html(data.exploreMore);
+						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
 					}
 				}
 			).fail(Pika.ajaxFail);

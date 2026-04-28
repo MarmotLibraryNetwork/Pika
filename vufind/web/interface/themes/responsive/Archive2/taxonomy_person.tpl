@@ -148,5 +148,6 @@
 
 	<script>
 		Pika.Archive2.loadRelatedObjects('{$term_title|escape:"javascript"}');
+		Pika.Archive2.loadTaxonomyExploreMore({$tid});
 	</script>
 {/strip}

@@ -19,6 +19,7 @@
 namespace Archive2;
 
 use Islandora2\I2Object;
+use Islandora2\TaxonomyObjectInterface;
 use Pika\Logger;
 
 require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
@@ -51,8 +52,16 @@ class ExploreMore {
 		'relatedArchiveData'    => 'From the Archive',
 		'relatedCatalog'        => 'More From the Catalog', // Catalog Solr search by subject terms
 		'relatedSubjects'       => 'Related Subjects',
-		// TODO: 'dpla'                 => 'Digital Public Library of America', // DPLA API results // Only shown for Marmot Entities
-		'acknowledgements'     => 'Acknowledgements',
+		'dpla'                 => 'Digital Public Library of America', // For Taxonomy Terms Only
+		'acknowledgements'     => 'Acknowledgements', // For Archive Objects Only
+	];
+
+	/** Maps vocabulary machine name to the Solr field used to filter archive objects by this term. */
+	private const VOCAB_FILTER_FIELD = [
+		'person'         => 'sm_related_person',
+		'corporate_body' => 'sm_related_organization',
+		'geo_location'   => 'sm_related_place',
+		'event'          => 'sm_related_event',
 	];
 
 	/** Linked-agent relationship roles rendered as acknowledgements (not in people/orgs sections). */
@@ -158,6 +167,53 @@ class ExploreMore {
 		return $settings;
 	}
 
+	/**
+	 * Build all sidebar sections for the given taxonomy term page.
+	 *
+	 * Covers the same section set as loadExploreMoreSidebar() minus acknowledgements
+	 * (which is node-specific), plus dpla (taxonomy term pages only).
+	 *
+	 * @param TaxonomyObjectInterface $term
+	 * @return array
+	 */
+	public function loadTaxonomyExploreMoreSidebar(TaxonomyObjectInterface $term): array {
+		global $timer, $library;
+		$sections = [];
+
+		$s = $this->buildTaxonomySection($term->getRelatedPerson(),       'sm_related_person');
+		if ($s) $sections['relatedPeople'] = $s;
+
+		$s = $this->buildTaxonomySection($term->getRelatedOrganization(), 'sm_related_organization');
+		if ($s) $sections['relatedOrganizations'] = $s;
+
+		$s = $this->buildTaxonomySection($term->getRelatedPlace(),        'sm_related_place');
+		if ($s) $sections['relatedPlaces'] = $s;
+
+		$s = $this->buildTaxonomySection($term->getRelatedEvent(),        'sm_related_event');
+		if ($s) $sections['relatedEvents'] = $s;
+		$timer->logTime('ExploreMore taxonomy: related entities');
+
+		[$archiveSection, $collectionsSection] = $this->getTaxonomyArchiveDataAndCollections($term);
+		if ($collectionsSection) $sections['relatedCollections'] = $collectionsSection;
+		if ($archiveSection)     $sections['relatedArchiveData'] = $archiveSection;
+		$timer->logTime('ExploreMore taxonomy: archive data and collections');
+
+		if (!$library->archiveOnlyInterface) {
+			$s = $this->getTaxonomyRelatedCatalog($term);
+			if ($s) $sections['relatedCatalog'] = $s;
+			$timer->logTime('ExploreMore taxonomy: relatedCatalog');
+		}
+
+		$s = $this->getTaxonomyRelatedSubjects($term);
+		if ($s) $sections['relatedSubjects'] = $s;
+
+		$s = $this->getDplaSection($term->getTitle() ?? '');
+		if ($s) $sections['dpla'] = $s;
+		$timer->logTime('ExploreMore taxonomy: dpla');
+
+		return $sections;
+	}
+
 	// -------------------------------------------------------------------------
 	// Explore More Bar
 	// -------------------------------------------------------------------------
@@ -191,7 +247,7 @@ class ExploreMore {
 		$searchObject->setSearchTerms($searchTerms);
 
 		$formatFacetField = 'sm_format'; // Hasn't been reverted yet.
-		$collectionFacetField = 'sm_title_2';
+		$collectionFacetField = 'sm_title_2'; //TODO: change when field is renamed
 		$searchObject->addFacet($formatFacetField, 'Format'); // Related Formats
 		$searchObject->addFacet($collectionFacetField, 'Collection'); // Related Collections
 		$searchObject->setLimit(1);
@@ -837,6 +893,184 @@ class ExploreMore {
 		}
 
 		return empty($values) ? null : ['format' => 'scroller', 'values' => $values];
+	}
+
+	// -------------------------------------------------------------------------
+	// Taxonomy section builders
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Run one Islandora2 Solr search for archive objects referencing this taxonomy
+	 * term and return both the archive-data scroller section and a collections list
+	 * section derived from the sm_title_2 facet (up to 3 collections).
+	 *
+	 * @param TaxonomyObjectInterface $term
+	 * @return array  Two-element array [archiveDataSection|null, collectionsSection|null]
+	 */
+	private function getTaxonomyArchiveDataAndCollections(TaxonomyObjectInterface $term): array {
+		$filterField = self::VOCAB_FILTER_FIELD[$term->getVocabularyMachineName()] ?? null;
+		$name        = $term->getTitle();
+		if (!$filterField || empty($name)) {
+			return [null, null];
+		}
+
+		$collectionFacetField = 'sm_title_2';
+
+		/** @var \SearchObject_Islandora2 $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->addFilter($filterField . ':"' . $name . '"');
+		$searchObject->addFacet($collectionFacetField, 'Collection');
+		$searchObject->setSort('sm_field_edtf_date_created desc');
+		$searchObject->setLimit(12);
+		$response = $searchObject->processSearch(true, false);
+
+		if (empty($response['response']['docs'])) {
+			return [null, null];
+		}
+
+		// Archive-data scroller
+		$archiveValues = [];
+		foreach ($response['response']['docs'] as $doc) {
+			$driver = \RecordDriverFactory::initRecordDriver($doc);
+			$title  = $driver->getTitle();
+			if (empty($title)) {
+				continue;
+			}
+			$archiveValues[] = [
+				'label' => $title,
+				'link'  => $driver->getRecordUrl(),
+				'image' => $driver->getBookcoverUrl('small'),
+			];
+		}
+		$archiveSection = empty($archiveValues) ? null : ['format' => 'scroller', 'values' => $archiveValues];
+
+		// Collections list — up to 3 from the facet; sub-search each for thumbnail + URL
+		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
+		$collectionValues       = [];
+		$i                      = 0;
+		foreach ($collectionFacetResults as [$collection, $count]) {
+			if (++$i > 3) {
+				break;
+			}
+			if ($count == 0) {
+				continue;
+			}
+
+			/** @var \SearchObject_Islandora2 $collectionSearch */
+			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
+			$collectionSearch->init();
+			$collectionSearch->addFilter($filterField . ':"' . $name . '"');
+			$collectionSearch->addFilter($collectionFacetField . ':"' . $collection . '"');
+			$collectionSearch->setSort('sm_field_edtf_date_created desc');
+			$collectionSearch->setLimit(1);
+			$collectionResponse = $collectionSearch->processSearch(true, false);
+
+			if (empty($collectionResponse['response']['docs'])) {
+				continue;
+			}
+
+			$firstDriver      = \RecordDriverFactory::initRecordDriver(reset($collectionResponse['response']['docs']));
+			$collectionValues[] = [
+				'label' => $collection,
+				'link'  => $collectionSearch->renderSearchUrl(),
+				'image' => $firstDriver->getBookcoverUrl('small'),
+			];
+		}
+		$collectionsSection = empty($collectionValues) ? null : ['format' => 'list', 'values' => $collectionValues];
+
+		return [$archiveSection, $collectionsSection];
+	}
+
+	/**
+	 * Catalog keyword search using the taxonomy term's name.
+	 *
+	 * @param TaxonomyObjectInterface $term
+	 * @return array|null
+	 */
+	private function getTaxonomyRelatedCatalog(TaxonomyObjectInterface $term): ?array {
+		$name = $term->getTitle();
+		if (empty($name)) {
+			return null;
+		}
+		$searchTerm   = '"' . $name . '"';
+		/** @var \SearchObject_Solr $searchObject */
+		$searchObject = \SearchObjectFactory::initSearchObject();
+		$searchObject->init('local', $searchTerm);
+		$searchObject->setSearchTerms(['lookfor' => $searchTerm, 'index' => 'Keyword']);
+		$searchObject->setPage(1);
+		$searchObject->setLimit(5);
+		$results = $searchObject->processSearch(true, false);
+		if (empty($results['response']['docs'])) {
+			return null;
+		}
+		$values = [];
+		foreach ($results['response']['docs'] as $doc) {
+			$driver = \RecordDriverFactory::initRecordDriver($doc);
+			$title  = $driver->getTitle();
+			if (empty($title)) {
+				continue;
+			}
+			$values[] = [
+				'label' => $title,
+				'link'  => $driver->getLinkUrl(),
+				'image' => $driver->getBookcoverUrl('medium'),
+			];
+		}
+		return empty($values) ? null : ['format' => 'scroller', 'values' => $values];
+	}
+
+	/**
+	 * Subject links from the taxonomy term's own subject field.
+	 *
+	 * @param TaxonomyObjectInterface $term
+	 * @return array|null
+	 */
+	private function getTaxonomyRelatedSubjects(TaxonomyObjectInterface $term): ?array {
+		$subjects = $term->getSubjects();
+		if (empty($subjects)) {
+			return null;
+		}
+		if (isset($subjects['name'])) {
+			$subjects = [$subjects];
+		}
+		$values = [];
+		foreach ($subjects as $subject) {
+			$name = $subject['name'] ?? null;
+			if (empty($name)) {
+				continue;
+			}
+			$values[] = [
+				'label' => $name,
+				'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_field_subject:"' . $name . '"'),
+			];
+		}
+		return empty($values) ? null : ['format' => 'textOnlyList', 'values' => $values];
+	}
+
+	/**
+	 * DPLA API results for this taxonomy term (taxonomy pages only).
+	 *
+	 * @param string $termTitle
+	 * @return array|null
+	 */
+	private function getDplaSection(string $termTitle): ?array {
+		if (empty($termTitle)) {
+			return null;
+		}
+		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
+		$dpla        = new \DPLA();
+		$dplaResults = $dpla->getDPLAResults('"' . $termTitle . '"');
+		if (empty($dplaResults['records'])) {
+			return null;
+		}
+		return [
+			'format'          => 'scrollerWithLink',
+			'values'          => $dplaResults['records'],
+			'link'            => 'http://dp.la/search?q=' . urlencode('"' . $termTitle . '"'),
+			'openInNewWindow' => true,
+			'numFound'        => $dplaResults['resultTotal'],
+		];
 	}
 
 	// -------------------------------------------------------------------------

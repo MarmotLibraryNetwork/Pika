@@ -39,6 +39,7 @@ class Archive2_AJAX extends AJAXHandler {
 	/** Methods that return a plain JSON object (no result-wrapper envelope). */
 	protected $methodsThatRespondWithJSONUnstructured = [
 		'getExploreMoreContent',
+		'getTaxonomyExploreMoreContent',
 		'getRelatedObjectsForPerson',
 		'getRelatedObjectsForOrganization',
 		'getRelatedObjectsForEvent',
@@ -185,6 +186,48 @@ class Archive2_AJAX extends AJAXHandler {
 		$exploreMoreSettings = $library->exploreMoreBar;
 		if (empty($exploreMoreSettings)) {
 			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
+		}
+		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
+		$interface->assign('archiveSections',     ExploreMore::SECTIONS);
+
+		return [
+			'success'     => true,
+			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
+		];
+	}
+
+	/**
+	 * Build and return the rendered Explore More sidebar HTML for a taxonomy term page.
+	 * Called via: /Archive2/AJAX?method=getTaxonomyExploreMoreContent&tid={tid}
+	 */
+	function getTaxonomyExploreMoreContent(): array {
+		$tid = (int)($_REQUEST['tid'] ?? 0);
+		if ($tid <= 0) {
+			return ['success' => false, 'message' => 'A valid taxonomy term id is required.'];
+		}
+
+		global $interface;
+		global $timer;
+		global $library;
+
+		require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
+		$factory = new \Islandora2\TaxonomyFactory();
+		$term    = $factory->fromTid($tid);
+		if ($term === null) {
+			$this->logger->error('Failed to create taxonomy term for tid.', ['tid' => $tid]);
+			return ['success' => false, 'message' => "Could not load taxonomy term for tid $tid."];
+		}
+		$timer->logTime('ExploreMore: loaded taxonomy term');
+
+		$exploreMore = new ExploreMore();
+		$sections    = $exploreMore->loadTaxonomyExploreMoreSidebar($term);
+		$timer->logTime('ExploreMore: loadTaxonomySidebar complete');
+
+		$interface->assign('exploreMoreSections', $sections);
+		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
+		$exploreMoreSettings = $library->exploreMoreBar;
+		if (empty($exploreMoreSettings)) {
+			$exploreMoreSettings = \ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}
 		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
 		$interface->assign('archiveSections',     ExploreMore::SECTIONS);

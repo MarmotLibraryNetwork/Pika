@@ -120,5 +120,6 @@
 
 	<script>
 		Pika.Archive2.loadRelatedObjectsForOrganization('{$term_title|escape:"javascript"}');
+		Pika.Archive2.loadTaxonomyExploreMore({$tid});
 	</script>
 {/strip}

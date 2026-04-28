@@ -77,5 +77,6 @@
 
 	<script>
 		Pika.Archive2.loadRelatedObjectsForEvent('{$term_title|escape:"javascript"}');
+		Pika.Archive2.loadTaxonomyExploreMore({$tid});
 	</script>
 {/strip}
