@@ -819,7 +819,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$result      = $this->processSearch(false, false);
 		foreach ($result['response']['docs'] as &$currentDoc){
 
-			/** @var PersonRecord $record */
+			/** @var Person $record */
 			$record = RecordDriverFactory::initRecordDriver($currentDoc);
 			if (!PEAR_Singleton::isError($record)){
 				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
