@@ -1627,7 +1627,9 @@ function getSaveSeriesToListForm(){
 		}
 
 		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
+		if (!empty($prospectorResults['records'])){
+			$interface->assign('prospectorResults', $prospectorResults['records']);
+		}
 
 		$result = [
 			'numTitles'     => $prospectorResults ? count($prospectorResults) : 0,
