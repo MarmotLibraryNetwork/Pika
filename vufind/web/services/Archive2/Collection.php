@@ -80,10 +80,10 @@ class Collection extends ArchiveObject
         $total      = $collection->getTotalChildCount();
         $children   = $collection->getChildObjectsPaginated($page, $limit);
 
-        $relatedImages = [];
+        $collectionChildren = [];
         foreach ($children as $child) {
             $thumbMedia      = $child->getThumbnail();
-            $relatedImages[] = [
+            $collectionChildren[] = [
                 'nid'       => $child->getNodeId(),
                 'title'     => $child->getTitle(),
                 'url'       => getObjRelativeUrl($child),
@@ -98,7 +98,7 @@ class Collection extends ArchiveObject
             'perPage'    => $limit,
         ]);
 
-        $interface->assign('relatedImages', $relatedImages);
+        $interface->assign('collectionChildren', $collectionChildren);
         $interface->assign('recordCount',  $total);
         $interface->assign('recordStart',  ($page - 1) * $limit + 1);
         $interface->assign('recordEnd',    min($page * $limit, $total));
