@@ -35,7 +35,7 @@
 		<div class="row" style="margin-top: 1em;">
 			<div class="col-xs-12">
 				{if $recordCount}
-				<p class="text-muted">{$recordCount} objects</p>
+				<p class="text-muted">{$recordCount} items in this collection.</p>
 				{/if}
 			</div>
 		</div>
@@ -61,7 +61,7 @@
 {literal}
 <script>
 $().ready(function(){
-	//Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
+	Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
 });
 </script>
 {/literal}
