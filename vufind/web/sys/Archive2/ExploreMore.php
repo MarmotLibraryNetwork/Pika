@@ -902,7 +902,14 @@ class ExploreMore {
 	/**
 	 * Run one Islandora2 Solr search for archive objects referencing this taxonomy
 	 * term and return both the archive-data scroller section and a collections list
-	 * section derived from the sm_title_2 facet (up to 3 collections).
+	 * section (up to 3 collections).
+	 *
+	 * Two facets are requested in one search:
+	 *   sm_title_2  — collection display labels
+	 *   its_nid_1   — corresponding collection node IDs (same order as sm_title_2)
+	 * The nid facet allows direct linking to /Archive2/Collection/{nid} without
+	 * sub-searches. Facet counts are compared as a sanity check that title and nid
+	 * entries are aligned before pairing them.
 	 *
 	 * @param TaxonomyObjectInterface $term
 	 * @return array  Two-element array [archiveDataSection|null, collectionsSection|null]
@@ -914,13 +921,15 @@ class ExploreMore {
 			return [null, null];
 		}
 
-		$collectionFacetField = 'sm_title_2';
+		$collectionTitleField = 'sm_title_2';
+		$collectionNidField   = 'its_nid_1';
 
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		$searchObject->addFilter($filterField . ':"' . $name . '"');
-		$searchObject->addFacet($collectionFacetField, 'Collection');
+		$searchObject->addFacet($collectionTitleField, 'Collection');
+		$searchObject->addFacet($collectionNidField,   'CollectionNid');
 		$searchObject->setSort('sm_field_edtf_date_created desc');
 		$searchObject->setLimit(12);
 		$response = $searchObject->processSearch(true, false);
@@ -945,36 +954,33 @@ class ExploreMore {
 		}
 		$archiveSection = empty($archiveValues) ? null : ['format' => 'scroller', 'values' => $archiveValues];
 
-		// Collections list — up to 3 from the facet; sub-search each for thumbnail + URL
-		$collectionFacetResults = $response['facet_counts']['facet_fields'][$collectionFacetField] ?? [];
-		$collectionValues       = [];
-		$i                      = 0;
-		foreach ($collectionFacetResults as [$collection, $count]) {
-			if (++$i > 3) {
+		// Collections list — pair sm_title_2 and its_nid_1 facets by position (same order),
+		// verifying counts match before pairing. Up to 3 collections; each links directly
+		// to the collection page via Islandora2Driver::getRecordUrl().
+		$titleFacets = $response['facet_counts']['facet_fields'][$collectionTitleField] ?? [];
+		$nidFacets   = $response['facet_counts']['facet_fields'][$collectionNidField]   ?? [];
+
+		$collectionValues = [];
+		$limit            = 3;
+		foreach ($titleFacets as $pos => [$title, $titleCount]) {
+			if (count($collectionValues) >= $limit) {
 				break;
 			}
-			if ($count == 0) {
+			if ($titleCount == 0) {
 				continue;
 			}
-
-			/** @var \SearchObject_Islandora2 $collectionSearch */
-			$collectionSearch = \SearchObjectFactory::initSearchObject('Islandora2');
-			$collectionSearch->init();
-			$collectionSearch->addFilter($filterField . ':"' . $name . '"');
-			$collectionSearch->addFilter($collectionFacetField . ':"' . $collection . '"');
-			$collectionSearch->setSort('sm_field_edtf_date_created desc');
-			$collectionSearch->setLimit(1);
-			$collectionResponse = $collectionSearch->processSearch(true, false);
-
-			if (empty($collectionResponse['response']['docs'])) {
+			[$nid, $nidCount] = $nidFacets[$pos] ?? [null, null];
+			if (empty($nid) || $nidCount !== $titleCount) {
+				$this->logger->warning('getTaxonomyArchiveDataAndCollections: facet count mismatch, skipping.', [
+					'title' => $title, 'titleCount' => $titleCount, 'nid' => $nid, 'nidCount' => $nidCount,
+				]);
 				continue;
 			}
-
-			$firstDriver      = \RecordDriverFactory::initRecordDriver(reset($collectionResponse['response']['docs']));
+			$collectionDriver   = new \Islandora2Driver((int)$nid);
 			$collectionValues[] = [
-				'label' => $collection,
-				'link'  => $collectionSearch->renderSearchUrl(),
-				'image' => $firstDriver->getBookcoverUrl('small'),
+				'label' => $title,
+				'link'  => $collectionDriver->getRecordUrl(),
+				'image' => $collectionDriver->getBookcoverUrl('small'),
 			];
 		}
 		$collectionsSection = empty($collectionValues) ? null : ['format' => 'list', 'values' => $collectionValues];
