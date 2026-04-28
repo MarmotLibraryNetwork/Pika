@@ -36,14 +36,10 @@ class Archive2_RequestCopy extends Action{
 			PEAR_Singleton::raiseError('No id provided, you must select which object you want a copy of');
 			//TODO: log error instead of raise error
 		}
-
 		$nid = $_REQUEST['nid']; //TODO: confirm as digits only
-
-
-
 		//Find the owning library
 		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		$request = new Islandora2\Request();
 		$requestedObject = $request->fetch('node', $nid);
 		$owningTid = $requestedObject['field_library']['tid'];
 		require_once ROOT_DIR . '/sys/Library/Library.php';
@@ -55,7 +51,8 @@ class Archive2_RequestCopy extends Action{
 		}
 		$archiveRequestEmail = $owningLibrary->archiveRequestEmail;
 		$archiveRequestFields = $owningLibrary->getArchiveRequestFormStructure();
-		$archiveRequestFields['nodeId']['default'] = $nid;
+		$archiveRequestFields['nid']['default'] = $nid;
+		$archiveRequestFields['libraryTid']['default'] = $owningLibrary->libraryId;
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
@@ -81,7 +78,7 @@ class Archive2_RequestCopy extends Action{
 
 			} else {
 				$archiveRequestFields['dateRequested']['value'] = time();
-				/** @var ArchiveRequest $newObject */
+				/** @var Archive2\ArchiveRequest $newObject */
 				$newObject = $this->insertObject($archiveRequestFields);
 				$interface->assign('requestSubmitted', true);
 				if ($newObject !== false){
@@ -91,10 +88,10 @@ class Archive2_RequestCopy extends Action{
 
 					//Find the owning library
 
-					if ($owningLibrary->find(true) && $owningLibrary->N == 1){
+					if (!empty($owningLibrary)){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl(); //TODO: need to use Islandora2Driver; use -> getAbsoluteUrl() instead
+							$body .= $configArray['Site']['url'] . $requestedObject->getAbsoluteUrl(); //TODO: need to use Islandora2Driver; use -> getAbsoluteUrl() instead
 							require_once ROOT_DIR . '/sys/Mailer.php';
 							$mail = new VuFindMailer();
 							$subject = 'New Request for Copies of Archive Content';
@@ -127,7 +124,7 @@ class Archive2_RequestCopy extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', '/Archive/RequestCopy');
+		$interface->assign('submitUrl', '/Archive2/RequestCopy?nid='.$nid);
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
@@ -147,8 +144,8 @@ class Archive2_RequestCopy extends Action{
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DB_DataObject $newObject */
-		$newObject = new ArchiveRequest();
+		/** @var Archive2\ArchiveRequest $newObject */
+		$newObject = new Archive2\ArchiveRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
 		$validationResults = DataObjectUtil::validateObject($structure, $newObject);
