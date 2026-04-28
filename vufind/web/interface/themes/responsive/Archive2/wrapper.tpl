@@ -11,15 +11,15 @@
 			{include file="Archive2/$viewer.tpl"}
 
 			<div id="download-options">
-			{if $can_download_orginal}
+			{if $can_download_orginal && $orignal_media_file}
 				<a class="btn btn-default" href="{$orignal_media_file}">Download Original File</a>
 			{/if}
-			{if $can_download_intermediate}
+			{if $can_download_intermediate && $intermediate_media_file}
 				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermeidate File</a>
 			{/if}
-			{*if $allowRequestsForArchiveMaterials*}
+			{if $can_request_copy}
 				<a class="btn btn-default" href="/Archive2/RequestCopy?nid={$nid}">Request Copy</a>
-			{*/if*}
+			{/if}
 			{if $showClaimAuthorship}
 				<a class="btn btn-default" href="/Archive2/ClaimAuthorship?nid={$nid}">Claim Authorship</a>
 			{/if} 

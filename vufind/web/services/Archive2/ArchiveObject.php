@@ -113,7 +113,7 @@ class ArchiveObject extends \Action
         $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
         // Can download intermediate file
         $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
-
+        $interface->assign('can_request_copy', $this->canCurrentUserRequestCopy());
         // Download files
         $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
         if ($orignal_media) {
@@ -278,6 +278,15 @@ class ArchiveObject extends \Action
             return true;
         }
         unset($nodeData);
+        return false;
+    }
+
+    protected function canCurrentUserRequestCopy(): bool 
+    {
+        global $library;
+        if($library->allowRequestsForArchiveMaterials === 1) {
+            return true;
+        } 
         return false;
     }
 
