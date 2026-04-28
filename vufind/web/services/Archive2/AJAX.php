@@ -56,6 +56,7 @@ class Archive2_AJAX extends AJAXHandler {
 		'fetchVtt',
 		'fetchManifest',
 		'fetchCantaloupeManifest',
+		'fetchPDFFile',
 	];
 
 	/**
@@ -115,6 +116,20 @@ class Archive2_AJAX extends AJAXHandler {
 			echo $response;
 		}
 	}
+
+	/**
+	 * Proxy a PDF file to avoid pdfjs hardcoded CORS.
+	 */
+	function fetchPDFFile(): void {
+		$file = $_REQUEST['pdf_file'];
+
+		$response = $this->proxyCurl($file);
+		if ($response !== null) {
+			header('Content-Type: application/pdf');
+			echo $response;
+		}
+	}
+
 
 	/**
 	 * Execute a cURL GET request and return the response body, or null on failure.
