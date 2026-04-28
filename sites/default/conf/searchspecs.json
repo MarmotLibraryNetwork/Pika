@@ -814,9 +814,6 @@
       "its_node_id": [ /*TODO: new munge: intergerOnly*/
         ["exact", 10000]
       ],
-      "tm_X3b_en_field_pid": [ /*TODO: remove */
-        ["exact", 2000]
-      ],
       "ss_legacy_pid" : [
         ["exact", 2000]
       ],
@@ -998,7 +995,7 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
-      "tm_X3b_en_field_pid": [
+      "ss_legacy_pid" : [
         ["exact", 2000]
       ],
       "sm_field_local_identifier": [ /*Local Indentifier (string)*/ /*confirmed search of identifier string works*/
@@ -1175,8 +1172,8 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
-      "tm_X3b_en_field_pid": [ /*TODO: needs a string field instead*/
-        ["exact", 1000]
+      "ss_legacy_pid" : [
+        ["exact", 2000]
       ]
     }
   },
@@ -1209,8 +1206,8 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
-      "tm_X3b_en_field_pid": [ /*TODO: needs a string field instead*/
-        ["exact", 1000]
+      "ss_legacy_pid" : [
+        ["exact", 2000]
       ]
     }
   },

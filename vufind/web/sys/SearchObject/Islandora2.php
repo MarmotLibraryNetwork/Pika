@@ -57,7 +57,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 //		'title'       => 'twm_X3b_en_title_ws_token', // production
 		'description' => 'tm_X3b_en_field_description_long',
 		'memberOf'    => 'itm_field_member_of', //node ids
-		'legacyPID'   => 'tm_X3b_en_field_pid',
+		'legacyPID'   => 'ss_legacy_pid',
+		//'legacyPID'   => 'tm_X3b_en_field_pid',
 		'genre'       => 'sm_name_2',
 		'model'       => 'ss_name_1',
 		'legacyResourceType' => 'sm_name_22',
