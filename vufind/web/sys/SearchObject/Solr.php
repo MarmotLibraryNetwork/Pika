@@ -187,9 +187,13 @@ class SearchObject_Solr extends SearchObject_Base {
 			$searchIndex  = $this->getSearchIndex();
 			$searchSource = $_REQUEST['searchSource'] ?? 'local';
 			if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
-				$this->searchType != 'islandora' && $searchSource != 'islandora'
+				$this->searchType != 'islandora' && $searchSource != 'islandora' &&
+				$searchSource != 'islandora2'
 			){
-				if (!array_key_exists($searchIndex, $basicSearchTypes)){
+				if (!array_key_exists($searchIndex, $basicSearchTypes) &&
+					strncmp($searchIndex ?? '', 'Islandora2', 10) !== 0
+					// Prevent setting an Islandora2 Search Type to the basic Type for catalog searching
+				){
 					$basicSearchTypes[$searchIndex] = $searchIndex;
 				}
 			}
@@ -209,7 +213,7 @@ class SearchObject_Solr extends SearchObject_Base {
 		if (empty($newFilter)){
 			return;
 		}
-		// Extract field and value from URL string:
+		// Extract field and value from the URL string:
 		[$field, $value] = $this->parseFilter($newFilter);
 		if ($field == ''){
 			$field = count($this->filterList) + 1;
