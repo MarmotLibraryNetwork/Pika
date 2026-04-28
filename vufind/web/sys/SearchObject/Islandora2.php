@@ -129,12 +129,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
 		}else{
-			//TODO: genuine defaults?
+			// If there is no configuration, only include the relevance sort
 			$this->sortOptions = [
 				'relevance' => 'sort_relevance',
-//				'year'      => 'sort_year',
-//				'year asc'  => 'sort_year asc',
-				'title'     => 'sort_title'
 			];
 		}
 
