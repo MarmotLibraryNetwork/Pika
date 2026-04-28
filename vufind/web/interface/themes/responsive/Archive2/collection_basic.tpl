@@ -28,24 +28,26 @@
 				{$description}
 			</div>
 		</div>
-
+			
+		{include file="Archive2/components/search_component.tpl"}
 		{* Child objects grid *}
-		{if $relatedImages}
+		{if $collectionChildren}
 		<div class="row" style="margin-top: 1em;">
 			<div class="col-xs-12">
 				{if $recordCount}
-				<p class="text-muted">{$recordCount} objects</p>
+				<p class="text-muted">{$recordCount} items in this collection.</p>
 				{/if}
 			</div>
 		</div>
+		
 		<div class="row">
-			{foreach from=$relatedImages item=image}
+			{foreach from=$collectionChildren item=collectionChild}
 			<div class="col-xs-6 col-sm-4 col-md-3">
-				<a href="{$image.url}" class="thumbnail" style="border: 2px solid #ddd; border-radius: 6px; padding: 8px; background: #fff; height: 300px;">
-					{if $image.thumbnail}
-					<img src="{$image.thumbnail}" alt="{$image.title|escape}" style="max-height: 160px;">
+				<a href="{$collectionChild.url}" class="thumbnail" style="border: 2px solid #ddd; border-radius: 6px; padding: 8px; background: #fff; height: 300px;">
+					{if $collectionChild.thumbnail}
+					<img src="{$collectionChild.thumbnail}" alt="{$collectionChild.title|escape}" style="max-height: 160px;">
 					{/if}
-					<div class="caption" style="padding: 9px 0;">{$image.title}</div>
+					<div class="caption" style="padding: 9px 0;">{$collectionChild.title}</div>
 				</a>
 			</div>
 			{/foreach}
@@ -59,7 +61,7 @@
 {literal}
 <script>
 $().ready(function(){
-	//Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
+	Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
 });
 </script>
 {/literal}

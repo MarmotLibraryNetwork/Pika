@@ -45,11 +45,7 @@ class DigitalDocument extends ArchiveObject
         } else {
             $interface->assign('pdf_url', $pdf->fileUrl);
 
-            $iframeSrc = $configArray['Islandora2']['url'] ?? '';
-            if (empty($iframeSrc)) {
-                $this->logger->error('Islandora2 URL not configured; cannot build PDF viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
-            }
-            $iframeSrc = rtrim($iframeSrc, '/') . "/libraries/pdf.js/web/viewer.html?file=" . urlencode($pdf->fileUrl);
+            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode("http://marmot.localhost:8888/Archive2/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl);
             $interface->assign('iframe_src', $iframeSrc);
         }
         
