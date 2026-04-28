@@ -32,6 +32,12 @@ class DigitalDocument extends ArchiveObject
         parent::launch();
 
         $pdf = $this->mediaObject->getOriginalMedia();
+        // if original media isn't found try to get the just the PDF file
+        if ($pdf === null) {
+            // TODO: this overrides the viewer hint.
+            $pdf = $this->mediaObject->getPDFMedia();
+        }
+
         if ($pdf === null) {
             $this->logger->error('PDF media not found for digital document.', ['nid' => $this->mediaObject->getNodeId()]);
             $interface->assign('pdf_url', null);

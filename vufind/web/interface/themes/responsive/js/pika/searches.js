@@ -238,10 +238,10 @@ Pika.Searches = (function(){
 				}
 			}
 			if (catalogType == 'islandora2'){
-				$(".islandoraType").show();
+				$(".islandoraType").show().prop('disabled', false);
 				$(".catalogType,.genealogyType,.ebscoType").hide();
 			}else if (catalogType == 'islandora'){
-				$(".islandoraType").show();
+				$(".islandoraType").hide().prop('disabled', true);
 				$(".catalogType,.genealogyType,.ebscoType").hide();
 			}else if (catalogType == 'genealogy'){
 				$(".genealogyType").show();

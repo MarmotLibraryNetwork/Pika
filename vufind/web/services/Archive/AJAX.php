@@ -715,7 +715,7 @@ class Archive_AJAX extends AJAXHandler {
 		/** @var IslandoraDriver $recordDriver */
 		$recordDriver  = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
-		$timer->logTime("Loaded record driver for main object");
+		$timer->logTime('Loaded record driver for main object');
 
 		require_once ROOT_DIR . '/sys/ExploreMore.php';
 		$exploreMore = new ExploreMore();

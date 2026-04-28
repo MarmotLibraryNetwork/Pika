@@ -101,6 +101,7 @@ class TaxonomyObject extends \Action
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
         $interface->assign('archivePage',            true);
+        $interface->assign('showExploreMore',        true);
         $interface->assign('maps_key',               $mapsKey);
         // Shared fields
         $interface->assign('geolocation',            $this->taxonomyObject->getGeolocation());

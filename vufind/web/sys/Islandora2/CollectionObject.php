@@ -185,4 +185,38 @@ class CollectionObject extends I2Object
         }
         return $this->nodeWithoutFieldPrefix['pika_thumb_url']['uri'];
     }
+
+    /**
+     * Returns the total number of direct children in this collection.
+     */
+    public function getTotalChildCount(): int
+    {
+        return count($this->rawNode['children'] ?? []);
+    }
+
+    /**
+     * Returns a paginated slice of children as I2Object instances.
+     * Only the nid is available from the raw children payload, so each child
+     * requires one API call. Limit to the current page to keep calls manageable.
+     *
+     * @return array Array of I2Object instances for the requested page.
+     */
+    public function getChildObjectsPaginated(int $page = 1, int $limit = 24): array
+    {
+        $rawChildren = $this->rawNode['children'] ?? [];
+        $offset      = ($page - 1) * $limit;
+        $pageSlice   = array_slice($rawChildren, $offset, $limit);
+        $objects     = [];
+        foreach ($pageSlice as $child) {
+            $nid = $child['nid'] ?? null;
+            if (!is_numeric($nid) || $nid <= 0) {
+                continue;
+            }
+            $obj = (new I2ObjectFactory())->fromNodeId((int)$nid);
+            if ($obj) {
+                $objects[] = $obj;
+            }
+        }
+        return $objects;
+    }
 }

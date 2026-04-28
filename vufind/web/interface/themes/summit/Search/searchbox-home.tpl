@@ -113,7 +113,7 @@
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora' && $searchSource != 'islandora2'}style="display:none"{/if}>
+						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
 							{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}

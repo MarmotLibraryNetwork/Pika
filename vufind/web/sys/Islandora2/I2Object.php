@@ -164,6 +164,22 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Get the PDF file.
+     *
+     * @return I2Media|null
+     */
+    public function getPDFMedia(): ?I2Media
+    {
+        $media = $this->getMedia();
+        foreach ($media as $m) {
+            if ($m->useIs('PDF')) {
+                return $m;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Attempt to return the intermediate media file.
      *
      * @return I2Media|null

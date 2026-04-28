@@ -35,6 +35,88 @@ Pika.Archive2 = (function(){
 					if (data.success) {
 						$('#explore-more-body').html(data.exploreMore);
 						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+					} else {
+						$('#explore-more-body').html(''); // remove the "loading" display on failure
+					}
+				}
+			).fail(function (){
+				$('#explore-more-body').html(''); // remove the "loading" display on failure
+			});
+		},
+
+		/**
+		 * Load the Related Objects accordion panel for an Archive2 Person page.
+		 * Injects rendered tile HTML into #personRelatedObjectsContent, or hides
+		 * the panel when no related objects exist.
+		 *
+		 * @param {string} personName  Display name of the Person taxonomy term
+		 */
+		loadRelatedObjects: function(personName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForPerson&name=' + encodeURIComponent(personName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#personRelatedObjectsContent').html(data.html);
+					} else {
+						$('#personRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
+		loadRelatedObjectsForOrganization: function(orgName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForOrganization&name=' + encodeURIComponent(orgName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#orgRelatedObjectsContent').html(data.html);
+					} else {
+						$('#orgRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
+		loadRelatedObjectsForEvent: function(eventName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForEvent&name=' + encodeURIComponent(eventName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#eventRelatedObjectsContent').html(data.html);
+					} else {
+						$('#eventRelatedObjectsPanel').hide();
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
+		/**
+		 * Load the Explore More sidebar for an Archive2 taxonomy term page
+		 * (Person, Place, Event, Organization). Injects rendered HTML into
+		 * #explore-more-body and initialises carousels.
+		 *
+		 * @param {number} tid  Taxonomy term ID
+		 */
+		loadTaxonomyExploreMore: function(tid) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getTaxonomyExploreMoreContent&tid=' + encodeURIComponent(tid),
+				function(data) {
+					if (data.success) {
+						$('#explore-more-body').html(data.exploreMore);
+						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+					}
+				}
+			).fail(Pika.ajaxFail);
+		},
+
+		loadRelatedObjectsForPlace: function(placeName) {
+			$.getJSON(
+				'/Archive2/AJAX?method=getRelatedObjectsForPlace&name=' + encodeURIComponent(placeName),
+				function(data) {
+					if (data.success && data.hasResults) {
+						$('#placeRelatedObjectsContent').html(data.html);
+					} else {
+						$('#placeRelatedObjectsPanel').hide();
 					}
 				}
 			).fail(Pika.ajaxFail);
