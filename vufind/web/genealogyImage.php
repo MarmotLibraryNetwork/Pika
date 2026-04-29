@@ -43,15 +43,15 @@ switch ($_GET['size']){
 
 global $configArray;
 $fileName = $configArray['Genealogy']['imagePath'] .DIR_SEP. $sizeFolder . DIR_SEP . $_GET['image'];
-// We need to check to see if someone is trying to switch directories if they are we log the error and return false
+// We need to check to see if someone is trying to switch directories if they are, we log the error and return false
 if (!str_contains($_GET['image'], DIR_SEP) && file_exists($fileName)){
 	[, , $imageType] = getimagesize($fileName);
-	header("Content-type: " . image_type_to_mime_type($imageType));
+	header('Content-type: ' . image_type_to_mime_type($imageType));
 	readfile($fileName);
 }else {
 	if (str_contains($_GET['image'], DIR_SEP)){
 		global $pikaLogger;
-		$pikaLogger->warn("Image contained invalid character /", array($_GET['image']));
+		$pikaLogger->warn('Image contained invalid character /', [$_GET['image']]);
 	}
 	return false;
 }

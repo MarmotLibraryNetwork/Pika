@@ -138,7 +138,7 @@ class Search_Results extends Union_Results {
 
 		$showRatings                 = $library->showRatings ?? 1;
 		$enableProspectorIntegration = $configArray['Content']['Prospector'] && $library->enableProspectorIntegration ?? false;
-		// Use config.ini setting as switch to turn off Prospector when it is down
+		// Use the config.ini setting as a switch to turn off Prospector when it is down
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);
 			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());
