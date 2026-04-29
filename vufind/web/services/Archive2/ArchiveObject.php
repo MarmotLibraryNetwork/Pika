@@ -21,6 +21,7 @@ namespace Archive2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
+require_once ROOT_DIR . '/sys/Library/Library.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
@@ -247,46 +248,81 @@ class ArchiveObject extends \Action
         return $date->format('m/d/Y h:i a');
     }
 
+    /**
+     * Returns the Library object associated with this archive object's library TID,
+     * or null if the TID is missing or does not match a library record.
+     *
+     * @return \Library|null
+     */
+    public function getOwningLibrary(): ?\Library
+    {
+        $libraryTid = $this->mediaObject->library['tid'] ?? null;
+        $library = new \Library();
+        $library->libraryTid = $libraryTid;
+        $library->find(true);
+
+        if (!$library || empty($library->libraryId)) {
+            return null;
+        }
+        return $library;
+    }
+
+    /**
+     * Returns the libraryId of the library that owns this archive object,
+     * or null if no owning library can be resolved.
+     *
+     * @return int|null
+     */
+    public function getOwningLibraryId(): ?int {
+        $library = $this->getOwningLibrary();
+        return (int)$library->libraryId ?? null;
+    }
+
+
     /** Returns true if the current user may download the master (original) file. */
     protected function canCurrentUserDownloadOrignial(): bool
     {
-        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if ((int)$nodeData['pika_anon_master_download'] === 1) {
+        if ((int)$this->mediaObject->pika_anon_master_download === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if ($user && ((int)$nodeData['pika_master_download'] === 1)) {
+        if ($user && (int)$this->mediaObject->pika_master_download === 1) {
             return true;
         }
-        unset($nodeData);
         return false;
     }
 
     /** Returns true if the current user may download the intermediate (low-resolution) file. */
     protected function canCurrentUserDownloadIntermediate(): bool
     {
-        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
         // annonomys download
-        if ((int)$nodeData['pika_anon_lc_download'] === 1) {
+        if ((int)$this->mediaObject->pika_anon_lc_download === 1) {
             return true;
         }
         // logged in
         $user = \UserAccount::getLoggedInUser();
-        if ($user && ((int)$nodeData['pika_lc_download'] === 1)) {
+        if ($user && ((int)$this->mediaObject->pika_lc_download === 1)) {
             return true;
         }
-        unset($nodeData);
         return false;
     }
 
-    protected function canCurrentUserRequestCopy(): bool 
+    protected function canCurrentUserRequestCopy(): bool
     {
         global $library;
-        if($library->allowRequestsForArchiveMaterials === 1) {
+        $currentLibraryId = $library->libraryId;
+        $owningLibrary = $this->getOwningLibrary();
+        
+        if(!$owningLibrary || ((int)$currentLibraryId !== (int)$owningLibrary->libraryId)) {
+            return false;
+        }
+        
+        if ($owningLibrary->allowRequestsForArchiveMaterials === 1) {
             return true;
-        } 
+        }
+
         return false;
     }
 
