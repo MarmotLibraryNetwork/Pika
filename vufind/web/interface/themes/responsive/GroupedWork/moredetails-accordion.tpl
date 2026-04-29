@@ -43,7 +43,12 @@
 		});
 		$('#authornotesPanel').on('show.bs.collapse', function (e) {
 			Pika.GroupedWork.getGoDeeperData({/literal}'{$recordDriver->getPermanentId()}'{literal}, 'authornotes');
-		})
+		});
+		{/literal}{if $enableProspectorIntegration}{literal}
+		$('#prospectorPanel').one('show.bs.collapse', function () {
+			Pika.Prospector.loadRelatedProspectorTitles({/literal}'{$recordDriver->getPermanentId()}'{literal});
+		});
+		{/literal}{/if}{literal}
 	})
 </script>
 {/literal}
