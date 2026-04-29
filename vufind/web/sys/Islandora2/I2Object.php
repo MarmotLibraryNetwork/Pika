@@ -404,6 +404,11 @@ abstract class I2Object implements MediaObjectInterface
         return getObjRelativeUrl($this);
     }
 
+    public function getAbsoluteUrl(): string
+    {
+        return getObjAbsoluteUrl($this);
+    }
+
     /**
      * Retrieve the logger used by the media object.
      *
