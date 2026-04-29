@@ -277,7 +277,7 @@ abstract class RecordInterface {
 		}
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enableProspectorIntegration')){
-			// enableProspectorIntegration may be set by  $configArray['Content']['Prospector'] or by library setting $library->enableProspectorIntegration
+			// enableProspectorIntegration may be set by $configArray['Content']['Prospector'] or by library setting $library->enableProspectorIntegration
 			$innReachEncoreName               = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$moreDetailsOptions['prospector'] = [
 				'label'         => 'More Copies In ' . $innReachEncoreName,

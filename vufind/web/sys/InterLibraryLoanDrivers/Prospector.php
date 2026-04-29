@@ -44,14 +44,22 @@ class Prospector {
 	 * @return array|null
 	 */
 	function getTopSearchResults($searchTerms, $maxResults){
-		if (str_contains($_SERVER["HTTP_USER_AGENT"], "YandexRenderResourcesBot")){
+		if (str_contains($_SERVER['HTTP_USER_AGENT'], 'YandexRenderResourcesBot')){
 			return null;
 		}
+
+		/** @var Memcache $memCache */
+		global $memCache, $configArray, $instanceName;
+		$cacheKey     = $instanceName .'_prospector_' . md5(json_encode($searchTerms) . '_' . $maxResults);
+		$cachedResult = $memCache->get($cacheKey);
+		if ($cachedResult !== false){
+			return $cachedResult;
+		}
+
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 
 		//Load the HTML from Prospector
 		try {
-			global $configArray;
 			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 			$curl      = new Curl();
 			$curl->setOpts([
@@ -92,7 +100,6 @@ class Prospector {
 				if (preg_match('/<span class="title">.*?<a.*?href.*?__R(.*?)__.*?>\\s*(.*?)\\s*<\/a>.*?<\/span>/s', $titleTitleInfo, $titleMatches)){
 					$curTitleInfo['id'] = $titleMatches[1];
 					//Create the link to the title in Encore
-					global $configArray;
 					$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
 
 					$curTitleInfo['link']  = $innReachEncoreHostUrl . '/iii/encore/record/C__R' . urlencode($curTitleInfo['id']) . '__Orightresult?lang=eng&amp;suite=def';
@@ -145,14 +152,14 @@ class Prospector {
 			}
 
 			$prospectorTitles = array_slice($prospectorTitles, 0, $maxResults, true);
-			return [
+			$result = [
 				'firstRecord' => $firstResult,
 				'lastRecord'  => $lastResult,
 				'resultTotal' => $numberOfResults,
 				'records'     => $prospectorTitles,
 			];
 		}else{
-			return [
+			$result = [
 				'firstRecord' => 0,
 				'lastRecord'  => 0,
 				'resultTotal' => 0,
@@ -160,6 +167,9 @@ class Prospector {
 			];
 		}
 
+		$memCache->set($cacheKey, $result, 0, $configArray['Caching']['prospector']);
+		$this->logger->debug('Cached ' . count($result['records']) . ' results from Prospector with key: ' . $cacheKey);
+		return $result;
 	}
 
 	/**
@@ -169,7 +179,7 @@ class Prospector {
 	 * @return string
 	 */
 	function getSearchLink($searchTerms){
-		$search = "";
+		$search = '';
 		foreach ($searchTerms as $term){
 			if (strlen($search) > 0){
 				$search .= ' ';
@@ -192,7 +202,7 @@ class Prospector {
 		//$prospectorUrl = "http://prospector.coalliance.org/search/?searchtype=X&searcharg=" . urlencode($search) . "&Da=&Db=&SORT=R";
 		//Fix prospector url issue
 		$search = str_replace('+', '%20', urlencode(str_replace('/', '', $search)));
-		// Handle special exception: ? character in the search must be encoded specially
+		// Handle special exception: '?' character in the search must be encoded specially
 		$search = str_replace('%3F', 'Pw%3D%3D', $search);
 		global $configArray;
 		$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
