@@ -1399,7 +1399,9 @@ class MarcRecord extends IndexRecord {
 		// so it is safe to show Reserve Online even when non-local holdable items have already added a
 		// hold button to $actions.
 		if (!empty($relatedUrls) && $isExternalReservationItem){
+			$relatedUrls    = array_unique($relatedUrls); // Since these are attached to items; remove duplicates for multiple item urls;
 			$reserveActions = [];
+			//TODO: we will need distinguishing labels when multiple links are different
 			foreach ($relatedUrls as $relatedUrl){
 				$reserveActions[] = [
 					'title'        => translate('Reserve Online'),
@@ -2329,10 +2331,10 @@ class MarcRecord extends IndexRecord {
 		if($this->getPrimaryAuthor()) {
 			$author = $this->getPrimaryAuthor();
 		} else {
-			$author = "N/A";
+			$author = 'N/A';
 		}
 
-		$semanticData []  = array(
+		$semanticData []  = [
 			'@context'            => 'http://schema.org',
 			'@type'               => $type,
 			'name'                => $this->getTitle(),
@@ -2342,7 +2344,7 @@ class MarcRecord extends IndexRecord {
 			'isAccessibleForFree' => true,
 			'image'               => $this->getBookcoverUrl('large'),
 			'offers'              => $offers,
-		);
+		];
 
 		//Open graph data (goes in meta tags)
 		global $interface;
