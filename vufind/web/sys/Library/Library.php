@@ -1604,6 +1604,9 @@ class Library extends DB_DataObject {
 		$this->includeAllRecordsInShelvingFacets           = false;
 		$this->includeOnOrderRecordsInDateAddedFacetValues = false;
 		$this->boostByLibrary                              = false;
+		$this->enableProspectorIntegration                 = false;
+		$this->showProspectorResultsAtEndOfSearch          = false;
+		$this->repeatInProspector                          = false;
 		$this->publicListsToInclude                        = 0;
 		$this->systemsToRepeatIn                           = '';
 		//TODO: reset catalog search facets
