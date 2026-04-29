@@ -20,6 +20,7 @@
 namespace Islandora2;
 
 use Curl\Curl;
+use Pika\Cache;
 use Pika\Logger;
 
 /**
@@ -32,14 +33,20 @@ use Pika\Logger;
 class Request
 {
 	private string $baseUrl;
+	private Cache  $cache;
 	private Logger $logger;
 	private string $userAgent;
+	private int    $resourceTtl;
+	private int    $vocabularyTtl;
 
 	public function __construct()
 	{
 		global $configArray;
-		$this->logger    = new Logger(__CLASS__);
-		$this->userAgent = $configArray['Islandora2']['userAgent'] ?? '';
+		$this->logger        = new Logger(__CLASS__);
+		$this->cache         = new Cache();
+		$this->userAgent     = $configArray['Islandora2']['userAgent'] ?? '';
+		$this->resourceTtl   = (int)($configArray['Caching']['islandora2_resource']   ?? 600);
+		$this->vocabularyTtl = (int)($configArray['Caching']['islandora2_vocabulary'] ?? 3600);
 
 		$url = $configArray['Islandora2']['url'] ?? '';
 		if (empty($url)) {
@@ -68,6 +75,14 @@ class Request
 		if (empty($this->baseUrl)) {
 			$this->logger->error('Islandora2 URL is not configured.');
 			return null;
+		}
+
+		$cacheKey = 'islandora2_' . $type . '_' . $id;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
 		}
 
 		$url  = $this->baseUrl . '/pika-json/' . $type . '/' . $id;
@@ -111,7 +126,11 @@ class Request
 				return null;
 			}
 
-			return $this->decodeBody($body, $type, $id);
+			$result = $this->decodeBody($body, $type, $id);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
 		} catch (\Throwable $exception) {
 			$this->logger->error('Failed to query Islandora2 API.', [
 				'type'    => $type,
@@ -138,6 +157,14 @@ class Request
 			return null;
 		}
 
+		$cacheKey = 'islandora2_related_nodes_' . $tid;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
+
 		$url  = $this->baseUrl . '/pika-json/taxonomy/' . $tid . '/nodes';
 		$curl = new Curl();
 		$curl->setUserAgent($this->userAgent);
@@ -156,6 +183,7 @@ class Request
 
 			$statusCode = $curl->getHttpStatusCode();
 			if ($statusCode === 404) {
+				$this->cache->set($cacheKey, [], $this->resourceTtl);
 				return [];
 			}
 
@@ -176,10 +204,15 @@ class Request
 			}
 
 			if (!is_string($body) || trim($body) === '') {
+				$this->cache->set($cacheKey, [], $this->resourceTtl);
 				return [];
 			}
 
-			return $this->decodeBody($body, 'taxonomy-nodes', $tid);
+			$result = $this->decodeBody($body, 'taxonomy-nodes', $tid);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
 		} catch (\Throwable $exception) {
 			$this->logger->error('Exception while fetching related nodes for taxonomy term.', [
 				'tid'     => $tid,
@@ -205,6 +238,14 @@ class Request
 		if (empty($this->baseUrl)) {
 			$this->logger->error('Islandora2 URL is not configured.');
 			return null;
+		}
+
+		$cacheKey = 'islandora2_vocabulary_' . $vocabId;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
 		}
 
 		$url = $this->baseUrl . '/jsonapi/taxonomy_term/' . urlencode($vocabId)
@@ -264,6 +305,7 @@ class Request
 			}
 		} while ($url !== null);
 
+		$this->cache->set($cacheKey, $terms, $this->vocabularyTtl);
 		return $terms;
 	}
 	
