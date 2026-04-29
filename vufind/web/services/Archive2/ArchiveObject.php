@@ -19,6 +19,7 @@
 
 namespace Archive2;
 
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
 require_once ROOT_DIR . '/sys/Library/Library.php';
@@ -83,6 +84,7 @@ class ArchiveObject extends \Action
     public function launch()
     {
         global $interface;
+        global $configArray;
 
         if ($this->mediaObject === null) {
             $this->logger->error('Attempted to launch with null mediaObject.');
@@ -203,6 +205,15 @@ class ArchiveObject extends \Action
         $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
         $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
         $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
+
+        // Admin
+        // Reload URL
+        $cacheReloadUrl = $this->mediaObject->getAbsoluteUrl() . '?reload=true';
+        $interface->assign('cache_reload_url', $cacheReloadUrl);
+        // like to Islandora node
+        $islandoraUrl = rtrim($configArray['Islandora2']['url'], "/") . "/node/" . $this->mediaObject->getNodeId();
+        $interface->assign('islandora_url', $islandoraUrl);
+
 
         // Analytics
         $interface->assign('archivePage', true);

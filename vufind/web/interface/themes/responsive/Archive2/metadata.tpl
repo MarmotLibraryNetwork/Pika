@@ -24,7 +24,7 @@
         {include file="Archive2/panels/pikaControlsPanel.tpl"}
         {include file="Archive2/panels/mediaAssetsPanel.tpl"}
         {include file="Archive2/panels/recordInfoPanel.tpl"}
-
+        {include file="Archive2/panels/adminPanel.tpl"}
     </div>
 
 </div>
