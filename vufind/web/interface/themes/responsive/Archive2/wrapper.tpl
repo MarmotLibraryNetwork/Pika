@@ -15,7 +15,7 @@
 				<a class="btn btn-default" href="{$orignal_media_file}">Download Original File</a>
 			{/if}
 			{if $can_download_intermediate && $intermediate_media_file}
-				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermeidate File</a>
+				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermediate File</a>
 			{/if}
 			{if $can_request_copy}
 				<a class="btn btn-default" href="/Archive2/RequestCopy?nid={$nid}">Request Copy</a>
