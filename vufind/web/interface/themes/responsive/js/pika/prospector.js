@@ -1,3 +1,20 @@
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2026  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 Pika.Prospector = (function(){
 	return {
 		getProspectorResults: function(prospectorNumTitlesToLoad, prospectorSavedSearchId){
@@ -22,15 +39,6 @@ Pika.Prospector = (function(){
 					$("#inProspectorPlaceholder").html(data.formattedData);
 				}
 			});
-		},
-
-		removeBlankThumbnail: function(imgElem, elemToHide, isForceRemove) {
-			var $img = $(imgElem);
-			//when the content providers cannot find a bookjacket, they return a 1x1 pixel
-			//remove the wrapping div, for consistent spacing with other results
-			if ($img.height() == 1 && $img.width() == 1 || isForceRemove) {
-				$(elemToHide).remove();
-			}
 		}
 	}
 }(Pika.Prospector || {}));

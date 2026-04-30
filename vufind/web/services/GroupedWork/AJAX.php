@@ -1593,48 +1593,60 @@ function getSaveSeriesToListForm(){
 		return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to remove tag.</div>'];
 	}
 
+	/**
+	 * Fetches ILL availability from the configured ILL driver (Prospector / AutoGraphics ShareIt)
+	 * for the grouped work identified by $_REQUEST['id'], using its title and author as search terms.
+	 *
+	 * Called via AJAX when the Prospector panel is opened on the GroupedWork full-record page.
+	 *
+	 * @return array{numTitles: int, formattedData: string}
+	 */
 	function getProspectorInfo(){
-		global $configArray;
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-
-		// Retrieve Full record from Solr
-		if (!($record = $searchObject->getRecord($id))){
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
-		}
-
-		//Load results from Prospector
-		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-		/** @var Prospector|AutoGraphicsShareIt $prospector */
-		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
-		$prospector = new $ILLDriver();
-
-		$searchTerms =
-			[[
-				 'lookfor' => $record['title_short'],
-				 'index'   => 'Title',
-			 ],];
-		if (isset($record['author'])){
-			$searchTerms[] = [
-				'lookfor' => $record['author'],
-				'index'   => 'Author',
-			];
-		}
-
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		if (!empty($prospectorResults['records'])){
-			$interface->assign('prospectorResults', $prospectorResults['records']);
-		}
-
 		$result = [
-			'numTitles'     => $prospectorResults ? count($prospectorResults) : 0,
-			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
+			'numTitles'     => 0,
+			'formattedData' => '',
 		];
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)){
+			global $configArray;
+			global $interface;
+			$interface->assign('id', $id);
+
+			// Retrieve Full record from Solr
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			if (!($record = $searchObject->getRecord($id))){
+				$this->logger->warning("Failed to retrieve record {$id} from Solr");
+				return $result;
+			}
+			// Load results from Prospector (or alternate ILL service)
+			$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+			/** @var Prospector|AutoGraphicsShareIt $prospector */
+			require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+			$prospector  = new $ILLDriver();
+			$searchTerms =
+				[[
+					 'lookfor' => $record['title_short'],
+					 'index'   => 'Title',
+				 ],];
+			if (isset($record['author'])){
+				$searchTerms[] = [
+					'lookfor' => $record['author'],
+					'index'   => 'Author',
+				];
+			}
+			$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
+			if (!empty($prospectorResults['records'])){
+				$interface->assign('prospectorResults', $prospectorResults['records']);
+			}
+			$result = [
+				'numTitles'     => $prospectorResults ? count($prospectorResults['records']) : 0,
+				'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
+			];
+		} else {
+			$this->logger->error("Invalid Grouped Work ID: {$id}");
+		}
 		return $result;
 	}
 
