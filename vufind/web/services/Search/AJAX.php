@@ -138,35 +138,39 @@ class AJAX extends AJAXHandler {
 	 * @return string Rendered HTML from Search/ajax-prospector.tpl, or empty string
 	 */
 	function getProspectorResults(){
-		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
+		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'] ?? null;
 		if (ctype_digit($prospectorSavedSearchId)){
 			global $configArray;
-			global $interface;
-			global $library;
-			global $timer;
+			if ($configArray['Content']['Prospector']){
+				global $library;
+				if ($library && $library->enableProspectorIntegration){
+					global $interface;
+					//global $timer;
 
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
+					/** @var SearchObject_Solr $searchObject */
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject->init();
+					$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-			if (is_a($searchObject, 'SearchObject_Solr')){
-				// Load results from Prospector
-				$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-				/** @var Prospector|AutoGraphicsShareIt $prospector */
-				require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
-				$prospector = new $ILLDriver();
-				if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-					// Only show prospector results within search results if enabled
-					$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-					$interface->assign('prospectorResults', $prospectorResults['records']);
+					if (is_a($searchObject, 'SearchObject_Solr')){
+						// Load results from Prospector
+						$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+						/** @var Prospector|AutoGraphicsShareIt $prospector */
+						require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+						$prospector = new $ILLDriver();
+						if ($library->showProspectorResultsAtEndOfSearch){
+							// Only show prospector results within search results if enabled
+							$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+							$interface->assign('prospectorResults', $prospectorResults['records'] ?? []);
+						}
+						$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+						$prospectorLink     = $prospector->getSearchLink($searchObject->getSearchTerms());
+						$interface->assign('innReachEncoreName', $innReachEncoreName);
+						$interface->assign('prospectorLink', $prospectorLink);
+						//$timer->logTime('load Prospector titles');
+						return $interface->fetch('Search/ajax-prospector.tpl');
+					}
 				}
-				$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
-				$prospectorLink     = $prospector->getSearchLink($searchObject->getSearchTerms());
-				$interface->assign('innReachEncoreName', $innReachEncoreName);
-				$interface->assign('prospectorLink', $prospectorLink);
-				$timer->logTime('load Prospector titles');
-				return $interface->fetch('Search/ajax-prospector.tpl');
 			}
 		}
 		return '';
