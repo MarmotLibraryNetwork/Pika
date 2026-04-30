@@ -218,7 +218,8 @@ class Library extends DB_DataObject {
 	// Digital Archive Settings
 	public $enableArchive;
 	public $archiveNamespace; // Islandora1 TODO: remove
-	public $libraryTid;  // Islandora2
+	public $libraryTid;       // Islandora2
+	public $corporateBodyTid; // Islandora2
 	public $archivePid;  // Islandora1 TODO: remove
 	public $allowRequestsForArchiveMaterials;
 	public $archiveRequestMaterialsHeader;
@@ -971,7 +972,8 @@ class Library extends DB_DataObject {
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
 				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
-				'libraryTid'                           => ['property' => 'libraryTid', 'type' => self::getLibraryTidType(), 'values'=> self::getLibraryTidChoices(),'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
+				'libraryTid'        => ['property' => 'libraryTid',        'type' => self::getLibraryTidType(),        'values' => self::getLibraryTidChoices(),        'label' => 'Library Taxonomy Term ID',       'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity',                                                      'hideInLists' => true],
+				'corporateBodyTid'  => ['property' => 'corporateBodyTid',  'type' => self::getCorporateBodyTidType(),  'values' => self::getCorporateBodyTidChoices(),  'label' => 'Corporate Body Taxonomy Term ID', 'description' => 'The Islandora2 Corporate Body TID for this library; shown as the contributing-library thumbnail in Archive object acknowledgements.', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],
@@ -2162,6 +2164,29 @@ class Library extends DB_DataObject {
 		}else{
 			return 'enum';
 		}
+	}
+
+	public static function getCorporateBodyTidChoices(): array
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('corporate_body');
+		if (empty($terms)) {
+			return [];
+		}
+		$choices = ['' => 'Choose a Corporate Body'];
+		foreach ($terms as $term) {
+			$choices[$term['tid']] = $term['name'];
+		}
+		return $choices;
+	}
+
+	public static function getCorporateBodyTidType(): string
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('corporate_body');
+		return empty($terms) ? 'text' : 'enum';
 	}
 
 	public function getArchiveRequestFormStructure(){
