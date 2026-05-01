@@ -320,11 +320,12 @@ abstract class I2Object implements MediaObjectInterface
             $subjects = [$subjects];
         }
         usort($subjects, fn($a, $b) => strcmp($a['name'] ?? '', $b['name'] ?? ''));
+				// The null-coalescing ?? '' handles any subjects that might be missing a name key gracefully.
         return $subjects;
     }
 
     /**
-     * Return the media associacted with this item as objects.
+     * Return the media associated with this item as objects.
      *
      * @return array Returns an empty array if no media is present
      */
@@ -338,7 +339,7 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return the children associacted with this item.
+     * Return the children associated with this item.
      *
      * @return array|null Returns null if no children
      */
