@@ -86,6 +86,7 @@
 			<a class="explore-more-scroller-link" href="{$section.link}" {if $section.openInNewWindow}target="_blank"{/if}>All Results {if $section.numFound}({$section.numFound}){/if}</a>
 
 		{elseif $section.format == 'tableOfContents'}
+			{*TODO: need a archive version check here *}
 			<ul>
 				{foreach from=$section.values item=value}
 					<li>

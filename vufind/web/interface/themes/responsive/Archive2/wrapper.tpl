@@ -35,7 +35,7 @@
 {/strip}
 {literal}
 <script>
-$().ready(function(){
+$(function(){
 	Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
 });
 </script>

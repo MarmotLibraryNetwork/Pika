@@ -94,6 +94,10 @@ class ExploreMore {
 
 		$sections = [];
 
+		//TODO: Set up Parent Book section if applicable and if possible
+
+		//TODO: Set up Table of Contents for books; and Compound Objects (?)
+
 		$section = $this->getRelatedCollections($obj);
 		if ($section) $sections['relatedCollections'] = $section;
 		$timer->logTime('ExploreMore: relatedCollections');
@@ -519,7 +523,13 @@ class ExploreMore {
 			return null;
 		}
 
-		return ['format' => 'list', 'values' => $values];
+		$displayType = count($values) > 3 ? 'textOnlyList' : 'list';
+		//$values[]    = [
+		//	'label' => 'Archive Homepage',
+		//	'link'  => '/Archive2/Home'
+		//];
+		return ['format' => $displayType, 'values' => $values, 'showTitles' => true,];
+		// showTitle is needed because Not all collection images contain the title
 	}
 
 	/**
