@@ -38,7 +38,7 @@
       display: inline-block !important;
       vertical-align: middle;
     }
-  </style>
+</style>
 {/literal}
   <div class="osd-multi-wrap">
     <div id="openseadragon-viewer"></div>
