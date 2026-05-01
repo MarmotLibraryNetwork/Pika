@@ -4,7 +4,6 @@
         {include file="Archive2/panels/descriptionPanel.tpl"}
         {include file="Archive2/panels/sharedRelatedPanels.tpl"}
         {include file="Archive2/panels/subjectsPanel.tpl"}
-        
         {include file="Archive2/panels/titlesDisplayPanel.tpl"}
         {include file="Archive2/panels/locationPanel.tpl"}
         {include file="Archive2/panels/locationGeographyPanel.tpl"}
