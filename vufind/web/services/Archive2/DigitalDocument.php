@@ -27,7 +27,7 @@ class DigitalDocument extends ArchiveObject
     public function launch()
     {
         global $interface;
-        global $configArray;
+        global $library;
         
         parent::launch();
 
@@ -44,8 +44,8 @@ class DigitalDocument extends ArchiveObject
             $interface->assign('iframe_src', null);
         } else {
             $interface->assign('pdf_url', $pdf->fileUrl);
-
-            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode("http://marmot.localhost:8888/Archive2/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl);
+            $libraryUrl = rtrim($library->catalogUrl, "/");
+            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode($libraryUrl . "/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl);
             $interface->assign('iframe_src', $iframeSrc);
         }
         
