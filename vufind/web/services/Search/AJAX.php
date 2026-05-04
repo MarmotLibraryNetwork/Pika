@@ -333,7 +333,7 @@ class AJAX extends AJAXHandler {
 			if (!empty($configArray['Islandora2']['enabled'])){
 				require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
 				$archiveExploreMore = new \Archive2\ExploreMore();
-				$exploreMoreOptions = $archiveExploreMore->loadArchiveOptions($exploreMoreOptions, $searchTerm);
+				$exploreMoreOptions = $archiveExploreMore->loadArchiveExploreMoreBarOptions($exploreMoreOptions, $searchTerm);
 			} elseif (!empty($configArray['Islandora']['enabled'])){
 				require_once ROOT_DIR . '/sys/ExploreMore.php';
 				$legacyExploreMore  = $legacyExploreMore ?? new ExploreMore();

@@ -94,12 +94,21 @@ class TaxonomyObject extends \Action
         $interface->assign('term_title',             $this->taxonomyObject->getTitle());
         $interface->assign('term_description',       $this->taxonomyObject->getDescription());
         $interface->assign('vocabulary_name',        $this->taxonomyObject->getVocabularyName());
-        $interface->assign('vocabulary_machine_name', $this->taxonomyObject->getVocabularyMachineName());
+        $vocabularyMachineName = $this->taxonomyObject->getVocabularyMachineName();
+        $interface->assign('vocabulary_machine_name', $vocabularyMachineName);
+        $vocabularyLabels = [
+            'corporate_body' => 'Organization',
+            'person'         => 'Person',
+            'place'          => 'Place',
+            'event'          => 'Event',
+        ];
+        $interface->assign('vocabulary_label', $vocabularyLabels[$vocabularyMachineName] ?? ucwords(str_replace('_', ' ', $vocabularyMachineName)));
         $interface->assign('is_shown_in_search',     $this->taxonomyObject->isShownInSearch());
         $interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
         $interface->assign('pid',                    $this->taxonomyObject->getPid());
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
+        $interface->assign('lastsearch',             $_SESSION['lastArchive2SearchURL'] ?? false);
         $interface->assign('archivePage',            true);
         $interface->assign('showExploreMore',        true);
         $interface->assign('maps_key',               $mapsKey);

@@ -19,6 +19,7 @@
 namespace Archive2;
 
 use Islandora2\I2Object;
+use Islandora2\I2Taxonomy;
 use Islandora2\TaxonomyObjectInterface;
 use Pika\Logger;
 
@@ -92,6 +93,10 @@ class ExploreMore {
 		global $timer;
 
 		$sections = [];
+
+		//TODO: Set up Parent Book section if applicable and if possible
+
+		//TODO: Set up Table of Contents for books; and Compound Objects (?)
 
 		$section = $this->getRelatedCollections($obj);
 		if ($section) $sections['relatedCollections'] = $section;
@@ -228,7 +233,7 @@ class ExploreMore {
 	 * @param string $searchTerm
 	 * @return array Array of Archive Tiles to display in the Explore More Bar
 	 */
-	public function loadArchiveOptions(array $exploreMoreOptions, string $searchTerm): array {
+	public function loadArchiveExploreMoreBarOptions(array $exploreMoreOptions, string $searchTerm): array {
 		if (empty($searchTerm)) {
 			global /** @var \Library $library */ $library;
 			if (!empty($library->libraryTid) && $library->libraryTid > 0) {
@@ -246,7 +251,7 @@ class ExploreMore {
 		];
 		$searchObject->setSearchTerms($searchTerms);
 
-		$formatFacetField = 'sm_format'; // Hasn't been reverted yet.
+		$formatFacetField     = 'sm_format'; // Hasn't been reverted yet.
 		$collectionFacetField = 'sm_title_2'; //TODO: change when field is renamed
 		$searchObject->addFacet($formatFacetField, 'Format'); // Related Formats
 		$searchObject->addFacet($collectionFacetField, 'Collection'); // Related Collections
@@ -361,7 +366,7 @@ class ExploreMore {
 		$tid                           = (int)$library->libraryTid;
 		$libraryFilter                 = "itm_field_library:$tid";
 		$formatFacetField              = 'sm_format';
-		$collectionFacetField          = 'sm_title_2';
+		$collectionFacetField          = 'sm_title_2'; // 'sm_collection'
 		$contributingLibraryFacetField = 'ss_name_23'; // 'ss_library'
 		$emptySearchTerms              = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
 
@@ -518,7 +523,13 @@ class ExploreMore {
 			return null;
 		}
 
-		return ['format' => 'list', 'values' => $values];
+		$displayType = count($values) > 3 ? 'textOnlyList' : 'list';
+		//$values[]    = [
+		//	'label' => 'Archive Homepage',
+		//	'link'  => '/Archive2/Home'
+		//];
+		return ['format' => $displayType, 'values' => $values, 'showTitles' => true,];
+		// showTitle is needed because Not all collection images contain the title
 	}
 
 	/**
@@ -612,6 +623,7 @@ class ExploreMore {
 				if ($tid <= 0) {
 					continue;
 				}
+				/** @var I2Taxonomy $term */
 				$term = $factory->fromTid($tid);
 				if ($term === null) {
 					continue;
@@ -628,18 +640,23 @@ class ExploreMore {
 			}
 		}
 
-		// Contributing Library — use pre-resolved corporateBodyTid from Pika library settings
-		global /** @var \Library $library */ $library;
-		if (!empty($library->corporateBodyTid) && $library->corporateBodyTid > 0) {
-			/** @var Organization $term */
-			$term = $factory->fromTid((int)$library->corporateBodyTid);
-			if ($term !== null) {
-				$thumbnail = $term->getThumbnail();
-				$values[]  = [
-					'label' => 'Contributed by ' . $term->getName(),
-					'image' => $thumbnail['url'] ?? null,
-					'link'  => $term->getUrl(),
-				];
+		// Contributing Library — look up the object's contributing library and use its corporateBodyTid
+		$raw           = $obj->library;
+		$objLibraryTid = is_array($raw) ? (int)($raw['tid'] ?? 0) : (int)($raw ?? 0);
+		if ($objLibraryTid > 0) {
+			$contributingLibrary             = new \Library();
+			$contributingLibrary->libraryTid = $objLibraryTid;
+			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid) && $contributingLibrary->corporateBodyTid > 0) {
+				/** @var \Islandora2\Organization $term */
+				$term = $factory->fromTid((int)$contributingLibrary->corporateBodyTid);
+				if ($term !== null) {
+					$thumbnail = $term->getThumbnail();
+					$values[]  = [
+						'label' => 'Contributed by ' . $term->name,
+						'image' => $thumbnail['url'] ?? null,
+						'link'  => $term->getUrl(),
+					];
+				}
 			}
 		}
 		// TODO: Fallback for contributing libraries not in the Pika Library table.
@@ -748,7 +765,6 @@ class ExploreMore {
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		//$searchObject->setDebugging(false, false);
-		//TODO: turn off debugging later
 		$searchObject->setSearchTerms(['lookfor' => implode(' OR ', $terms)]);
 		$searchObject->setLimit(12);
 

@@ -93,10 +93,21 @@ function getIslandoraUpdates(): array{
 			'release'         => 'Islandora2', // TODO: change to release number
 			'title'           => 'Convert library.archiveNamespace to libraryTid',
 			'description'     => 'Adds a libraryTid column, looks up each library\'s archivePid entity PID in Islandora2 Solr to find its taxonomy term ID, stores the result, then alters the column to INT UNSIGNED.',
-			'continueOnError' => true,
+			'continueOnError' => false,
 			'sql'             => [
 				"ALTER TABLE library ADD COLUMN libraryTid INT UNSIGNED NULL AFTER archivePid",
 				'convertArchiveNamespaceToLibraryTid'
+			]
+		],
+
+		'Islandora2_library_add_corporateBodyTid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Add corporateBodyTid column to library table',
+			'description'     => 'Adds a corporateBodyTid column to store the Islandora2 Corporate Body taxonomy term ID for each library, used to populate acknowledgement thumbnails on Archive object pages.',
+			'continueOnError' => false,
+			'sql'             => [
+				"ALTER TABLE library ADD COLUMN corporateBodyTid INT UNSIGNED NULL AFTER `libraryTid`",
+				'convertArchivePidToCorporateBodyTid'
 			]
 		],
 
@@ -300,11 +311,39 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 	while ($library->fetch()) {
 		$tid = $namespaceTidMap[$library->archiveNamespace] ?? null;
 		if ($tid === null) {
+			$success = false;
+			global $pikaLogger;
+			$pikaLogger->error("Found no TID for library archiveNamespace $library->archiveNamespace.");
 			continue;
 		}
 		$library->libraryTid = $tid;
 		if ($library->update() === false) {
 			$success = false;
+		}
+	}
+	return $success;
+}
+function convertArchivePidToCorporateBodyTid(): bool {
+	$success = true;
+	$library = new Library();
+	$library->whereAdd('archivePid IS NOT NULL');
+	$library->whereAdd("archivePid != ''");
+	if ($library->find()){
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+
+		while ($library->fetch()){
+			$tids = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
+			if (empty($tids)){
+				global $pikaLogger;
+				$pikaLogger->error("Found no Corporate Body TID for legacy archivePID $library->archivePid.");
+				$success = false;
+				continue;
+			}
+			$library->corporateBodyTid = (int)$tids[0];
+			if ($library->update() === false){
+				$success = false;
+			}
 		}
 	}
 	return $success;

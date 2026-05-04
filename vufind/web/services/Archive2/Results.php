@@ -170,7 +170,11 @@ class Archive2_Results extends Union_Results {
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
 
 		// Save the URL of this search to the session so we can return to it easily:
-		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
+		$_SESSION['lastArchive2SearchURL'] = $searchObject->renderSearchUrl();
+
+		//$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
+		// The other Results classes all use the same session variable.
+		// I can't decide if it's a good idea to retain the catalog search and keep the archive search separate; or not.
 
 		//Setup explore more
 		$showExploreMoreBar = true;

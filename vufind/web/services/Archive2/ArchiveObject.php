@@ -146,6 +146,9 @@ class ArchiveObject extends \Action
         $interface->assign('title', $title);
         // breadcrumb
         $interface->assign('breadcrumbText', $title);
+        $interface->assign('lastsearch', $_SESSION['lastArchive2SearchURL'] ?? false);
+        $displayModel = $this->mediaObject->getDisplayModel();
+        $interface->assign('display_model', $displayModel ? ucfirst($displayModel) : null);
 
         $subtitle = ($this->mediaObject->subtitle !== null) ? $this->mediaObject->subtitle : null;
         $interface->assign('subtitle', $subtitle);
