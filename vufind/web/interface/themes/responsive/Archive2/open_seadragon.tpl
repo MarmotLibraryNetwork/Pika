@@ -18,8 +18,6 @@ var viewer = OpenSeadragon({
   //prefixUrl: "https://cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/",
   tileSources: ["{/literal}{$service_file_url}{literal}"],
   visibilityRatio: 1,
-  //minZoomLevel: 1,
-  //defaultZoomLevel: 1,
   autoHideControls: false,
   crossOriginPolicy: 'Anonymous',
   loadTilesWithAjax: true,
