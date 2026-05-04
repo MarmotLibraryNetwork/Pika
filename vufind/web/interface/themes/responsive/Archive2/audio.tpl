@@ -1,6 +1,6 @@
 {if $videoThumbnailUrl}
     <div style="display: flex; justify-content: center">
-        <img src={$videoThumbnailUrl} style="margin: 0 auto">
+        <img src={$videoThumbnailUrl} style="margin: 0 auto" alt="Audio poster image for {$title}">
     </div>
 {/if}
 <audio src="{$audioUrl}" type="{$audioMime}" style="width:100%;" id="archive-audio-player" controls>
