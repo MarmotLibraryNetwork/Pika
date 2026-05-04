@@ -8817,3 +8817,20 @@ dialog :link{
     display:none;
   }
 }
+
+/* Button display overrides */
+#printButton {
+  display: none;
+}
+
+#downloadButton {
+  display: none;
+}
+
+#editorStamp {
+  display: none;
+}
+
+#editorModeSeparator {
+  display: none;
+}
