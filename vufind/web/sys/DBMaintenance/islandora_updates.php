@@ -139,7 +139,7 @@ function getIslandoraUpdates(): array{
 			'description'     => 'Adds Node ID column to Archive Requests table to reflect the new Islandora Structure',
 			'continueOnError' => true,
 			'sql'             => [
-				"ALTER TABLE archive_requests ADD COLUMN nid VARCHAR(50) NULL DEFAULT NULL AFTER pid;",
+				"ALTER TABLE archive_requests ADD COLUMN nid INT(11) NULL AFTER pid;",
 				'convertPidToNid',
 			]
 		],
@@ -150,7 +150,7 @@ function getIslandoraUpdates(): array{
 			'description'     => 'Adds librayTid column to Archive Requests table to enable filtering',
 			'continueOnError' => true,
 			'sql'             => [
-				"ALTER TABLE archive_requests ADD COLUMN libraryTid VARCHAR(50) NULL DEFAULT NULL AFTER nid;",
+				"ALTER TABLE archive_requests ADD COLUMN libraryTid INT(11) NULL AFTER nid;",
 				'getTidFromNid'
 			]
 		],

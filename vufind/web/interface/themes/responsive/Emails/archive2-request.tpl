@@ -26,5 +26,5 @@ Object Requested:
 {if $requestedObject}
 {$requestedObject->getTitle()}
 {else}
-Could not load requested object.  NID is {$requestResult->getUniqueID()}
+Could not load requested object.  NID is {$requestResult->nid}
 {/if}
