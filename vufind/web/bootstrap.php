@@ -507,12 +507,13 @@ function vufind_autoloader($class) {
 				if ($pikaLogger){
 					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
 				}
-			} else {
-				global $pikaLogger;
-				if ($pikaLogger){
-					$pikaLogger->debug(__FUNCTION__ . " : loaded class '$class' (tried '$nameSpaceClass' via include path)");
-				}
 			}
+//			else {
+//				global $pikaLogger;
+//				if ($pikaLogger){
+//					$pikaLogger->debug(__FUNCTION__ . " : loaded class '$class' (tried '$nameSpaceClass' via include path)");
+//				}
+//			}
 		}
 	}catch (Exception $e){
 		// Fail over to next loader instead of throwing error.
