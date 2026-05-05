@@ -415,7 +415,7 @@ function loadModuleActionId(){
 	if ($module == null && $action == null){
 		global $library;
 		if ($library->archiveOnlyInterface ?? false){
-				$module = 'Archive';
+				$module = 'Archive2';
 		}else{
 			//We have no information about where to go, go to the default location from config
 			global $configArray;

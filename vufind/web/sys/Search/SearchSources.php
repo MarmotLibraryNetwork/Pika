@@ -292,11 +292,22 @@ class SearchSources {
 
 		if (isset($library) && $library->archiveOnlyInterface ?? false){
 			unset($searchOptions);
+
+			// Legacy Islandora
 			if ($searchArchive){
 				$searchOptions['islandora'] = [
 					'name'        => 'Local Digital Archive',
 					'description' => 'Local Digital Archive in Colorado',
 					'catalogType' => 'islandora'
+				];
+			}
+
+			// Modern Islandora
+			if ($searchArchive2){
+				$searchOptions['islandora2'] = [
+					'name'        => 'Marmot Digital Archive',
+					'description' => 'Marmot Digital Archive in Colorado',
+					'catalogType' => 'islandora2'
 				];
 			}
 
