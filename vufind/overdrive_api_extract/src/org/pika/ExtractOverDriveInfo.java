@@ -175,10 +175,25 @@ class ExtractOverDriveInfo {
 //				thirtyOneDaysAgo = extractStartTime - 2678400;
 				fetchAvailabilityTypesStmt = econtentConn.prepareStatement("SELECT group_concat(DISTINCT availabilityType) AS allAvailabilityTypes, lastAvailabilityCheck, lastMetadataCheck FROM overdrive_api_product_availability LEFT JOIN overdrive_api_products ON (overdrive_api_products.id = productId) WHERE productId = ? GROUP BY productId");
 			} else {
-				//Check to see if a partial extract is running
-				boolean partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
+				// Check to see if a partial extract is running. Retry up to 3 times with a
+				// 5-second pause between attempts to tolerate a previous run that is just
+				// finishing; only warn if the flag is still set on the final attempt.
+				boolean partialExtractRunning = false;
+				for (int attempt = 1; attempt <= 3; attempt++) {
+					partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
+					if (!partialExtractRunning) {
+						break;
+					}
+					if (attempt < 3) {
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
+					}
+				}
 				if (partialExtractRunning) {
-					//Oops, a overdrive extract is already running.
+					//Oops, an overdrive extract is already running.
 					logger.warn("A partial overdrive extract is already running, verify that multiple extracts are not running for best performance.");
 					//return;
 				} else {
