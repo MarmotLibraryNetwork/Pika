@@ -17,76 +17,81 @@
  */
 
 /**
- * Description goes here
+ * Displays and processes the patron-facing form to request a copy of an archival object.
+ * Resolves the owning library from the archive node, saves the request via ArchiveRequest,
+ * and emails a notification to the library's configured archive request address.
+ * Supports reCAPTCHA to prevent spam submissions.
  *
  * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 7/21/2016
- * Time: 4:04 PM
+ * @author CJ O'Hara <pika@marmot.org>
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
+
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
-class Archive2_RequestCopy extends Action{
+
+class Archive2_RequestCopy extends Action {
 	function launch(){
 		global $configArray;
 		global $interface;
 
-		if (!isset($_REQUEST['id'])) {
+		if (!isset($_REQUEST['id'])){
 			PEAR_Singleton::raiseError('No id provided, you must select which object you want a copy of');
-			//TODO: log error instead of raise error
+			//TODO: log error also; the raise error generates a decent error message page.
 		}
 		$nid = ctype_digit($_REQUEST['id']) ? $_REQUEST['id'] : null;
+
+		//TODO need null check, e.g. /Archive2/RequestCopy/gibberish
 		//Find the owning library
 		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new Islandora2\Request();
+		$request        = new Islandora2\Request();
 		$requestedArray = $request->fetch("node", $nid);
 		/** @var \Islandora2Driver $requestedObject */
 		$requestedObject = new Islandora2Driver($nid);
 
 		$owningTid = $requestedArray['field_library']['tid'];
 		require_once ROOT_DIR . '/sys/Library/Library.php';
-		$owningLibrary = new Library();
+		$owningLibrary             = new Library();
 		$owningLibrary->libraryTid = $owningTid;
 		$owningLibrary->find(true);
-		if(empty($owningLibrary->libraryId)){
+		if (empty($owningLibrary->libraryId)){
 			PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot request a copy.');
 		}
-		$archiveRequestEmail = $owningLibrary->archiveRequestEmail;
-		$archiveRequestFields = $owningLibrary->getArchiveRequestFormStructure();
-		$archiveRequestFields['nid']['default'] = $nid;
-		$archiveRequestFields['nid']['value'] = $nid;
+		$archiveRequestEmail                           = $owningLibrary->archiveRequestEmail;
+		$archiveRequestFields                          = $owningLibrary->getArchiveRequestFormStructure();
+		$archiveRequestFields['nid']['default']        = $nid;
+		$archiveRequestFields['nid']['value']          = $nid;
 		$archiveRequestFields['libraryTid']['default'] = $owningLibrary->libraryTid;
 
-		if (isset($_REQUEST['submit'])) {
+		if (isset($_REQUEST['submit'])){
 			if (isset($configArray['ReCaptcha']['privateKey'])){
-					try {
-							$recaptchaValid = recaptchaCheckAnswer();
-					} catch (Exception $e) {
-							$recaptchaValid = false;
-					}
+				try {
+					$recaptchaValid = recaptchaCheckAnswer();
+				} catch (Exception $e){
+					$recaptchaValid = false;
+				}
 			}else{
-					$recaptchaValid = true;
+				$recaptchaValid = true;
 			}
 
-			if (!$recaptchaValid) {
-					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
+			if (!$recaptchaValid){
+				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 
-					// Pre-fill form with user-supplied data
-				foreach ($archiveRequestFields as &$property) {
+				// Pre-fill form with user-supplied data
+				foreach ($archiveRequestFields as &$property){
 					if (isset($_REQUEST[$property['property']])){
-						$userValue = $_REQUEST[$property['property']];
+						$userValue           = $_REQUEST[$property['property']];
 						$property['default'] = $userValue;
 					}
 				}
 
-			} else {
+			}else{
 				$archiveRequestFields['dateRequested']['value'] = time();
-				$archiveRequestFields['nid']['value'] = $nid;
+				$archiveRequestFields['nid']['value']           = $nid;
 				/** @var Archive2\ArchiveRequest $newObject */
 				$newObject = $this->insertObject($archiveRequestFields);
 				$interface->assign('requestSubmitted', true);
-				if ($newObject !== false && !empty($newObject->nid)) {
+				if ($newObject !== false && !empty($newObject->nid)){
 					$interface->assign('requestResult', $newObject);
 					$interface->assign('requestedObject', $requestedObject);
 					$body = $interface->fetch('Emails/archive2-request.tpl');
@@ -98,27 +103,29 @@ class Archive2_RequestCopy extends Action{
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							$body .= $requestedObject->getAbsoluteUrl();
 							require_once ROOT_DIR . '/sys/Mailer.php';
-							$mail = new VuFindMailer();
-							$subject = 'New Request for Copies of Archive Content';
+							//TODO: create fallback when empty($owningLibrary->archiveRequestEmail)
+							$mail        = new VuFindMailer();
+							$subject     = 'New Request for Copies of Archive Content';
 							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
 
 							if ($emailResult === true){
+								//TODO: result not used
 								$result = [
-									'result' => true,
+									'result'  => true,
 									'message' => 'Your e-mail was sent successfully.'
 								];
-							} elseif (PEAR_Singleton::isError($emailResult)){
+							}elseif (PEAR_Singleton::isError($emailResult)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
-							} else {
+							}else{
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
 								global $pikaLogger;
 								$pikaLogger->error("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body");
 							}
-						} else {
+						}else{
 							$interface->assign('error', 'Please do not include html or links within your request');
 							$newObject->delete();
 						}
-					} else {
+					}else{
 						$interface->assign('error', "Your request could not be sent because the library does not accept requests for copies.");
 					}
 				}else{
@@ -135,9 +142,9 @@ class Archive2_RequestCopy extends Action{
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
 		// Set up captcha to limit spam submission
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-				$captchaCode        = recaptchaGetQuestion();
-				$interface->assign('captcha', $captchaCode);
+		if (isset($configArray['ReCaptcha']['publicKey'])){
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
 		}
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
@@ -153,15 +160,15 @@ class Archive2_RequestCopy extends Action{
 		$newObject = new Archive2\ArchiveRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
-		$newObject->nid = $_REQUEST['id'];
+		$newObject->nid    = $_REQUEST['id'];
 		$validationResults = DataObjectUtil::validateObject($structure, $newObject);
-		if ($validationResults['validatedOk']) {
+		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
-			if (!$ret) {
+			if (!$ret){
 				global $pikaLogger;
-				if ($newObject->_lastError) {
+				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
-				} else {
+				}else{
 					$errorDescription = 'Unknown error';
 				}
 				$pikaLogger->debug('Could not insert new object ' . $ret . ' ' . $errorDescription);
@@ -169,7 +176,7 @@ class Archive2_RequestCopy extends Action{
 
 				return false;
 			}
-		} else {
+		}else{
 			global $pikaLogger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$pikaLogger->debug('Could not validate new object Archive Request ' . $errorDescription);
