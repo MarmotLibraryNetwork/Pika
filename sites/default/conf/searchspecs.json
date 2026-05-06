@@ -903,7 +903,10 @@
       "sm_field_technique" : [ /*Technique (general?) */
         ["exact", 10]
       ],
-      "sm_field_physical_form" : [
+      "sm_physical_form" : [
+        ["exact", 10] /*TODO: onePhrase? */
+      ],
+      "sm_field_physical_form" : [ /*TODO: remove */
         ["exact", 10] /*TODO: onePhrase? */
       ],
       "tm_X3b_en_field_phys_desc_note" : [ /* Physical Description Note (contains colon characters) */
