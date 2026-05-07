@@ -252,6 +252,12 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the created date formatted according to the given format string.
+     *
+     * @param string $format A date() format string.
+     * @return string|null Formatted date string, or null when no created date is set.
+     */
     public function getDateCreated($format = 'm/d/Y')
     {
         $created = $this->created;
@@ -315,12 +321,12 @@ abstract class I2Object implements MediaObjectInterface
         if ($subjects === null) {
             return null;
         }
-		    // if it's a single subject, wrap in an array
+        // if it's a single subject, wrap in an array
         if (is_array($subjects) && array_key_exists('tid', $subjects)) {
             $subjects = [$subjects];
         }
-        usort($subjects, fn($a, $b) => strcmp($a['name'] ?? '', $b['name'] ?? ''));
-				// The null-coalescing ?? '' handles any subjects that might be missing a name key gracefully.
+        usort($subjects, fn ($a, $b) => strcmp($a['name'] ?? '', $b['name'] ?? ''));
+        // The null-coalescing ?? '' handles any subjects that might be missing a name key gracefully.
         return $subjects;
     }
 
@@ -401,11 +407,21 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the relative URL for this Islandora object.
+     *
+     * @return string
+     */
     public function getUrl(): string
     {
         return getObjRelativeUrl($this);
     }
 
+    /**
+     * Return the absolute URL for this Islandora object.
+     *
+     * @return string
+     */
     public function getAbsoluteUrl(): string
     {
         return getObjAbsoluteUrl($this);
@@ -421,6 +437,32 @@ abstract class I2Object implements MediaObjectInterface
         return $this->logger;
     }
 
+    /**
+     * Return the library organization taxonomy term associated with this node.
+     *
+     * @return mixed The taxonomy term object, or null when unavailable.
+     */
+    public function getLibraryOrganization()
+    {
+        $library_tid = $this->nodeWithoutFieldPrefix['library']['tid'] ?? null;
+        if ($library_tid === null) {
+            $this->logger->warn('Warning no library set for node ' . $this->getNodeId());
+            return null;
+        }
+        $taxonomy = new TaxonomyFactory();
+        $library = $taxonomy->fromTid($library_tid);
+        if ($library === null) {
+            $this->logger->warn('Warning no Corperate Body related to library tid ' . $library_tid);
+            return null;
+        }
+        return $library;
+    }
+
+    /**
+     * Return the related place taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related place entries, or null when none are present.
+     */
     public function getRelatedPlace(): ?array
     {
         $related_place = $this->nodeWithoutFieldPrefix['related_place'] ?? null;
@@ -430,6 +472,11 @@ abstract class I2Object implements MediaObjectInterface
         return $related_place;
     }
 
+    /**
+     * Return the related event taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related event entries, or null when none are present.
+     */
     public function getRelatedEvent(): ?array
     {
         $related_event = $this->nodeWithoutFieldPrefix['related_event'] ?? null;
@@ -439,6 +486,11 @@ abstract class I2Object implements MediaObjectInterface
         return $related_event;
     }
 
+    /**
+     * Return the related organization taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related organization entries, or null when none are present.
+     */
     public function getRelatedOrganization(): ?array
     {
         $related_org = $this->nodeWithoutFieldPrefix['related_org'] ?? null;
@@ -448,6 +500,14 @@ abstract class I2Object implements MediaObjectInterface
         return $related_org;
     }
 
+    /**
+     * Return the related persons associated with this node.
+     *
+     * Handles both single and multiple related-person paragraph entries, normalizing
+     * the result to a flat array of person term arrays.
+     *
+     * @return array|null Array of related person entries, or null when none are present.
+     */
     public function getRelatedPerson(): ?array
     {
         $related_person = $this->nodeWithoutFieldPrefix['related_person_paragraph'] ?? null;
