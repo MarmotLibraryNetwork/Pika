@@ -293,7 +293,8 @@ class ArchiveObject extends \Action
      *
      * @return int|null
      */
-    public function getOwningLibraryId(): ?int {
+    public function getOwningLibraryId(): ?int
+    {
         $library = $this->getOwningLibrary();
         return (int)$library->libraryId ?? null;
     }
@@ -334,11 +335,11 @@ class ArchiveObject extends \Action
         global $library;
         $currentLibraryId = $library->libraryId;
         $owningLibrary = $this->getOwningLibrary();
-        
-        if(!$owningLibrary || ((int)$currentLibraryId !== (int)$owningLibrary->libraryId)) {
+
+        if (!$owningLibrary || ((int)$currentLibraryId !== (int)$owningLibrary->libraryId)) {
             return false;
         }
-        
+
         if ($owningLibrary->allowRequestsForArchiveMaterials === 1) {
             return true;
         }
