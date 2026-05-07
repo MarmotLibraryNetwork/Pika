@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -59,6 +60,15 @@ const ISLANDORA2_VOCAB_URL_MAP = [
     'event'          => 'Event',
 ];
 
+/**
+ * Return the relative display URL for an Islandora 2 object.
+ *
+ * Maps display model names to their Archive2 action segment using
+ * ISLANDORA2_DISPLAY_MODEL_URL_MAP. Unmapped models are used as-is.
+ *
+ * @param I2Object $obj
+ * @return string  Relative URL, or '#' when the object has no valid node ID.
+ */
 function getObjRelativeUrl(I2Object $obj): string
 {
     if ($obj->getNodeId() <= 0) {
@@ -71,6 +81,15 @@ function getObjRelativeUrl(I2Object $obj): string
     return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->getNodeId());
 }
 
+/**
+ * Return the absolute display URL for an Islandora 2 object.
+ *
+ * Prepends the site base URL (or the library's catalogUrl when set) to the
+ * relative URL returned by getObjRelativeUrl().
+ *
+ * @param I2Object $obj
+ * @return string  Absolute URL, or the base URL followed by '#' when invalid.
+ */
 function getObjAbsoluteUrl(I2Object $obj)
 {
     global $configArray;
@@ -107,5 +126,28 @@ function getTaxonomyRelativeUrl(TaxonomyObjectInterface $term): string
     $vocab   = strtolower($term->getVocabularyMachineName() ?? '');
     $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'TaxonomyTerm';
 
-    return '/Archive2/' . $segment . '?tid=' . urlencode((string)$tid);
+    return '/Archive2/' . $segment . '/' . urlencode((string)$tid);
+}
+
+/**
+ * Return the absolute display URL for an Islandora 2 taxonomy term.
+ *
+ * Prepends the site base URL (or the library's catalogUrl when set) to the
+ * relative URL returned by getTaxonomyRelativeUrl().
+ *
+ * @param TaxonomyObjectInterface $term
+ * @return string  Absolute URL, or the base URL followed by '#' when invalid.
+ */
+function getTaxonomyAbsoluteUrl(TaxonomyObjectInterface $term)
+{
+    global $configArray;
+    global $library;
+
+    $baseUrl = $configArray['Site']['url'] ?? '';
+    if (!empty($library->catalogUrl ?? '')) {
+        $scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+        $baseUrl = $scheme . '://' . $library->catalogUrl;
+    }
+
+    return rtrim($baseUrl, '/') . getTaxonomyRelativeUrl($term);
 }
