@@ -166,14 +166,20 @@ class ArchiveObject extends \Action
         $interface->assign('physical_description', $extent);
 
         // Library
-        $libraryName = $this->mediaObject->library['name'] ?? null;
-        $interface->assign('library_name', $libraryName);
-        $libraryTid = $this->mediaObject->library['tid'] ?? null;
-        $interface->assign('library_tid', $libraryTid);
-        $libraryUrl = "/Archive2/Library/" . $libraryTid;
-        $interface->assign('library_url', $libraryUrl);
-        $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
-        $interface->assign('library_namespace', $libraryNamespace);
+        // Get the Corporate Body associated with the library
+        $libraryTerm = $this->mediaObject->getLibraryOrganization();
+        // If corporte body term isn't found use the Library vocab term
+        if ($libraryTerm === null) {
+            $interface->assign('library_name', $this->mediaObject->library['name'] ?? null);
+            $interface->assign('library_tid', $this->mediaObject->library['tid'] ?? null);
+            $interface->assign('library_url', null);
+        } else {
+            $interface->assign('library_name', $libraryTerm->name ?? null);
+            $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
+            $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
+            $interface->assign('library_url', $libraryURL);
+        }
+
 
         // Interview Location
         // NOTE: field_location is labeled as Interview Location in UI
