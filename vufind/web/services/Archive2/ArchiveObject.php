@@ -228,6 +228,44 @@ class ArchiveObject extends \Action
         // Analytics
         $interface->assign('archivePage', true);
 
+        // Process art materials taxonomy field into name+AAT-number pairs for artworkDetailsSection.tpl.
+        // Each entry's name ends with the AAT number in parentheses, e.g. "bronze (metal) (300010957)".
+        $rawMaterials = $nodeData['materials'] ?? null;
+        $artMaterials = [];
+        if ($rawMaterials !== null) {
+            // Normalize: single item has a 'name' key directly; multiple items is a numeric array.
+            $items = isset($rawMaterials['name']) ? [$rawMaterials] : (array)$rawMaterials;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $artMaterials[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('artMaterials', $artMaterials ?: null);
+
+        // Same processing for art technique taxonomy field.
+        $rawArtTechnique = $nodeData['art_technique'] ?? null;
+        $artTechniques = [];
+        if ($rawArtTechnique !== null) {
+            $items = isset($rawArtTechnique['name']) ? [$rawArtTechnique] : (array)$rawArtTechnique;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $artTechniques[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('artTechniques', $artTechniques ?: null);
+
         // Staff role flag consumed by staffViewSection.tpl
         $isStaffUser = \UserAccount::userHasRole('archives')
             || \UserAccount::userHasRole('opacAdmin')
