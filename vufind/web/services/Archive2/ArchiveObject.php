@@ -23,6 +23,7 @@ require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
 require_once ROOT_DIR . '/sys/Library/Library.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
@@ -36,16 +37,16 @@ class ArchiveObject extends \Action
     protected int $nid;
     protected Logger $logger;
 
-    protected const MODEL_VIEWER_MAP = [
-        'audio' => 'audio',
-        'book' => 'mirador',
-        'compound object' => 'compound',
-        'digital document' => 'pdfjs',
-        'image' => 'open_seadragon',
-        'paged content' => 'mirador',
-        'postcard' => 'open_seadragon_multi',
-        'video' => 'video',
-    ];
+	protected const MODEL_VIEWER_MAP = [
+		'audio'            => 'audio',
+		'book'             => 'mirador',
+		'compound object'  => 'compound',
+		'digital document' => 'pdfjs',
+		'image'            => 'open_seadragon',
+		'paged content'    => 'mirador',
+		'postcard'         => 'open_seadragon_multi',
+		'video'            => 'video',
+	];
 
     /** Loads the media object from the `id` query parameter. */
     public function __construct()
@@ -227,6 +228,82 @@ class ArchiveObject extends \Action
         // Analytics
         $interface->assign('archivePage', true);
 
+        // Staff role flag consumed by staffViewSection.tpl
+        $isStaffUser = \UserAccount::userHasRole('archives')
+            || \UserAccount::userHasRole('opacAdmin')
+            || \UserAccount::userHasRole('libraryAdmin');
+        $interface->assign('isStaffUser', $isStaffUser);
+
+        $moreDetailsOptions = $this->filterAndSortMoreDetailsOptions($this->getBaseMoreDetailsOptions());
+        $interface->assign('moreDetailsOptions', $moreDetailsOptions);
+
+    }
+
+    /**
+     * Builds the full set of more-details accordion sections from Archive2 section templates.
+     * Each section's body is fetched from `Archive2/sections/{key}Section.tpl`.
+     * Sections whose template renders empty are excluded.
+     */
+    protected function getBaseMoreDetailsOptions(): array
+    {
+        global $interface;
+
+        $sections = \LibraryArchiveMoreDetails::$moreDetailsOptions;
+        $sections['moreDetails'] = 'Catalog Details';
+
+        $allOptions = [];
+        foreach ($sections as $key => $label) {
+            $body = trim($interface->fetch("Archive2/sections/{$key}Section.tpl"));
+            if ($body !== '') {
+                $allOptions[$key] = [
+                    'label'         => $label,
+                    'body'          => $body,
+                    'openByDefault' => false,
+                ];
+            }
+        }
+
+        return $allOptions;
+    }
+
+    /**
+     * Filters and sorts $allOptions to only the sections configured for the current
+     * library (or the LibraryArchiveMoreDetails defaults), setting openByDefault from
+     * the collapseByDefault flag. Mirrors IslandoraDriver::filterAndSortMoreDetailsOptions().
+     */
+    protected function filterAndSortMoreDetailsOptions(array $allOptions): array
+    {
+        global $library;
+
+        $useDefault         = true;
+        $moreDetailsFilters = [];
+
+        if ($library && count($library->archiveMoreDetailsOptions) > 0) {
+            $useDefault = false;
+            /** @var \LibraryArchiveMoreDetails $option */
+            foreach ($library->archiveMoreDetailsOptions as $option) {
+                $moreDetailsFilters[$option->section] = $option->collapseByDefault ? 'closed' : 'open';
+            }
+        }
+
+        if ($useDefault) {
+            $libraryId             = $library ? (int)$library->libraryId : -1;
+            $defaultDetailsFilters = \LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
+            foreach ($defaultDetailsFilters as $filter) {
+                $moreDetailsFilters[$filter->section] = $filter->collapseByDefault ? 'closed' : 'open';
+            }
+        }
+
+        $filteredMoreDetailsOptions = [];
+        foreach ($moreDetailsFilters as $option => $initialState) {
+            if (array_key_exists($option, $allOptions)) {
+                $detailOptions                       = $allOptions[$option];
+                $detailOptions['openByDefault']      = ($initialState === 'open');
+                $filteredMoreDetailsOptions[$option] = $detailOptions;
+            }
+        }
+
+        return $filteredMoreDetailsOptions;
     }
 
     /**
