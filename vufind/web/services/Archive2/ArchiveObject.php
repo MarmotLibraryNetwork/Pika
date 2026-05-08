@@ -266,6 +266,20 @@ class ArchiveObject extends \Action
         }
         $interface->assign('artTechniques', $artTechniques ?: null);
 
+        // Normalize Drupal link fields for externalLinksSection.tpl.
+        $interface->assign('externalLinks',   $this->normalizeLinkField($nodeData['external_link']     ?? null) ?: null);
+        $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
+        $interface->assign('genealogyLinks',  $this->normalizeLinkField($nodeData['genealogy_link']    ?? null) ?: null);
+
+        // Catalog links: rewrite host to the current library's catalog when the stored
+        // host matches a known library's catalogUrl, then fall back to a generic title.
+        $rawCatalogLinks = $this->normalizeLinkField($nodeData['catalog_link'] ?? null, 'This title within the catalog.');
+        foreach ($rawCatalogLinks as &$link) {
+            $link['uri'] = $this->rewriteCatalogLinkUri($link['uri']);
+        }
+        unset($link);
+        $interface->assign('catalogLinks', $rawCatalogLinks ?: null);
+
         // Staff role flag consumed by staffViewSection.tpl
         $isStaffUser = \UserAccount::userHasRole('archives')
             || \UserAccount::userHasRole('opacAdmin')
@@ -599,5 +613,92 @@ class ArchiveObject extends \Action
         $k = trim($restriction);
         $restrictions[$k] = 1;
         return $restrictions;
+    }
+
+    /**
+     * Normalizes a Drupal link field (single item or array of items) into a
+     * consistent array of ['uri' => string, 'title' => string] entries.
+     *
+     * @param mixed  $raw
+     * @param string $titleFallback Text to use when the item has no title; defaults to the URI.
+     * @return array<array{uri: string, title: string}>
+     */
+    private function normalizeLinkField($raw, string $titleFallback = ''): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        $items = isset($raw['uri']) ? [$raw] : (array)$raw;
+        $links = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $uri = trim($item['uri'] ?? '');
+            if ($uri === '') {
+                continue;
+            }
+            $links[] = [
+                'uri'   => $uri,
+                'title' => trim($item['title'] ?? '') ?: ($titleFallback ?: $uri),
+            ];
+        }
+        return $links;
+    }
+
+    /**
+     * Rewrites the host portion of a catalog link URI to the current library's
+     * catalogUrl, but only when the original host (or a known non-production
+     * variant of it) matches a library's catalogUrl in the database.
+     * Preserves the original URI when no library match is found.
+     *
+     * On non-production servers two additional candidate hosts are tried:
+     *   - Test-server form:  first-subdomain + '2' + rest  (opac.x.org → opac2.x.org)
+     *   - Local-dev form:    replace TLD with '.local'      (opac.x.org → opac.x.local)
+     */
+    private function rewriteCatalogLinkUri(string $uri): string
+    {
+        global $library, $configArray;
+
+        $parts    = parse_url($uri);
+        $linkHost = $parts['host'] ?? null;
+        if ($linkHost === null || !$library || empty($library->catalogUrl)) {
+            return $uri;
+        }
+
+        // Always try the exact stored host first.
+        $hostsToTry = [$linkHost];
+
+        if (empty($configArray['Site']['isProduction'])) {
+            // Test-server alternate: 'opac.marmot.org' → 'opac2.marmot.org'
+            $dotPos = strpos($linkHost, '.');
+            if ($dotPos !== false) {
+                $hostsToTry[] = substr($linkHost, 0, $dotPos) . '2' . substr($linkHost, $dotPos);
+            }
+
+            // Local-dev alternate: 'opac.marmot.org' → 'opac.marmot.local'
+            $lastDotPos = strrpos($linkHost, '.');
+            if ($lastDotPos !== false) {
+                $hostsToTry[] = substr($linkHost, 0, $lastDotPos) . '.local';
+            }
+        }
+
+        foreach ($hostsToTry as $candidateHost) {
+            $matchingLibrary             = new \Library();
+            $matchingLibrary->catalogUrl = $candidateHost;
+            if ($matchingLibrary->find(true)) {
+                $newUri  = 'https://' . $library->catalogUrl;
+                $newUri .= $parts['path'] ?? '';
+                if (isset($parts['query'])) {
+                    $newUri .= '?' . $parts['query'];
+                }
+                if (isset($parts['fragment'])) {
+                    $newUri .= '#' . $parts['fragment'];
+                }
+                return $newUri;
+            }
+        }
+
+        return $uri;
     }
 }

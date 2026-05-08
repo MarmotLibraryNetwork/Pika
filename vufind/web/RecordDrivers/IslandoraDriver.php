@@ -41,6 +41,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	protected $modsData = null;
 	private $hiddenLinkTypes = ['wikipedia', 'geoNames', 'whosOnFirst', 'relatedPika', 'fortlewisgeoplaces'];
+	// related Pika hidden because these links are displayed as Librarian Picks in the explore more sidebar
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved
