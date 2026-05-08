@@ -148,7 +148,7 @@ class Compound extends ArchiveObject
         $interface->assign('viewer', 'compound');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 
