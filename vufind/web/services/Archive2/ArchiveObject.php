@@ -269,7 +269,12 @@ class ArchiveObject extends \Action
         // Normalize Drupal link fields for externalLinksSection.tpl.
         $interface->assign('externalLinks',   $this->normalizeLinkField($nodeData['external_link']     ?? null) ?: null);
         $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
-        $interface->assign('genealogyLinks',  $this->normalizeLinkField($nodeData['genealogy_link']    ?? null) ?: null);
+        $rawGenealogyLinks = $this->normalizeLinkField($nodeData['genealogy_link'] ?? null);
+        foreach ($rawGenealogyLinks as &$link) {
+            $link['uri'] = $this->rewriteGenealogyLinkUri($link['uri']);
+        }
+        unset($link);
+        $interface->assign('genealogyLinks', $rawGenealogyLinks ?: null);
 
         // Catalog links: rewrite host to the current library's catalog when the stored
         // host matches a known library's catalogUrl, then fall back to a generic title.
@@ -647,10 +652,46 @@ class ArchiveObject extends \Action
     }
 
     /**
+     * Rewrites the host portion of a genealogy link URI to the current library's
+     * catalog URL when genealogy is enabled for the current library.
+     * Returns the original URI unchanged when genealogy is not enabled.
+     */
+    private function rewriteGenealogyLinkUri(string $uri): string
+    {
+        global $library, $configArray;
+
+        if (!$library || !$library->enableGenealogy) {
+            return $uri;
+        }
+
+        $parts = parse_url($uri);
+        if (!isset($parts['host'])) {
+            return $uri;
+        }
+
+        $currentBase = empty($library->catalogUrl)
+            ? rtrim($configArray['Site']['url'], '/')
+            : ($_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl);
+
+        $newUri  = $currentBase;
+        $newUri .= $parts['path'] ?? '';
+        if (isset($parts['query'])) {
+            $newUri .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $newUri .= '#' . $parts['fragment'];
+        }
+        return $newUri;
+    }
+
+    /**
      * Rewrites the host portion of a catalog link URI to the current library's
      * catalogUrl, but only when the original host (or a known non-production
      * variant of it) matches a library's catalogUrl in the database.
      * Preserves the original URI when no library match is found.
+     *
+     * Since MLN2 is unlikely to have the corresponding title for
+     * an MLN1 archive object's catalog link, preserve the original link in those cases.
      *
      * On non-production servers two additional candidate hosts are tried:
      *   - Test-server form:  first-subdomain + '2' + rest  (opac.x.org → opac2.x.org)
