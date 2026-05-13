@@ -21,6 +21,7 @@
 namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 
 class CollectionObject extends I2Object
 {
@@ -191,29 +192,33 @@ class CollectionObject extends I2Object
      */
     public function getTotalChildCount(): int
     {
-        return count($this->rawNode['children'] ?? []);
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return 0;
+        }
+        $response = (new Request())->fetchChildren($nid, page: 1, number: 1);
+        return (int)($response['total'] ?? 0);
     }
 
     /**
-     * Returns a paginated slice of children as I2Object instances.
-     * Only the nid is available from the raw children payload, so each child
-     * requires one API call. Limit to the current page to keep calls manageable.
+     * Returns a paginated page of children as I2Object instances.
      *
      * @return array Array of I2Object instances for the requested page.
      */
     public function getChildObjectsPaginated(int $page = 1, int $limit = 24): array
     {
-        $rawChildren = $this->rawNode['children'] ?? [];
-        $offset      = ($page - 1) * $limit;
-        $pageSlice   = array_slice($rawChildren, $offset, $limit);
-        $objects     = [];
-        foreach ($pageSlice as $child) {
-            $nid = $child['nid'] ?? null;
-            if (!is_numeric($nid) || $nid <= 0) {
-                continue;
-            }
-            $obj = (new I2ObjectFactory())->fromNodeId((int)$nid);
-            if ($obj) {
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
+        }
+        $response = (new Request())->fetchChildren($nid, $page, $limit);
+        if ($response === null) {
+            return [];
+        }
+        $objects = [];
+        foreach ($response['children'] ?? [] as $childNode) {
+            $obj = (new I2ObjectFactory())->fromNode($childNode);
+            if ($obj !== null) {
                 $objects[] = $obj;
             }
         }
