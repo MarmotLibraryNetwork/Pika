@@ -279,17 +279,17 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		// make sure password in database matches
 		$currentPassword = $user->getPassword();
 		if ($password !== $currentPassword) {
-			// don't use cache if password mismatch, user may have reset password
+			// don't use cache if passwords mismatch, user may have reset password
 			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password, true);
 		} else {
 			[$userValid, $sessionToken, $horizonRoaUserID] = $this->loginViaWebService($barcode, $password);
 		}
 
 		// check again if the user using the ils id
-		// barcodes can change and we don't want to create another account
+		// barcodes can change, and we don't want to create another account
 		if(!$userExistsInDB) {
 			unset($user);
-			$user = new User();
+			$user            = new User();
 			$user->ilsUserId = $horizonRoaUserID;
 			$user->source    = $this->accountProfile->name;
 			if ($user->find(true)){
@@ -297,6 +297,12 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 				// update the barcode right away to avoid conflicts with ajax calls
 				$user->barcode = $barcode;
 				$user->update();
+			} else {
+				// Brand-new patron (not in DB by barcode or ilsUserId).
+				// The original $user object was destroyed by unset() above, so barcode
+				// must be set here on the fresh object; omitting it would insert a NULL
+				// barcode into the user table when this user is saved for the first time.
+				$user->barcode = $barcode;
 			}
 		} else {
 			// set the user ils id and barcode
@@ -357,8 +363,6 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 					$user->displayName = '';
 				}
 				$user->fullname     = $fullName ?? '';
-				// we tested the barcode at the start of log in and set it-- no need to do it again.
-				//$user->barcode      = $barcode;
 
 				$Address1    = "";
 				$City        = "";
