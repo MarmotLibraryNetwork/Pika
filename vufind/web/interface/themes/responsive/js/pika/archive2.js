@@ -23,6 +23,33 @@ Pika.Archive2 = (function(){
 
 	return {
 
+		collectionDisplayMode: 'grid',
+
+		initCollectionDisplayMode: function() {
+			if (!Globals.opac && Pika.hasLocalStorage()) {
+				var stored = window.localStorage.getItem('archive2CollectionDisplayMode');
+				if (stored === 'list' || stored === 'grid') {
+					this.collectionDisplayMode = stored;
+				}
+			}
+			this.applyCollectionDisplayMode();
+		},
+
+		toggleCollectionDisplayMode: function(mode) {
+			this.collectionDisplayMode = (mode === 'list') ? 'list' : 'grid';
+			if (!Globals.opac && Pika.hasLocalStorage()) {
+				window.localStorage.setItem('archive2CollectionDisplayMode', this.collectionDisplayMode);
+			}
+			this.applyCollectionDisplayMode();
+		},
+
+		applyCollectionDisplayMode: function() {
+			var isList = this.collectionDisplayMode === 'list';
+			$('#collection-display-container').toggleClass('collection-list', isList).toggleClass('collection-grid', !isList);
+			$('.displayMode').removeClass('active');
+			$('#collectionMode' + (isList ? 'List' : 'Grid')).addClass('active');
+		},
+
 		/**
 		 * Load the Explore More sidebar for an Islandora2 object page.
 		 * Injects the rendered HTML into #explore-more-body and initialises carousels.
