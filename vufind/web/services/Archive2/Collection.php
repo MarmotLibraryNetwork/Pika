@@ -29,6 +29,7 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 use Islandora2\CollectionObject;
 use Islandora2\I2ObjectFactory;
+use Islandora2\Request;
 use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
@@ -84,11 +85,12 @@ class Collection extends ArchiveObject
         foreach ($children as $child) {
             $thumbMedia      = $child->getThumbnail();
             $collectionChildren[] = [
-                'nid'       => $child->getNodeId(),
-                'title'     => $child->getTitle(),
-                'url'       => getObjRelativeUrl($child),
-                'thumbnail' => $thumbMedia ? $thumbMedia->thumbnailUrl : '',
-                'date'      => $child->getDateCreated('Y'),
+                'nid'         => $child->getNodeId(),
+                'title'       => $child->getTitle(),
+                'url'         => getObjRelativeUrl($child),
+                'thumbnail'   => $thumbMedia ? $thumbMedia->thumbnailUrl : '',
+                'date'        => $child->getDateCreated('Y'),
+                'description' => strip_tags($child->getDescription() ?? ''),
             ];
         }
 
@@ -185,7 +187,7 @@ class Collection extends ArchiveObject
                     $childCollection = $factory->fromNodeId($childNid);
                     if ($childCollection instanceof CollectionObject) {
                         $childItems = [];
-                        foreach ($childCollection->getChildObjects() ?? [] as $obj) {
+                        foreach ($childCollection->getChildObjects() as $obj) {
                             $thumb        = $obj->getThumbnail();
                             $childItems[] = [
                                 'nid'       => $obj->getNodeId(),
@@ -210,18 +212,21 @@ class Collection extends ArchiveObject
                 $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
                 $randomSource = $factory->fromNodeId($randomNid);
                 if ($randomSource instanceof CollectionObject) {
-                    $rawChildren = $randomSource->getRawChildren() ?? [];
-                    if (!empty($rawChildren)) {
-                        $pick      = $rawChildren[array_rand($rawChildren)];
-                        $randomObj = $factory->fromNodeId((int)($pick['nid'] ?? 0));
-                        if ($randomObj) {
-                            $thumb = $randomObj->getThumbnail();
-                            $interface->assign('randomObject', [
-                                'title'     => $randomObj->getTitle(),
-                                'url'       => getObjRelativeUrl($randomObj),
-                                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                            ]);
-                            $templates[] = $interface->fetch('Archive2/components/random_image_component.tpl');
+                    $total = $randomSource->getTotalChildCount();
+                    if ($total > 0) {
+                        // number=1 means page N is item N, giving a uniform random pick across all children
+                        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
+                        if (!empty($response['children'])) {
+                            $randomObj = $factory->fromNode($response['children'][0]);
+                            if ($randomObj) {
+                                $thumb = $randomObj->getThumbnail();
+                                $interface->assign('randomObject', [
+                                    'title'     => $randomObj->getTitle(),
+                                    'url'       => getObjRelativeUrl($randomObj),
+                                    'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+                                ]);
+                                $templates[] = $interface->fetch('Archive2/components/random_image_component.tpl');
+                            }
                         }
                     }
                 }
