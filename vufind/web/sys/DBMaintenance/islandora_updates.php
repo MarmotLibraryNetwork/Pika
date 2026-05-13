@@ -154,6 +154,26 @@ function getIslandoraUpdates(): array{
 				'getTidFromNid'
 			]
 		],
+		'Islandora2_add_nid_and_convert_legacy_pid_to_nid_for_authorship_claim' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Add nid column to Authorship Claims',
+			'description'     => 'Adds Node ID column to Authorship Claims table to reflect the new Islandora Structure',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE claim_authorship_requests ADD COLUMN nid INT(11) NULL AFTER pid;",
+				'convertPidToNidAuthorship',
+			]
+		],
+		'Islandora2_add_LibraryTid_and_lookup_by_nid_for_authorship_claim' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Add libraryTid for filtering purposes. RUN AFTER "Add nid column to Authorship Claims',
+			'description'     => 'Adds librayTid column to Archive Requests table to enable filtering',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE claim_authorship_requests ADD COLUMN libraryTid INT(11) NULL AFTER nid;",
+				'getTidFromNidAuthorship'
+			]
+		],
 
 	];
 }
@@ -374,6 +394,31 @@ function convertPidToNid(){
 	}
 	return $success;
 }
+function convertPidToNidAuthorship(){
+	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
+	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
+	$authorshipClaim->whereAdd('pid IS NOT NULL');
+	$authorshipClaim->whereAdd("pid != ''");
+	$authorshipClaim->find();
+	$success = true;
+	while ($authorshipClaim->fetch()) {
+		$pid = $authorshipClaim->pid;
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+		// Get the Islandora2 search object
+		/** @var SearchObject_Islandora2 $islandora2Search */
+		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+			foreach ($nids as $nid){
+				$authorshipClaim->nid = $nid;
+				$authorshipClaim->update();
+				$success = true;
+			}
+		}else{
+			$success = false;
+		}
+	}
+	return $success;
+}
 
 function getTidFromNid(){
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
@@ -392,6 +437,29 @@ function getTidFromNid(){
 		if($libraryTid !== null){
 			$archiveRequest->libraryTid = $libraryTid;
 			$archiveRequest->update();
+		}else{
+			$success = false;
+		}
+	}
+	return $success;
+}
+function getTidFromNidAuthorship(){
+	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
+	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
+	$authorshipClaim->whereAdd('nid IS NOT NULL');
+	$authorshipClaim->find();
+	$success = true;
+	while ($authorshipClaim->fetch()) {
+		$nid = $authorshipClaim->nid;
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+		/** @var SearchObject_Islandora2 $islandora2Search */
+		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		$islandora2Search->addFieldsToReturn(['itm_field_library']);
+		$record = $islandora2Search->getRecord($nid);
+		$libraryTid = $record[0]['itm_field_library'][0] ?? null;
+		if($libraryTid !== null){
+			$authorshipClaim->libraryTid = $libraryTid;
+			$authorshipClaim->update();
 		}else{
 			$success = false;
 		}
