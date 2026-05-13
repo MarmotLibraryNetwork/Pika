@@ -50,7 +50,7 @@ class Image extends ArchiveObject
         $interface->assign('viewer', 'open_seadragon');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }
