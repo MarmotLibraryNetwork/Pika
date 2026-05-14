@@ -22,6 +22,7 @@ namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Media.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 
 use Pika\Logger;
 use Islandora2\I2Media;
@@ -345,52 +346,51 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return the children associated with this item.
+     * Return the first page of raw child node data from the children API.
      *
-     * @return array|null Returns null if no children
+     * @return array|null Array of raw child node payloads, or null on failure.
      */
     public function getRawChildren(): ?array
     {
-        return $this->rawNode['children'] ?? null;
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return null;
+        }
+        $response = (new Request())->fetchChildren($nid);
+        return $response['children'] ?? null;
     }
 
     /**
-     * Return all childern as I2Objects.
+     * Return all children as I2Objects.
      *
-     * @return array|null|false Array of thumbnail media objects, null when none exist, false if field doesn't exist.
+     * Page 1 is fetched synchronously; any remaining pages are fetched in
+     * parallel via MultiCurl (max 250 children per request).
+     *
+     * @return array Array of I2Object instances; empty when the node has no children.
      */
-    public function getChildObjects(): mixed
+    public function getChildObjects(): array
     {
-
-        if (!array_key_exists('children', $this->nodeWithoutFieldPrefix)) {
-            return false;
-        }
-
-        // Return cached children if already loaded
         if (!empty($this->childrenObjects)) {
             return $this->childrenObjects;
         }
 
-        // Build children from raw node data
-        $children = [];
-        $rawChildren = $this->children;
-        if (!is_array($rawChildren)) {
-            return null;
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
         }
-        foreach ($rawChildren as $child) {
-            $nid = $child['nid'] ?? null;
-            if (!is_numeric($nid) || $nid <= 0) {
-                continue;
-            }
-            $mediaObject = (new I2ObjectFactory())->fromNodeId($nid);
-            if ($mediaObject) {
-                $children[] = $mediaObject;
+
+        $factory  = new I2ObjectFactory();
+        $children = [];
+
+        foreach ((new Request())->fetchAllChildren($nid) as $childNode) {
+            $obj = $factory->fromNode($childNode);
+            if ($obj !== null) {
+                $children[] = $obj;
             }
         }
 
         $this->childrenObjects = $children;
         return $children;
-
     }
 
     /**

@@ -20,6 +20,7 @@
 namespace Islandora2;
 
 use Curl\Curl;
+use Curl\MultiCurl;
 use Pika\Cache;
 use Pika\Logger;
 
@@ -144,6 +145,79 @@ class Request
 	}
 
 	/**
+	 * Fetch all children of a node across as many pages as needed.
+	 *
+	 * Page 1 is fetched synchronously to learn the total; any remaining pages
+	 * are requested in parallel via MultiCurl. Each page is individually cached
+	 * so subsequent calls reuse cached data without making any network requests.
+	 *
+	 * @param int $nid      Parent node ID.
+	 * @param int $pageSize Items per page (max 250 per API call).
+	 * @return array        Flat array of raw child node payloads.
+	 */
+	public function fetchAllChildren(int $nid, int $pageSize = 250): array
+	{
+		$first = $this->fetchChildren($nid, 1, $pageSize);
+		if ($first === null) {
+			return [];
+		}
+
+		$total    = (int)($first['total'] ?? 0);
+		$children = $first['children'] ?? [];
+
+		if (count($children) >= $total) {
+			return $children;
+		}
+
+		$totalPages  = (int)ceil($total / $pageSize);
+		$multiCurl   = new MultiCurl();
+		if (!empty($this->userAgent)) {
+			$multiCurl->setUserAgent($this->userAgent);
+		}
+		$pageResults = [];
+
+		for ($page = 2; $page <= $totalPages; $page++) {
+			$cacheKey = 'islandora2_node_children_' . $nid . '_p' . $page . '_n' . $pageSize;
+			if (!isset($_REQUEST['reload'])) {
+				$cached = $this->cache->get($cacheKey);
+				if ($cached !== null) {
+					$pageResults[$page] = $cached['children'] ?? [];
+					continue;
+				}
+			}
+
+			$url  = $this->baseUrl . '/pika-json/node/' . $nid . '/children?page=' . $page . '&number=' . $pageSize;
+			$curl = $multiCurl->addGet($url);
+			$p    = $page;
+			$ck   = $cacheKey;
+			$curl->success(function ($instance) use (&$pageResults, $p, $nid, $ck) {
+				$result = $this->decodeBody($instance->response, 'node-children', $nid);
+				if ($result !== null) {
+					$this->cache->set($ck, $result, $this->resourceTtl);
+					$pageResults[$p] = $result['children'] ?? [];
+				}
+			});
+			$curl->error(function ($instance) use ($p, $nid) {
+				$this->logger->warning('MultiCurl error fetching children page.', [
+					'nid'  => $nid,
+					'page' => $p,
+					'code' => $instance->getHttpStatusCode(),
+				]);
+			});
+		}
+
+		$multiCurl->start();
+		$multiCurl->close();
+
+		ksort($pageResults);
+		foreach ($pageResults as $pageChildren) {
+			$children = array_merge($children, $pageChildren);
+		}
+
+		return $children;
+	}
+
+	/**
 	 * Fetch nodes that reference a taxonomy term.
 	 *
 	 * Returns an empty array when no related nodes exist (404), null on other failures.
@@ -216,6 +290,82 @@ class Request
 		} catch (\Throwable $exception) {
 			$this->logger->error('Exception while fetching related nodes for taxonomy term.', [
 				'tid'     => $tid,
+				'message' => $exception->getMessage(),
+			]);
+			return null;
+		} finally {
+			$curl->close();
+		}
+	}
+
+	/**
+	 * Fetch a paginated list of child nodes for a parent node.
+	 *
+	 * @param int $nid    Parent node ID.
+	 * @param int $page   1-indexed page number.
+	 * @param int $number Items per page.
+	 * @return array|null Response array with 'total', 'count', 'page', 'children' keys, or null on failure.
+	 */
+	public function fetchChildren(int $nid, int $page = 1, int $number = 10): ?array
+	{
+		if ($nid <= 0 || empty($this->baseUrl)) {
+			return null;
+		}
+
+		$cacheKey = 'islandora2_node_children_' . $nid . '_p' . $page . '_n' . $number;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
+
+		$url  = $this->baseUrl . '/pika-json/node/' . $nid . '/children?page=' . $page . '&number=' . $number;
+		$curl = new Curl();
+		$curl->setUserAgent($this->userAgent);
+
+		try {
+			$body = $curl->get($url);
+
+			if ($curl->isCurlError()) {
+				$this->logger->error('Curl error while fetching children for node.', [
+					'nid'   => $nid,
+					'page'  => $page,
+					'code'  => $curl->getCurlErrorCode(),
+					'error' => $curl->getCurlErrorMessage(),
+				]);
+				return null;
+			}
+
+			$statusCode = $curl->getHttpStatusCode();
+			if ($statusCode === 404) {
+				return null;
+			}
+
+			if ($curl->isError()) {
+				$this->logger->warning('HTTP error returned when fetching children.', [
+					'nid'  => $nid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			if ($statusCode !== 200) {
+				$this->logger->warning('Unexpected HTTP status when fetching children.', [
+					'nid'  => $nid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			$result = $this->decodeBody($body, 'node-children', $nid);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
+		} catch (\Throwable $exception) {
+			$this->logger->error('Failed to fetch children for Islandora node.', [
+				'nid'     => $nid,
 				'message' => $exception->getMessage(),
 			]);
 			return null;
