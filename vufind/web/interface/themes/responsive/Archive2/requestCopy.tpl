@@ -11,6 +11,12 @@
 				<p class="alert alert-success">Your request was submitted successfully.  The library will contact you with more information soon.</p>
 			{/if}
 		{else}
+			{if $error}
+				<div class="alert alert-danger">
+					<p>There is an error with your request.</p>
+					<p>{$error}</p>
+				</div>
+			{else}
 			{if $archiveRequestMaterialsHeader}
 				{$archiveRequestMaterialsHeader}
 			{else}
@@ -31,6 +37,7 @@
 			<div id="archiveCopyRequestFormContainer">
 				{$requestForm}
 			</div>
+			{/if}
 		{/if}
 
 	</div>
