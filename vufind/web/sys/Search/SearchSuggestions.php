@@ -128,7 +128,9 @@ class SearchSuggestions {
 				foreach ($wordSuggestions as $suggestedWord){
 					$escapedWord   = preg_quote($word, '/'); // prevent compilation failures below
 					$newSearchTerm = preg_replace("/\b($escapedWord)\b/", $suggestedWord, $searchTerm);
-					self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions);
+					if (!empty($newSearchTerm)){
+						self::fetchSearchStatForSpellingSuggestion($newSearchTerm, $suggestions);
+					}
 
 					//Also try replacements on any suggestions we have so far
 					foreach ($suggestionsSoFar as $tmpSearch){
