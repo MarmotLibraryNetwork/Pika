@@ -3540,7 +3540,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'WebPage';
 
 			default:
-				$this->logger->notice("No schema.org format set for $pikaFormat");
+				$this->logger->info("No schema.org format set for $pikaFormat");
 				return 'CreativeWork';
 		}
 	}
@@ -3571,7 +3571,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->notice('No schema.org book format set for ' . $pikaFormat);
+				$this->logger->info('No schema.org book format set for ' . $pikaFormat);
 			case 'Book Club Kit':
 			case 'Read-Along Book':
 			case 'Newspaper':
