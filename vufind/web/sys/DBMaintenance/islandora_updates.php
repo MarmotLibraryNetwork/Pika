@@ -102,7 +102,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_library_add_corporateBodyTid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'title'           => 'Add corporateBodyTid column to library table',
+			'title'           => 'Add corporateBodyTid column to library table and convert archivePid to corporateBodyTid',
 			'description'     => 'Adds a corporateBodyTid column to store the Islandora2 Corporate Body taxonomy term ID for each library, used to populate acknowledgement thumbnails on Archive object pages.',
 			'continueOnError' => false,
 			'sql'             => [
@@ -353,14 +353,14 @@ function convertArchivePidToCorporateBodyTid(): bool {
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 
 		while ($library->fetch()){
-			$tids = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
-			if (empty($tids)){
+			$TIDs = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
+			if (empty($TIDs)){
 				global $pikaLogger;
 				$pikaLogger->error("Found no Corporate Body TID for legacy archivePID $library->archivePid.");
 				$success = false;
 				continue;
 			}
-			$library->corporateBodyTid = (int)$tids[0];
+			$library->corporateBodyTid = (int) reset($TIDs);
 			if ($library->update() === false){
 				$success = false;
 			}
