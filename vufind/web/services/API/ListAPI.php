@@ -563,7 +563,7 @@ class ListAPI extends AJAXHandler {
 				if (is_array($titles)){
 					foreach ($titles as $key => $rawData){
 						$interface->assign('key', $key);
-						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
+						// 20131206 James Staub: bookTitle is in the list API, and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
 						$titleShort = preg_replace(['/\:.*?$/', '/\s*\/$\s*/'], '', $rawData['title']);
 //						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);

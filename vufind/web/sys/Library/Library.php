@@ -24,7 +24,8 @@ require_once 'DB/DataObject.php';
 require_once ROOT_DIR . '/sys/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/sys/Library/LibraryFacetSetting.php';
-require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
+//require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchive2SearchFacetSetting.php';
 require_once ROOT_DIR . '/sys/Library/LibraryCombinedResultSection.php';
 require_once ROOT_DIR . '/sys/Library/LibraryMoreDetails.php';
 require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
@@ -57,9 +58,9 @@ class Library extends DB_DataObject {
 	public $restrictSearchByLibrary;
 	public $archiveOnlyInterface;
 	public $partnerOfSystem;
-	public $allowProfileUpdates;   //tinyint(4)
-	public $allowFreezeHolds;   //tinyint(4)
-	public $scope; 					//smallint(6) // The Sierra OPAC scope
+	public $allowProfileUpdates;  		//tinyint(4)
+	public $allowFreezeHolds;     		//tinyint(4)
+	public $scope;      							//smallint(6) // The Sierra OPAC scope
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -213,9 +214,13 @@ class Library extends DB_DataObject {
 	public $sideBarOnRight;
 	public $showSidebarMenu;
 	public $sidebarMenuButtonText;
+
+	// Digital Archive Settings
 	public $enableArchive;
-	public $archiveNamespace;
-	public $archivePid;
+	public $archiveNamespace; // Islandora1 TODO: remove
+	public $libraryTid;       // Islandora2 library vocabulary TID
+	public $corporateBodyTid; // Islandora2 Corporate Body taxonomy term ID
+	public $archivePid;       // Contributing Library Organization PID; Islandora1 TODO: remove
 	public $allowRequestsForArchiveMaterials;
 	public $archiveRequestMaterialsHeader;
 	public $claimAuthorshipHeader;
@@ -224,41 +229,7 @@ class Library extends DB_DataObject {
 	public $collectionsToHide;
 	public $objectsToHide;
 	public $defaultArchiveCollectionBrowseMode;
-	public $showLCSubjects; // Library of Congress Subjects
-	public $showBisacSubjects;
-	public $showFastAddSubjects;
-	public $showOtherSubjects;
-	public $maxFinesToAllowAccountUpdates;
-	public $edsApiProfile;
-	public $edsApiUsername;
-	public $edsApiPassword;
-	public $edsSearchProfile;
-	protected $patronNameDisplayStyle; // Needs to be protected so __get and __set are called
-	private $patronNameDisplayStyleChanged = false; // Track changes so we can clear values for existing patrons
-	public $includeAllRecordsInShelvingFacets;
-	public $includeAllRecordsInDateAddedFacets;
-	public $includeOnOrderRecordsInDateAddedFacetValues;
-	public $alwaysShowSearchResultsMainDetails;
-	public $casHost;
-	public $casPort;
-	public $casContext;
-	public $showPikaLogo;
-	public $masqueradeAutomaticTimeoutLength;
-	public $allowMasqueradeMode;
-	public $allowReadingHistoryDisplayInMasqueradeMode;
-	public $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
-	public $materialsRequestDaysToPreserve;
-	public $showGroupedHoldCopiesCount;
-	public $interLibraryLoanName;
-	public $interLibraryLoanUrl;
-	public $expiredMessage;
-	public $expirationNearMessage;
-	public $showOnOrderCounts;
-
-	//Combined Results (Bento Box)
-	public $enableCombinedResults;
-	public $combinedResultsLabel;
-	public $defaultToCombinedResults;
+	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
 	// Archive Request Form Field Settings
 	public $archiveRequestFieldName;
@@ -274,7 +245,52 @@ class Library extends DB_DataObject {
 	public $archiveRequestFieldFormat;
 	public $archiveRequestFieldPurpose;
 
-	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
+	// Subjects
+	public $showLCSubjects; // Library of Congress Subjects
+	public $showBisacSubjects;
+	public $showFastAddSubjects;
+	public $showOtherSubjects;
+	public $maxFinesToAllowAccountUpdates;
+
+	// EDS
+	public $edsApiProfile;
+	public $edsApiUsername;
+	public $edsApiPassword;
+	public $edsSearchProfile;
+
+	protected $patronNameDisplayStyle; // Needs to be protected so __get and __set are called
+	private $patronNameDisplayStyleChanged = false; // Track changes so we can clear values for existing patrons
+
+	public $includeAllRecordsInShelvingFacets;
+	public $includeAllRecordsInDateAddedFacets;
+	public $includeOnOrderRecordsInDateAddedFacetValues;
+	public $alwaysShowSearchResultsMainDetails;
+
+	// CAS Authentication
+	public $casHost;
+	public $casPort;
+	public $casContext;
+
+	public $showPikaLogo;
+
+	// Masquerade
+	public $masqueradeAutomaticTimeoutLength;
+	public $allowMasqueradeMode;
+	public $allowReadingHistoryDisplayInMasqueradeMode;
+
+	public $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
+	public $materialsRequestDaysToPreserve;
+	public $showGroupedHoldCopiesCount;
+	public $interLibraryLoanName;
+	public $interLibraryLoanUrl;
+	public $expiredMessage;
+	public $expirationNearMessage;
+	public $showOnOrderCounts;
+
+	//Combined Results (Bento Box)
+	public $enableCombinedResults;
+	public $combinedResultsLabel;
+	public $defaultToCombinedResults;
 
 	public $changeRequiresReindexing;
 
@@ -357,7 +373,7 @@ class Library extends DB_DataObject {
 		unset($facetSettingStructure['showAsDropDown']);
 		//unset($facetSettingStructure['sortMode']);
 
-		$archiveSearchfacetSettingStructure = LibraryArchiveSearchFacetSetting::getObjectStructure();
+		$archiveSearchfacetSettingStructure = LibraryArchive2SearchFacetSetting::getObjectStructure();
 		unset($archiveSearchfacetSettingStructure['weight']);
 		unset($archiveSearchfacetSettingStructure['libraryId']);
 		unset($archiveSearchfacetSettingStructure['numEntriesToShowByDefault']);
@@ -954,9 +970,11 @@ class Library extends DB_DataObject {
 			'archiveSection' => ['property' =>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink' =>'https://marmot-support.atlassian.net/l/c/RdAMY41Q', 'properties' => [
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
-				'archivePid'                           => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
+				'libraryTid'                           => ['property' => 'libraryTid', 'type' => self::getLibraryTidType(), 'values' => self::getLibraryTidChoices(), 'label' => 'Library Taxonomy Term ID', 'description' => 'The Islandora2 Corporate Body TID for this library; shown as the contributing-library thumbnail in Archive object acknowledgements.', 'hideInLists' => true],
+				'corporateBodyTid'                     => ['property' => 'corporateBodyTid', 'type' => self::getCorporateBodyTidType(), 'values' => self::getCorporateBodyTidChoices(),  'label' => 'Corporate Body Taxonomy Term ID', 'description' => '', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
-				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide', 'description' => 'Specific collections to hide.', 'hideInLists' => true],
+				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],
 				'defaultArchiveCollectionBrowseMode'   => [
 					'property' => 'defaultArchiveCollectionBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Archive Collections (Exhibits)', 'description' => 'Sets how archive collections will be displayed by default when users haven\'t chosen a mode themselves.', 'hideInLists' => true,
@@ -1018,11 +1036,11 @@ class Library extends DB_DataObject {
 					]
 				],
 
-				'exploreMoreBar' => [
-					'property'      => 'exploreMoreBar',
+				'exploreMoreSidebar' => [
+					'property'      => 'exploreMoreSidebar',
 					'type'          => 'oneToMany',
-					'label'         => 'Archive Explore More Bar Configuration',
-					'description'   => 'Control the order of Explore More Sections and if they are open by default',
+					'label'         => 'Archive Explore More Sidebar Configuration',
+					'description'   => 'Control the order of Explore More Sidebar Sections and if they are open by default',
 					'keyThis'       => 'libraryId',
 					'keyOther'      => 'libraryId',
 					'subObjectType' => 'ArchiveExploreMoreBar',
@@ -1048,7 +1066,7 @@ class Library extends DB_DataObject {
 					//						'helpLink'                   => '',
 					'keyThis'                    => 'libraryId',
 					'keyOther'                   => 'libraryId',
-					'subObjectType'              => 'LibraryArchiveSearchFacetSetting',
+					'subObjectType'              => 'LibraryArchive2SearchFacetSetting',
 					'structure'                  => $archiveSearchfacetSettingStructure,
 					'sortable'                   => true,
 					'storeDb'                    => true,
@@ -1352,7 +1370,7 @@ class Library extends DB_DataObject {
 				return $this->facets;
 			case 'archiveSearchFacets':
 				if (!isset($this->archiveSearchFacets)){
-					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
+					$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchive2SearchFacetSetting', 'weight');
 				}
 				return $this->archiveSearchFacets;
 			case 'libraryLinks':
@@ -1840,7 +1858,7 @@ class Library extends DB_DataObject {
 	}
 
 	public function clearArchiveSearchFacets(){
-		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting');
+		$this->clearOneToManyOptions('LibraryArchive2SearchFacetSetting');
 		$this->archiveSearchfacets = [];
 	}
 
@@ -2035,6 +2053,32 @@ class Library extends DB_DataObject {
 		return $defaultFacets;
 	}
 
+	/**
+	 * Build the default set of Islandora2 archive search facets for a library.
+	 *
+	 * Iterates over {@see LibraryArchive2SearchFacetSetting::$defaultFacetList},
+	 * creates a {@see LibraryArchive2SearchFacetSetting} side-facet object for each
+	 * entry, assigns it to the given library, and returns the ordered list.
+	 * Facets are collapsed by default and weighted sequentially starting at 1.
+	 *
+	 * @param  int   $libraryId  The libraryId to assign to each facet; -1 for none.
+	 * @return LibraryArchive2SearchFacetSetting[]  Ordered array of default facet objects.
+	 */
+	static function getDefaultArchive2SearchFacets($libraryId = -1){
+		$defaultFacets     = [];
+		$defaultFacetsList = LibraryArchive2SearchFacetSetting::$defaultFacetList;
+		foreach ($defaultFacetsList as $facetName => $facetDisplayName){
+			$facet = new LibraryArchive2SearchFacetSetting();
+			$facet->setupSideFacet($facetName, $facetDisplayName, false);
+			$facet->libraryId         = $libraryId;
+			$facet->collapseByDefault = true;
+			$facet->weight            = count($defaultFacets) + 1;
+			$defaultFacets[]          = $facet;
+		}
+
+		return $defaultFacets;
+	}
+
 	static function getDefaultArchiveSearchFacets($libraryId = -1){
 		$defaultFacets     = [];
 		$defaultFacetsList = LibraryArchiveSearchFacetSetting::$defaultFacetList;
@@ -2061,7 +2105,7 @@ class Library extends DB_DataObject {
 	}
 
 	/**
-	 * Return array of library names and ids to populate partner box
+	 * Return an array of library names and ids to populate the partner box
 	 * @return array
 	 */
 	public function getLibrariesForPartner(): array{
@@ -2090,8 +2134,65 @@ class Library extends DB_DataObject {
 		return $location->fetchAll('locationId');
 	}
 
+	/**
+	 * Return a TID => name map of library taxonomy terms for use as
+	 * an enum select in the admin settings. Returns an empty array when the
+	 * Islandora2 URL is not configured or the request fails.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function getLibraryTidChoices(): array
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('library');
+		if (empty($terms)) {
+			return [];
+		}
+		$choices = ['' => 'Choose a Library'];
+		foreach ($terms as $term) {
+			$choices[$term['tid']] = $term['name'];
+		}
+
+		return $choices;
+	}
+
+	public static function getLibraryTidType(){
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('library');
+		if (empty($terms)) {
+			return 'text';
+		}else{
+			return 'enum';
+		}
+	}
+
+	public static function getCorporateBodyTidChoices(): array
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('corporate_body');
+		if (empty($terms)) {
+			return [];
+		}
+		$choices = ['' => 'Choose a Corporate Body'];
+		foreach ($terms as $term) {
+			$choices[$term['tid']] = $term['name'];
+		}
+		return $choices;
+	}
+
+	public static function getCorporateBodyTidType(): string
+	{
+		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+		$request = new \Islandora2\Request();
+		$terms   = $request->fetchVocabulary('corporate_body');
+		return empty($terms) ? 'text' : 'enum';
+	}
+
 	public function getArchiveRequestFormStructure(){
-		$defaultForm = ArchiveRequest::getObjectStructure();
+		$defaultForm = Archive2\ArchiveRequest::getObjectStructure();
 		foreach ($defaultForm as $index => &$formfield){
 			$libraryPropertyName = 'archiveRequestField' . ucfirst($formfield['property']);
 			if (isset($this->$libraryPropertyName)){

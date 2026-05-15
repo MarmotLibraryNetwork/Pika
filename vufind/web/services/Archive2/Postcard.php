@@ -30,45 +30,42 @@ class Postcard extends ArchiveObject
         global $interface;
         global $configArray;
 
-        // Get manifests for child objects
-        $serviceFileUrls = [];
-        if (method_exists($this->mediaObject, 'getChildren')) {
-            $childObjects = $this->mediaObject->getChildren();
-            foreach ($childObjects as $childObject) {
-                $modelName = $childObject->model['name'] ?? null;
-                if ($modelName === null || strtolower($modelName) !== 'image') {
-                    continue;
-                }
-
-                $serviceFile = $childObject->getServiceFile();
-                $serviceFileUrl = null;
-
-                if ($serviceFile && isset($serviceFile->fileUrl)) {
-                    $baseUrl = $configArray['Islandora2']['url'] ?? '';
-                    if (empty($baseUrl)) {
-                        $this->logger->error('Islandora2 URL not configured; cannot build postcard image URL.', ['nid' => $childObject->getNodeId()]);
-                    } else {
-                        $baseUrl = rtrim($baseUrl, '/');
-                        $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
-                    }
-                } else {
-                    $this->logger->warning('Service file not found for postcard child.', ['nid' => $childObject->getNodeId()]);
-                }
-
-                $serviceFileUrls[] = $serviceFileUrl;
-            }
-        } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
-        }
-
-        $interface->assign('service_file_url', $serviceFileUrls);
-
         parent::launch();
 
+        // Get manifests for child objects
+        $serviceFileUrls = [];
+
+        $childObjects = $this->mediaObject->getChildObjects();
+        foreach ($childObjects as $childObject) {
+            $modelName = $childObject->model['name'] ?? null;
+            if ($modelName === null || strtolower($modelName) !== 'image') {
+                continue;
+            }
+
+            $serviceFile = $childObject->getServiceFile();
+            $serviceFileUrl = null;
+
+            if ($serviceFile && isset($serviceFile->fileUrl)) {
+                $baseUrl = $configArray['Islandora2']['url'] ?? '';
+                if (empty($baseUrl)) {
+                    $this->logger->error('Islandora2 URL not configured; cannot build postcard image URL.', ['nid' => $childObject->getNodeId()]);
+                } else {
+                    $baseUrl = rtrim($baseUrl, '/');
+                    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+                }
+            } else {
+                $this->logger->warning('Service file not found for postcard child.', ['nid' => $childObject->getNodeId()]);
+            }
+
+            $serviceFileUrls[] = $serviceFileUrl;
+        }
+
+
+        $interface->assign('service_file_url', $serviceFileUrls);
         $interface->assign('viewer', 'open_seadragon_multi');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

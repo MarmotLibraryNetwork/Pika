@@ -27,30 +27,33 @@ class DigitalDocument extends ArchiveObject
     public function launch()
     {
         global $interface;
-        global $configArray;
+        global $library;
         
         parent::launch();
 
         $pdf = $this->mediaObject->getOriginalMedia();
+        // if original media isn't found try to get the just the PDF file
+        if ($pdf === null) {
+            // TODO: this overrides the viewer hint.
+            $pdf = $this->mediaObject->getPDFMedia();
+        }
+
         if ($pdf === null) {
             $this->logger->error('PDF media not found for digital document.', ['nid' => $this->mediaObject->getNodeId()]);
             $interface->assign('pdf_url', null);
             $interface->assign('iframe_src', null);
         } else {
             $interface->assign('pdf_url', $pdf->fileUrl);
-
-            $iframeSrc = $configArray['Islandora2']['url'] ?? '';
-            if (empty($iframeSrc)) {
-                $this->logger->error('Islandora2 URL not configured; cannot build PDF viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
-            }
-            $iframeSrc = rtrim($iframeSrc, '/') . "/libraries/pdf.js/web/viewer.html?file=" . urlencode($pdf->fileUrl);
+            $libraryUrl = rtrim($library->catalogUrl, "/");
+            $protocol = $_SERVER['HTTPS'] ? 'https://' : 'http://';
+            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode($protocol . $libraryUrl . "/Archive2/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl);
             $interface->assign('iframe_src', $iframeSrc);
         }
         
         $interface->assign('viewer', 'pdfjs');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

@@ -2,7 +2,7 @@
 var viewer = Mirador.viewer({
     "id": "mirador-viewer",
     "windows": [{
-        "manifestId": "/Archive/AJAX?method=fetchManifest&nid={/literal}{$nid}{literal}",
+        "manifestId": "/Archive2/AJAX?method=fetchManifest&nid={/literal}{$nid}{literal}",
         "view": 'single',
     }],
     "window": {

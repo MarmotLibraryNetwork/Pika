@@ -1,8 +1,8 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,10 @@
 
 namespace Archive2;
 
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
+require_once ROOT_DIR . '/sys/Library/Library.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
@@ -45,13 +47,14 @@ class ArchiveObject extends \Action
         'video' => 'video',
     ];
 
+    /** Loads the media object from the `id` query parameter. */
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
-        $nid = (int)($_GET['nid'] ?? 0);
+        $nid = (int)($_GET['id'] ?? 0);
         if ($nid <= 0) {
-            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['nid'] ?? null]);
-            // TODO: redirect to 404;
+            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['id'] ?? null]);
+            // TODO: redirect error;
             return;
         }
         $factory = new I2ObjectFactory();
@@ -61,6 +64,11 @@ class ArchiveObject extends \Action
         }
     }
 
+    /**
+     * @param string      $mainContentTemplate
+     * @param string|null $pageTitle           Defaults to the media object title.
+     * @param string      $sidebarTemplate
+     */
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
     {
         if ($this->mediaObject === null) {
@@ -72,9 +80,11 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
-	public function launch()
-	{
-		global $interface;
+    /** Assigns all template variables for the archive object detail page. */
+    public function launch()
+    {
+        global $interface;
+        global $configArray;
 
         if ($this->mediaObject === null) {
             $this->logger->error('Attempted to launch with null mediaObject.');
@@ -84,29 +94,45 @@ class ArchiveObject extends \Action
         $interface->assign('showExploreMore', true);
         $interface->assign('debug_archive_object', true);
 
-		// Expose every field from the Islandora node (with "field_" removed) to the templates.
-		$nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
-		foreach ($nodeData as $field => $value){
-			$interface->assign($field, $value);
-		}
+        // Expose every field from the Islandora node (with "field_" removed) to the templates.
+        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+        foreach ($nodeData as $field => $value) {
+            $interface->assign($field, $value);
+        }
 
-        // legacy ID 
-        $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Media
-		//$interface->assign('media', $nodeData['media'] ?? []);
-        //$interface->assign('viewer', $this->getViewerForModel($this->mediaObject->getObjectModel()));
-        
-        // Overrides
+        /*********
+         * Overrides
+         */
+
         // Dates
-		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
-		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+        $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
+        $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
 
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
 
-        // Download permissions
-        $interface->assign('can_download', $this->canCurrentUserDownload());
+        // Download & Request permissions
+        // Can download master file
+        $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
+        // Can download intermediate file
+        $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
+        $interface->assign('can_request_copy', $this->canCurrentUserRequestCopy());
+        // Download files
+        $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
+        if ($orignal_media) {
+            $orignal_media_file = $orignal_media->fileUrl;
+            $interface->assign('orignal_media_file', $orignal_media_file);
+        } else {
+            $interface->assign('orignal_media_file', false);
+        }
+
+        $intermeidate_media = $this->mediaObject->getIntermediateFile() ?? null;
+        if ($intermeidate_media) {
+            $intermeidate_media_file = $intermeidate_media->fileUrl;
+            $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        } else {
+            $interface->assign('intermediate_media_file', false);
+        }
 
         // Language
         $languageName = null;
@@ -120,56 +146,40 @@ class ArchiveObject extends \Action
         $interface->assign('title', $title);
         // breadcrumb
         $interface->assign('breadcrumbText', $title);
+        $interface->assign('lastsearch', $_SESSION['lastArchive2SearchURL'] ?? false);
+        $displayModel = $this->mediaObject->getDisplayModel();
+        $interface->assign('display_model', $displayModel ? ucfirst($displayModel) : null);
 
         $subtitle = ($this->mediaObject->subtitle !== null) ? $this->mediaObject->subtitle : null;
         $interface->assign('subtitle', $subtitle);
 
-        // Summary
-        // TODO: Make a summary 
-        //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
 
         // Subjects
-        $subjects = $this->mediaObject->getSubjects();
-        if (is_array($subjects)) {
-            if(array_key_exists('tid', $subjects)) {
-                $subjects['url'] = "/Archive/Subject?tid=" . $subjects['tid'];
-                $subjects = [$subjects];
-            } else {
-                foreach ($subjects as $subject) {
-                    $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
-                }
-            }
-        } else {
-            $subjects = [];
-        }
-        $interface->assign('subjects_urls', $subjects);
+        $subjects = $this->mediaObject->getSubjects() ?? null;
+        $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
         $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
         $interface->assign('physical_description', $extent);
 
         // Library
-        $libraryName = $this->mediaObject->library['name'] ?? null;
-        $interface->assign('library_name', $libraryName);
-        $libraryTid = $this->mediaObject->library['tid'] ?? null;
-        $interface->assign('library_tid', $libraryTid);
-        $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
-        $interface->assign('library_url', $libraryUrl);
-        $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
-        $interface->assign('library_namespace', $libraryNamespace);
+        // Get the Corporate Body associated with the library
+        $libraryTerm = $this->mediaObject->getLibraryOrganization();
+        // If corporte body term isn't found use the Library vocab term
+        if ($libraryTerm === null) {
+            $interface->assign('library_name', $this->mediaObject->library['name'] ?? null);
+            $interface->assign('library_tid', $this->mediaObject->library['tid'] ?? null);
+            $interface->assign('library_url', null);
+        } else {
+            $interface->assign('library_name', $libraryTerm->name ?? null);
+            $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
+            $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
+            $interface->assign('library_url', $libraryURL);
+        }
 
-        // Location
-        $locatedAt = ($this->mediaObject->located_at !== null) ? $this->mediaObject->located_at : null;
-        $interface->assign('located_at', $locatedAt);
-        $locationUrl = ($this->mediaObject->location_url !== null) ? $this->mediaObject->location_url : null;
-        $interface->assign('location_url', $locationUrl);
-
-        // Shelf Location
-        $shelfLocation = ($this->mediaObject->shelf_location !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('shelf_location', $shelfLocation);
 
         // Interview Location
         // NOTE: field_location is labeled as Interview Location in UI
@@ -199,18 +209,33 @@ class ArchiveObject extends \Action
         }
         $interface->assign('interview_locations', $interviewLocations);
 
-        // Local identifier
-        $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('local_identifer', $localIdentifier);
+        // Related
+        $interface->assign('related_place', $this->mediaObject->getRelatedPlace());
+        $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
+        $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
+
+        // Admin
+        // Reload URL
+        $cacheReloadUrl = $this->mediaObject->getAbsoluteUrl() . '?reload=true';
+        $interface->assign('cache_reload_url', $cacheReloadUrl);
+        // like to Islandora node
+        $islandoraUrl = rtrim($configArray['Islandora2']['url'], "/") . "/node/" . $this->mediaObject->getNodeId();
+        $interface->assign('islandora_url', $islandoraUrl);
+
 
         // Analytics
         $interface->assign('archivePage', true);
 
     }
 
+    /**
+     * Maps a content model name to its viewer identifier, or null if unmapped.
+     *
+     * @see MODEL_VIEWER_MAP
+     */
     protected function getViewerForModel(?string $model): ?string
     {
-        // TODO: This needs to be flushed out
         if ($model === null || $model === '') {
             return null;
         }
@@ -218,30 +243,108 @@ class ArchiveObject extends \Action
         return self::MODEL_VIEWER_MAP[$model] ?? null;
     }
 
-	private function formatDisplayDate($value): ?string {
-		if ($value === null || $value === '') {
-			return null;
-		}
+    /**
+     * Formats a Unix timestamp or date string as `m/d/Y h:i a` in the server's local timezone.
+     *
+     * @param int|string|null $value
+     */
+    private function formatDisplayDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
 
-		try {
-			if (is_numeric($value)) {
-				$date = new \DateTimeImmutable('@' . (int)$value);
-			}else{
-				$date = new \DateTimeImmutable((string)$value);
-			}
-		}catch (\Exception $e){
-			return null;
-		}
+        try {
+            if (is_numeric($value)) {
+                $date = new \DateTimeImmutable('@' . (int)$value);
+            } else {
+                $date = new \DateTimeImmutable((string)$value);
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
 
-		$date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-		return $date->format('m/d/Y h:i a');
-	}
+        $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+        return $date->format('m/d/Y h:i a');
+    }
 
-    protected function canCurrentUserDownload(): bool {
-        //$user = \UserAccount::getLoggedInUser();
-        // TODO: implement user download permissions
-        return true;
+    /**
+     * Returns the Library object associated with this archive object's library TID,
+     * or null if the TID is missing or does not match a library record.
+     *
+     * @return \Library|null
+     */
+    public function getOwningLibrary(): ?\Library
+    {
+        $libraryTid = $this->mediaObject->library['tid'] ?? null;
+        $library = new \Library();
+        $library->libraryTid = $libraryTid;
+        $library->find(true);
 
+        if (!$library || empty($library->libraryId)) {
+            return null;
+        }
+        return $library;
+    }
+
+    /**
+     * Returns the libraryId of the library that owns this archive object,
+     * or null if no owning library can be resolved.
+     *
+     * @return int|null
+     */
+    public function getOwningLibraryId(): ?int
+    {
+        $library = $this->getOwningLibrary();
+        return (int)$library->libraryId ?? null;
+    }
+
+
+    /** Returns true if the current user may download the master (original) file. */
+    protected function canCurrentUserDownloadOrignial(): bool
+    {
+        // annonomys download
+        if ((int)$this->mediaObject->pika_anon_master_download === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if ($user && (int)$this->mediaObject->pika_master_download === 1) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Returns true if the current user may download the intermediate (low-resolution) file. */
+    protected function canCurrentUserDownloadIntermediate(): bool
+    {
+        // annonomys download
+        if ((int)$this->mediaObject->pika_anon_lc_download === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if ($user && ((int)$this->mediaObject->pika_lc_download === 1)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function canCurrentUserRequestCopy(): bool
+    {
+        global $library;
+        $currentLibraryId = $library->libraryId;
+        $owningLibrary = $this->getOwningLibrary();
+
+        if (!$owningLibrary || ((int)$currentLibraryId !== (int)$owningLibrary->libraryId)) {
+            return false;
+        }
+
+        if ($owningLibrary->allowRequestsForArchiveMaterials === 1) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -329,6 +432,7 @@ class ArchiveObject extends \Action
         return $canView;
     }
 
+    /** Parses the raw `pika_access_limits` field into an array of restriction strings. */
     protected function resolveViewingRestrictions(): array
     {
         $raw = $this->mediaObject->pika_access_limits ?? null;
@@ -348,6 +452,14 @@ class ArchiveObject extends \Action
         return array_values(array_filter($rawArray));
     }
 
+    /**
+     * Parses a single restriction string into a keyed array.
+     *
+     * Supports `key:value` and `key:val1,val2` forms; bare keys map to `1`.
+     *
+     * @param string $restriction
+     * @return array<string, int|string[]>
+     */
     protected function parseRestriction($restriction)
     {
         // has paramaters

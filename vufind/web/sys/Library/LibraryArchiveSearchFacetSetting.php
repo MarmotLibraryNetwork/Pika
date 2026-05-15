@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,14 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 2/10/2017
- *
- */
 require_once ROOT_DIR . '/sys/Search/FacetSetting.php';
 
 class LibraryArchiveSearchFacetSetting extends FacetSetting {

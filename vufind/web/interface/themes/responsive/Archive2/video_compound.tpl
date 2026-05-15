@@ -2,7 +2,7 @@
 
 {* Video Player *}
 <div style="margin-bottom: 30px;">
-    <video width="100%" controls id="compound-video-player" crossorigin="anonymous" style="background: #000;">
+    <video width="100%" controls controlslist="nodownload" id="compound-video-player" crossorigin="anonymous" style="background: #000;">
         {* Source and tracks will be dynamically loaded via JavaScript *}
     </video>
 </div>

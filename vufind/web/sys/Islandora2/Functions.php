@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -17,25 +18,78 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/TaxonomyObjectInterface.php';
 
 use Islandora2\I2Object;
+use Islandora2\TaxonomyObjectInterface;
 
+/**
+ * Maps Islandora 2 display model names (lower-cased) to their Archive2 URL action segments.
+ * Used by getObjRelativeUrl() and any controller that builds object links.
+ */
+const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
+    'audio'            => 'Audio',
+    'voice recordings' => 'Audio',
+    'voice recording'  => 'Audio',
+    'mp4'              => 'Audio',
+    'collection'       => 'Collection',
+    'compound object'  => 'Compound',
+    'compound'         => 'Compound',
+    'digital document' => 'DigitalDocument',
+    'academic paper'   => 'DigitalDocument',
+    'document'         => 'DigitalDocument',
+    'book'             => 'DigitalDocument',
+    'image'            => 'Image',
+    'art'              => 'Image',
+    'paged content'    => 'PagedContent',
+    'article'          => 'PagedContent',
+    'magazine'         => 'PagedContent',
+    'postcard'         => 'Postcard',
+    'video'            => 'Video',
+];
+
+/**
+ * Maps taxonomy vocabulary machine names to their Archive2 URL action segments.
+ * Used by getTaxonomyRelativeUrl() and any controller that builds taxonomy links.
+ */
+const ISLANDORA2_VOCAB_URL_MAP = [
+    'person'         => 'Person',
+    'corporate_body' => 'Organization',
+    'geo_location'   => 'Place',
+    'event'          => 'Event',
+];
+
+/**
+ * Return the relative display URL for an Islandora 2 object.
+ *
+ * Maps display model names to their Archive2 action segment using
+ * ISLANDORA2_DISPLAY_MODEL_URL_MAP. Unmapped models are used as-is.
+ *
+ * @param I2Object $obj
+ * @return string  Relative URL, or '#' when the object has no valid node ID.
+ */
 function getObjRelativeUrl(I2Object $obj): string
 {
-    
     if ($obj->getNodeId() <= 0) {
         return '#';
     }
-    $displayModel = strtolower($obj->getDisplayModel());
-    if (array_key_exists($displayModel, Islandora2Driver::DISPLAY_MODEL_URL_MAP)) {
-        $displayModel = Islandora2Driver::DISPLAY_MODEL_URL_MAP[$displayModel];
-    }
 
-    return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->nid);
+    $displayModel = strtolower($obj->getDisplayModel() ?? '');
+    $displayModel = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
+
+    return '/Archive2/' . $displayModel . '/' . urlencode((string)$obj->getNodeId());
 }
 
+/**
+ * Return the absolute display URL for an Islandora 2 object.
+ *
+ * Prepends the site base URL (or the library's catalogUrl when set) to the
+ * relative URL returned by getObjRelativeUrl().
+ *
+ * @param I2Object $obj
+ * @return string  Absolute URL, or the base URL followed by '#' when invalid.
+ */
 function getObjAbsoluteUrl(I2Object $obj)
 {
     global $configArray;
@@ -50,3 +104,50 @@ function getObjAbsoluteUrl(I2Object $obj)
     return rtrim($baseUrl, '/') . getObjRelativeUrl($obj);
 }
 
+/**
+ * Return the relative display URL for an Islandora 2 taxonomy term.
+ *
+ * Maps vocabulary machine names to their Archive2 action segment:
+ *   person           → /Archive2/Person
+ *   corporate_body   → /Archive2/Organization
+ *   geo_location     → /Archive2/Place
+ *   event            → /Archive2/Event
+ *
+ * @param TaxonomyObjectInterface $term
+ * @return string  Relative URL, or '#' when the term has no valid ID.
+ */
+function getTaxonomyRelativeUrl(TaxonomyObjectInterface $term): string
+{
+    $tid = $term->getTid();
+    if (!$tid || $tid <= 0) {
+        return '#';
+    }
+
+    $vocab   = strtolower($term->getVocabularyMachineName() ?? '');
+    $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'TaxonomyTerm';
+
+    return '/Archive2/' . $segment . '/' . urlencode((string)$tid);
+}
+
+/**
+ * Return the absolute display URL for an Islandora 2 taxonomy term.
+ *
+ * Prepends the site base URL (or the library's catalogUrl when set) to the
+ * relative URL returned by getTaxonomyRelativeUrl().
+ *
+ * @param TaxonomyObjectInterface $term
+ * @return string  Absolute URL, or the base URL followed by '#' when invalid.
+ */
+function getTaxonomyAbsoluteUrl(TaxonomyObjectInterface $term)
+{
+    global $configArray;
+    global $library;
+
+    $baseUrl = $configArray['Site']['url'] ?? '';
+    if (!empty($library->catalogUrl ?? '')) {
+        $scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+        $baseUrl = $scheme . '://' . $library->catalogUrl;
+    }
+
+    return rtrim($baseUrl, '/') . getTaxonomyRelativeUrl($term);
+}

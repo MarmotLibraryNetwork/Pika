@@ -347,6 +347,10 @@ function loadSearchInformation(){
 			$searchSource = 'genealogy';
 		}elseif ($module == 'Archive'){
 			$searchSource = 'islandora';
+//			$searchSource = 'islandora2';
+		}elseif ($module == 'Archive2'){
+			//$searchSource = 'islandora';
+			$searchSource = 'islandora2';
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';
 		}else{
@@ -361,7 +365,13 @@ function loadSearchInformation(){
 			}
 		}
 	}
-	$_REQUEST['searchSource'] = $searchSource;
+	// Don't overwrite a searchSource value that was explicitly submitted in a POST form (e.g. Admin
+	// object editors). Those forms use 'searchSource' as a field name unrelated to the global search
+	// context, and stomping on $_REQUEST here causes the posted value to be silently discarded.
+	// (Used for Browse Categories, now that we can build archive search browse categories.)
+	if (!isset($_POST['searchSource'])) {
+		$_REQUEST['searchSource'] = $searchSource;
+	}
 
 	/** @var Library $searchLibrary */
 	$searchLibrary  = Library::getSearchLibrary($searchSource);
@@ -432,6 +442,7 @@ function enableErrorHandler(){
 	$errorHandlingEnabled = true;
 }
 
+//TODO: single use; remove and replace with the basic commands
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
 }
@@ -489,6 +500,10 @@ function vufind_autoloader($class) {
 			require_once $className;
 		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Archive2/' . $class . '.php')){
+			//TODO: these two blocks probably conflict with each other
+			$className = ROOT_DIR . '/sys/Archive2/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Archive/' . $class . '.php';

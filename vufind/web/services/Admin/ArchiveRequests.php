@@ -18,7 +18,7 @@
  */
 
 /**
- * Admin interface for creating indexing profiles
+ * Admin interface for Archive Requests
  *
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
@@ -29,10 +29,10 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Archive/ArchiveRequest.php';
+require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 class Admin_ArchiveRequests extends ObjectEditor {
 	function getObjectType(){
-		return 'ArchiveRequest';
+		return 'Archive2\ArchiveRequest';
 	}
 	function getToolName(){
 		return 'ArchiveRequests';
@@ -43,13 +43,13 @@ class Admin_ArchiveRequests extends ObjectEditor {
 	function getAllObjects($orderBy = null){
 		$list = [];
 
-		$object = new ArchiveRequest();
+		$object = new Archive2\ArchiveRequest();
 		$object->orderBy($orderBy ?? 'dateRequested desc');
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
-			$homeLibrary = $user->getHomeLibrary();
-			$archiveNamespace = $homeLibrary->archiveNamespace;
-			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
+			$homeLibrary      = $user->getHomeLibrary();
+			$libraryTid = $homeLibrary->libraryTid;
+			$object->whereAdd("libraryTid == '{$libraryTid}'");
 		}
 		$object->find();
 		while ($object->fetch()){
@@ -59,11 +59,11 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return $list;
 	}
 	function getObjectStructure(){
-		return ArchiveRequest::getObjectStructure();
+		return Archive2\ArchiveRequest::getObjectStructure();
 	}
 	function getAllowableRoles(){
 
-		return array('opacAdmin', 'archives');
+		return ['opacAdmin', 'archives'];
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';

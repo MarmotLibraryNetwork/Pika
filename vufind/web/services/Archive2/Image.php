@@ -2,7 +2,6 @@
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +31,7 @@ class Image extends ArchiveObject
         $serviceFile = $this->mediaObject->getServiceFile();
         $serviceFileUrl = null;
 
-        # if CORS becomes an issue see vufind/web/services/Archive/AJAX.php fetchCantaloupeMaifest()
+        # if CORS becomes an issue, see vufind/web/services/Archive2/AJAX.php fetchCantaloupeManifest()
         if ($serviceFile && !empty($serviceFile->fileUrl)) {
             $baseUrl = $configArray['Islandora2']['url'] ?? '';
             if (empty($baseUrl)) {
@@ -51,7 +50,7 @@ class Image extends ArchiveObject
         $interface->assign('viewer', 'open_seadragon');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

@@ -453,7 +453,7 @@ class SearchAPI extends AJAXHandler {
 		//setup the results array.
 		$jsonResults = [];
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -663,7 +663,7 @@ class SearchAPI extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		//$timer->logTime('Include search engine');
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
@@ -706,7 +706,7 @@ class SearchAPI extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		//$timer->logTime('Include search engine');
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
@@ -752,7 +752,7 @@ class SearchAPI extends AJAXHandler {
 		//setup the results array.
 		$jsonResults = [];
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -219,7 +218,7 @@ class MyAccount_MyList extends MyAccount {
 			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
 				$isArchiveId         = $archiveEnabled && strpos($titleSearch, ':') !== false; // Only check for archive pids if the archive is available.
-				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';          // Initialise from the current search globals
+				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';          // Initialize from the current search globals
 				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : 'Solr');
 				if (!empty($searchObject)){
 					$searchObject->setLimit(1);

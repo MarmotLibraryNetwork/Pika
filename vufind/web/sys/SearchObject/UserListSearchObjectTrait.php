@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -45,7 +44,7 @@ trait UserListSearchObjectTrait {
 		$params = [];
 
 		// Add any filters
-		if (count($this->filterList) > 0){
+		if ($this->hasAppliedFacets()){
 			$encodedFilterArrayString = urlencode('filter[]'); // un-encoded braces technically not url allowed  (Good parsing for Accessibility 4.1.1)
 			foreach ($this->filterList as $field => $filter){
 				foreach ($filter as $value){

@@ -20,13 +20,15 @@ namespace Archive2;
 
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
-/* Responsible for displaying video from Islandora2 */
+/* Responsible for displaying audio from Islandora2 */
 class Audio extends ArchiveObject
 {
 
     public function launch()
     {
         global $interface;
+
+        parent::launch();
 
         $audio = $this->mediaObject->getAudio();
         if ($audio === null) {
@@ -53,12 +55,10 @@ class Audio extends ArchiveObject
         $transcripts = $this->mediaObject->getTranscripts();
         $interface->assign('transcripts', $transcripts ?? []);
 
-        parent::launch();
-
         $interface->assign('viewer', 'audio');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

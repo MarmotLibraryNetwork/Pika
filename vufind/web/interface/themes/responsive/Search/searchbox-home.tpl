@@ -1,6 +1,6 @@
-{strip}
+.{strip}
 {assign var="archiveOnly" value=false}
-	{if $searchSources|@count == 1 && array_key_exists('islandora', $searchSources)}
+	{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 		{assign var="archiveOnly" value=true}
 	{/if}
 <search id="home-page-search" class="home-page-search row"{if $displaySidebarMenu} style="display: none"{/if}>
@@ -50,7 +50,7 @@
 								</button>
 
 								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
-									{if $searchSources|@count == 1 && array_key_exists('islandora', $searchSources)}
+									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 
 									{else}
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
@@ -68,7 +68,7 @@
 										<li class="divider genealogyType"></li>
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('islandora', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider islandoraType"></li>
@@ -105,7 +105,7 @@
 			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
 				<div class="row text-center">
 					<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
-						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'ebsco'}style="display:none"{/if}>
+						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
 							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
@@ -115,7 +115,7 @@
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora'}style="display:none"{/if}>
+						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora' && $searchSource != 'islandora2'}style="display:none"{/if}>
 							{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
@@ -132,7 +132,8 @@
 				<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
 					{if $searchSources|@count == 1}
 						{if $archiveOnly}
-							<input type="hidden" name="searchSource" value="islandora">
+							{* searchSource is islandora or islandora2 *}
+						<input type="hidden" name="searchSource" value="{$searchSource}">
 						{else}
 						<input type="hidden" name="searchSource" value="{$searchSource}">
 							{/if}

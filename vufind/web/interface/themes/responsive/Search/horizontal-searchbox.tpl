@@ -21,7 +21,7 @@
 			{assign var="hiddenSearchSource" value=true}
 			<input type="hidden" name="searchSource" value="{$searchSource}">
 			{assign var="archiveOnly" value=false}
-			{if $searchSource == "islandora"}
+			{if in_array($searchSource, array("islandora2","islandora"))}
 				{assign var="archiveOnly" value=true}
 				{assign var="hiddenSearchSource" value=false}
 			{/if}
@@ -35,8 +35,6 @@
 				<div class="
 				{if $hiddenSearchSource}
 				col-lg-9 col-md-8
-				{elseif $archiveOnly}
-				 col-lg-8 col-md-7
 				{else}
 				col-lg-6 col-md-5
 				{/if} col-sm-10 col-xs-12">
@@ -63,9 +61,13 @@
 				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
 				{if $archiveOnly}
-					<input type="hidden" name="basicType" id="basicSearchTypes" value="Keyword" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results.">
+					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-control islandoraType" id="islandoraSearchTypes">
+						{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
+							<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+						{/foreach}
+					</select>
 				{else}
-					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora'}style="display:none"{/if}>
+					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if in_array($searchSource, array('genealogy', 'islandora2', 'islandora'))}style="display:none"{/if}>
 						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 						{/foreach}
@@ -75,6 +77,12 @@
 					<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 						{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+						{/foreach}
+					</select>
+
+					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
+						{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
+							<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 				{/if}

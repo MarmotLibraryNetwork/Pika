@@ -85,6 +85,11 @@
 				{*use isset() with property.min because it can be set to zero, which cause a false in if block*}
 		{elseif $property.type == 'url'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control url {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
+		{elseif $property.type == 'archive2node'}
+			{if !empty($propValue)}
+				<a id="{$propName}_link" href="/Archive2/Node/{$propValue}" title="Link to Archive item">/Archive2/Node/{$propValue}</a>
+				<input type="hidden" name='{$propName}' id='{$propName}' value='{$propValue}'>
+			{/if}
 		{elseif $property.type == 'email'}
 			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control email {if $property.required}required{/if}"{if $property.required} aria-required="true"{/if}{if $property.autocomplete} autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'multiemail'}

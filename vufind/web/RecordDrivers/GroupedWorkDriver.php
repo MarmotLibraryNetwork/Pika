@@ -2295,11 +2295,19 @@ class GroupedWorkDriver extends RecordInterface {
 		return $workAPI->getRatingData($this->getPermanentId());
 	}
 
+	/**
+	 * Build the Explore More sidebar data for this record's full-display page.
+	 *
+	 * Controlled by the config.ini setting [Catalog] showExploreMoreForFullRecords.
+	 * Returns an empty array when the feature is disabled.
+	 *
+	 * @return array
+	 */
 	public function getExploreMoreInfo(){
-		global $interface;
 		global $configArray;
 		$exploreMoreOptions = [];
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']){
+			global $interface;
 			$interface->assign('showMoreLikeThisInExplore', true);
 			$interface->assign('showExploreMore', true);
 			if ($this->getCleanISBN()){

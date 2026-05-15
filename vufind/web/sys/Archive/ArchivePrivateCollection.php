@@ -17,15 +17,12 @@
  */
 
 /**
- * Stores information about subjects for processing links to catalog and EBSCO, etc.
+ * Stores node IDs of archive collections and objects that should be private to the owning library.
  *
- * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 2/22/2016
- * Time: 8:55 PM
  */
 class ArchivePrivateCollection extends DB_DataObject {
 	public $__table = 'archive_private_collections';
 	public $id;
+	public $type;               // 'collection' or 'object'
 	public $privateCollections;
 }

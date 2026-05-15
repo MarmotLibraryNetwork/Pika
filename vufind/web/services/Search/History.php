@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,10 @@ require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 
 class History extends Action {
 	private static $searchSourceLabels = [
-		'local'     => 'Catalog',
-		'islandora' => 'Archive',
-		'genealogy' => 'Genealogy'
+		'local'      => 'Catalog',
+		'islandora'  => 'Archive',
+		'islandora2' => 'Archive2', //TODO: is a better label needed
+		'genealogy'  => 'Genealogy'
 	];
 
 	function launch(){

@@ -220,7 +220,6 @@ abstract class IslandoraDriver extends RecordInterface {
 			'length'      => '', // TODO: do list widgets use this
 			'publisher'   => '', // TODO: do list widgets use this
 			'ratingData'  => null,
-//			'ratingData'  => $this->getRatingData(),
 		];
 		return $widgetTitleInfo;
 	}
@@ -468,7 +467,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$interface->assign('jquerySafeId', str_replace(':', '_', $id)); // make id safe for jquery & css calls
 
 		$linkUrl = $this->getLinkUrl();
-		if (strpos($linkUrl, '?') === false){
+		if (!str_contains($linkUrl, '?')){
 			$linkUrl .= '?';
 		}else{
 			$linkUrl .= '&';
@@ -718,7 +717,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		//See if we need another section for wikipedia content.
 		if (!empty($interface->getVariable('wikipediaData'))){
-			// Only use first two characters of language string; Wikipedia
+			// Only use the first two characters of language string; Wikipedia
 			// uses language domains but doesn't break them up into regional
 			// variations like pt-br or en-gb.
 			$wiki_lang   = substr($configArray['Site']['language'], 0, 2);
@@ -1014,15 +1013,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getAllSubjectHeadings($includeTitleAsSubject = true, $limit = 0){
 		if ($this->subjectHeadings == null){
-			require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
-			$archiveSubjects    = new ArchiveSubject();
-			$subjectsToIgnore   = [];
-			$subjectsToRestrict = [];
-			if ($archiveSubjects->find(true)){
-				$subjectsToIgnore   = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
-				$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
-			}
-
 			$subjectsWithLinks = $this->getAllSubjectsWithLinks();
 			$relatedSubjects   = [];
 			if ($includeTitleAsSubject){
@@ -1031,29 +1021,12 @@ abstract class IslandoraDriver extends RecordInterface {
 					$relatedSubjects[$title] = '"' . $title . '"';
 				}
 			}
-			for ($i = 0;$i < 2;$i++){
-				foreach ($subjectsWithLinks as $subject){
-					$searchSubject = preg_replace('/\(.*?\)/', "", $subject['label']);
-					$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
-					$lowerSubject  = strtolower($searchSubject);
-					if (!empty($searchSubject)){
-						if (!array_key_exists($lowerSubject, $subjectsToIgnore)){
-							if ($i == 0){
-								//First pass, just add primary subjects
-								if (!array_key_exists($lowerSubject, $subjectsToRestrict)){
-									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
-								}
-							}else{
-								//Second pass, add restricted subjects, but only if we don't have $limit subjects already
-								if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= $limit){
-									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
-								}
-							}
-						}
-					}
-				}
-				if ($limit == 0){ //If there isn't a limit set, there isn't a need to run a second pass for restricted subjects.
-					break;
+			foreach ($subjectsWithLinks as $subject){
+				$searchSubject = preg_replace('/\(.*?\)/', "", $subject['label']);
+				$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
+				$lowerSubject  = strtolower($searchSubject);
+				if (!empty($searchSubject)){
+					$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
 				}
 			}
 			if ($limit > 0){
@@ -1149,7 +1122,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
@@ -1698,7 +1671,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
@@ -3040,7 +3013,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
@@ -3084,7 +3057,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
@@ -3138,7 +3111,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/Search/Solr.php';
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
@@ -3170,26 +3143,21 @@ abstract class IslandoraDriver extends RecordInterface {
 			[$namespace]                           = explode(':', $this->getUniqueID());
 			$contributingLibrary                   = new Library();
 			$contributingLibrary->archiveNamespace = $namespace;
-			if (!$contributingLibrary->find(true)){
+			if (!$contributingLibrary->find(true) || $contributingLibrary->archivePid == ''){
 				$contributingLibrary = null;
-			}else{
-				if ($contributingLibrary->archivePid == ''){
-					$contributingLibrary = null;
-				}
 			}
 
 			if ($contributingLibrary){
-//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-				$fedoraUtils = FedoraUtils::getInstance();
-
-				$contributingLibraryPid = $contributingLibrary->archivePid;
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-				$islandoraCache      = new IslandoraObjectCache();
-				$islandoraCache->pid = $contributingLibraryPid;
+				$contributingLibraryPid = $contributingLibrary->archivePid;
+				$islandoraCache         = new IslandoraObjectCache();
+				$islandoraCache->pid    = $contributingLibraryPid;
 				if ($islandoraCache->find(true) && !empty($islandoraCache->mediumCoverUrl)){
 					$imageUrl     = $islandoraCache->mediumCoverUrl;
 					$libraryTitle = $islandoraCache->title;
 				}else{
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+					$fedoraUtils = FedoraUtils::getInstance();
 					$imageUrl     = $fedoraUtils->getObjectImageUrl($fedoraUtils->getObject($contributingLibraryPid), 'medium');
 					$libraryTitle = $fedoraUtils->getObjectLabel($contributingLibraryPid);
 				}

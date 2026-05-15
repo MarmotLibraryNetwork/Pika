@@ -11,16 +11,17 @@
 			{include file="Archive2/$viewer.tpl"}
 
 			<div id="download-options">
-			{if $can_download}
-				<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original</a>
-			{elseif (!$loggedIn && $allow_original_download)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Log in to Download Original</a>
+			{if $can_download_orginal && $orignal_media_file}
+				<a class="btn btn-default" href="{$orignal_media_file}">Download Original File</a>
 			{/if}
-			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$nid}">Request Copy</a>				`				`
+			{if $can_download_intermediate && $intermediate_media_file}
+				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermediate File</a>
+			{/if}
+			{if $can_request_copy}
+				<a class="btn btn-default" href="/Archive2/RequestCopy/{$nid}">Request Copy</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$nid}">Claim Authorship</a>
+				<a class="btn btn-default" href="/Archive2/ClaimAuthorship/{$nid}">Claim Authorship</a>
 			{/if} 
 			{if $showFavorites == 1}
 				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$nid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
@@ -34,8 +35,8 @@
 {/strip}
 {literal}
 <script>
-$().ready(function(){
-	Pika.Archive.loadExploreMore('{/literal}{$pid|urlencode}{literal}');
+$(function(){
+	Pika.Archive2.loadExploreMore({/literal}{$nid}{literal});
 });
 </script>
 {/literal}

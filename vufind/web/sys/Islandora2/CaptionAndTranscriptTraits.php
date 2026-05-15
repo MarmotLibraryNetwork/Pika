@@ -20,7 +20,7 @@
 /**
  * Shared helpers for retrieving caption and transcript media from objects.
  */
-trait CaptionsandTranscriptTraits {
+trait CaptionAndTranscriptTraits {
     
     /**
      * Return caption media entries (VTT files) from the object's media list.
@@ -28,7 +28,7 @@ trait CaptionsandTranscriptTraits {
      * @return array Caption media objects.
      */
     public function getCaptions(): array {
-        if(!method_exists(__CLASS__, 'getMedia')) {
+        if(!method_exists($this, 'getMedia')) {
             return [];
         }
         $media = $this->getMedia();
@@ -54,14 +54,14 @@ trait CaptionsandTranscriptTraits {
      * @return array Transcript media objects.
      */
     public function getTranscripts(): array {
-        if(!method_exists(__CLASS__, 'getMedia')) {
+        if(!method_exists($this, 'getMedia')) {
             return [];
         }
         $media = $this->getMedia();
         $transcripts = [];
         foreach ($media as $m) {
             if($m->use === 'Transcript' && ($m->mime === 'text/plain' || $m->mime === 'application/pdf')) {
-                $trascript[] = $m;
+                $transcripts[] = $m;
             }
         }
         return $transcripts;

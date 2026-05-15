@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +27,7 @@ class Author_Home extends Union_Results {
 		global $interface;
 		global $library;
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 //		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object

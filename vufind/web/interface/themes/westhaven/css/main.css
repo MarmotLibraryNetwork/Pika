@@ -10184,7 +10184,7 @@ img.x-twit {
 .exploreMoreBar .jcarousel .thumbnail,
 #book-sections .jcarousel .thumbnail {
   margin-bottom: 0;
-  height: 175px;
+  height: 200px;
   border: 0 solid white;
 }
 #explore-more-body .jcarousel-control-prev,
@@ -10445,17 +10445,18 @@ img.x-twit {
   position: relative;
   padding: 4px 0;
   overflow: visible;
+  min-height: 160px;
   display: inline-block;
   width: 100%;
 }
-.related-objects .browse-thumbnail-sorted a img {
+.related-objects .browse-thumbnail-sorted img {
   max-height: 125px;
   position: absolute;
   top: 62px;
   transform: translate3d(-50%, -50%, 0);
   left: 50%;
 }
-.related-objects .browse-thumbnail-sorted a img :not(#relatedOrganizationsPanelBody) {
+.related-objects .browse-thumbnail-sorted img :not(#relatedOrganizationsPanelBody) {
   height: 125px;
 }
 .related-objects .browse-thumbnail-sorted figcaption {

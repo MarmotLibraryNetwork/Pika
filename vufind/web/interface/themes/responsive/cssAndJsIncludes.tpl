@@ -62,6 +62,7 @@
 		<script src="/interface/themes/responsive/js/pika/account.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/admin.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/archive.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/archive2.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/dpla.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/grouped-work.js?v={$gitBranch|urlencode}"></script>

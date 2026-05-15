@@ -37,7 +37,7 @@ class Search_Home extends Action {
 		// Load browse categories
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		/** @var BrowseCategory[] $browseCategories */
-		$browseCategories = array();
+		$browseCategories = [];
 
 		// Get Location's Browse Categories if Location is set
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -70,7 +70,7 @@ class Search_Home extends Action {
 		if (count($browseCategories) > 0){
 			require_once ROOT_DIR . '/services/Browse/AJAX.php';
 			$browseAJAX = new Browse_AJAX();
-			$browseAJAX->setBrowseMode(); // set default browse mode in the case that the user hasn't chosen one.
+			$browseAJAX->setBrowseMode(); // set the default browse mode in the case that the user hasn't chosen one.
 
 			// browse results no longer needed. there is an embedded ajax call in home.tpl. plb 5-4-2015
 ////			$browseResults = $browseAJAX->getBrowseCategoryInfo(reset($browseCategories)->textId);
@@ -95,7 +95,7 @@ class Search_Home extends Action {
 		$specifiedCategory    = isset($_REQUEST['browseCategory']);
 		$specifiedSubCategory = $specifiedCategory && isset($_REQUEST['subCategory']); // make a specified main browse category required
 		if ($localBrowseCategories){
-			$first = key($localBrowseCategories); // get key of first category
+			$first = key($localBrowseCategories); // get the key of the first category
 			$user  = UserAccount::isLoggedIn() ? UserAccount::getActiveUserObj() : false;
 			foreach ($localBrowseCategories as $index => $localBrowseCategory){
 				$browseCategory         = new BrowseCategory();
@@ -104,6 +104,9 @@ class Search_Home extends Action {
 					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
 					if ($browseCategory->textId == 'system_recommended_for_you'){
 						$browseCategory->label = translate('Recommended For You');
+					}
+					if ($browseCategory->searchSource === 'islandora2' && !$this->isIslandora2Available()) {
+						continue;
 					}
 					$browseCategories[] = clone $browseCategory;
 					if (
@@ -153,6 +156,9 @@ class Search_Home extends Action {
 				}
 
 //				$browseCategory->getSubCategories(); // add subcategory information to the object
+				if ($browseCategory->searchSource === 'islandora2' && !$this->isIslandora2Available()) {
+					continue;
+				}
 				$browseCategories[] = clone $browseCategory;
 				if ($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId){
 					$selectedBrowseCategory = clone $browseCategory;
@@ -184,6 +190,27 @@ class Search_Home extends Action {
 			}
 		}
 		return $browseCategories;
+	}
+
+	/**
+	 * Returns true if Islandora2 is both enabled in config and its server is responsive.
+	 * Result is cached for the lifetime of the request.
+	 */
+	private function isIslandora2Available(): bool {
+		static $available = null;
+		if ($available !== null) {
+			return $available;
+		}
+		global $configArray;
+		if (empty($configArray['Islandora2']['enabled'])) {
+			$available = false;
+			return false;
+		}
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+		$available    = $searchObject && (bool)$searchObject->pingServer(false);
+		return $available;
 	}
 
 }

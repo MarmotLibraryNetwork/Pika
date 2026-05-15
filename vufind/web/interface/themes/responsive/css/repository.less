@@ -213,7 +213,7 @@
   .jcarousel {
     .thumbnail {
       margin-bottom: 0;
-      height: 175px;
+      height: @explore-more-bar-entry-height;
       border: 0 solid white;
     }
   }
@@ -510,26 +510,24 @@
 
 .related-objects {
   .browse-thumbnail-sorted {
-    a {
-      img {
-        :not(#relatedOrganizationsPanelBody) {
-          height: 125px;
-        }
-
-        max-height: 125px;
-        //width: 100%;
-        position: absolute;
-        top: 62px;
-        transform: translate3d(-50%, -50%, 0); //3d needed to work in chrome (when columns are being used)
-        left: 50%;
+    img {
+      :not(#relatedOrganizationsPanelBody) {
+        height: 125px;
       }
+
+      max-height: 125px;
+      //width: 100%;
+      position: absolute;
+      top: 62px;
+      transform: translate3d(-50%, -50%, 0); //3d needed to work in chrome (when columns are being used)
+      left: 50%;
     }
 
-    //min-block-size: 210px;
     border: 0 solid white;
     position: relative;
     padding: 4px 0;
     overflow: visible;
+    min-height: 160px;
 
     //display: block;
 

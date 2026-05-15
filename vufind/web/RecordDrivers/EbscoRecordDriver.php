@@ -347,7 +347,7 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	public function getURLs() {
-		return array();
+		return [];
 	}
 
 	public function getSourceDatabase() {
@@ -362,11 +362,20 @@ class EbscoRecordDriver extends RecordInterface {
 				}
 			}
 		}
+		return null;
 	}
 
+	/**
+	 * Build the Explore More sidebar data for this record's full-display page.
+	 *
+	 * Controlled by the config.ini setting [Catalog] showExploreMoreForFullRecords.
+	 * Returns an empty array when the feature is disabled.
+	 *
+	 * @return array
+	 */
 	public function getExploreMoreInfo(){
 		global $configArray;
-		$exploreMoreOptions = array();
+		$exploreMoreOptions = [];
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
 			require_once ROOT_DIR . '/sys/ExploreMore.php';
 			$exploreMore = new ExploreMore();
@@ -376,7 +385,7 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	public function getAllSubjectHeadings(){
-		$subjectHeadings = array();
+		$subjectHeadings = [];
 		if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0){
 			foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject){
 				$subjectHeadings[] = (string)$subject->SubjectFull;

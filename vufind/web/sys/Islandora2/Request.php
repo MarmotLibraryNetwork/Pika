@@ -20,211 +20,552 @@
 namespace Islandora2;
 
 use Curl\Curl;
+use Curl\MultiCurl;
+use Pika\Cache;
 use Pika\Logger;
 
+/**
+ * Fetches resources from the Islandora 2 pika-json API.
+ *
+ * Supports two resource types:
+ *   'node'     → /pika-json/node/{id}
+ *   'taxonomy' → /pika-json/taxonomy/{id}
+ */
 class Request
 {
-    private $api_url;
-    private $logger;
-    protected ?int $nodeId;
-		private $userAgent;
+	private string $baseUrl;
+	private Cache  $cache;
+	private Logger $logger;
+	private string $userAgent;
+	private int    $resourceTtl;
+	private int    $vocabularyTtl;
 
-    public function __construct($nodeId = null)
-    {
-        if ($nodeId) {
-            $this->nodeId = $nodeId;
-        }
-        global $configArray;
-        $this->logger = new Logger(__CLASS__);
-        $baseUrl = $configArray['Islandora2']['url'] ?? '';
-        $this->api_url = $baseUrl ? rtrim($baseUrl, '/') . '/pika-json/node/' : '';
-				$this->userAgent = $configArray['Islandora2']['userAgent'];
-    }
+	public function __construct()
+	{
+		global $configArray;
+		$this->logger        = new Logger(__CLASS__);
+		$this->cache         = new Cache();
+		$this->userAgent     = $configArray['Islandora2']['userAgent'] ?? '';
+		$this->resourceTtl   = (int)($configArray['Caching']['islandora2_resource']   ?? 600);
+		$this->vocabularyTtl = (int)($configArray['Caching']['islandora2_vocabulary'] ?? 3600);
 
-    /**
-     * Fetch a node from the Islandora2 JSON endpoint.
-     *
-     * @param int $nodeId Identifier of the node to retrieve.
-     * @return array|null Decoded node payload or null when the request fails.
-     */
-    public function fetch(?int $nodeId = null): ?array
-    {
-        if (!$nodeId) {
-            $nodeId = $this->nodeId;
-        }
-        if ($nodeId !== $this->nodeId) {
-            $this->nodeId = $nodeId;
-        }
-        if ($nodeId <= 0) {
-            $this->logger->warning('Attempted to fetch Islandora node with invalid id.', ['nodeId' => $nodeId]);
-            return null;
-        }
+		$url = $configArray['Islandora2']['url'] ?? '';
+		if (empty($url)) {
+			$this->logger->error('Islandora2 [url] is not configured in config.ini. All API requests will fail.');
+		}
+		$this->baseUrl = rtrim($url, '/');
+	}
 
-        if (empty($this->api_url)) {
-            $this->logger->error('Islandora2 URL is not configured.');
-            return null;
-        }
+	/**
+	 * Fetch a resource from the Islandora 2 JSON API.
+	 *
+	 * @param string $type Either 'node' or 'taxonomy'.
+	 * @param int    $id   Node ID or taxonomy term ID.
+	 * @return array|null  Decoded payload, or null on failure.
+	 */
+	public function fetch(string $type, int $id): ?array
+	{
+		if ($id <= 0) {
+			$this->logger->warning('Attempted to fetch Islandora resource with invalid id.', [
+				'type' => $type,
+				'id'   => $id,
+			]);
+			return null;
+		}
 
-        $url       = $this->api_url . $nodeId;
-        $curl      = new Curl();
-        $response  = null;
-        $curl->setUserAgent($this->userAgent);
-        
-        try {
-            $response = $curl->get($url);
-            /* Error checks */
-            if ($curl->isCurlError()) {
-                $this->logger->error('Curl error while fetching Islandora node.', [
-                    'nodeId' => $nodeId,
-                    'code'   => $curl->getCurlErrorCode(),
-                    'error'  => $curl->getCurlErrorMessage(),
-                ]);
-                return null;
-            }
+		if (empty($this->baseUrl)) {
+			$this->logger->error('Islandora2 URL is not configured.');
+			return null;
+		}
 
-            if ($curl->isError()) {
-                $this->logger->warning('HTTP error returned by Islandora2 API.', [
-                    'nodeId' => $nodeId,
-                    'code'   => $curl->getHttpStatusCode(),
-                ]);
-                return null;
-            }
+		$cacheKey = 'islandora2_' . $type . '_' . $id;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
 
+		$url  = $this->baseUrl . '/pika-json/' . $type . '/' . $id;
+		$curl = new Curl();
+		$curl->setUserAgent($this->userAgent);
 
-            $statusCode = $curl->getHttpStatusCode();
-            if ($statusCode !== 200) {
-                $this->logger->warning('Unexpected HTTP status when fetching Islandora node.', [
-                    'nodeId' => $nodeId,
-                    'code'   => $statusCode,
-                ]);
-                return null;
-            }
-            
-            /* Load the JSON payload */
-            $body = null;
-            
-            $body = $curl->response;
+		try {
+			$body = $curl->get($url);
 
-            if ($body === null) {
-                $body = $curl->getResponse();
-            }
+			if ($curl->isCurlError()) {
+				$this->logger->error('Curl error while fetching Islandora resource.', [
+					'type'  => $type,
+					'id'    => $id,
+					'code'  => $curl->getCurlErrorCode(),
+					'error' => $curl->getCurlErrorMessage(),
+				]);
+				return null;
+			}
 
-            if ($body === null) {
-                $body = $curl->getRawResponse();
-            }
+			if ($curl->isError()) {
+				$this->logger->warning('HTTP error returned by Islandora2 API.', [
+					'type' => $type,
+					'id'   => $id,
+					'code' => $curl->getHttpStatusCode(),
+				]);
+				return null;
+			}
 
-            if ($body === null && $response !== null) {
-                $body = $response;
-            }
+			$statusCode = $curl->getHttpStatusCode();
+			if ($statusCode !== 200) {
+				$this->logger->warning('Unexpected HTTP status when fetching Islandora resource.', [
+					'type' => $type,
+					'id'   => $id,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
 
-            $rawStringBody = is_string($body) ? $body : $curl->getRawResponse();
-            if (!$this->validateContentLength($curl, $rawStringBody, (int)$nodeId)) {
-                return null;
-            }
+			$rawStringBody = is_string($body) ? $body : $curl->getRawResponse();
+			if (!$this->validateContentLength($curl, $rawStringBody, $type, $id)) {
+				return null;
+			}
 
-            if (is_array($body)) {
-                return $body;
-            }
+			$result = $this->decodeBody($body, $type, $id);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
+		} catch (\Throwable $exception) {
+			$this->logger->error('Failed to query Islandora2 API.', [
+				'type'    => $type,
+				'id'      => $id,
+				'message' => $exception->getMessage(),
+			]);
+			return null;
+		} finally {
+			$curl->close();
+		}
+	}
 
-            if (is_object($body)) {
-                $body = json_decode(json_encode($body), true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $this->logger->error('Failed to normalize Islandora node response object.', [
-                        'nodeId' => $nodeId,
-                        'error'  => json_last_error_msg(),
-                    ]);
-                    return null;
-                }
-                return $body;
-            }
+	/**
+	 * Fetch all children of a node across as many pages as needed.
+	 *
+	 * Page 1 is fetched synchronously to learn the total; any remaining pages
+	 * are requested in parallel via MultiCurl. Each page is individually cached
+	 * so subsequent calls reuse cached data without making any network requests.
+	 *
+	 * @param int $nid      Parent node ID.
+	 * @param int $pageSize Items per page (max 250 per API call).
+	 * @return array        Flat array of raw child node payloads.
+	 */
+	public function fetchAllChildren(int $nid, int $pageSize = 250): array
+	{
+		$first = $this->fetchChildren($nid, 1, $pageSize);
+		if ($first === null) {
+			return [];
+		}
 
-            if (!is_string($body) || trim($body) === '') {
-                $this->logger->warning('Islandora2 API returned an empty response.', ['nodeId' => $nodeId]);
-                return null;
-            }
+		$total    = (int)($first['total'] ?? 0);
+		$children = $first['children'] ?? [];
 
-            $decoded = json_decode($body, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Failed to decode Islandora node JSON response.', [
-                    'nodeId' => $nodeId,
-                    'error'  => json_last_error_msg(),
-                    'body'   => substr($body, 0, 250),
-                ]);
-                return null;
-            }
+		if (count($children) >= $total) {
+			return $children;
+		}
 
-            return $decoded;
-        } catch (\Throwable $exception) {
-            $this->logger->error('Failed to query Islandora2 API.', [
-                'nodeId'  => $nodeId,
-                'message' => $exception->getMessage(),
-            ]);
-            return null;
-        } finally {
-            $curl->close();
-        }
-    }
+		$totalPages  = (int)ceil($total / $pageSize);
+		$multiCurl   = new MultiCurl();
+		if (!empty($this->userAgent)) {
+			$multiCurl->setUserAgent($this->userAgent);
+		}
+		$pageResults = [];
 
-    /**
-     * Validate that the Content-Length header, when set, matches the body we received.
-     */
-    private function validateContentLength(Curl $curl, ?string $body, int $nodeId): bool
-    {
-        $expected = $this->getContentLengthHeader($curl);
-        if ($expected === null || $expected < 0) {
-            return true;
-        }
+		for ($page = 2; $page <= $totalPages; $page++) {
+			$cacheKey = 'islandora2_node_children_' . $nid . '_p' . $page . '_n' . $pageSize;
+			if (!isset($_REQUEST['reload'])) {
+				$cached = $this->cache->get($cacheKey);
+				if ($cached !== null) {
+					$pageResults[$page] = $cached['children'] ?? [];
+					continue;
+				}
+			}
 
-        if ($body === null) {
-            $this->logger->error('Islandora2 API declared response length but body is missing.', [
-                'nodeId' => $nodeId,
-                'expectedLength' => $expected,
-            ]);
-            return false;
-        }
+			$url  = $this->baseUrl . '/pika-json/node/' . $nid . '/children?page=' . $page . '&number=' . $pageSize;
+			$curl = $multiCurl->addGet($url);
+			$p    = $page;
+			$ck   = $cacheKey;
+			$curl->success(function ($instance) use (&$pageResults, $p, $nid, $ck) {
+				$result = $this->decodeBody($instance->response, 'node-children', $nid);
+				if ($result !== null) {
+					$this->cache->set($ck, $result, $this->resourceTtl);
+					$pageResults[$p] = $result['children'] ?? [];
+				}
+			});
+			$curl->error(function ($instance) use ($p, $nid) {
+				$this->logger->warning('MultiCurl error fetching children page.', [
+					'nid'  => $nid,
+					'page' => $p,
+					'code' => $instance->getHttpStatusCode(),
+				]);
+			});
+		}
 
-        $actual = strlen($body);
-        if ($actual !== $expected) {
-            $this->logger->error('Islandora2 API response length mismatch.', [
-                'nodeId' => $nodeId,
-                'expectedLength' => $expected,
-                'actualLength' => $actual,
-            ]);
-            return false;
-        }
+		$multiCurl->start();
+		$multiCurl->close();
 
-        return true;
-    }
+		ksort($pageResults);
+		foreach ($pageResults as $pageChildren) {
+			$children = array_merge($children, $pageChildren);
+		}
 
-    /**
-     * Extract the Content-Length header from the Curl response headers.
-     */
-    private function getContentLengthHeader(Curl $curl): ?int
-    {
-        if (!method_exists($curl, 'getResponseHeaders')) {
-            return null;
-        }
+		return $children;
+	}
 
-        $headers = $curl->getResponseHeaders();
+	/**
+	 * Fetch nodes that reference a taxonomy term.
+	 *
+	 * Returns an empty array when no related nodes exist (404), null on other failures.
+	 *
+	 * @param int $tid Term ID.
+	 * @return array|null Array of node records, empty array when none, null on error.
+	 */
+	public function fetchRelatedNodes(int $tid): ?array
+	{
+		if ($tid <= 0 || empty($this->baseUrl)) {
+			return null;
+		}
 
-        // if (!is_array($headers)) {
-        //     return null;
-        // }
+		$cacheKey = 'islandora2_related_nodes_' . $tid;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
 
-        foreach ($headers as $name => $value) {
-            if (strcasecmp((string)$name, 'Content-Length') !== 0) {
-                continue;
-            }
+		$url  = $this->baseUrl . '/pika-json/taxonomy/' . $tid . '/nodes';
+		$curl = new Curl();
+		$curl->setUserAgent($this->userAgent);
 
-            if (is_array($value)) {
-                $value = end($value);
-            }
+		try {
+			$body = $curl->get($url);
 
-            if (is_numeric($value)) {
-                return (int)$value;
-            }
-        }
+			if ($curl->isCurlError()) {
+				$this->logger->warning('Curl error while fetching related nodes for taxonomy term.', [
+					'tid'   => $tid,
+					'code'  => $curl->getCurlErrorCode(),
+					'error' => $curl->getCurlErrorMessage(),
+				]);
+				return null;
+			}
 
-        return null;
-    }
+			$statusCode = $curl->getHttpStatusCode();
+			if ($statusCode === 404) {
+				$this->cache->set($cacheKey, [], $this->resourceTtl);
+				return [];
+			}
+
+			if ($curl->isError()) {
+				$this->logger->warning('HTTP error returned when fetching related nodes.', [
+					'tid'  => $tid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			if ($statusCode !== 200) {
+				$this->logger->warning('Unexpected HTTP status when fetching related nodes.', [
+					'tid'  => $tid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			if (!is_string($body) || trim($body) === '') {
+				$this->cache->set($cacheKey, [], $this->resourceTtl);
+				return [];
+			}
+
+			$result = $this->decodeBody($body, 'taxonomy-nodes', $tid);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
+		} catch (\Throwable $exception) {
+			$this->logger->error('Exception while fetching related nodes for taxonomy term.', [
+				'tid'     => $tid,
+				'message' => $exception->getMessage(),
+			]);
+			return null;
+		} finally {
+			$curl->close();
+		}
+	}
+
+	/**
+	 * Fetch a paginated list of child nodes for a parent node.
+	 *
+	 * @param int $nid    Parent node ID.
+	 * @param int $page   1-indexed page number.
+	 * @param int $number Items per page.
+	 * @return array|null Response array with 'total', 'count', 'page', 'children' keys, or null on failure.
+	 */
+	public function fetchChildren(int $nid, int $page = 1, int $number = 10): ?array
+	{
+		if ($nid <= 0 || empty($this->baseUrl)) {
+			return null;
+		}
+
+		$cacheKey = 'islandora2_node_children_' . $nid . '_p' . $page . '_n' . $number;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
+
+		$url  = $this->baseUrl . '/pika-json/node/' . $nid . '/children?page=' . $page . '&number=' . $number;
+		$curl = new Curl();
+		$curl->setUserAgent($this->userAgent);
+
+		try {
+			$body = $curl->get($url);
+
+			if ($curl->isCurlError()) {
+				$this->logger->error('Curl error while fetching children for node.', [
+					'nid'   => $nid,
+					'page'  => $page,
+					'code'  => $curl->getCurlErrorCode(),
+					'error' => $curl->getCurlErrorMessage(),
+				]);
+				return null;
+			}
+
+			$statusCode = $curl->getHttpStatusCode();
+			if ($statusCode === 404) {
+				return null;
+			}
+
+			if ($curl->isError()) {
+				$this->logger->warning('HTTP error returned when fetching children.', [
+					'nid'  => $nid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			if ($statusCode !== 200) {
+				$this->logger->warning('Unexpected HTTP status when fetching children.', [
+					'nid'  => $nid,
+					'code' => $statusCode,
+				]);
+				return null;
+			}
+
+			$result = $this->decodeBody($body, 'node-children', $nid);
+			if ($result !== null) {
+				$this->cache->set($cacheKey, $result, $this->resourceTtl);
+			}
+			return $result;
+		} catch (\Throwable $exception) {
+			$this->logger->error('Failed to fetch children for Islandora node.', [
+				'nid'     => $nid,
+				'message' => $exception->getMessage(),
+			]);
+			return null;
+		} finally {
+			$curl->close();
+		}
+	}
+
+	/**
+	 * Fetch all taxonomy terms for a given vocabulary from the Drupal JSON:API.
+	 *
+	 * Returns an array of ['tid' => int, 'name' => string] entries sorted by name,
+	 * or null on failure. Follows JSON:API pagination via links.next.
+	 *
+	 * @param string $vocabId  Vocabulary machine name (e.g. 'corporate_body').
+	 * @return array[]|null
+	 */
+	public function fetchVocabulary(string $vocabId): ?array
+	{
+		if (empty($this->baseUrl)) {
+			$this->logger->error('Islandora2 URL is not configured.');
+			return null;
+		}
+
+		$cacheKey = 'islandora2_vocabulary_' . $vocabId;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
+
+		$url = $this->baseUrl . '/jsonapi/taxonomy_term/' . urlencode($vocabId)
+			. '?fields[taxonomy_term--' . urlencode($vocabId) . ']=name,drupal_internal__tid'
+			. '&sort=name'
+			. '&page[limit]=100';
+
+		$terms = [];
+
+		do {
+			$curl = new Curl();
+			$curl->setUserAgent($this->userAgent);
+
+			try {
+				$body = $curl->get($url);
+
+				if ($curl->isCurlError()) {
+					$this->logger->error('Curl error fetching vocabulary from JSON:API.', [
+						'vocabId'   => $vocabId,
+						'url'   => $url,
+						'code'  => $curl->getCurlErrorCode(),
+						'error' => $curl->getCurlErrorMessage(),
+					]);
+					return null;
+				}
+
+				if ($curl->isError()) {
+					$this->logger->warning('HTTP error from JSON:API while fetching vocabulary.', [
+						'vocab'  => $vocabId,
+						'code' => $curl->getHttpStatusCode(),
+					]);
+					return null;
+				}
+
+				$decoded = $this->decodeBody($body, 'vocabulary', 0);
+				if ($decoded === null) {
+					return null;
+				}
+
+				foreach ($decoded['data'] ?? [] as $item) {
+					$tid  = $item['attributes']['drupal_internal__tid'] ?? null;
+					$name = $item['attributes']['name'] ?? null;
+					if (is_int($tid) && is_string($name) && $name !== '') {
+						$terms[] = ['tid' => $tid, 'name' => $name];
+					}
+				}
+
+				$url = $decoded['links']['next']['href'] ?? null;
+			} catch (\Throwable $e) {
+				$this->logger->error('Exception while fetching vocabulary from JSON:API.', [
+					'vocab'     => $vocabId,
+					'message' => $e->getMessage(),
+				]);
+				return null;
+			} finally {
+				$curl->close();
+			}
+		} while ($url !== null);
+
+		$this->cache->set($cacheKey, $terms, $this->vocabularyTtl);
+		return $terms;
+	}
+	
+
+	/**
+	 * Normalise a raw Curl response body to an associative array.
+	 */
+	private function decodeBody(mixed $body, string $type, int $id): ?array
+	{
+		if (is_array($body)) {
+			return $body;
+		}
+
+		if (is_object($body)) {
+			$body = json_decode(json_encode($body), true);
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				$this->logger->error('Failed to normalize Islandora response object.', [
+					'type'  => $type,
+					'id'    => $id,
+					'error' => json_last_error_msg(),
+				]);
+				return null;
+			}
+			return $body;
+		}
+
+		if (!is_string($body) || trim($body) === '') {
+			$this->logger->warning('Islandora2 API returned an empty response.', [
+				'type' => $type,
+				'id'   => $id,
+			]);
+			return null;
+		}
+
+		$decoded = json_decode($body, true);
+		if (json_last_error() !== JSON_ERROR_NONE) {
+			$this->logger->error('Failed to decode Islandora JSON response.', [
+				'type'  => $type,
+				'id'    => $id,
+				'error' => json_last_error_msg(),
+				'body'  => substr($body, 0, 250),
+			]);
+			return null;
+		}
+
+		return $decoded;
+	}
+
+	/**
+	 * Validate that the Content-Length header, when set, matches the body we received.
+	 */
+	private function validateContentLength(Curl $curl, ?string $body, string $type, int $id): bool
+	{
+		$expected = $this->getContentLengthHeader($curl);
+		if ($expected === null || $expected < 0) {
+			return true;
+		}
+
+		if ($body === null) {
+			$this->logger->error('Islandora2 API declared response length but body is missing.', [
+				'type'           => $type,
+				'id'             => $id,
+				'expectedLength' => $expected,
+			]);
+			return false;
+		}
+
+		$actual = strlen($body);
+		if ($actual !== $expected) {
+			$this->logger->error('Islandora2 API response length mismatch.', [
+				'type'           => $type,
+				'id'             => $id,
+				'expectedLength' => $expected,
+				'actualLength'   => $actual,
+			]);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Extract the Content-Length header from the Curl response headers.
+	 */
+	private function getContentLengthHeader(Curl $curl): ?int
+	{
+		if (!method_exists($curl, 'getResponseHeaders')) {
+			return null;
+		}
+
+		$headers = $curl->getResponseHeaders();
+
+		if (!is_array($headers)) {
+			return null;
+		}
+
+		foreach ($headers as $name => $value) {
+			if (strcasecmp((string)$name, 'Content-Length') !== 0) {
+				continue;
+			}
+
+			if (is_array($value)) {
+				$value = end($value);
+			}
+
+			if (is_numeric($value)) {
+				return (int)$value;
+			}
+		}
+
+		return null;
+	}
 }

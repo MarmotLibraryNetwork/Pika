@@ -1,12 +1,12 @@
 {if $videoThumbnailUrl}
     <div style="display: flex; justify-content: center">
-        <img src={$videoThumbnailUrl} style="margin: 0 auto">
+        <img src={$videoThumbnailUrl} style="margin: 0 auto; object-fit: contain;" alt="Audio poster image for {$title}">
     </div>
 {/if}
 <audio src="{$audioUrl}" type="{$audioMime}" style="width:100%;" id="archive-audio-player" controls>
     {if count($captions) >= 1}
         {foreach from=$captions item=i}
-            <track kind="captions" src="/Archive/AJAX?method=fetchVtt&path={$i.filePath|escape:'url'}" label="{$i.langName}"
+            <track kind="captions" src="/Archive2/AJAX?method=fetchVtt&path={$i.filePath|escape:'url'}" label="{$i.langName}"
                 srclang="{$i.langCode}" />
         {/foreach}
     {/if}

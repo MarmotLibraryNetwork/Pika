@@ -48,7 +48,7 @@
 
 	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
 
-   {include file="Search/searchTools.tpl" showAdminTools=false}
+   {include file="Search/searchTools.tpl" showAdminTools=$showAdminTools|default:false}
 </div>
 {* Embedded Javascript For this Page *}
 <script>

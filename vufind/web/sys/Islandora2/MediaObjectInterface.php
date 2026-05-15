@@ -59,10 +59,10 @@ interface MediaObjectInterface
 
     /**
      * Return media associated with media object
-     * 
-     * @return array|null
+     *
+     * @return array
      */
-    public function getMedia(): ?array;
+    public function getMedia(): array;
 
     /**
      * Convenience accessor for the primary derivative or file.

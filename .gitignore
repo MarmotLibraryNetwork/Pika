@@ -140,4 +140,12 @@ vufind/web/solrIndex.json
 # Claude Files #
 ################
 /.claude
+.claude/*
 CLAUDE.md
+
+vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
+
+# VSCode
+.vscode/settings.json
+.vscode/pika.code-workspace
+.vscode/launch.json

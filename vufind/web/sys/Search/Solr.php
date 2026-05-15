@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -181,7 +180,13 @@ class Solr implements IndexEngine {
 		//$this->client = null;
 	}
 
-	public function pingServer($failOnError = true){
+	/**
+	 * Checks Search Engine Responsiveness.
+	 *
+	 * @param bool $failOnError
+	 * @return bool|mixed
+	 */
+	public function pingServer(bool $failOnError = true){
 		global $configArray;
 		if (array_key_exists($this->host, Solr::$serversPinged)) {
 			return Solr::$serversPinged[$this->host];
@@ -191,7 +196,7 @@ class Solr implements IndexEngine {
 		$memCacheKey      = 'solr_ping_' . $hostEscaped;
 		$cachedPingResult = $this->cache->get($memCacheKey);
 		if ($cachedPingResult != null) {
-			Solr::$serversPinged[$this->host] = $cachedPingResult == 'true';
+			Solr::$serversPinged[$this->host] = (bool) $cachedPingResult == 'true';
 			return Solr::$serversPinged[$this->host];
 		}
 
@@ -199,13 +204,14 @@ class Solr implements IndexEngine {
 			// Test to see solr is online
 			$curl = new Curl();
 			$curl->setTimeout(2);
-			$pingUrl = $this->host . "/admin/ping";
+			$pingUrl = $this->host . '/admin/ping';
 			$result  = $curl->get($pingUrl);
 			if ($curl->isError()) {
 				$pingResult                       = 'false';
 				Solr::$serversPinged[$this->host] = false;
 				if ($failOnError) {
 					PEAR_Singleton::raiseError($curl->getErrorMessage(), $curl->getErrorCode());
+					//TODO: throw php exception
 				} else {
 					$this->logger->debug("Ping of {$this->host} failed");
 					return false;
@@ -226,9 +232,9 @@ class Solr implements IndexEngine {
 
 			$this->cache->set($memCacheKey, $pingResult, $configArray['Caching']['solr_ping']);
 
-			Solr::$serversPinged[$this->host] = $pingResult == 'true';
-			global $timer;
-			$timer->logTime('Ping Solr instance ' . $this->host);
+			Solr::$serversPinged[$this->host] = (bool) $pingResult == 'true';
+			//global $timer;
+			//$timer->logTime('Ping Solr instance ' . $this->host);
 		}
 		return Solr::$serversPinged[$this->host];
 	}
@@ -369,7 +375,7 @@ class Solr implements IndexEngine {
 			global $timer;
 			$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
 
-			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a JSON object
 			$result = $this->client->get($this->host . '/get', $options);
 
 			if ($this->client->isError()) {
@@ -600,19 +606,19 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Retrieves Solr Documents for an array of Islandora PIDs
+	 * Retrieves Solr Documents for an array of Islandora1 PIDs
 	 *
 	 * The getFilteredIds() doesn't filter with the special /get request and ids field for
-	 * the current version of Islandora so we have to do a regular /select request with a query against
+	 * the current version of Islandora1, so we have to do a regular /select request with a query against
 	 * PID field
 	 *
-	 * @param string[] $ids The Id of the Solr document to retrieve
-	 * @param null $filters Any search filters to apply to query
+	 * @param string[] $ids The ID of the Solr document to retrieve
+	 * @param array|null $filters Any search filters to apply to query
 	 * @param int $batchSize
 	 * @param string $idFieldToReturn
 	 * @return array of the filtered PIDs
 	 */
-	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'){
+	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'):array{
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -648,12 +654,12 @@ class Solr implements IndexEngine {
 				if (!empty($filters)){
 					$options['fq'] = $filters;
 				}
-				// Build query string for use with GET or POST, with special handling for repeated parameters
+				// Build a query string for use with GET or POST, with special handling for repeated parameters
 				$queryString = $this->buildSolrQueryString($options);
 
 				// Send Request
 				if (strlen($queryString) > 8000){
-					// For extremely long queries, like lists we will get an error: "URI Too Long"
+					// For extremely long queries, like lists, we will get an error: "URI Too Long"
 					$result = $this->client->post($this->host . '/select', $queryString);
 				}else{
 					$result = $this->client->get($this->host . '/select', $queryString);
@@ -665,6 +671,137 @@ class Solr implements IndexEngine {
 					$result       = $this->_process($result);
 					$tempArray    = array_column($result['response']['docs'], $idFieldToReturn);
 					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
+	 * Search Solr for legacy PIDs and return a single ID field from matching documents.
+	 *
+	 * @param string[] $pids         Legacy PID strings to search for (e.g. 'namespace:id')
+	 * @param string $pidField       Solr field to search against. Possible values: 'ss_legacy_pid', 'ss_legacy_entity_pid'
+	 * @param array|null $filters    Optional search filters to apply
+	 * @param int $batchSize         Number of PIDs to query per request
+	 * @param string $returnField    Solr field to return from matching documents (e.g. 'its_node_id', 'its_tid')
+	 * @return array                 Array of $returnField values for matching documents
+	 */
+	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
+		$solrDocArray = [];
+		$numIds       = count($pids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true);
+
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds   = array_slice($pids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds);
+				$idString = str_replace(':', '\:', $idString); // escape colon characters in PIDs
+				$options  = [
+					'q'    => "$pidField:($idString)",
+					'q.op' => 'OR',
+					'fl'   => $returnField,
+					'rows' => $batchSize,
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				$queryString = $this->buildSolrQueryString($options);
+
+				if (strlen($queryString) > 8000){
+					$result = $this->client->post($this->host . '/select', $queryString);
+				}else{
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					$this->logger->error('getLegacyPIDs: ' . $this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$tempArray    = array_column($result['response']['docs'], $returnField);
+					$solrDocArray = array_merge($solrDocArray, $tempArray);
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
+		}
+		return $solrDocArray;
+	}
+
+	/**
+	 * Retrieve full Solr documents for an array of Islandora2 node IDs.
+	 *
+	 * Uses a /select query against the its_node_id field rather than the /get
+	 * endpoint (which does not work for Islandora2 node IDs).
+	 *
+	 * @param int[]|string[] $nids   Node IDs to retrieve
+	 * @param array|null     $filters Optional search filters to apply
+	 * @param int            $batchSize Number of node IDs per request
+	 * @return array         Array of Solr document arrays
+	 */
+	function getIslandora2NodeIds(array $nids, array $filters = null, int $batchSize = 100): array {
+		$solrDocArray = [];
+		$numIds       = count($nids);
+		if ($numIds) {
+
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true);
+
+			$startIndex = 0;
+			$batchSize  ??= $numIds;
+			$lastBatch  = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= $numIds) {
+					$lastBatch = true;
+					$endIndex  = $numIds;
+					$batchSize = $numIds - $startIndex;
+				}
+				$tmpIds   = array_slice($nids, $startIndex, $batchSize);
+				$idString = implode(' ', $tmpIds); // integers — no colon escaping needed
+				$options  = [
+					'q'    => "its_node_id:($idString)",
+					'q.op' => 'OR',
+					'fl'   => '*',
+					'rows' => $batchSize,
+					'wt'   => 'json'
+				];
+
+				if (!empty($filters)){
+					$options['fq'] = $filters;
+				}
+				$queryString = $this->buildSolrQueryString($options);
+
+				if (strlen($queryString) > 8000){
+					$result = $this->client->post($this->host . '/select', $queryString);
+				} else {
+					$result = $this->client->get($this->host . '/select', $queryString);
+				}
+
+				if ($this->client->isError()) {
+					$this->logger->error('getIslandora2NodeIds: ' . $this->client->getErrorMessage());
+				} else {
+					$result       = $this->_process($result);
+					$solrDocArray = array_merge($solrDocArray, $result['response']['docs']);
 				}
 
 				if (!$lastBatch) {
@@ -733,21 +870,21 @@ class Solr implements IndexEngine {
 	 *
 	 * @access  private
 	 * @param array $mungeRules            The SearchSpecs-derived structure or substructure defining the search,
-	 *                                     derived from the json file
+	 *                                     derived from the JSON file
 	 * @param array $mungedValues          The values for the various munge types
-	 * @param bool $isKeyWordSearchSpec    Is this the main search type keyword (with the most elaborate search spec)
+	 * @param bool $isCatalogKeyWordSearchSpec    Is this the main search type keyword (with the most elaborate search spec)
 	 * @param string $joiner               Joiner of sub-queries  eg AND OR
 	 *
 	 * @return  string            A search string suitable for query Solr with
 	 */
-	private function _applySearchSpecs($mungeRules, $mungedValues, bool $isKeyWordSearchSpec = false, $joiner = 'OR'){
+	private function _applySearchSpecs($mungeRules, $mungedValues, bool $isCatalogKeyWordSearchSpec = false, $joiner = 'OR'){
 		$clauses = [];
 		foreach ($mungeRules as $field => $clauseArray) {
 			if (is_numeric($field)){
 				$sw           = array_shift($clauseArray); // shift off the join string and weight
 				$internalJoin = ' ' . $sw[0] . ' ';
-				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $mungedValues, $isKeyWordSearchSpec, $internalJoin) . ')'; // Build it up recursively
-				$weight       = $sw[1];                                                                           // ...and add a weight if we have one
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $mungedValues, $isCatalogKeyWordSearchSpec, $internalJoin) . ')'; // Build it up recursively
+				$weight       = $sw[1];                                                                                                        // ...and add a weight if we have one
 				if (!empty($weight)){
 					$searchString .= '^' . $weight;
 				}
@@ -802,15 +939,15 @@ class Solr implements IndexEngine {
 
 							}
 							break;
-						case 'shortId':
-							// Genealogy Id number field
-							if (!ctype_digit($fieldValue)){
-								// If the search phrase is'nt all numbers, don't add this clause to the query
+						case 'shortId': // Genealogy Id number field
+						case 'its_node_id':  // Islandora2 node id field
+						if (!ctype_digit($fieldValue)){
+								// If the search phrase isn't all numbers, don't add this clause to the query
 								continue 2;
 							}
 					}
 
-					if ($isKeyWordSearchSpec){
+					if ($isCatalogKeyWordSearchSpec){
 						// Only do these field skips when working with the Keyword search spec
 						switch ($field){
 							case 'id':
@@ -907,6 +1044,7 @@ class Solr implements IndexEngine {
 				}
 
 				$mungedValues['exact']       = str_replace(':', '\\:', $lookfor);
+				// Unquoted exact requires q.op = AND to work properly as an exact match;
 				$mungedValues['exactQuoted'] = '"' . $lookfor . '"';
 				$mungedValues['and']         = $andQuery;
 				$mungedValues['or']          = $orQuery;
@@ -929,6 +1067,7 @@ class Solr implements IndexEngine {
 				}
 
 			}else{
+				// Called by _buildAdvancedQuery()
 				//TODO: this block is never used or called  Should it?  Did it?
 
 				// If we're skipping tokenization, we just want to pass $lookfor through
@@ -1037,6 +1176,8 @@ class Solr implements IndexEngine {
 		// apply it to other fields through our defined handlers, so we'll leave
 		// it as-is:
 		if (strstr($query, ':')){
+			//TODO: something more sophisticated is needed for search phrases that happen to contain a colon character.
+			// also "*:*" comes here
 			return $query;
 		}
 
@@ -1067,7 +1208,7 @@ class Solr implements IndexEngine {
 	 * @return  string              The query
 	 * @throws  object              PEAR Error
 	 */
-	function buildQuery($search, $forDisplay = false){
+	function buildQuery($search, bool $forDisplay = false):string{
 		$key = serialize([$search, $forDisplay]);
 		if (isset($this->builtQueries[$key])){
 			return $this->builtQueries[$key];
@@ -1246,7 +1387,7 @@ class Solr implements IndexEngine {
 	 * @param string $handler               The Query Handler to use (null for default)
 	 * @param array  $filter                The fields and values to filter results on
 	 * @param int    $start                 The record to start with
-	 * @param int    $limit                 The amount of records to return
+	 * @param int    $limit                 The number of records to return
 	 * @param array  $facet                 An array of faceting options
 	 * @param string $spell                 Phrase to spell check
 	 * @param string $dictionary            Spell check dictionary to use
@@ -1281,7 +1422,7 @@ class Solr implements IndexEngine {
 		// Query String Parameters
 		$options = [
 			'q'      => $query,
-			'q.op'   => 'AND',
+			'q.op'   => 'AND', // q.op = 'AND' needed to make unquoted "exact" munge work as intended
 			'rows'   => $limit,
 			'start'  => $start,
 		];
@@ -1298,12 +1439,12 @@ class Solr implements IndexEngine {
 		}
 
 		//Check to see if we need to automatically convert to a proper case only (no stemming search)
-		//We will do this whenever all or part of a string is surrounded by quotes.
+		//We will do this whenever quotes surround all or part of a string.
 		if (is_array($query)) {
-			echo("Invalid query " . print_r($query, true));
+			$this->logger->error('search() called with an array of queries. This is not supported.', $query);
 		}
 		if (preg_match('/\".+?\"/', $query)) {
-			// If the search query contains quoted phrase, switch from the regular search handler
+			// If the search query contains a quoted phrase, switch from the regular search handler
 			// to a textProper version of the search handler
 			switch ($handler){
 				case 'AllFields':
@@ -1321,6 +1462,15 @@ class Solr implements IndexEngine {
 					break;
 				case 'Series':
 					$handler = 'SeriesProper';
+					break;
+				case 'Islandora2Keyword':
+					$handler = 'Islandora2KeywordProper';
+					break;
+				case 'Islandora2Title':
+					$handler = 'Islandora2TitleProper';
+					break;
+				case 'Islandora2Subject':
+					$handler = 'Islandora2SubjectProper';
 					break;
 				case 'IslandoraKeyword':
 					$handler = 'IslandoraKeywordProper';
@@ -1701,6 +1851,7 @@ class Solr implements IndexEngine {
 //		return $this->_update($xml);
 //	}
 
+	private $fullSearchURl;
 	/**
 	 * Submit REST Request to read data
 	 *
@@ -1722,7 +1873,7 @@ class Solr implements IndexEngine {
 		$this->pingServer();
 
 		$params['q.op']    ??= 'AND';    // This used to be set in the schema, but the parameter is obsolete.
-		// All of our query creation, processing, and term munging seems to be built on this assumption that terms are ANDed together.
+		// All of our query creation, processing, and term munging are built on this assumption that terms are ANDed together.
 		// The Lucene (and therefore Solr) default is to "OR" terms together.
 		$params['wt']      = 'json';   // this is the default for modern Solr; We have to keep till Islandora is upgraded.
 		$params['json.nl'] = 'arrarr'; // Needed to process faceting; arrarr breaks ordered pairs into a series of arrays
@@ -1730,7 +1881,7 @@ class Solr implements IndexEngine {
 		$queryString = $this->buildSolrQueryString($params);
 
 		if (strlen($queryString) > 8000){
-			// For extremely long queries, like lists we will get an error: "URI Too Long"
+			// For extremely long queries, like lists, we will get an error: "URI Too Long"
 			// Official limit on JETTY is 8192 bytes
 			$method = 'POST';
 		}
@@ -1740,8 +1891,8 @@ class Solr implements IndexEngine {
 		if ($this->debug && $this->debugSolrQuery && $this->isPrimarySearch){
 			global $interface;
 			if ($interface){
-				//Add debug parameter so we can see the explain section at the bottom.
-				$debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
+				//Add debug parameter so we can see the 'explain' section at the bottom.
+				$debugSearchUrl = $this->host . '/select/?debugQuery=on&' . $queryString;
 				$solrQueryDebug = "$method: <a href='" . $debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
 				$interface->assign('solrLinkDebug', $solrQueryDebug);
 			}
@@ -2004,7 +2155,7 @@ class Solr implements IndexEngine {
 			return '';
 		}
 
-		// Ensure wildcards are not at beginning of input
+		// Ensure wildcards are not at the beginning of input
 		if ((substr($input, 0, 1) == '*') ||
 			(substr($input, 0, 1) == '?')) {
 			$input = substr($input, 1);
@@ -2368,6 +2519,60 @@ class Solr implements IndexEngine {
 		}
 
 		return implode('&', $query);
+	}
+
+	/**
+	 * Added to Search\Solr.php to access the solr document by solr itemId
+	 *
+	 *
+	 *
+	 * Retrieves Solr Document by an alternate Id
+	 * @param string     $id              An alternate Id of the Solr document to retrieve
+	 * @param null|string $fieldsToReturn An optional list of fields to return separated by commas
+	 * @return array|false An array of the Solr document fields of the grouped Work
+	 */
+	function getRecordByAlternateId($id, $fieldsToReturn = null){
+		/** @var Memcache $memCache */
+		global $memCache;
+		global $solrScope;
+		if (!$fieldsToReturn) {
+			$validFields    = $this->_loadValidFields();
+			$fieldsToReturn = implode(',', $validFields);
+		}
+		$solrDocArray = false;
+		//$memCacheKey  = "solr_record_{$id}_{$this->index}_{$solrScope}_{$fieldsToReturn}";
+		//$solrDocArray = $memCache->get($memCacheKey);
+
+		if ($solrDocArray == false || isset($_REQUEST['reload'])) {
+			$this->pingServer();
+			// Query String Parameters
+			$options = [
+				'q'  => "alternate_ids:$id",
+				'fl' => $fieldsToReturn,
+			];
+
+			//global $timer;
+			//$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
+
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+			$result = $this->client->get($this->host . '/select', $options);
+
+			if ($this->client->isError()) {
+				$this->logger->error($this->client->getErrorMessage());
+				return false;
+			} elseif (!empty($result['response']['docs'][0])) {
+				if (count($result['response']['docs']) > 1) {
+					$this->logger->warn('Found more than one result looking for alternate id '. $id);
+				}
+				$solrDocArray = $result['response']['docs'][0];
+				//global $configArray;
+				//$memCache->set($memCacheKey, $solrDocArray, 0, $configArray['Caching']['solr_record']);
+			} else {
+				// Searched but didn't find anything by record number, so return empty array
+				$solrDocArray = [];
+			}
+		}
+		return $solrDocArray;
 	}
 
 }

@@ -19,14 +19,14 @@
 
 namespace Islandora2;
 
-use CaptionsandTranscriptTraits;
+use CaptionAndTranscriptTraits;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 require_once ROOT_DIR . '/sys/Islandora2/CaptionAndTranscriptTraits.php';
 
 class VideoObject extends I2Object
 {
-    use CaptionsandTranscriptTraits;
+    use CaptionAndTranscriptTraits;
 
     public static function supports(array $node): bool
     {
