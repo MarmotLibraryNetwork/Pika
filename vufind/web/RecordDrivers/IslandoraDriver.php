@@ -3143,26 +3143,21 @@ abstract class IslandoraDriver extends RecordInterface {
 			[$namespace]                           = explode(':', $this->getUniqueID());
 			$contributingLibrary                   = new Library();
 			$contributingLibrary->archiveNamespace = $namespace;
-			if (!$contributingLibrary->find(true)){
+			if (!$contributingLibrary->find(true) || $contributingLibrary->archivePid == ''){
 				$contributingLibrary = null;
-			}else{
-				if ($contributingLibrary->archivePid == ''){
-					$contributingLibrary = null;
-				}
 			}
 
 			if ($contributingLibrary){
-//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-				$fedoraUtils = FedoraUtils::getInstance();
-
-				$contributingLibraryPid = $contributingLibrary->archivePid;
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-				$islandoraCache      = new IslandoraObjectCache();
-				$islandoraCache->pid = $contributingLibraryPid;
+				$contributingLibraryPid = $contributingLibrary->archivePid;
+				$islandoraCache         = new IslandoraObjectCache();
+				$islandoraCache->pid    = $contributingLibraryPid;
 				if ($islandoraCache->find(true) && !empty($islandoraCache->mediumCoverUrl)){
 					$imageUrl     = $islandoraCache->mediumCoverUrl;
 					$libraryTitle = $islandoraCache->title;
 				}else{
+//				require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+					$fedoraUtils = FedoraUtils::getInstance();
 					$imageUrl     = $fedoraUtils->getObjectImageUrl($fedoraUtils->getObject($contributingLibraryPid), 'medium');
 					$libraryTitle = $fedoraUtils->getObjectLabel($contributingLibraryPid);
 				}
