@@ -1,7 +1,3 @@
-{literal}
-
-
-{/literal}
 
 {strip}
 	<div class="col-xs-12">
@@ -37,7 +33,7 @@
 				{if $recordCount}
 				<p>{$recordCount} items in this collection.</p>
 				{/if}
-				{include file="Archive2/collection-displayMode-toggle.tpl"}
+				{include file="Archive2/components/collection-displayMode-toggle.tpl"}
 			</div>
 		</div>
 
