@@ -7,7 +7,7 @@
 			</div>
 		</div>
 		<div class="col-xs-12">
-			<a class="btn btn-default" href="/Archive2/Results?filter[]=itm_field_member_of:{$nid}">
+			<a class="btn btn-default" href="/Archive2/Results?sm_title2={$title|escape:'url'}" style="margin: 12px 0;">
 				View all objects in this collection
 			</a>
 		</div>
