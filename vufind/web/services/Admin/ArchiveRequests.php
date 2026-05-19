@@ -49,7 +49,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		if (!UserAccount::userHasRole('opacAdmin')){
 			$homeLibrary      = $user->getHomeLibrary();
 			$libraryTid = $homeLibrary->libraryTid;
-			$object->whereAdd("libraryTid == '{$libraryTid}'");
+			$object->$libraryTid = $libraryTid;
 		}
 		$object->find();
 		while ($object->fetch()){
@@ -75,7 +75,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('archives');
+		return UserAccount::userHasRoleFromList(['opacAdmin','archives']);
 	}
 
 }
