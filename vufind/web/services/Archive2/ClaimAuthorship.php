@@ -20,38 +20,48 @@
  * @author   Marmot Library Networks
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
-require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
+require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
-class Archive_ClaimAuthorship extends Action{
+class Archive2_ClaimAuthorship extends Action{
 
 	function launch(){
 		global $configArray;
 		global $interface;
 
-		$archiveRequestFields = ClaimAuthorshipRequest::getObjectStructure();
+		$claimAuthorshipFields = Archive2\ClaimAuthorshipRequest::getObjectStructure();
 
-		if (!isset($_REQUEST['pid'])) {
-			PEAR_Singleton::raiseError('No id provided, you must select which object you want to claim authorship for');
+		if (!isset($_REQUEST['id'])){
+			$interface->assign('error','No id provided, you must select which object you wish to claim.');
+			//TODO: log error also; the raise error generates a decent error message page.
 		}
 
-		$pid                                    = $_REQUEST['pid'];
-		$archiveRequestFields['pid']['default'] = $pid;
+		$nid = ctype_digit($_REQUEST['id']) ? $_REQUEST['id'] : null;
 
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$archiveObject   = FedoraUtils::getInstance()->getObject($pid);
-		$requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
-		$interface->assign('requestedObject', $requestedObject);
+		if(!empty($nid)){
 
-		//Find the owning library
-		$owningLibrary = new Library();
-		[$namespace]   = explode(':', $pid);
-
-		$owningLibrary->archiveNamespace = $namespace;
-		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
-			PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot claim authorship.');
+			/** @var \Islandora2Driver $claimedObject */
+			$claimedObject = new Islandora2Driver($nid);
+			require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+			$request        = new Islandora2\Request();
+			if($claimedObject->getNodeId() && $requestedArray = $request->fetch("node", $nid)){
+				$owningTid = $requestedArray['field_library']['tid'];
+				require_once ROOT_DIR . '/sys/Library/Library.php';
+				$owningLibrary             = new Library();
+				$owningLibrary->libraryTid = $owningTid;
+				$owningLibrary->find(true);
+				if (empty($owningLibrary->libraryId)){
+					$interface->assign('error', "We could not determine which library owns this object, cannot claim authorship.");
+				}
+				$claimAuthorshipFields['nid']['default'] = $nid;
+				$claimAuthorshipFields['nid']['value'] = $nid;
+				$claimAuthorshipFields['libraryTid']['default'] = $owningLibrary->libraryTid;
+			}else{
+				$interface->assign('error', "The requested record could not be processed by the archive system. Please try another item or try again later.");
+			}
+		}else{
+				$interface->assign('error', "An invalid ID was provided. Please use only numeric ids.");
 		}
-
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
 				try {
@@ -67,7 +77,7 @@ class Archive_ClaimAuthorship extends Action{
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 
 				// Pre-fill form with user-supplied data
-				foreach ($archiveRequestFields as &$property) {
+				foreach ($claimAuthorshipFields as &$property) {
 					if (isset($_REQUEST[$property['property']])){
 						$uservalue           = $_REQUEST[$property['property']];
 						$property['default'] = $uservalue;
@@ -75,28 +85,27 @@ class Archive_ClaimAuthorship extends Action{
 				}
 
 			} else {
-				$archiveRequestFields['dateRequested']['value'] = time();
-				/** @var ArchiveRequest $newObject */
-				$newObject = $this->insertObject($archiveRequestFields);
+				$claimAuthorshipFields['dateRequested']['value'] = time();
+				$claimAuthorshipFields['nid']['default'] = $nid;
+				$claimAuthorshipFields['nid']['value']   = $nid;
+				/** @var \Archive2\ClaimAuthorshipRequest $newObject */
+				$newObject = $this->insertObject($claimAuthorshipFields);
 				$interface->assign('requestSubmitted', true);
 				if ($newObject !== false){
 					$interface->assign('requestResult', $newObject);
-
+					$interface->assign('requestedObject', $claimedObject);
 					$body = $interface->fetch('Emails/claim-authorship-request.tpl');
 
-					//Find the owning library
-					$owningLibrary = new Library();
-					[$namespace]   = explode(':', $newObject->pid);
 
-					$owningLibrary->archiveNamespace = $namespace;
-					if ($owningLibrary->find(true) && $owningLibrary->N == 1){
+					if (!empty($owningLibrary)){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							require_once ROOT_DIR . '/sys/Mailer.php';
-							$body        .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
+							$body        .= $claimedObject->getAbsoluteUrl();
+							$libraryArchiveEmail = $owningLibrary->archiveRequestEmail ?? $configArray['Site']['email'];
 							$mail        = new VuFindMailer();
 							$subject     = 'New Authorship Claim for Archive Content';
-							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
+							$emailResult = $mail->send($libraryArchiveEmail, $newObject->email, $subject, $body);
 
 							if ($emailResult === true){
 							} elseif (PEAR_Singleton::isError($emailResult)){
@@ -114,17 +123,16 @@ class Archive_ClaimAuthorship extends Action{
 						$interface->assign('error', "Your request could not be sent because the library does not accept authorship claims.");
 					}
 
-
 				}else{
 					$interface->assign('error', $_SESSION['lastError']);
 				}
 			}
 		}
 
-		unset($archiveRequestFields['dateRequested']);
+		unset($claimAuthorshipFields['dateRequested']);
 
-		$interface->assign('submitUrl', '/Archive/ClaimAuthorship');
-		$interface->assign('structure', $archiveRequestFields);
+		$interface->assign('submitUrl', '/Archive2/ClaimAuthorship/' . $nid);
+		$interface->assign('structure', $claimAuthorshipFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
 
@@ -142,11 +150,10 @@ class Archive_ClaimAuthorship extends Action{
 
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
-
-		/** @var DB_DataObject $newObject */
-		$newObject = new ClaimAuthorshipRequest();
+		$newObject = new Archive2\ClaimAuthorshipRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
+		$newObject->nid    = $structure['nid']['value'];
 		$validationResults = DataObjectUtil::validateObject($structure, $newObject);
 		if ($validationResults['validatedOk']) {
 			$ret = $newObject->insert();
@@ -158,7 +165,7 @@ class Archive_ClaimAuthorship extends Action{
 					$errorDescription = 'Unknown error';
 				}
 				$pikaLogger->error('Could not insert new object ' . $ret . ' ' . $errorDescription);
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
+				$_SESSION['lastError'] = "An error occurred inserting $structure->nid <br>{$errorDescription}";
 				return false;
 			}
 		} else {

@@ -53,7 +53,7 @@ class Archive2_RequestCopy extends Action {
 				$owningLibrary->libraryTid = $owningTid;
 				$owningLibrary->find(true);
 				if (empty($owningLibrary->libraryId)){
-					PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot request a copy.');
+					$interface->assign('error', 'Could not determine which library owns this object, cannot request a copy.');
 				}
 				$archiveRequestFields                          = $owningLibrary->getArchiveRequestFormStructure();
 				$archiveRequestFields['nid']['default']        = $nid;
@@ -105,7 +105,6 @@ class Archive2_RequestCopy extends Action {
 							if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 								$body .= $requestedObject->getAbsoluteUrl();
 								require_once ROOT_DIR . '/sys/Mailer.php';
-								global $configArray;
 								$libraryArchiveEmail = $owningLibrary->archiveRequestEmail ?? $configArray['Site']['email'];
 								$mail        = new VuFindMailer();
 								$subject     = 'New Request for Copies of Archive Content';
@@ -156,7 +155,7 @@ class Archive2_RequestCopy extends Action {
 		$newObject = new Archive2\ArchiveRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
-		$newObject->nid    = $structure->nid;
+		$newObject->nid    = $structure['nid']['value'];
 		$validationResults = DataObjectUtil::validateObject($structure, $newObject);
 		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();

@@ -46,9 +46,9 @@ class ClaimAuthorshipRequest extends DB_DataObject
 			['property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'Phone', 'maxLength' => 20, 'required' => true],
 			['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
 			['property' => 'message', 'type' => 'text', 'label' => 'Additional Information', 'description' => 'Additional information about your request for authorship', 'maxLength' => 255, 'required' => false],
-			'pid'           => ['property' => 'pid', 'type' => 'hidden', 'label' => 'PID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => true],
+			'pid'           => ['property' => 'pid', 'type' => 'hidden', 'label' => 'PID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => false],
 			'libraryTid' => ['property' => 'libraryTid', 'type'=> 'hidden', 'label'=>'Taxonomy ID of owning library', 'required' => true, 'maxLength' =>11, 'required' => true, 'hideInLists' => true ],
-			'dateRequested' => ['property' => 'dateRequested', 'type' => 'hidden', 'label' => 'The date this request was made'],
+			'dateRequested' => ['property' => 'dateRequested', 'type' => 'dateReadOnly', 'label' => 'The date this request was made'],
 		];
 		return $structure;
 	}
