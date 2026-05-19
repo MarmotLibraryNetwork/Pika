@@ -119,8 +119,9 @@ class Collection extends ArchiveObject
         $latSum = $lngSum = $n = 0;
         $minLat = $maxLat = $minLng = $maxLng = null;
 
+        $taxonomyFactory = new TaxonomyFactory();
         foreach ($places as $place) {
-            $term = TaxonomyFactory::fromTid($place['tid']);
+            $term = $taxonomyFactory->fromTid($place['tid']);
             if (!$term) {
                 continue;
             }
