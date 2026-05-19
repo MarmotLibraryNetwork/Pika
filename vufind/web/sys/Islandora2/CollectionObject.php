@@ -22,6 +22,7 @@ namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
 
 class CollectionObject extends I2Object
 {
