@@ -2140,8 +2140,8 @@ class Library extends DB_DataObject {
 	 */
 	public static function getLibraryTidChoices(): array
 	{
-		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+		$request = new Islandora2\JsonApiClient();
 		$terms   = $request->fetchVocabulary('library');
 		if (empty($terms)) {
 			return [];
