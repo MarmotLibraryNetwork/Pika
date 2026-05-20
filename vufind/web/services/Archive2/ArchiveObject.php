@@ -93,7 +93,7 @@ class ArchiveObject extends \Action
         }
 
         $interface->assign('showExploreMore', true);
-        $interface->assign('debug_archive_object', true);
+        $interface->assign('debugDetails', !empty($configArray['Islandora2']['debugDetails']));
 
         // Expose every field from the Islandora node (with "field_" removed) to the templates.
         $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
