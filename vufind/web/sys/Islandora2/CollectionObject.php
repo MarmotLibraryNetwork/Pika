@@ -21,6 +21,8 @@
 namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/Request.php';
+require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
 
 class CollectionObject extends I2Object
 {
@@ -85,12 +87,16 @@ class CollectionObject extends I2Object
      * Aggregates related people entries across all child objects in this collection,
      * sorted by name.
      *
+     * Uses full child iteration because related_person_paragraph is a paragraph entity,
+     * not a direct taxonomy term reference, so JSON:API server-side filtering requires
+     * a double-include traversal that is not yet implemented in fetchChildrenFiltered().
+     *
      * @return array Combined related-person entries from all children.
      */
     public function getCollectionRelatedPeople(): array
     {
         $collection_related_people = [];
-        foreach ($this->childrenObjects as $child) {
+        foreach ($this->getChildObjects() as $child) {
             if ($child->related_person_paragraph === null) {
                 continue;
             }
@@ -105,72 +111,66 @@ class CollectionObject extends I2Object
     }
 
     /**
-     * Aggregates related place entries across all child objects in this collection,
-     * sorted by name.
+     * Returns taxonomy terms referenced by field_related_place across all children,
+     * deduplicated and sorted by name.
      *
-     * @return array Combined related-place entries from all children.
+     * Uses a single server-side filtered JSON:API query instead of loading every child.
+     *
+     * @return array Entries of ['tid' => int, 'name' => string, 'url' => string].
      */
     public function getCollectionRelatedPlaces(): array
     {
-        $collection_related_places = [];
-        foreach ($this->childrenObjects as $child) {
-            if ($child->related_place === null) {
-                continue;
-            }
-
-            $child_places = $child->getRelatedPlace();
-            if ($child_places !== null) {
-                $collection_related_places = array_merge($collection_related_places, $child_places);
-            }
-        }
-
-        return $this->sortByName($collection_related_places);
+        return $this->aggregateTermsViaApi('field_related_place');
     }
 
     /**
-     * Aggregates related event entries across all child objects in this collection,
-     * sorted by name.
+     * Returns taxonomy terms referenced by field_related_event across all children,
+     * deduplicated and sorted by name.
      *
-     * @return array Combined related-event entries from all children.
+     * @return array Entries of ['tid' => int, 'name' => string, 'url' => string].
      */
     public function getCollectionRelatedEvents(): array
     {
-        $collection_related_events = [];
-        foreach ($this->childrenObjects as $child) {
-            if ($child->related_event === null) {
-                continue;
-            }
-
-            $child_events = $child->getRelatedEvent();
-            if ($child_events !== null) {
-                $collection_related_events = array_merge($collection_related_events, $child_events);
-            }
-        }
-
-        return $this->sortByName($collection_related_events);
+        return $this->aggregateTermsViaApi('field_related_event');
     }
 
     /**
-     * Aggregates related organization entries across all child objects in this collection,
-     * sorted by name.
+     * Returns taxonomy terms referenced by field_related_org across all children,
+     * deduplicated and sorted by name.
      *
-     * @return array Combined related-organization entries from all children.
+     * @return array Entries of ['tid' => int, 'name' => string, 'url' => string].
      */
     public function getCollectionRelatedOrganizations(): array
     {
-        $collection_related_orgs = [];
-        foreach ($this->childrenObjects as $child) {
-            if ($child->related_org === null) {
-                continue;
-            }
+        return $this->aggregateTermsViaApi('field_related_org');
+    }
 
-            $child_orgs = $child->getRelatedOrganization();
-            if ($child_orgs !== null) {
-                $collection_related_orgs = array_merge($collection_related_orgs, $child_orgs);
-            }
+    /**
+     * Fetches deduplicated taxonomy terms for a given field across all children via
+     * a single JSON:API server-side filtered query, then builds Archive2 URLs.
+     *
+     * @param string $filterField Drupal field machine name (e.g. 'field_related_place').
+     * @return array Entries of ['tid' => int, 'name' => string, 'url' => string].
+     */
+    private function aggregateTermsViaApi(string $filterField): array
+    {
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
         }
 
-        return $this->sortByName($collection_related_orgs);
+        $terms  = (new JsonApiClient())->fetchChildrenFiltered($nid, $filterField);
+        $result = [];
+        foreach ($terms as $term) {
+            $segment  = ISLANDORA2_VOCAB_URL_MAP[$term['vocabulary']] ?? 'TaxonomyTerm';
+            $result[] = [
+                'tid'  => $term['tid'],
+                'name' => $term['name'],
+                'url'  => '/Archive2/' . $segment . '/' . urlencode((string)$term['tid']),
+            ];
+        }
+
+        return $this->sortByName($result);
     }
 
     /**
@@ -191,29 +191,33 @@ class CollectionObject extends I2Object
      */
     public function getTotalChildCount(): int
     {
-        return count($this->rawNode['children'] ?? []);
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return 0;
+        }
+        $response = (new Request())->fetchChildren($nid, page: 1, number: 1);
+        return (int)($response['total'] ?? 0);
     }
 
     /**
-     * Returns a paginated slice of children as I2Object instances.
-     * Only the nid is available from the raw children payload, so each child
-     * requires one API call. Limit to the current page to keep calls manageable.
+     * Returns a paginated page of children as I2Object instances.
      *
      * @return array Array of I2Object instances for the requested page.
      */
     public function getChildObjectsPaginated(int $page = 1, int $limit = 24): array
     {
-        $rawChildren = $this->rawNode['children'] ?? [];
-        $offset      = ($page - 1) * $limit;
-        $pageSlice   = array_slice($rawChildren, $offset, $limit);
-        $objects     = [];
-        foreach ($pageSlice as $child) {
-            $nid = $child['nid'] ?? null;
-            if (!is_numeric($nid) || $nid <= 0) {
-                continue;
-            }
-            $obj = (new I2ObjectFactory())->fromNodeId((int)$nid);
-            if ($obj) {
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
+        }
+        $response = (new Request())->fetchChildren($nid, $page, $limit);
+        if ($response === null) {
+            return [];
+        }
+        $objects = [];
+        foreach ($response['children'] ?? [] as $childNode) {
+            $obj = (new I2ObjectFactory())->fromNode($childNode);
+            if ($obj !== null) {
                 $objects[] = $obj;
             }
         }

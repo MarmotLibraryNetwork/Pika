@@ -1,0 +1,62 @@
+<?php
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2023  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace Archive2;
+use DB_DataObject;
+
+/**
+ * Data object class for handling Archive Requests
+ *
+ * @category Pika
+ * @author C.J. Ohara <pika@marmot.org>
+ */
+class ClaimAuthorshipRequest extends DB_DataObject
+{
+	public $__table = 'claim_authorship_requests';
+	public $id;
+	public $name;
+	public $phone;
+	public $email;
+	public $message;
+	public $pid;
+	public $nid;
+	public $libraryTid;
+	public $dateRequested;
+
+	public static function getObjectStructure(){
+		$structure = [
+			'nid'			      => ['property' => 'nid', 'type' => 'archive2node', 'label' => 'Node ID', 'description' => 'Object Node ID', 'maxLength' => 11, 'required' => true],
+			['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name', 'maxLength' => 100, 'required' => true],
+			['property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'Phone', 'maxLength' => 20, 'required' => true],
+			['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address', 'maxLength' => 100, 'required' => true],
+			['property' => 'message', 'type' => 'text', 'label' => 'Additional Information', 'description' => 'Additional information about your request for authorship', 'maxLength' => 255, 'required' => false],
+			'pid'           => ['property' => 'pid', 'type' => 'hidden', 'label' => 'PID of Object', 'description' => 'ID of the object in ', 'maxLength' => 50, 'required' => false, 'hideInLists'=>true],
+			'libraryTid' => ['property' => 'libraryTid', 'type'=> 'hidden', 'label'=>'Taxonomy ID of owning library', 'required' => true, 'maxLength' =>11, 'required' => true, 'hideInLists' => true ],
+			'dateRequested' => ['property' => 'dateRequested', 'type' => 'dateReadOnly', 'label' => 'Requested Date'],
+		];
+		return $structure;
+	}
+
+    public function insert()
+    {
+        $this->dateRequested = time();
+        return parent::insert();
+    }
+
+}

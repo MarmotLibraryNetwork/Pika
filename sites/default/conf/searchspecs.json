@@ -793,9 +793,14 @@
         ["onePhrase", 1200],
         ["and", 700]
       ],
-      "ss_field_album_title": [ /*TODO: needs a text field */
+      "tm_X3b_en_album_title": [
         ["onePhrase", 1100]
       ],
+/*
+      "ss_field_album_title": [
+        ["onePhrase", 1100]
+      ],
+*/
       "sm_title_2": [/* collection string TODO:remove */
         ["onePhrase", 800]
       ],

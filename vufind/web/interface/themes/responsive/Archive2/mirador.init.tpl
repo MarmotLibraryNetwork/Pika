@@ -12,11 +12,20 @@ var viewer = Mirador.viewer({
         "defaultSideBarPanel": 'info',
         "sideBarOpenByDefault": false,
         "hideWindowTitle": true,
+        panels: { // Configure which panels are visible in WindowSideBarButtons
+            info: true,
+            attribution: false,
+            canvas: true,
+            annotations: true,
+            search: false,
+            layers: true,
+        },
         "views": [
             { "key": 'single' },
             { "key": 'gallery' },
             { "key": 'book' },
-        ]
+        ],
+
     },
     "workspace": {
         "type": 'mosaic',

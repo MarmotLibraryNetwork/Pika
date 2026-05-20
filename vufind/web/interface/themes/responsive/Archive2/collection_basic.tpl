@@ -1,7 +1,3 @@
-{literal}
-
-
-{/literal}
 
 {strip}
 	<div class="col-xs-12">
@@ -35,21 +31,15 @@
 		<div class="row" style="margin-top: 1em;">
 			<div class="col-xs-12">
 				{if $recordCount}
-				<p class="text-muted">{$recordCount} items in this collection.</p>
+				<p>{$recordCount} items in this collection.</p>
 				{/if}
+				{include file="Archive2/components/collection-displayMode-toggle.tpl"}
 			</div>
 		</div>
-		
-		<div class="row">
+
+		<div class="row collection-grid" id="collection-display-container">
 			{foreach from=$collectionChildren item=collectionChild}
-			<div class="col-xs-6 col-sm-4 col-md-3">
-				<a href="{$collectionChild.url}" class="thumbnail" style="border: 2px solid #ddd; border-radius: 6px; padding: 8px; background: #fff; height: 300px;">
-					{if $collectionChild.thumbnail}
-					<img src="{$collectionChild.thumbnail}" alt="{$collectionChild.title|escape}" style="max-height: 160px;">
-					{/if}
-					<div class="caption" style="padding: 9px 0;">{$collectionChild.title}</div>
-				</a>
-			</div>
+			{include file="Archive2/partials/collection-item.tpl"}
 			{/foreach}
 		</div>
 		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}

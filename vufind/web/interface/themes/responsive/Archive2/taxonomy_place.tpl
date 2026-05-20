@@ -15,18 +15,12 @@
 		</div>
 		<div class="col-xs-8">
 			{if $alternate_name}
-				{* TODO: this should handle an array names *}
-				{if is_array($alternate_name)}
+				
 					<div class="row taxonomy-alt_name">
 						<div class="col-xs-4 result-label">Other Names</div>
-						<div class="col-xs-8">{$alternate_name}</div>
+						<div class="col-xs-8">{foreach from=$alternate_name item=name}{$name}<br>{/foreach}</div>
 					</div>
-				{else}
-					<div class="row taxonomy-alt_name">
-						<div class="col-xs-4 result-label">Other Name</div>
-						<div class="col-xs-8">{$alternate_name}</div>
-					</div>
-				{/if}
+				
 			{/if}
 			{if $start_date || $end_date}
 				{if $start_date}
