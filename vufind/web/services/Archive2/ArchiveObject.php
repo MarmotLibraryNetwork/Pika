@@ -109,6 +109,14 @@ class ArchiveObject extends \Action
         $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
         $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
 
+        // EDTF date fields: reformat ISO dates to human-readable form.
+        $edtfDateFields = ['edtf_date_created', 'edtf_date_issued', 'edtf_date', 'date_captured', 'copyright_date', 'postmark', 'conference_date'];
+        foreach ($edtfDateFields as $field) {
+            if (isset($nodeData[$field]) && is_string($nodeData[$field])) {
+                $interface->assign($field, $this->formatEdtfDate($nodeData[$field]));
+            }
+        }
+
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
 
@@ -401,6 +409,32 @@ class ArchiveObject extends \Action
 
         $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         return $date->format('m/d/Y h:i a');
+    }
+
+    /**
+     * Converts a simple EDTF/ISO date string to a human-readable format.
+     * Handles YYYY-MM-DD → "Month Day, Year" and YYYY-MM → "Month Year".
+     * Returns the original string unchanged for year-only, ranges, or any
+     * value that does not match those two patterns.
+     */
+    private function formatEdtfDate(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+            if ($date !== false) {
+                return $date->format('F j, Y');
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $value)) {
+            $date = \DateTimeImmutable::createFromFormat('Y-m', $value);
+            if ($date !== false) {
+                return $date->format('F Y');
+            }
+        }
+        return $value;
     }
 
     /**
