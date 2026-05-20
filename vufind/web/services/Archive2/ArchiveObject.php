@@ -151,6 +151,18 @@ class ArchiveObject extends \Action
         }
         $interface->assign('languageName', $languageName);
 
+        // Rights Holder: extract the term name from the taxonomy array.
+        $rightsHolder = $nodeData['rights_holder'] ?? null;
+        if (is_array($rightsHolder)) {
+            if (isset($rightsHolder['name'])) {
+                $rightsHolder = $rightsHolder['name'];
+            } else {
+                $names = array_filter(array_column($rightsHolder, 'name'));
+                $rightsHolder = $names ? implode(', ', $names) : null;
+            }
+        }
+        $interface->assign('rights_holder', $rightsHolder ?: null);
+
         // Titles
         $title = ($this->mediaObject->getTitle() !== null) ? $this->mediaObject->getTitle() : null;
         $interface->assign('title', $title);
