@@ -11,7 +11,7 @@
 			<div class="result-label col-sm-4">Rights Statement:</div>
 			<div class="result-value col-sm-8">
 				{if $rights_org_statement.uri}
-					<a href="{$rights_org_statement.uri|escape}" target="_blank">{$rights_org_statement.title|escape}</a>
+					<a href="{$rights_org_statement.uri|escape}" target="_blank">{$rights_org_statement.uri|translate}</a>
 				{else}
 					{$rights_org_statement.title|escape}
 				{/if}
