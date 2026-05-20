@@ -22,11 +22,13 @@ namespace Archive2;
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
+require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 require_once ROOT_DIR . '/sys/Library/Library.php';
 require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
+use Islandora2\TaxonomyFactory;
 use Pika\Logger;
 
 /* responsible for displaying template */
@@ -232,7 +234,7 @@ class ArchiveObject extends \Action
         $interface->assign('interview_locations', $interviewLocations);
 
         // Related
-        $interface->assign('related_place', $this->mediaObject->getRelatedPlace());
+        $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
         $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
         $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
         $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
@@ -425,6 +427,30 @@ class ArchiveObject extends \Action
 
         $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         return $date->format('m/d/Y h:i a');
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-place entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $places Output of I2Object::getRelatedPlace()
+     * @return array|null
+     */
+    private function enrichRelatedPlacesWithThumbnails(?array $places): ?array
+    {
+        if (empty($places)) {
+            return $places;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($places as &$place) {
+            $tid  = $place['tid'] ?? null;
+            $term = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb = $term ? $term->getThumbnail() : null;
+            $place['thumbnail'] = $thumb['url'] ?? null;
+        }
+        unset($place);
+        return $places;
     }
 
     /**
