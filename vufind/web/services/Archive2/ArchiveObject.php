@@ -225,6 +225,10 @@ class ArchiveObject extends \Action
         $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
         $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
 
+        // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
+        $parentCollections = $this->resolveParentCollections();
+        $interface->assign('parent_collection', $parentCollections ?: null);
+
         // Admin
         // Reload URL
         $cacheReloadUrl = $this->mediaObject->getAbsoluteUrl() . '?reload=true';
@@ -409,6 +413,50 @@ class ArchiveObject extends \Action
 
         $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         return $date->format('m/d/Y h:i a');
+    }
+
+    /**
+     * Resolves the member_of field into an array of ['title', 'url'] pairs
+     * suitable for rendering as hyperlinks in the Catalog Details section.
+     *
+     * member_of may arrive as a bare nid (int), a single array with 'id'/'nid',
+     * or an array of such entries. Any entry whose node cannot be fetched or has
+     * no title is silently skipped.
+     *
+     * @return array<array{title: string, url: string}>
+     */
+    private function resolveParentCollections(): array
+    {
+        $raw = $this->mediaObject->member_of;
+        if (empty($raw)) {
+            return [];
+        }
+
+        if (!is_array($raw)) {
+            $raw = [$raw];
+        }
+
+        $factory = new I2ObjectFactory();
+        $links   = [];
+        foreach ($raw as $entry) {
+            $nid = is_array($entry) ? ($entry['id'] ?? ($entry['nid'] ?? null)) : $entry;
+            if (!is_numeric($nid)) {
+                continue;
+            }
+            $obj = $factory->fromNodeId((int)$nid);
+            if ($obj === null) {
+                continue;
+            }
+            $title = $obj->getTitle();
+            if (empty($title)) {
+                continue;
+            }
+            $links[] = [
+                'title' => $title,
+                'url'   => $obj->getUrl(),
+            ];
+        }
+        return $links;
     }
 
     /**

@@ -26,7 +26,20 @@
 			</div>
 		</div>
 	{/if}
-	{include file="Archive2/partials/fieldRow.tpl" label="Collection" value=$member_of}
+	{if $parent_collection || $debugDetails}
+	<div class="row archive-field-row">
+		<div class="result-label col-sm-4">Collection:</div>
+		<div class="result-value col-sm-8">
+			{if $parent_collection}
+				{foreach from=$parent_collection item=coll}
+					<div><a href="{$coll.url|escape}">{$coll.title|escape}</a></div>
+				{/foreach}
+			{else}
+				<span class="text-muted">Not provided</span>
+			{/if}
+		</div>
+	</div>
+	{/if}
 	{if $library_name}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Library:</div>
