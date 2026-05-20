@@ -1,5 +1,7 @@
 {strip}
+	{include file="Archive2/partials/fieldRow.tpl" label="General Note" value=$note}
 	{include file="Archive2/partials/fieldRow.tpl" label="General Note" value=$general_note}
+	{*TODO: Does general_note exist? might just be note always *}
 	{include file="Archive2/partials/fieldRow.tpl" label="Local Note" value=$local_note}
 	{include file="Archive2/partials/fieldRow.tpl" label="Context Notes" value=$context_notes}
 	{include file="Archive2/partials/fieldRow.tpl" label="History" value=$history}
