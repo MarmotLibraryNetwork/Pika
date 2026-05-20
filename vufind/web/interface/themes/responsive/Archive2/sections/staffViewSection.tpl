@@ -16,11 +16,11 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Entered By" value=$record_origin}
 		{include file="Archive2/partials/fieldRow.tpl" label="Entered On" value=$record_creation_date}
 		{include file="Archive2/partials/fieldRow.tpl" label="Last Changed" value=$record_change_date}
-		{include file="Archive2/partials/fieldRow.tpl" label="Collection" value=$member_of}
+		{include file="Archive2/partials/fieldRow.tpl" label="Collection Node ID" value=$member_of}
 		{include file="Archive2/partials/fieldRow.tpl" label="Access Terms" value=$access_terms}
+		{include file="Archive2/partials/fieldRow.tpl" label="Pika Show In Search" value=$pika_show_in_search}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Usage" value=$pika_usage}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Access Limits" value=$pika_access_limits}
-		{include file="Archive2/partials/fieldRow.tpl" label="Pika Show In Search" value=$pika_show_in_search}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Shown On Homepage" value=$pika_shown_homepage}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Master Download" value=$pika_master_download}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Anon Master Download" value=$pika_anon_master_download}
