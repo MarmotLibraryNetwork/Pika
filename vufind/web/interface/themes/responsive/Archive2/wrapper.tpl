@@ -20,7 +20,7 @@
 			{if $can_request_copy}
 				<a class="btn btn-default" href="/Archive2/RequestCopy/{$nid}">Request Copy</a>
 			{/if}
-			{if $showClaimAuthorship}
+			{if $can_claim_authorship}
 				<a class="btn btn-default" href="/Archive2/ClaimAuthorship/{$nid}">Claim Authorship</a>
 			{/if} 
 			{if $showFavorites == 1}

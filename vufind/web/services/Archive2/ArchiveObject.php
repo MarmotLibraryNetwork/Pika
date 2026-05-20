@@ -118,6 +118,7 @@ class ArchiveObject extends \Action
         // Can download intermediate file
         $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
         $interface->assign('can_request_copy', $this->canCurrentUserRequestCopy());
+				$interface->assign('can_claim_authorship', $this->canCurrentUserClaimAuthorship());
         // Download files
         $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
         if ($orignal_media) {
@@ -437,7 +438,7 @@ class ArchiveObject extends \Action
     /** Returns true if the current user may download the master (original) file. */
     protected function canCurrentUserDownloadOrignial(): bool
     {
-        // annonomys download
+        // anonymous download
         if ((int)$this->mediaObject->pika_anon_master_download === 1) {
             return true;
         }
@@ -452,7 +453,7 @@ class ArchiveObject extends \Action
     /** Returns true if the current user may download the intermediate (low-resolution) file. */
     protected function canCurrentUserDownloadIntermediate(): bool
     {
-        // annonomys download
+        // anonymous download
         if ((int)$this->mediaObject->pika_anon_lc_download === 1) {
             return true;
         }
@@ -466,20 +467,26 @@ class ArchiveObject extends \Action
 
     protected function canCurrentUserRequestCopy(): bool
     {
-        global $library;
-        $currentLibraryId = $library->libraryId;
         $owningLibrary = $this->getOwningLibrary();
 
-        if (!$owningLibrary || ((int)$currentLibraryId !== (int)$owningLibrary->libraryId)) {
+        if (!$owningLibrary) {
             return false;
         }
 
-        if ($owningLibrary->allowRequestsForArchiveMaterials === 1) {
+        if ($owningLibrary->allowRequestsForArchiveMaterials) {
             return true;
         }
 
         return false;
     }
+
+	protected function canCurrentUserClaimAuthorship(): bool
+	{
+		if ($this->mediaObject->__get('pika_claim_authorship')) {
+			return true;
+		}
+		return false;
+	}
 
     /**
      * Determine if the current patron can view the object.
