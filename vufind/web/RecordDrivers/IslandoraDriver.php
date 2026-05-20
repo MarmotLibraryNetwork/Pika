@@ -272,7 +272,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			}
 			$physicalExtents[] = $extent;
 		}
-		$description = implode(", ", $physicalExtents);
+		$description = implode(', ', $physicalExtents);
 		$details     = [
 			'title'    => $this->getFullTitle(),
 			'authors'  => '',
@@ -2809,7 +2809,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			foreach ($datesCreated as $dateCreatedTag){
 				$dateCreatedValue = $this->loadFormattedDateFromMods('dateCreated', 'mods', $dateCreatedTag);
 				if ($dateCreatedValue){
-					$point = $this->getModsAttribute('point', $dateCreatedTag);
+					$point     = $this->getModsAttribute('point', $dateCreatedTag);
 					$qualifier = $this->getModsAttribute('qualifier', $dateCreatedTag);
 
 					if ($point == null || $point == 'start'){
@@ -2818,7 +2818,7 @@ abstract class IslandoraDriver extends RecordInterface {
 							$dateCreated .= " ({$qualifier})";
 						}
 					}else{
-						$dateCreated .= " - " . $dateCreatedValue;
+						$dateCreated .= ' - ' . $dateCreatedValue;
 						if ($qualifier){
 							$dateCreated .= " ({$qualifier})";
 						}
