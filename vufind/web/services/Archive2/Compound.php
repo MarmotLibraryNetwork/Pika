@@ -29,6 +29,8 @@ class Compound extends ArchiveObject
     {
         global $interface;
 
+        parent::launch();
+
         $childrenData = [];
         $allAudio = true;
         $allVideo = true;
@@ -80,11 +82,8 @@ class Compound extends ArchiveObject
                     ];
                 }
 
-                // parent::launch() is called here (not at the top of this method) so it
-                // runs exactly once per request. An early call at the top + a second call
-                // in each branch caused double execution of buildProductionTeam() and all
-                // other base-class setup work.
                 parent::launch();
+
                 $interface->assign('audioChildren', $audioChildren);
                 $interface->assign('useCompoundAudio', true);
                 $interface->assign('viewer', 'compound');
@@ -110,16 +109,16 @@ class Compound extends ArchiveObject
                     $captionsArray = $captions !== null ? json_decode(json_encode($captions), true) : [];
 
                     $videoChildren[] = [
-                        'videoUrl'  => $video->fileUrl ?? '',
+                        'videoUrl' => $video->fileUrl ?? '',
                         'videoMime' => $video->mime ?? 'video/mp4',
-                        'title'     => $childObject->getTitle() ?? 'Untitled',
+                        'title' => $childObject->getTitle() ?? 'Untitled',
                         'posterUrl' => $poster->fileUrl ?? null,
-                        'captions'  => $captionsArray,
+                        'captions' => $captionsArray,
                     ];
                 }
 
-                // See audio branch above for why parent::launch() is placed here.
                 parent::launch();
+
                 $interface->assign('videoChildren', $videoChildren);
                 $interface->assign('useCompoundVideo', true);
                 $interface->assign('viewer', 'compound');
@@ -145,8 +144,6 @@ class Compound extends ArchiveObject
             $this->logger->error('mediaObject does not have getChildObjects method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
-        // See audio branch above for why parent::launch() is placed here.
-        parent::launch();
         $interface->assign('children', $childrenData);
         $interface->assign('viewer', 'compound');
 
