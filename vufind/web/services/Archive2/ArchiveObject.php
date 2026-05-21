@@ -50,6 +50,17 @@ class ArchiveObject extends \Action
 		'video'            => 'video',
 	];
 
+	/** Roles that identify subjects/participants rather than production staff. */
+	private const NON_PRODUCTION_TEAM_ROLES = [
+		'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
+		'interviewee', 'member', 'parade marshal', 'parent', 'participant',
+		'president', 'rodeo royalty', 'described', 'author', 'sibling',
+		'spouse', 'pictured', 'student',
+	];
+
+	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
+	private const NON_PRODUCTION_RELATOR_CODES = [];
+
     /** Loads the media object from the `id` query parameter. */
     public function __construct()
     {
@@ -238,6 +249,10 @@ class ArchiveObject extends \Action
         $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
         $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
         $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($this->mediaObject->getRelatedPerson()));
+
+        // Production team: linked_agent entries filtered to exclude non-production roles.
+        $productionTeam = $this->buildProductionTeam();
+        $interface->assign('production_team', $productionTeam ?: null);
 
         // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
         $parentCollections = $this->resolveParentCollections();
@@ -545,6 +560,42 @@ class ArchiveObject extends \Action
             }
         }
         return $value;
+    }
+
+    /**
+     * Filters the linked_agent field to return only production team members —
+     * those whose role is not in NON_PRODUCTION_TEAM_ROLES.
+     *
+     * Each entry is ['role' => string, 'name' => string].
+     *
+     * @return array<array{role: string, name: string}>
+     */
+    private function buildProductionTeam(): array
+    {
+        $linkedAgents = $this->mediaObject->linked_agent;
+        if (empty($linkedAgents) || !is_array($linkedAgents)) {
+            return [];
+        }
+        // Normalize a single agent (non-indexed array) to a list.
+        if (isset($linkedAgents['name'])) {
+            $linkedAgents = [$linkedAgents];
+        }
+        $team = [];
+        foreach ($linkedAgents as $agent) {
+            $name = $agent['name'] ?? null;
+            if (empty($name)) {
+                continue;
+            }
+            $role = strtolower($agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? ''));
+            if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
+                continue;
+            }
+            $team[] = [
+                'role' => ucfirst($role),
+                'name' => $name,
+            ];
+        }
+        return $team;
     }
 
     /**
