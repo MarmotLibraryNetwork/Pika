@@ -56,7 +56,7 @@ class ArchiveObject extends \Action
 		'interviewee', 'member', 'parade marshal', 'parent', 'participant',
 		'president', 'rodeo royalty', 'described', 'author', 'sibling',
 		'spouse', 'pictured', 'student',
-	];
+	]; //TODO replace use with one the arrays below
 
 	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
 		'pda', // Production Assistant
@@ -68,9 +68,12 @@ class ArchiveObject extends \Action
 		'lyr', // Lyricist
 		'dpr', // Digital Production team
 
+		//TODO: populate with all codes
 	];
 	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
-	private const NON_PRODUCTION_RELATOR_CODES = [];
+	private const NON_PRODUCTION_RELATOR_CODES = [
+		
+	];
 
     /** Loads the media object from the `id` query parameter. */
     public function __construct()
@@ -257,7 +260,7 @@ class ArchiveObject extends \Action
         $interface->assign('interview_locations', $interviewLocations);
 
         // Related Entity processing
-        $relatedPeople = $this->mediaObject->getRelatedPerson() ?? [];
+        $relatedPeople = $this->getRelatedPeople();
 
         // Build production team first — removes matched entries from $relatedPeople
         // so they don't also appear in the Related People section.
@@ -532,6 +535,18 @@ class ArchiveObject extends \Action
     }
 
     /**
+     * Returns the related-person array for this object.
+     * Subclasses may override to augment or replace the default list
+     * (e.g. Compound merges people from child objects).
+     *
+     * @return array
+     */
+    protected function getRelatedPeople(): array
+    {
+        return $this->mediaObject->getRelatedPerson() ?? [];
+    }
+
+    /**
      * Resolves the member_of field into an array of ['title', 'url'] pairs
      * suitable for rendering as hyperlinks in the Catalog Details section.
      *
@@ -617,7 +632,7 @@ class ArchiveObject extends \Action
      */
     private function buildProductionTeam(array &$relatedPeople): array
     {
-			$this->logger->debug("Building Production Team");
+				//$this->logger->debug("Building Production Team");
         $team   = [];
         $byName = []; // name → index in $team for dedup
 
