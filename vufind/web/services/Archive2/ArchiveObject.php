@@ -58,6 +58,17 @@ class ArchiveObject extends \Action
 		'spouse', 'pictured', 'student',
 	];
 
+	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
+		'pda', // Production Assistant
+		'edt', // Editor
+		'ivr', // Interviewer
+		'trc', // Transcriber
+		'prf', // Performer
+		'cmp', // Composer
+		'lyr', // Lyricist
+		'dpr', // Digital Production team
+
+	];
 	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
 	private const NON_PRODUCTION_RELATOR_CODES = [];
 
@@ -76,6 +87,7 @@ class ArchiveObject extends \Action
         if ($this->mediaObject === null) {
             $this->logger->error('Failed to create media object for nid.', ['nid' => $nid]);
         }
+				$this->logger->debug("Constructed Archive Object $nid");
     }
 
     /**
@@ -231,28 +243,31 @@ class ArchiveObject extends \Action
 
         foreach ($rawInterviewLocations as $rawInterviewLocation) {
             $interviewLocation = [
-                'city' => $rawInterviewLocation['city'] ?? null,
-                'state' => $rawInterviewLocation['state'] ?? '',
-                'street' => $rawInterviewLocation['street'] ?? '',
-                'county' => $rawInterviewLocation['county'] ?? '',
-                'country' => $rawInterviewLocation['country'] ?? '',
-                'zip' => $rawInterviewLocation['zip_code'] ?? '',
+                'city'     => $rawInterviewLocation['city'] ?? null,
+                'state'    => $rawInterviewLocation['state'] ?? '',
+                'street'   => $rawInterviewLocation['street'] ?? '',
+                'county'   => $rawInterviewLocation['county'] ?? '',
+                'country'  => $rawInterviewLocation['country'] ?? '',
+                'zip'      => $rawInterviewLocation['zip_code'] ?? '',
                 'address2' => $rawInterviewLocation['address_2'] ?? '',
-                'id' => $rawInterviewLocation['id'],
+                'id'       => $rawInterviewLocation['id'],
             ];
             $interviewLocations[] = $interviewLocation;
         }
         $interface->assign('interview_locations', $interviewLocations);
 
-        // Related
+        // Related Entity processing
+        $relatedPeople = $this->mediaObject->getRelatedPerson() ?? [];
+
+        // Build production team first — removes matched entries from $relatedPeople
+        // so they don't also appear in the Related People section.
+        $productionTeam = $this->buildProductionTeam($relatedPeople);
+        $interface->assign('production_team', $productionTeam ?: null);
+
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
         $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
-        $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($this->mediaObject->getRelatedPerson()));
-
-        // Production team: linked_agent entries filtered to exclude non-production roles.
-        $productionTeam = $this->buildProductionTeam();
-        $interface->assign('production_team', $productionTeam ?: null);
+        $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
 
         // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
         $parentCollections = $this->resolveParentCollections();
@@ -587,39 +602,96 @@ class ArchiveObject extends \Action
     }
 
     /**
-     * Filters the linked_agent field to return only production team members —
-     * those whose role is not in NON_PRODUCTION_TEAM_ROLES.
+     * Builds the production team from two sources:
+     *   1. linked_agent field — filtered by excluding NON_PRODUCTION_TEAM_ROLES role labels.
+     *   2. related_person paragraphs — filtered by matching PRODUCTION_TEAM_ROLES_RELATOR_CODES.
      *
-     * Each entry is ['role' => string, 'name' => string].
+     * Entries from both sources are merged by name so a person appearing in both
+     * lists gets a single entry with their roles concatenated (e.g. "Editor, Interviewer").
      *
-     * @return array<array{role: string, name: string}>
+     * Each entry: ['role' => string, 'code' => string|null, 'name' => string].
+     *
+     * @param array $relatedPeople Output of I2Object::getRelatedPerson(); matched entries are
+     *                             removed so they are not duplicated in the Related People section.
+     * @return array<array{role: string, code: string|null, name: string}>
      */
-    private function buildProductionTeam(): array
+    private function buildProductionTeam(array &$relatedPeople): array
     {
+			$this->logger->debug("Building Production Team");
+        $team   = [];
+        $byName = []; // name → index in $team for dedup
+
+        // --- Pass 1: linked_agent — role-label based filter ---
         $linkedAgents = $this->mediaObject->linked_agent;
-        if (empty($linkedAgents) || !is_array($linkedAgents)) {
-            return [];
-        }
-        // Normalize a single agent (non-indexed array) to a list.
-        if (isset($linkedAgents['name'])) {
-            $linkedAgents = [$linkedAgents];
-        }
-        $team = [];
-        foreach ($linkedAgents as $agent) {
-            $name = $agent['name'] ?? null;
-            if (empty($name)) {
-                continue;
+        if (!empty($linkedAgents) && is_array($linkedAgents)) {
+            if (isset($linkedAgents['name'])) {
+                $linkedAgents = [$linkedAgents];
             }
-            $role = strtolower($agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? ''));
-            if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
-                continue;
+            foreach ($linkedAgents as $agent) {
+                $name = $agent['name'] ?? null;
+                if (empty($name)) {
+                    continue;
+                }
+                [$roleLabel, $code] = $this->parseRoleLabel(
+                    $agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
+                );
+                $role = strtolower($roleLabel);
+                if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
+                    continue;
+                }
+                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
             }
-            $team[] = [
-                'role' => ucfirst($role),
-                'name' => $name,
-            ];
+        }
+
+        // --- Pass 2: related_person — relator-code based filter ---
+	      // Entries added to the team are removed from $relatedPeople to prevent duplication.
+	      foreach ($relatedPeople as $key => $person) {
+	        $name = $person['name'] ?? null;
+          if (empty($name)) {
+              continue;
+          }
+          [$roleLabel, $code] = $this->parseRoleLabel($person['relation_label'] ?? '');
+          if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)){
+	          continue;
+          }
+          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
+					unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
         }
         return $team;
+    }
+
+    /**
+     * Parses a role label string into [label, code], handling two formats:
+     *   - "Performer (prf)"         (linked_agent form — no outer parens)
+     *   - "(Photographer (pht))"    (relation_label form — outer parens present)
+     *
+     * Returns [label, null] when no three-letter code is found.
+     *
+     * @return array{string, string|null}
+     */
+    private function parseRoleLabel(string $raw): array
+    {
+        $raw = trim($raw);
+        // Strip outer parentheses: "(Label (xyz))" → "Label (xyz)"
+        $raw = preg_replace('/^\((.+)\)$/', '$1', $raw);
+        if (preg_match('/^(.*?)\s*\(([a-zA-Z]{3})\)\s*$/', $raw, $m)) {
+            return [trim($m[1]), $m[2]];
+        }
+        return [$raw, null];
+    }
+
+    /**
+     * Adds or merges a production team member into $team, keyed by $byName.
+     * When the name already exists, the role is appended with ", ".
+     */
+    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code): void
+    {
+        if (isset($byName[$name])) {
+            $team[$byName[$name]]['role'] .= ', ' . $role;
+        } else {
+            $byName[$name] = count($team);
+            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name];
+        }
     }
 
     /**
