@@ -9,9 +9,8 @@
 					</a>
 					<figcaption class="explore-more-category-title">
 						<strong>{$place.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
-						{if $place.relation_label}
-							&nbsp;({$place.relation_label|escape})
-						{/if}
+						{if $place.relation_label} ({$place.relation_label|stripRelatorCode|escape}){/if}
+						{* Use a regular space (instead of &nbsp; so that the label can wrap*}
 					</figcaption>
 				</figure>
 			{/foreach}

@@ -237,7 +237,7 @@ class ArchiveObject extends \Action
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
         $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
         $interface->assign('related_event', $this->mediaObject->getRelatedEvent());
-        $interface->assign('related_person', $this->mediaObject->getRelatedPerson());
+        $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($this->mediaObject->getRelatedPerson()));
 
         // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
         $parentCollections = $this->resolveParentCollections();
@@ -444,13 +444,37 @@ class ArchiveObject extends \Action
         }
         $factory = new TaxonomyFactory();
         foreach ($places as &$place) {
-            $tid  = $place['tid'] ?? null;
-            $term = ($tid !== null) ? $factory->fromTid($tid) : null;
-            $thumb = $term ? $term->getThumbnail() : null;
+            $tid                = $place['tid'] ?? null;
+            $term               = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb              = $term?->getThumbnail();
             $place['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($place);
         return $places;
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-person entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $people Output of I2Object::getRelatedPerson()
+     * @return array|null
+     */
+    private function enrichRelatedPeopleWithThumbnails(?array $people): ?array
+    {
+        if (empty($people)) {
+            return $people;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($people as &$person) {
+            $tid                 = $person['tid'] ?? null;
+            $term                = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb               = $term?->getThumbnail();
+            $person['thumbnail'] = $thumb['url'] ?? null;
+        }
+        unset($person);
+        return $people;
     }
 
     /**

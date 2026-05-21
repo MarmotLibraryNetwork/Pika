@@ -514,7 +514,7 @@ abstract class I2Object implements MediaObjectInterface
         // if it's a single entry
         if (is_array($related_person) && array_key_exists('id', $related_person)) {
             $related_person = [$related_person['related_person']];
-            // multipule persons
+            // multiple persons
         } elseif ($related_person !== null) {
             $temp_person = [];
             foreach ($related_person as $person) {
