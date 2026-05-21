@@ -276,7 +276,9 @@ abstract class I2Object implements MediaObjectInterface
     public function getDescription(): ?string
     {
         if (isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
-            return htmlentities($this->nodeWithoutFieldPrefix['description_long']);
+            return $this->nodeWithoutFieldPrefix['description_long'];
+            //return htmlentities($this->nodeWithoutFieldPrefix['description_long']);
+						//Displaying html should be okay
         } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
             return $this->nodeWithoutFieldPrefix['description'];
         }
