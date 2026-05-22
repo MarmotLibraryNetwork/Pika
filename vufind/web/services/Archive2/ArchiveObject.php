@@ -179,17 +179,41 @@ class ArchiveObject extends \Action
         }
         $interface->assign('languageName', $languageName);
 
-        // Rights Holder: extract the term name from the taxonomy array.
-        $rightsHolder = $nodeData['rights_holder'] ?? null;
-        if (is_array($rightsHolder)) {
-            if (isset($rightsHolder['name'])) {
-                $rightsHolder = $rightsHolder['name'];
-            } else {
-                $names = array_filter(array_column($rightsHolder, 'name'));
-                $rightsHolder = $names ? implode(', ', $names) : null;
+        // Rights Holder: normalize taxonomy term(s) for conditional linking.
+        $rawRightsHolder = $nodeData['rights_holder'] ?? null;
+        $rightsHolderData = [];
+        if (!empty($rawRightsHolder)) {
+            $items = isset($rawRightsHolder['tid']) ? [$rawRightsHolder] : (array)$rawRightsHolder;
+            foreach ($items as $item) {
+                if (is_array($item) && !empty($item['name'])) {
+                    $rightsHolderData[] = [
+                        'name'       => $item['name'],
+                        'tid'        => $item['tid'] ?? null,
+                        'vocabulary' => $item['vocabulary'] ?? $item['vid'] ?? null,
+                        //TODO: is vid numeric? or is it a term? Does it occur here ever?
+                    ];
+                }
             }
         }
-        $interface->assign('rights_holder', $rightsHolder ?: null);
+        $interface->assign('rights_holder', $rightsHolderData ?: null);
+
+        // Rights Creator: normalize taxonomy term(s) for conditional linking.
+        $rawRightsCreator  = $nodeData['rights_creator'] ?? null;
+        $rightsCreatorData = [];
+        if (!empty($rawRightsCreator)) {
+            $items = isset($rawRightsCreator['tid']) ? [$rawRightsCreator] : (array)$rawRightsCreator;
+            foreach ($items as $item) {
+                if (is_array($item) && !empty($item['name'])) {
+                    $rightsCreatorData[] = [
+                        'name'       => $item['name'],
+                        'tid'        => $item['tid'] ?? null,
+                        'vocabulary' => $item['vocabulary'] ?? $item['vid'] ?? null,
+                        //TODO: is vid numeric? or is it a term? Does it occur here ever?
+                    ];
+                }
+            }
+        }
+        $interface->assign('rights_creator', $rightsCreatorData ?: null);
 
         // Titles
         $title = ($this->mediaObject->getTitle() !== null) ? $this->mediaObject->getTitle() : null;
@@ -650,6 +674,10 @@ class ArchiveObject extends \Action
                 [$roleLabel, $code] = $this->parseRoleLabel(
                     $agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
                 );
+								if (isset($agent['rel']) || isset($agent['role'])){
+									$this->logger->debug('$agent key "rel" or "role" present. Explain in code these cases', $agent);
+									//TODO: if we never seen this triggered, removed unneeded logic above
+								}
                 $role = strtolower($roleLabel);
                 if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
                     continue;
