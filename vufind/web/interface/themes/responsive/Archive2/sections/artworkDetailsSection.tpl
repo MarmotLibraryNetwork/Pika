@@ -34,4 +34,5 @@
 		</div>
 	{/if}
 	{include file="Archive2/partials/fieldRow.tpl" label="Style / Period" value=$style_period}
+	{include file="Archive2/partials/fieldRow.tpl" label="Measurement" value=$measurement}
 {/strip }
