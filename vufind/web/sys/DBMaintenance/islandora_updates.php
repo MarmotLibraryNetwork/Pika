@@ -174,6 +174,16 @@ function getIslandoraUpdates(): array{
 				'getTidFromNidAuthorship'
 			]
 		],
+		'Islandora2_convert_list_pid_to_nid' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'title'           => 'Convert List PID to Nid',
+			'description'     => 'Converts the archive user list pid to the nid in the user_list_entry',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE user_list_entry ADD COLUMN hidden BOOL NULL DEFAULT FALSE AFTER weight;",
+				'convertListPidToNid'
+			]
+		],
 
 	];
 }
@@ -462,6 +472,54 @@ function getTidFromNidAuthorship(){
 			$authorshipClaim->update();
 		}else{
 			$success = false;
+		}
+	}
+	return $success;
+}
+
+/**
+ * @return bool
+ */
+function convertListPidToNid():bool {
+	global $pikaLogger;
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	$userListEntry = new UserListEntry();
+	$userListEntry->find();
+	$success = false;
+	while($userListEntry->fetch()){
+		$pid   = $userListEntry->groupedWorkPermanentId;
+		$parts = explode(':', $pid);
+		if (count($parts) > 1){
+			require_once ROOT_DIR . '/sys/Library/Library.php';
+			$library = new Library();
+			$library->whereAdd('archiveNamespace IS NOT NULL && archiveNamespace != ""');
+			$library->find();
+			$nameSpace = $library->fetchAll('archiveNamespace');
+			if (in_array($parts[0], $nameSpace)){
+				require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+				/** @var SearchObject_Islandora2 $islandora2Search */
+				$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+				if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+					foreach ($nids as $nid){
+						$userListEntry->groupedWorkPermanentId = $nid;
+						$userListEntry->hidden                 = false;
+						$userListEntry->update();
+						$success = true;
+					}
+				}else{
+					$pikaLogger->error("There was an error processing the record", $parts);
+					$success = false;
+				}
+			}else{
+
+				$pikaLogger->warn("The object may be a taxonomy", $parts);
+				$userListEntry->hidden = true;
+				$userListEntry->update();
+				$success = true;
+			}
+		}else{
+			$pikaLogger->notice("Not an archive object", $parts);
+			$success = true;
 		}
 	}
 	return $success;
