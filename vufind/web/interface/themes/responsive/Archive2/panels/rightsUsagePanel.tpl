@@ -36,6 +36,8 @@
 								{foreach from=$rights_holder item=holder name=holderLoop}
 									{if $holder.vocabulary eq 'corporate_body' && $holder.tid}
 										<a href="/Archive2/Organization/{$holder.tid}">{$holder.name|escape}</a>
+									{elseif $holder.vocabulary eq 'person' && $holder.tid}
+										<a href="/Archive2/Person/{$holder.tid}">{$holder.name|escape}</a>
 									{else}
 										{$holder.name|escape}
 									{/if}
