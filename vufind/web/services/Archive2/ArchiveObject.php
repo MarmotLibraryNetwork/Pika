@@ -282,6 +282,8 @@ class ArchiveObject extends \Action
             $interviewLocations[] = $interviewLocation;
         }
         $interface->assign('interview_locations', $interviewLocations);
+        $interface->assign('linked_agents_display', $this->normalizeLinkedAgents());
+		    //Linked Agents (Creator): normalize each entry for display with role label and conditional link.
 
         // Related Entity processing
         $relatedPeople = $this->getRelatedPeople();
@@ -638,6 +640,61 @@ class ArchiveObject extends \Action
             }
         }
         return $value;
+    }
+
+    /**
+     * Normalizes the linked_agent field into display-ready entries, each with:
+     *   'label'      — role label string, e.g. "Artist (art)"
+     *   'name'       — agent display name
+     *   'tid'        — taxonomy term ID, or null if not present in the payload
+     *   'vocabulary' — 'corporate_body', 'person', or null (inferred from vid or rel heuristic)
+     *
+     * @return array<array{label: string, name: string, tid: int|null, vocabulary: string|null}>
+     */
+    private function normalizeLinkedAgents(): array
+    {
+        $raw = $this->mediaObject->linked_agent;
+        if (empty($raw) || !is_array($raw)) {
+            return [];
+        }
+        if (isset($raw['name'])) {
+            $raw = [$raw];
+        }
+
+        $result = [];
+        foreach ($raw as $agent) {
+            $name = $agent['name'] ?? null;
+            if (empty($name)) {
+                continue;
+            }
+
+            [$roleLabel, $code] = $this->parseRoleLabel(
+                $agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
+            );
+            $label = $roleLabel !== '' ? $roleLabel : 'Creator';
+            if ($code !== null) {
+                $label .= " ({$code})";
+            }
+
+            $tid = isset($agent['tid']) ? (int)$agent['tid'] : null;
+
+            // Prefer an explicit vocabulary key; fall back to rel-field heuristic.
+            $vocabulary = $agent['vid'] ?? null;
+            if ($vocabulary === null) {
+                $rel = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+                $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
+                    ? 'corporate_body'
+                    : 'person';
+            }
+
+            $result[] = [
+                'label'      => $label,
+                'name'       => $name,
+                'tid'        => $tid,
+                'vocabulary' => $vocabulary,
+            ];
+        }
+        return $result;
     }
 
     /**
