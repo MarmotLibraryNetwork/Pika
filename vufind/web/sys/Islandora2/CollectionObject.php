@@ -164,9 +164,10 @@ class CollectionObject extends I2Object
         foreach ($terms as $term) {
             $segment  = ISLANDORA2_VOCAB_URL_MAP[$term['vocabulary']] ?? 'TaxonomyTerm';
             $result[] = [
-                'tid'  => $term['tid'],
-                'name' => $term['name'],
-                'url'  => '/Archive2/' . $segment . '/' . urlencode((string)$term['tid']),
+                'tid'   => $term['tid'],
+                'name'  => $term['name'],
+                'url'   => '/Archive2/' . $segment . '/' . urlencode((string)$term['tid']),
+                'count' => $term['count'] ?? 0,
             ];
         }
 
