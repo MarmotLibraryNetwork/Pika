@@ -126,7 +126,7 @@ class Collection extends ArchiveObject
                 continue;
             }
             $geo   = $term->getGeolocation();
-            $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url']];
+            $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url'], 'count' => $place['count']];
             if ($geo && isset($geo['lat'], $geo['lng'])) {
                 $entry['latitude']  = $geo['lat'];
                 $entry['longitude'] = $geo['lng'];
