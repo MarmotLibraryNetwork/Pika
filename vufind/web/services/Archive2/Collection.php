@@ -34,6 +34,10 @@ use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
 {
+    /**
+     * Dispatches to the appropriate collection display template based on the
+     * collection's configured display type (basic, timeline, map, or custom).
+     */
     public function launch()
     {
         global $interface;
@@ -71,6 +75,12 @@ class Collection extends ArchiveObject
         }
     }
 
+    /**
+     * Fetches a paginated page of child objects for the collection and assigns
+     * them — along with pager links and record-count metadata — to the template.
+     *
+     * @param int $nid Node ID of the parent collection.
+     */
     private function loadChildrenData(int $nid): void
     {
         global $interface;
@@ -108,6 +118,11 @@ class Collection extends ArchiveObject
         $interface->assign('pageLinks',    $pager->getLinks());
     }
 
+    /**
+     * Resolves geolocation data for all places related to the collection and
+     * assigns mapped/unmapped place lists, bounding-box coordinates, and the
+     * configured map zoom level to the template.
+     */
     private function loadMapData(): void
     {
         global $interface;
@@ -159,6 +174,13 @@ class Collection extends ArchiveObject
         }
     }
 
+    /**
+     * Iterates over the collection's configured component options, renders each
+     * component partial (search box, map, browse scroller, random image, etc.),
+     * and assigns the rendered HTML array to the template.
+     *
+     * @param int $nid Node ID of the collection whose options are being loaded.
+     */
     private function loadCustomComponents(int $nid): void
     {
         global $interface;
