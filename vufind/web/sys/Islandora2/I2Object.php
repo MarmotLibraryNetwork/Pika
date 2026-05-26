@@ -513,16 +513,51 @@ abstract class I2Object implements MediaObjectInterface
         $related_person = $this->nodeWithoutFieldPrefix['related_person_paragraph'] ?? null;
         // if it's a single entry
         if (is_array($related_person) && array_key_exists('id', $related_person)) {
+            // get notes
+            $note = $this->getRelatedPersonNote($related_person);
+            $related_person['note'] = $note;
             $related_person = [$related_person['related_person']];
             // multipule persons
         } elseif ($related_person !== null) {
-            $temp_person = [];
+            $tmp_people = [];
             foreach ($related_person as $person) {
-                $temp_person[] = $person['related_person'];
+                $this_person = $person['related_person'];
+                // get notes
+                $note = $this->getRelatedPersonNote($person);
+                $this_person['note'] = $note;
+                $tmp_people[] = $this_person;
             }
-            $related_person = $temp_person;
+            $related_person = $tmp_people;
         }
         return $related_person;
+    }
+
+    private function getRelatedPersonNote(array $person)
+    {
+        $current_note = $person['related_person_note'];
+        $note = null;
+
+        if ($current_note !== null) {
+            // if the field start with relators or local, ignore it, the string following it
+            // isn't for display
+            if (!str_starts_with($current_note, 'relators') && !str_starts_with($current_note, 'local')) {
+                // find the seperator
+                $seperator = '';
+                if (stristr($current_note, 'relator')) {
+                    $seperator = 'relator';
+                } elseif (stristr($current_note, 'local')) {
+                    $seperator = 'local';
+                } else {
+                    $this->logger->warn('Using raw Related Person Note for node ID: ' . $this->getNodeId());
+                    return $current_note;
+                }
+                $parts = explode($seperator, $person['related_person_note']);
+                if ($parts[0] && is_string($parts[0])) {
+                    $note = $parts[0];
+                }
+            }
+        }
+        return $note;
     }
 
     /**
