@@ -1,8 +1,8 @@
 {strip}
-<div class="nopadding col-sm-12">
+<div class="col-sm-12">
 	<div class="archiveComponent">
 		<div class="archiveComponentHeader">Browse by Location</div>
-		<div id="collection-map-component" style="height:400px; margin-top:0.5em;"></div>
+		<div id="collection-map-component" style="height:500px; margin-top:0.5em;"></div>
 		{if $unmappedPlaces}
 		<div style="margin-top:0.5em;">
 			<button class="btn btn-info btn-xs" onclick="Pika.showElementInPopup('Unmapped Locations', '#unmappedLocationsComponent');">
@@ -22,6 +22,21 @@
 {/strip}
 
 {if $mapsKey && $mappedPlaces}
+<style>
+.map-count-marker {ldelim}
+	background: #2980b9;
+	color: #fff;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	width: 32px;
+	height: 32px;
+	line-height: 28px;
+	text-align: center;
+	font-size: 11px;
+	font-weight: bold;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+{rdelim}
+</style>
 <script>
 function initCollectionMapComponent() {ldelim}
 	var mapEl = document.getElementById('collection-map-component');
@@ -29,7 +44,8 @@ function initCollectionMapComponent() {ldelim}
 
 	var map = new google.maps.Map(mapEl, {ldelim}
 		center: {ldelim}lat: {$mapCenterLat|default:0}, lng: {$mapCenterLong|default:0}{rdelim},
-		zoom: {$mapZoom|default:9}
+		zoom: {$mapZoom|default:9},
+		mapId: "{$mapsId|default:'DEMO_MAP_ID'}"
 	{rdelim});
 
 	{if $minLat && $maxLat && $minLong && $maxLong}
@@ -44,19 +60,25 @@ function initCollectionMapComponent() {ldelim}
 	{foreach from=$mappedPlaces item=place}
 	{if $place.latitude && $place.longitude}
 	(function() {ldelim}
-		var marker = new google.maps.Marker({ldelim}
+		var count = {$place.count|default:0};
+		var pin = document.createElement('div');
+		pin.className = 'map-count-marker';
+		pin.textContent = count;
+		var marker = new google.maps.marker.AdvancedMarkerElement({ldelim}
 			position: {ldelim}lat: {$place.latitude}, lng: {$place.longitude}{rdelim},
 			map: map,
-			title: '{$place.label|escape:javascript}'
+			title: '{$place.label|escape:javascript}',
+			content: pin
 		{rdelim});
-		marker.addListener('click', function() {ldelim}
-			infoWindow.setContent('<a href="{$place.url|escape:javascript}">{$place.label|escape:javascript}</a>');
-			infoWindow.open(map, marker);
+		marker.addListener('gmp-click', function() {ldelim}
+			infoWindow.close();
+			infoWindow.setContent('<a href="{$place.url|escape:javascript}">{$place.label|escape:javascript}</a><br>' + count + ' items for this location');
+			infoWindow.open({ldelim}anchor: marker, map: map{rdelim});
 		{rdelim});
 	{rdelim})();
 	{/if}
 	{/foreach}
 {rdelim}
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key={$mapsKey}&callback=initCollectionMapComponent" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={$mapsKey}&loading=async&libraries=marker&callback=initCollectionMapComponent" async defer></script>
 {/if}
