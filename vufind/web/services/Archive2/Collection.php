@@ -245,6 +245,29 @@ class Collection extends ArchiveObject
                     ? 'Archive2/components/entity_filter_component.tpl'
                     : 'Archive2/components/browse_filter_component.tpl';
                 $templates[] = $interface->fetch($tpl);
+
+            } elseif ($type === 'browseBy') {
+                $subtype = strtolower($parts[1] ?? '');
+                if ($subtype === 'place') {
+                    $rawItems = $collection->getRelatedPlace() ?? [];
+                    $urlBase  = '/Archive2/Place/';
+                    $title    = $parts[2] ?? 'Browse by Place';
+                } elseif ($subtype === 'organization') {
+                    $rawItems = $collection->getRelatedOrganization() ?? [];
+                    $urlBase  = '/Archive2/Organization/';
+                    $title    = $parts[2] ?? 'Browse by Organization';
+                } else {
+                    continue;
+                }
+                $items = array_map(fn($item) => [
+                    'name' => $item['name'],
+                    'url'  => $urlBase . urlencode((string)$item['tid']),
+                ], $rawItems);
+                $half = (int)ceil(count($items) / 2);
+                $interface->assign('browseByTitle',   $title);
+                $interface->assign('browseByColumn1', array_slice($items, 0, $half));
+                $interface->assign('browseByColumn2', array_slice($items, $half));
+                $templates[] = $interface->fetch('Archive2/components/browse_by_component.tpl');
             }
         }
 
