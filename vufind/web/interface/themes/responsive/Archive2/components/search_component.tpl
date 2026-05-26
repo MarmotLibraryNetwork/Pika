@@ -1,5 +1,5 @@
 {strip}
-<div class="archiveComponentContainer nopadding col-sm-12 col-md-6">
+<div class="archiveComponentContainer col-sm-12 col-md-6">
 <hr>
 	<form action="/Archive2/Results" id="searchComponentForm">
 		<div class="input-group">
