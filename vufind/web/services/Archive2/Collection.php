@@ -177,7 +177,7 @@ class Collection extends ArchiveObject
                     $parts[1] ?? '/interface/themes/responsive/images/search_component.png');
                 $templates[] = $interface->fetch('Archive2/components/search_component.tpl');
 
-            } elseif ($type === 'googleMap') {
+            } elseif ($type === 'googleMap' || $type === 'map') {
                 $interface->assign('additionalMapCollections', $parts[1] ?? '');
                 $this->loadMapData();
                 $templates[] = $interface->fetch('Archive2/components/map_component.tpl');
