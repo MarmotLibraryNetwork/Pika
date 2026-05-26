@@ -125,12 +125,14 @@ class JsonApiClient extends AbstractApiClient
 	 *
 	 * Uses JSON:API server-side filtering to return only children where the field is
 	 * populated, with sparse fieldsets to minimise payload size. Results are deduplicated
-	 * by tid across all matching children and all pages.
+	 * by tid across all matching children and all pages. Each child node contributes at
+	 * most 1 to a term's count, even if it references the same term multiple times.
 	 *
 	 * Each returned entry has:
 	 *   'tid'        → int    taxonomy term ID
 	 *   'name'       → string term display name
 	 *   'vocabulary' → string vocabulary machine name (e.g. 'geo_location', 'event')
+	 *   'count'      → int    number of children referencing this term
 	 *
 	 * @param int    $nid         Parent node ID.
 	 * @param string $filterField Drupal field machine name (e.g. 'field_related_place').
@@ -161,8 +163,8 @@ class JsonApiClient extends AbstractApiClient
 			. '&include=' . rawurlencode($filterField)
 			. '&page[limit]=' . $pageLimit;
 
+		// Keyed by tid so we can deduplicate and increment counts in one pass.
 		$terms = [];
-		$seen  = [];
 
 		do {
 			$curl = new Curl();
@@ -178,7 +180,7 @@ class JsonApiClient extends AbstractApiClient
 						'code'        => $curl->getCurlErrorCode(),
 						'error'       => $curl->getCurlErrorMessage(),
 					]);
-					return $terms;
+					return array_values($terms);
 				}
 
 				if ($curl->isError()) {
@@ -186,12 +188,12 @@ class JsonApiClient extends AbstractApiClient
 						'nid'  => $nid,
 						'code' => $curl->getHttpStatusCode(),
 					]);
-					return $terms;
+					return array_values($terms);
 				}
 
 				$decoded = $this->decodeBody($body, 'json-api-filtered', $nid);
 				if ($decoded === null) {
-					return $terms;
+					return array_values($terms);
 				}
 
 				// Build a UUID → term entry index from the included taxonomy term entities.
@@ -218,23 +220,28 @@ class JsonApiClient extends AbstractApiClient
 					}
 				}
 
-				// Resolve each node's field references against the included index,
-				// deduplicating by tid across all nodes and pages.
+				// Resolve each node's field references against the included index.
+				// $nodeTids tracks which terms this node has already contributed to,
+				// ensuring each child counts at most once per term.
 				foreach ($decoded['data'] ?? [] as $node) {
 					$refs = $node['relationships'][$filterField]['data'] ?? [];
 					// JSON:API returns a single object for to-one, array for to-many
 					if (isset($refs['id'])) {
 						$refs = [$refs];
 					}
+					$nodeTids = [];
 					foreach ($refs as $ref) {
 						$uuid = $ref['id'] ?? null;
 						if ($uuid === null || !isset($included[$uuid])) {
 							continue;
 						}
 						$tid = $included[$uuid]['tid'];
-						if (!isset($seen[$tid])) {
-							$seen[$tid] = true;
-							$terms[]    = $included[$uuid];
+						if (!isset($nodeTids[$tid])) {
+							$nodeTids[$tid] = true;
+							if (!isset($terms[$tid])) {
+								$terms[$tid] = array_merge($included[$uuid], ['count' => 0]);
+							}
+							$terms[$tid]['count']++;
 						}
 					}
 				}
@@ -245,13 +252,15 @@ class JsonApiClient extends AbstractApiClient
 					'nid'     => $nid,
 					'message' => $e->getMessage(),
 				]);
-				return $terms;
+				return array_values($terms);
 			} finally {
 				$curl->close();
 			}
 		} while ($url !== null);
 
-		$this->cache->set($cacheKey, $terms, $this->jsonApiTtl);
-		return $terms;
+		$result = array_values($terms);
+		$this->cache->set($cacheKey, $result, $this->jsonApiTtl);
+		return $result;
 	}
+
 }
