@@ -123,13 +123,6 @@ sites/*.marmot.org
 #######################
 sites/*.lionlibraries.org
 
-# Sacramento Symbolic Links #
-#############################
-sites/*.saclibrary.org
-sites/librarycatalog.suttercounty.org
-sites/librarycatalog.cityofwoodland.org
-sites/librarycatalog.folsom.ca.us
-
 # Local Machine Symbolic Links #
 ################################
 sites/librarycatalog.folsom.localhost/*
@@ -142,21 +135,23 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 *.sql
 *.tmpcss
 
-/package-lock.json
-
-
 # Output file for PRTG sensor #
 ###############################
 vufind/web/solrIndex.json
 vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
 
 # VSCode
-.vscode/settings.json
+###############################
 .vscode/pika.code-workspace
-.vscode/launch.json
-.vscode/launch.json
-
 
 # Claude
+###############################
+CLAUDE.md
 .claude
 .claude/*
+
+# NPM
+###############################
+node_modules
+package.json
+package-lock.json
