@@ -393,6 +393,14 @@ abstract class I2Object implements MediaObjectInterface
         return $children;
     }
 
+    public function getParentCollection() {
+        $parent_nid = $this->nodeWithoutFieldPrefix['member_of'] ?? null;
+        if ($parent_nid == null)
+            return null;
+        $factory = new I2ObjectFactory();
+        return $factory->fromNodeId($parent_nid);
+    }
+
     /**
      * Convenience accessor for the Islandora node id.
      *
