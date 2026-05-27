@@ -80,6 +80,11 @@ class TaxonomyObject extends \Action
             return;
         }
 
+        // Display hints
+         // Display hints
+        $interface->assign('is_object_display', false);
+        $interface->assign('is_taxonomy_display', true);
+
         // Maps key
         $mapsKey = $configArray['Maps']['apiKey'] ?? '';
 

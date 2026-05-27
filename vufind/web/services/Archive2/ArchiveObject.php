@@ -103,6 +103,9 @@ class ArchiveObject extends \Action
         /*********
          * Overrides
          */
+        // Display hints
+        $interface->assign('is_object_display', true);
+        $interface->assign('is_taxonomy_display', false);
 
         // Dates
         $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
