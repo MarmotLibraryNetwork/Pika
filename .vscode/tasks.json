@@ -1,0 +1,118 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // ─── Less (no minification) without auto-prefixing ───────────────────────
+    // Mirrors the PhpStorm file watcher of the same name.
+    // Scope: all *.less EXCEPT css/bootstrap/** and css/lib/**,
+    //        but re-includes css/lib/tablesorter/*.
+    // Per-file command (run in file's own directory):
+    //   lessc <file>.less <file>.tmpcss --no-color --strict-imports
+    //
+    // Prerequisite: npm install --save-dev chokidar
+    {
+      "label": "Watch Less (no minification, no autoprefixer)",
+      "type": "shell",
+      "command": "node .vscode/watch-less.js",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "label": "Less Watcher"
+      },
+      "problemMatcher": {
+        "owner": "less",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+) in (.+) on line (\\d+), column (\\d+):$",
+          "message": 1,
+          "file": 2,
+          "line": 3,
+          "column": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[less\\] Watching",
+          "endsPattern": "\\[less\\]  (→|✗)"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+
+    ,
+    // ─── PostCSS Autofixer ────────────────────────────────────────────────────
+    // Stage 2 of the Less → CSS pipeline. Mirrors the PhpStorm "PostCSS Autofixer" watcher.
+    // Scope: any file named exactly "main.tmpcss" in any directory.
+    // Per-file command (run in file's own directory):
+    //   postcss main.tmpcss --use autoprefixer -o main.css --no-map
+    //
+    // Prerequisites: npm install --save-dev postcss postcss-cli autoprefixer chokidar
+    {
+      "label": "Watch PostCSS Autofixer (main.tmpcss → main.css)",
+      "type": "shell",
+      "command": "node .vscode/watch-postcss.js",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "label": "PostCSS Watcher"
+      },
+      "problemMatcher": {
+        "owner": "postcss",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+) in (.+) on line (\\d+), column (\\d+):$",
+          "message": 1,
+          "file": 2,
+          "line": 3,
+          "column": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[postcss\\] Watching",
+          "endsPattern": "\\[postcss\\]  (→|✗)"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+
+    ,
+    // ─── CleanCSS Minifier ────────────────────────────────────────────────────
+    // Stage 3 (final) of the Less → CSS pipeline. Mirrors "CleanCSS Minifier" watcher.
+    // Scope: any file named exactly "main.css" in any directory.
+    // Per-file command (run in file's own directory):
+    //   cleancss -O2 main.css -o main.min.css
+    //
+    // Prerequisites: npm install --save-dev clean-css-cli chokidar
+    {
+      "label": "Watch CleanCSS Minifier (main.css → main.min.css)",
+      "type": "shell",
+      "command": "node .vscode/watch-cleancss.js",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "label": "CleanCSS Watcher"
+      },
+      "problemMatcher": {
+        "owner": "cleancss",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[cleancss\\] Watching",
+          "endsPattern": "\\[cleancss\\]  (→|✗)"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}
