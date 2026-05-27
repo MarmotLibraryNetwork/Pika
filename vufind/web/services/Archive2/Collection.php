@@ -59,7 +59,7 @@ class Collection extends ArchiveObject
                 $this->loadChildrenData($nid);
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
-                $interface->assign('showTimeline', true);
+                $interface->assign('showTimeline', false);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapNoTimeline':
@@ -125,7 +125,7 @@ class Collection extends ArchiveObject
      */
     private function loadMapData(): void
     {
-        global $interface;
+        global $interface, $configArray;
         /** @var CollectionObject $collection */
         $collection     = $this->mediaObject;
         $places         = $collection->getCollectionRelatedPlaces();
@@ -160,7 +160,9 @@ class Collection extends ArchiveObject
 
         $nodeFields = $collection->getNodeWithoutFieldPrefix();
         $mapZoom    = $nodeFields['pika_map_zoom'] ?? 9;
+        $mapsKey    = $configArray['Maps']['apiKey'] ?? '';
 
+        $interface->assign('mapsKey',        $mapsKey);
         $interface->assign('mappedPlaces',   $mappedPlaces);
         $interface->assign('unmappedPlaces', $unmappedPlaces);
         $interface->assign('mapZoom',        $mapZoom);
