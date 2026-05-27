@@ -89,11 +89,9 @@ class UserList extends DB_DataObject {
 		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
-			'(
-     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-    OR
-    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
-)'
+			'((user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))
+       OR
+            (user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%"))'
 		);
 
 		return $listEntry->count();
@@ -179,23 +177,22 @@ class UserList extends DB_DataObject {
 			}
 			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-			//TODO: migration of user list archive entries
 			$listEntry->whereAdd(
 				'(' .
-				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
+				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%")' .
 				' OR ' .
-				'(user_list_entry.groupedWorkPermanentId LIKE "%:%")' .
-//				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
+				'(user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))' .
 				')'
-			//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
 			);
 			if($listEntry->find()){
 				while ($listEntry->fetch()){
-					if (strpos($listEntry->groupedWorkPermanentId, ':') !== false){
-						//TODO: need a mechanism to distinguish archive Ids from the catalog ids
+					if (!str_contains($listEntry->groupedWorkPermanentId, '-') && ctype_digit($listEntry->groupedWorkPermanentId)){
 						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
 					}else{
-						$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+						if (!$listEntry->hidden){
+							$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+						}
+
 					}
 					$listEntries[] = $listEntry->groupedWorkPermanentId;
 				}

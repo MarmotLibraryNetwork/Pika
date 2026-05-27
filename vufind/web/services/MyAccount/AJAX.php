@@ -710,7 +710,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				//If the record is not valid, skip the whole thing since the title could be bad too
 				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
 					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)){
+					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9]+$/i", $recordToAdd)){
 						// Is not a valid grouped work Id or a valid archive PID
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
@@ -1563,7 +1563,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$update['id']          = str_replace('_', ':', $update['id']); // Rebuilt Islandora PIDs
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $listId;
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])){
+					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9]+$/i", $update['id'])){
 						// Is not a valid grouped work Id or archive PID
 						$success = false;
 					}else{

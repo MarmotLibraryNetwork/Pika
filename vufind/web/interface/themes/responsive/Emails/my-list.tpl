@@ -16,7 +16,7 @@
 {if $title.title_display}{$title.title_display}
 {$title.author_display}
 {$url}/GroupedWork/{$title.id}/Home
-{elseif $title.fgs_label_s}{$title.fgs_label_s}
+{elseif $field_display_title}{$field_display_title}
 {$title.format}
 {if $title.url}{$url}{$title.url}{/if}{/if}
 

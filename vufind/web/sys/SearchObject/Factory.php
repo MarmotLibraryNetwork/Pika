@@ -42,7 +42,7 @@ class SearchObjectFactory {
 			require_once $path;
 			$class = 'SearchObject_' . $engine;
 			if (class_exists($class)){
-				/** @var SearchObject_UserListIslandora|SearchObject_UserListSolr|SearchObject_Base|SearchObject_Solr|SearchObject_Genealogy|SearchObject_Islandora|SearchObject_Islandora2 $searchObject */
+				/** @var SearchObject_UserListIslandora|SearchObject_UserListIslandora2|SearchObject_UserListSolr|SearchObject_Base|SearchObject_Solr|SearchObject_Genealogy|SearchObject_Islandora|SearchObject_Islandora2 $searchObject */
 				$searchObject = new $class();
 				return $searchObject;
 			}

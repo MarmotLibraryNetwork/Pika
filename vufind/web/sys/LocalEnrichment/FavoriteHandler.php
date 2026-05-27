@@ -42,7 +42,7 @@ class FavoriteHandler {
 	protected $userListSortOptions = [];  // user list sort options handled by Pika SQL database
 	protected $solrSortOptions = ['title', 'author'], // user list sorting options handled by Solr engine.
 			// Note these values need to match options found in searches.ini Sorting section
-		$islandoraSortOptions = ['fgs_label_s']; // user list sorting options handled by the Islandora Solr engine.
+		$islandoraSortOptions = ['ss_title_sort']; // user list sorting options handled by the Islandora Solr engine.
 			// Note these values need to match options found in islandoraSearches.ini Sorting section
 
 	/**
@@ -207,16 +207,12 @@ class FavoriteHandler {
 		// Archive Search
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
-			require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
+			require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
 			// Initialize from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			/** @var SearchObject_Islandora2 $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 			if ($archiveSearchObject->pingServer(false)){
 				$archiveSearchObject->init();
-				$archiveSearchObject->setPrimarySearch(true);
-				$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-				$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-				$archiveSearchObject->setLimit($recordsPerPage);//MDN 3/30 this was set to 200, but should be based off the page size
 				if (!$this->isUserListSort && !$this->isMixedUserList){   // is a solr sort
 					$archiveSearchObject->setSort($this->sort);             // set solr sort. (have to set before retrieving solr sort options below)
 				}// Archive Only Searches //
@@ -450,8 +446,8 @@ class FavoriteHandler {
 		if (count($this->archiveIds) > 0){
 
 			// Initialize from the current search globals
-			/** @var SearchObject_UserListIslandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+			/** @var SearchObject_UserListIslandora2 $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora2');
 			//TODO: 'UserListIslandora2'
 			$archiveSearchObject->userListSort = $this->sort;
 			if ($isPageSizeParamSet){
@@ -495,6 +491,7 @@ class FavoriteHandler {
 						$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
 						$archiveSearchObject->setLimit($recordsPerPage);
 						$archiveSearchObject->setPage(1);
+						$archiveSearchObject->setSort($this->sort);
 						$archiveSearchObject->setPrimarySearch(false);
 						$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
 						$archiveSearchObject->setPage($page);
@@ -634,20 +631,15 @@ class FavoriteHandler {
 		}
 		if (count($this->archiveIds) > 0){
 			// Initialize from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-			//$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
+			/** @var SearchObject_Islandora2 $archiveSearchObject */
+			//$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 			$archiveSearchObject->init();
+			$archiveSearchObject->setApplyStandardFilters(true);
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 			$archiveSearchObject->setQueryIDs($this->archiveIds);
-
 			$archiveSearchObject->processSearch(false, $applyFiltering);
-
 			$archiveRecordSet = $archiveSearchObject->getResultRecordSet();
-
-
 		}
 		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
