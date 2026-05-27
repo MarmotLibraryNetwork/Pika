@@ -132,11 +132,7 @@ class MyAccount_Edit extends MyAccount {
 		}else{
 			$interface->assign('error', 'Invalid List ID.');
 		}
-		if(!str_contains($listId,'islandora2-')){
 			$this->display('editListTitle.tpl', 'Edit List Entry');
-		}else{
-			$this->display('editArchiveListTitle.tpl', 'Edit List Entry');
-		}
 	}
 }
 
