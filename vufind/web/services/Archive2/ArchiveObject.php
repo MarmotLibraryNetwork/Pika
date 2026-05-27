@@ -111,6 +111,14 @@ class ArchiveObject extends \Action
         // Viewing permissions (true or false)
         $interface->assign('can_view', $this->canCurrentUserView());
 
+        // Parent collection
+        // bread crumbs, other parent links
+        $parent = $this->mediaObject->getParentCollection();
+        $parent_title = $parent->getTitle();
+        $parent_url = getObjRelativeUrl($parent);
+        $interface->assign('parent_title', $parent_title);
+        $interface->assign('parent_rel_url', $parent_url);
+
         // Download & Request permissions
         // Can download master file
         $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
