@@ -80,7 +80,7 @@ class MyAccount_Edit extends MyAccount {
 					// Item ID
 					$interface->assign('recordId', $id);
 
-					if (strpos($id, ':') === false){
+					if (!str_contains($id,'islandora2-')){
 						// Grouped Works (Catalog Items)
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$groupedWorkDriver = new GroupedWorkDriver($id);
@@ -89,10 +89,10 @@ class MyAccount_Edit extends MyAccount {
 						}
 					}else{
 						// Archive Objects
-						require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-						$fedoraUtils         = FedoraUtils::getInstance();
-						$archiveObject       = $fedoraUtils->getObject($id);
-						$archiveRecordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
+						require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
+						/** @var \Islandora2Driver $archiveObject */
+						$archiveId = str_replace('islandora2-', '', $id);
+						$archiveRecordDriver = new Islandora2Driver($archiveId);
 						$interface->assign('recordDriver', $archiveRecordDriver);
 					}
 
@@ -100,6 +100,9 @@ class MyAccount_Edit extends MyAccount {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					$userListEntry                         = new UserListEntry();
 					$userListEntry->groupedWorkPermanentId = $id;
+					if(str_contains($id,'islandora2-')){
+						$userListEntry->groupedWorkPermanentId = str_replace('islandora2-', '', $id);
+					}
 					$userListEntry->listId                 = $listId;
 					$params = [];
 					if (!empty($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize'])){
@@ -129,7 +132,11 @@ class MyAccount_Edit extends MyAccount {
 		}else{
 			$interface->assign('error', 'Invalid List ID.');
 		}
-		$this->display('editListTitle.tpl', 'Edit List Entry');
+		if(!str_contains($listId,'islandora2-')){
+			$this->display('editListTitle.tpl', 'Edit List Entry');
+		}else{
+			$this->display('editArchiveListTitle.tpl', 'Edit List Entry');
+		}
 	}
 }
 
