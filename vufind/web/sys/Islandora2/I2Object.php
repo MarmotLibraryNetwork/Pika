@@ -269,6 +269,25 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return the geographic coordinates for this node from field_coordinates.
+     *
+     * @return array|null Associative array with 'lat' and 'lng' floats, or null when not set.
+     */
+    public function getCoordinates(): ?array
+    {
+        $coords = $this->nodeWithoutFieldPrefix['coordinates'] ?? null;
+        if (!is_array($coords)) {
+            return null;
+        }
+        $lat = $coords['lat'] ?? null;
+        $lng = $coords['lng'] ?? $coords['lon'] ?? null;
+        if ($lat === null || $lng === null) {
+            return null;
+        }
+        return ['lat' => (float)$lat, 'lng' => (float)$lng];
+    }
+
+    /**
      * Return the description for this node, preferring the long form when available.
      *
      * @return string|null The description string, or null when neither form is set.
@@ -397,6 +416,8 @@ abstract class I2Object implements MediaObjectInterface
         $parent_nid = $this->nodeWithoutFieldPrefix['member_of'] ?? null;
         if ($parent_nid == null)
             return null;
+        if(is_array($parent_nid))
+            $parent_nid = $parent_nid[0]['target_id'];
         $factory = new I2ObjectFactory();
         return $factory->fromNodeId($parent_nid);
     }
