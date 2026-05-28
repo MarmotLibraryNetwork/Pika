@@ -148,6 +148,44 @@ Pika.Archive2 = (function(){
 				}
 			).fail(Pika.ajaxFail);
 		},
-
+		showSaveToListForm: function (trigger, id){
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/Archive2/AJAX";
+				var params = {
+					'id':id,
+					'method':'showSaveToListForm'
+				}
+				$.getJSON(url, params, function(data){
+					Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(function(jqxhr, textStatus, error){
+					console.log("Error: " + textStatus + " - " + error);
+					Pika.ajaxFail
+				});
+			}, $(trigger));
+		},
+		saveToList: function(id){
+			if (Globals.loggedIn){
+				var listId = $('#addToList-list').val(),
+						notes  = $('#addToList-notes').val(),
+						url    = "/Archive2/AJAX";
+						params = {
+							'method':'saveToList'
+							,'id':id
+							,notes:notes
+							,listId:listId
+						};
+				$.getJSON(url, params,
+						function(data) {
+							if (data.success) {
+								Pika.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+							} else {
+								Pika.showMessage("Error", data.message);
+							}
+						}
+				).fail(Pika.ajaxFail);
+			}
+			return false;
+		},
 	};
 })();

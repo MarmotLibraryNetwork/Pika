@@ -288,7 +288,7 @@ class Islandora2Driver extends RecordInterface
 		global $interface;
 
 		$interface->assign('summId', $this->getUniqueID());
-		$interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
+		$interface->assign('jquerySafeId',$this->getUniqueID());
 		//TODO: str_replace likely not needed now
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summUrl', $this->getLinkUrl());
@@ -296,9 +296,9 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('summFormat', $this->getFormat());
 //		$interface->assign('summShortId', null);
 //		$interface->assign('summTitleStatement', null);
-//		$interface->assign('summAuthor', null);
-//		$interface->assign('summPublisher', null);
-//		$interface->assign('summPubDate', null);
+		$interface->assign('summAuthor', null);
+		$interface->assign('summPublisher', null);
+		$interface->assign('summPubDate', null);
 //		$interface->assign('$summSnippets', null);
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
@@ -308,7 +308,7 @@ class Islandora2Driver extends RecordInterface
 		if ($listId){
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry                         = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
+			$listEntry->groupedWorkPermanentId = $this->nodeId;
 			$listEntry->listId                 = $listId;
 			if ($listEntry->find(true)){
 				$interface->assign('listEntryNotes', $listEntry->notes);
