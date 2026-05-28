@@ -1,5 +1,18 @@
 {strip}
-	{include file="Archive2/partials/fieldRow.tpl" label="Material" value=$material}
+	{if $material}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">Material:</div>
+			<div class="result-value col-sm-8">
+				{if is_array($material)}
+					{foreach from=$material item=materialLine}
+						<div>{$materialLine|escape}</div>
+					{/foreach}
+				{else}
+					{$material|escape}
+				{/if}
+			</div>
+		</div>
+	{/if}
 	{if $artMaterials}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Art Materials:</div>
