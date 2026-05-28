@@ -158,11 +158,9 @@ Pika.Archive2 = (function(){
 				}
 				$.getJSON(url, params, function(data){
 					Pika.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(function(jqxhr, textStatus, error){
-					console.log("Error: " + textStatus + " - " + error);
-					Pika.ajaxFail
-				});
+				}).fail(Pika.ajaxFail);
 			}, $(trigger));
+			return false;
 		},
 		saveToList: function(id){
 			if (Globals.loggedIn){
