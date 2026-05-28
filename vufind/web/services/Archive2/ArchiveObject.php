@@ -352,6 +352,24 @@ class ArchiveObject extends \Action
         }
         $interface->assign('artTechniques', $artTechniques ?: null);
 
+        // Same processing for style/period taxonomy field.
+        $rawStylePeriod = $nodeData['style_period'] ?? null;
+        $stylePeriods = [];
+        if ($rawStylePeriod !== null) {
+            $items = isset($rawStylePeriod['name']) ? [$rawStylePeriod] : (array)$rawStylePeriod;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $stylePeriods[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('stylePeriods', $stylePeriods ?: null);
+
         // Normalize Drupal link fields for externalLinksSection.tpl.
         $interface->assign('externalLinks',   $this->normalizeLinkField($nodeData['external_link']     ?? null) ?: null);
         $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
