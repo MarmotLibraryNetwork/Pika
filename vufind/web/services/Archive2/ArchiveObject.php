@@ -370,6 +370,32 @@ class ArchiveObject extends \Action
         }
         $interface->assign('stylePeriods', $stylePeriods ?: null);
 
+        // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
+        $transcriptMedia = array_values(array_filter(
+            $this->mediaObject->getMedia(),
+            fn($m) => $m->use === 'Transcript' && $m->mime === 'text/plain'
+        ));
+        usort($transcriptMedia, fn($a, $b) => $a->created <=> $b->created);
+
+        $rawLoc  = $nodeData['transcription_loc'] ?? '';
+        $rawLang = $nodeData['transcription_lang']['name'] ?? '';
+        $locations = $rawLoc  !== '' ? array_map('trim', explode(',', $rawLoc))  : [];
+        $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
+
+        $transcription = [];
+        foreach ($transcriptMedia as $i => $tm) {
+            $text = $this->fetchTranscriptText($tm->fileUrl);
+            if ($text === null) {
+                continue;
+            }
+            $transcription[] = [
+                'location' => $locations[$i] ?? '',
+                'language' => $languages[$i] ?? '',
+                'text'     => $text,
+            ];
+        }
+        $interface->assign('transcription', $transcription ?: null);
+
         // Normalize Drupal link fields for externalLinksSection.tpl.
         $interface->assign('externalLinks',   $this->normalizeLinkField($nodeData['external_link']     ?? null) ?: null);
         $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
@@ -1157,5 +1183,30 @@ class ArchiveObject extends \Action
         }
 
         return $uri;
+    }
+
+    private function fetchTranscriptText(string $url): ?string {
+        global $configArray;
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'] ?? '',
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+        $response   = curl_exec($ch);
+        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError  = curl_error($ch);
+        curl_close($ch);
+        if ($response === false || $statusCode !== 200) {
+            $this->logger->error('fetchTranscriptText failed.', [
+                'url'        => $url,
+                'statusCode' => $statusCode,
+                'curlError'  => $curlError,
+            ]);
+            return null;
+        }
+        return $response;
     }
 }
