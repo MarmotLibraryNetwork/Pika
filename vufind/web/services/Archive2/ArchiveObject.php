@@ -382,6 +382,10 @@ class ArchiveObject extends \Action
         $locations = $rawLoc  !== '' ? array_map('trim', explode(',', $rawLoc))  : [];
         $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
 
+        if (empty($transcriptMedia)) {
+            $this->logger->debug('No Transcript media found for node.', ['nid' => $this->mediaObject->getNodeId(), 'totalMedia' => count($this->mediaObject->getMedia())]);
+        }
+
         $transcription = [];
         foreach ($transcriptMedia as $i => $tm) {
             $text = $this->fetchTranscriptText($tm->fileUrl);
@@ -391,7 +395,7 @@ class ArchiveObject extends \Action
             $transcription[] = [
                 'location' => $locations[$i] ?? '',
                 'language' => $languages[$i] ?? '',
-                'text'     => $text,
+                'text'     => $this->linkTimestamps($text),
             ];
         }
         $interface->assign('transcription', $transcription ?: null);
@@ -1208,5 +1212,53 @@ class ArchiveObject extends \Action
             return null;
         }
         return $response;
+    }
+
+    /**
+     * Replaces timestamp markers in transcript text with links that seek the media player.
+     *
+     * Two formats are supported (only one per transcript):
+     *   (mm:ss)      — e.g. (1:30)
+     *   [hh:mm:ss]   — e.g. [0:01:30]
+     *
+     * The generated links target all Archive2 player elements via a combined jQuery
+     * selector so they work for audio, video, and compound variants.
+     */
+    private function linkTimestamps(string $text): string
+    {
+        $playerSelector = '#archive-audio-player,#compound-audio-player,#video-player,#compound-video-player';
+        $makeLink = function (string $match, int $offsetSeconds) use ($playerSelector): string {
+            $escaped = htmlspecialchars($match, ENT_QUOTES, 'UTF-8');
+            return '<a onclick="$(\'' . $playerSelector . '\').get(0).currentTime=\'' . $offsetSeconds . '\';" style="cursor:pointer">' . $escaped . '</a>';
+        };
+
+        // Format (mm:ss)
+        if (preg_match_all('/\(\d{1,2}:\d{1,2}\)/', $text, $matches)) {
+            foreach ($matches[0] as $match) {
+                $inner = substr($match, 1, -1);
+                [$minutes, $seconds] = explode(':', $inner);
+                if (!is_numeric($minutes) || !is_numeric($seconds)) {
+                    $this->logger->warning('Failed to parse transcript timestamp.', ['match' => $match]);
+                    continue;
+                }
+                $text = str_replace($match, $makeLink($match, (int)$minutes * 60 + (int)$seconds), $text);
+            }
+            return $text;
+        }
+
+        // Format [hh:mm:ss]
+        if (preg_match_all('/\[\d{1,2}:\d{1,2}:\d{1,2}\]/', $text, $matches)) {
+            foreach ($matches[0] as $match) {
+                $inner = substr($match, 1, -1);
+                [$hours, $minutes, $seconds] = explode(':', $inner);
+                if (!is_numeric($hours) || !is_numeric($minutes) || !is_numeric($seconds)) {
+                    $this->logger->warning('Failed to parse transcript timestamp.', ['match' => $match]);
+                    continue;
+                }
+                $text = str_replace($match, $makeLink($match, (int)$hours * 3600 + (int)$minutes * 60 + (int)$seconds), $text);
+            }
+        }
+
+        return $text;
     }
 }

@@ -8,7 +8,7 @@
 			{if $transcript.language}
 				<div class="transcriptLanguage">({$transcript.language|escape})</div>
 			{/if}
-			<div class="transcriptText">{$transcript.text|escape|nl2br}</div>
+			<div class="transcriptText">{$transcript.text|nl2br}</div>
 		</div>
 	{/foreach}
 {/if}
