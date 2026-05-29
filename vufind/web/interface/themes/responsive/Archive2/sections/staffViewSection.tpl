@@ -16,7 +16,36 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Entered By" value=$record_origin}
 		{include file="Archive2/partials/fieldRow.tpl" label="Entered On" value=$record_creation_date}
 		{include file="Archive2/partials/fieldRow.tpl" label="Last Changed" value=$record_change_date}
-		{include file="Archive2/partials/fieldRow.tpl" label="Collection Node ID" value=$member_of}
+		{if $member_of}
+			<div class="row archive-field-row">
+				<div class="result-label col-sm-4">Collection Node ID:</div>
+				<div class="result-value col-sm-8">
+					{* member_of may be a single entry (array with 'id' key) or a list of entries *}
+					{if is_array($member_of) && isset($member_of.target_id)}
+						<div><a href="/Archive2/Collection/{$member_of.target_id}">{$member_of.target_id}</a></div>
+					{elseif is_array($member_of) && isset($member_of.id)}
+						{*TODO: cofirm if the collection node id is ever set in an 'id' element here. (Confirmed 'target_id; *}
+						<div><a href="/Archive2/Collection/{$member_of.id}">{$member_of.id}</a></div>
+					{elseif is_array($member_of)}
+						{foreach from=$member_of item=col}
+							<div>
+								{if is_array($col)}
+									{if isset($col.target_id)}
+										<a href="/Archive2/Collection/{$col.target_id}">{$col.target_id}</a>
+									{elseif isset($col.id)}
+										<a href="/Archive2/Collection/{$col.id}">{$col.id}</a>
+									{/if}
+								{else}
+									<a href="/Archive2/Collection/{$col}">{$col}</a>
+								{/if}
+							</div>
+						{/foreach}
+					{else}
+						<div><a href="/Archive2/Collection/{$member_of}">{$member_of}</a></div>
+					{/if}
+				</div>
+			</div>
+		{/if}
 		{include file="Archive2/partials/fieldRow.tpl" label="Access Terms" value=$access_terms}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Show In Search" value=$pika_show_in_search}
 		{include file="Archive2/partials/fieldRow.tpl" label="Pika Usage" value=$pika_usage}
@@ -39,7 +68,7 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Migrated Identifier" value=$migrated_identifier}
 		{include file="Archive2/partials/fieldRow.tpl" label="Migrated Relationship Note" value=$migrated_rel_note}
 		{include file="Archive2/partials/fieldRow.tpl" label="Legacy MODS ID" value=$legacy_mods_id}
-		{include file="Archive2/partials/fieldRow.tpl" label="Legacy PID" value=$pid}
 		{include file="Archive2/partials/fieldRow.tpl" label="Owner ID" value=$owner_id}
+		{include file="Archive2/partials/fieldRow.tpl" label="Legacy PID" value=$pid}
 	{/if}
 {/strip}
