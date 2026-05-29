@@ -188,6 +188,22 @@ class CollectionObject extends I2Object
     }
 
     /**
+     * Returns all child objects that have geographic coordinates set via field_coordinates.
+     *
+     * @return I2Object[] Children that have a non-null getCoordinates() value.
+     */
+    public function getChildrenWithCoordinates(): array
+    {
+        $result = [];
+        foreach ($this->getChildObjects() as $child) {
+            if ($child->getCoordinates() !== null) {
+                $result[] = $child;
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Returns the total number of direct children in this collection.
      */
     public function getTotalChildCount(): int
