@@ -7,7 +7,8 @@
 			</div>
 		</div>
 		<div class="col-xs-12">
-			<a class="btn btn-default" href="/Archive2/Results?sm_title2={$title|escape:'url'}" style="margin: 12px 0;">
+			<a class="btn btn-default" href="/Archive2/Results?sm_title_2={$title|escape:'url'}" style="margin: 12px 0;">
+				{*TODO: update to preferred facet label when configured *}
 				View all objects in this collection
 			</a>
 		</div>
