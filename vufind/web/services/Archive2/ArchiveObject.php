@@ -390,7 +390,10 @@ class ArchiveObject extends \Action
 
         $rawLoc    = $nodeData['transcription_loc'] ?? '';
         $rawLang   = $nodeData['transcription_lang']['name'] ?? '';
-        $locations = $rawLoc  !== '' ? array_map('trim', explode(',', $rawLoc))  : [];
+        // Split on commas not preceded by a backslash; then unescape \, → ,
+        $locations = $rawLoc !== ''
+            ? array_map(fn($s) => str_replace('\\,', ',', trim($s)), preg_split('/(?<!\\\\),/', $rawLoc))
+            : [];
         $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
 
         if (empty($transcriptMedia)) {
