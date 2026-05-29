@@ -24,7 +24,7 @@
 				<a class="btn btn-default" href="/Archive2/ClaimAuthorship/{$nid}">Claim Authorship</a>
 			{/if} 
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$nid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$nid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
 			{/if}
 			</div>
 

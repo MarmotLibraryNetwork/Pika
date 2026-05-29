@@ -1,4 +1,5 @@
 <?php
+@ini_set('memory_limit',-1);
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network

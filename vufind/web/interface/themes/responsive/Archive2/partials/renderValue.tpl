@@ -12,7 +12,11 @@
 		{/if}
 	{else}
 		{if $value ne '' && $value ne null}
-			{$value}
+			{if $isDate}
+				{$value|date_format:"%B %e, %Y"}
+			{else}
+				{$value}
+			{/if}
 		{else}
 			<span class="text-muted">Not provided</span>
 		{/if}

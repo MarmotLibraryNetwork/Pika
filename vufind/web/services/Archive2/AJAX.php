@@ -44,6 +44,8 @@ class Archive2_AJAX extends AJAXHandler {
 		'getRelatedObjectsForOrganization',
 		'getRelatedObjectsForEvent',
 		'getRelatedObjectsForPlace',
+		'showSaveToListForm',
+		'saveToList',
 	];
 
 	/** Methods that return a structured JSON result wrapper {result, message, ...}. */
@@ -464,6 +466,151 @@ class Archive2_AJAX extends AJAXHandler {
 			'hasResults' => true,
 			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
 		];
+	}
+
+	/**
+	 * @return array
+	 */
+	function showSaveToListForm(){
+		global $interface;
+
+		$nid = (int)($_REQUEST['id'] ?? 0);
+		if ($nid <= 0) {
+			return ['success' => false, 'message' => 'A valid node id is required.'];
+		}
+		$interface->assign('id', $nid);
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+
+		//Get a list of all lists for the user
+		$containingLists    = [];
+		$nonContainingLists = [];
+		$listsTooLarge      = [];
+
+		$userLists          = new UserList();
+		$userLists->user_id = UserAccount::getActiveUserId();
+		$userLists->deleted = 0;
+		$userLists->orderBy('dateUpdated > unix_timestamp()-300 desc, if(dateUpdated > unix_timestamp()-300 , dateUpdated, 0) desc, title');
+		// Sort lists first by any that have been recently updated (within the last 5 mins)  eg a user is currently build a specific list
+		// second sort factor for multiple lists updated within the last five minutes is the last updated time; other lists come next
+		// finally alphabetical order for lists that haven't been updated recently
+		//This complex sorting allows for a list that has had an entry added to it recently,
+		// to show as the default selected list in the dropdown list of which user lists to add a title to
+		$userLists->find();
+		while ($userLists->fetch()){
+			if ($userLists->numValidListItems() >= 2000){
+				$listsTooLarge[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
+			//Check to see if the user has already added the title to the list.
+			$userListEntry                         = new UserListEntry();
+			$userListEntry->listId                 = $userLists->id;
+			$userListEntry->groupedWorkPermanentId = $nid;
+			if ($userListEntry->find(true)){
+				$containingLists[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}else{
+				$nonContainingLists[] = [
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
+				];
+			}
+		}
+
+		$interface->assign('containingLists', $containingLists);
+		$interface->assign('nonContainingLists', $nonContainingLists);
+		$interface->assign('largeLists', $listsTooLarge);
+
+		$results = [
+			'title'        => 'Add To List',
+			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive2.saveToList(\"{$nid}\"); return false;'>Save To List</button>",
+		];
+		return $results;
+	}
+
+	function saveToList(){
+		$result = [];
+
+		if (!UserAccount::isLoggedIn()){
+			$result['success'] = false;
+			$result['message'] = 'Please log in before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$result['success'] = true;
+			$id                = urldecode($_REQUEST['id']);
+			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9-]+$/i", $id)){
+				// Is not a valid grouped work Id or archive PID
+				$result['success'] = false;
+				$result['message'] = 'That is not a valid title to add to the list.';
+			}else{
+				$listId = $_REQUEST['listId'];
+				$notes  = $_REQUEST['notes'];
+
+				//Check to see if we need to create a list
+				$userList = new UserList();
+				$listOk   = true;
+				if (empty($listId)){
+					$existingList          = new UserList();
+					$existingList->user_id = UserAccount::getActiveUserId();
+					$existingList->title   = 'My Favorites';
+					$existingList->deleted = 0;
+					//Make sure we don't create duplicate My Favorites List
+					if ($existingList->find(true)){
+						$userList = $existingList;
+					}else{
+						$userList->title       = 'My Favorites';
+						$userList->user_id     = UserAccount::getActiveUserId();
+						$userList->public      = 0;
+						$userList->description = '';
+						$userList->insert();
+					}
+
+				}else{
+					$userList->id = $listId;
+					if (!$userList->find(true)){
+						$result['success'] = false;
+						$result['message'] = 'Sorry, we could not find that list in the system.';
+						$listOk            = false;
+					}
+				}
+
+				if ($listOk){
+					$userListEntry                         = new UserListEntry();
+					$userListEntry->listId                 = $userList->id;
+					$userListEntry->groupedWorkPermanentId = $id;
+
+					$existingEntry = false;
+					if ($userListEntry->find(true)){
+						$existingEntry = true;
+					}
+					$userListEntry->notes     = strip_tags($notes);
+					$userListEntry->dateAdded = time();
+					if ($userList->defaultSort == 'custom'){
+						$weight = $userList->getNextWeightForUserDefinedSort();
+						if ($weight){
+							$userListEntry->weight = $weight;
+						}
+					}
+					if ($existingEntry){
+						$userListEntry->update();
+					}else{
+						$userListEntry->insert();
+					}
+
+					$result['success'] = true;
+					$result['message'] = 'This title was saved to your list successfully.';
+				}
+			}
+		}
+
+		return $result;
 	}
 
 }

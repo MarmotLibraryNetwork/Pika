@@ -455,8 +455,7 @@ class FavoriteHandler {
 			}
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator'); //TODO: move to construct()/init() for user list
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no'); //TODO: move to construct()/init() for user list
+			$archiveSearchObject->setApplyStandardFilters(true);
 			$archiveSearchObject->setLimit($recordsPerPage);
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
