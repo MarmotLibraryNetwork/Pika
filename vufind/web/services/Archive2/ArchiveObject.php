@@ -377,8 +377,8 @@ class ArchiveObject extends \Action
         ));
         usort($transcriptMedia, fn($a, $b) => $a->created <=> $b->created);
 
-        $rawLoc  = $nodeData['transcription_loc'] ?? '';
-        $rawLang = $nodeData['transcription_lang']['name'] ?? '';
+        $rawLoc    = $nodeData['transcription_loc'] ?? '';
+        $rawLang   = $nodeData['transcription_lang']['name'] ?? '';
         $locations = $rawLoc  !== '' ? array_map('trim', explode(',', $rawLoc))  : [];
         $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
 
