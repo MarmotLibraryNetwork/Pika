@@ -604,6 +604,7 @@ class ExploreMore {
 	 * @return array|null
 	 */
 	private function getAcknowledgements(I2Object $obj): ?array {
+		//TODO: Get Acknowledgements for Parent Collection
 		require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 		$factory = new \Islandora2\TaxonomyFactory();
 		$values  = [];
