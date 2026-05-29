@@ -21,7 +21,7 @@
 </div>
 {/strip}
 
-{if $mapsKey && $mappedPlaces}
+{if $mapsKey && ($mappedPlaces || $childMarkers)}
 <style>
 .map-count-marker {ldelim}
 	background: #2980b9;
@@ -77,6 +77,24 @@ function initCollectionMapComponent() {ldelim}
 		{rdelim});
 	{rdelim})();
 	{/if}
+	{/foreach}
+
+	{foreach from=$childMarkers item=child}
+	(function() {ldelim}
+		var marker = new google.maps.marker.AdvancedMarkerElement({ldelim}
+			position: {ldelim}lat: {$child.latitude}, lng: {$child.longitude}{rdelim},
+			map: map,
+			title: '{$child.title|escape:javascript}'
+		{rdelim});
+		marker.addListener('gmp-click', function() {ldelim}
+			infoWindow.close();
+			var html = '<div style="max-width:220px;text-align:center">';
+			{if $child.thumbnail}html += '<a href="{$child.url|escape:javascript}"><img src="{$child.thumbnail|escape:javascript}" style="max-width:200px;margin-bottom:6px" /></a><br>';{/if}
+			html += '<a href="{$child.url|escape:javascript}">{$child.title|escape:javascript}</a></div>';
+			infoWindow.setContent(html);
+			infoWindow.open({ldelim}anchor: marker, map: map{rdelim});
+		{rdelim});
+	{rdelim})();
 	{/foreach}
 {rdelim}
 </script>
