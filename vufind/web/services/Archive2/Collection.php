@@ -158,6 +158,27 @@ class Collection extends ArchiveObject
             }
         }
 
+        $childMarkers = [];
+        foreach ($collection->getChildrenWithCoordinates() as $child) {
+            $coords = $child->getCoordinates();
+            $thumb  = $child->getThumbnail();
+            $childMarkers[] = [
+                'nid'       => $child->getNodeId(),
+                'title'     => $child->getTitle(),
+                'url'       => getObjRelativeUrl($child),
+                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+                'latitude'  => $coords['lat'],
+                'longitude' => $coords['lng'],
+            ];
+            $latSum += $coords['lat'];
+            $lngSum += $coords['lng'];
+            $n++;
+            $minLat = min($minLat ?? $coords['lat'], $coords['lat']);
+            $maxLat = max($maxLat ?? $coords['lat'], $coords['lat']);
+            $minLng = min($minLng ?? $coords['lng'], $coords['lng']);
+            $maxLng = max($maxLng ?? $coords['lng'], $coords['lng']);
+        }
+
         $nodeFields = $collection->getNodeWithoutFieldPrefix();
         $mapZoom    = $nodeFields['pika_map_zoom'] ?? 9;
         $mapsKey    = $configArray['Maps']['apiKey'] ?? '';
@@ -165,6 +186,7 @@ class Collection extends ArchiveObject
         $interface->assign('mapsKey',        $mapsKey);
         $interface->assign('mappedPlaces',   $mappedPlaces);
         $interface->assign('unmappedPlaces', $unmappedPlaces);
+        $interface->assign('childMarkers',   $childMarkers);
         $interface->assign('mapZoom',        $mapZoom);
         $interface->assign('minLat',         $minLat);
         $interface->assign('maxLat',         $maxLat);
