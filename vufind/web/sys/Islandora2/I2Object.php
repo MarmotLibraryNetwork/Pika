@@ -92,7 +92,7 @@ abstract class I2Object implements MediaObjectInterface
         }
         // try both field_name and name for raw node
         if (array_key_exists('field_' . $name, $this->rawNode)) {
-            return 'field_' . $name;
+            return $this->rawNode['field_' . $name];
         } elseif (array_key_exists($name, $this->rawNode)) {
             return $this->rawNode[$name];
         } 
