@@ -158,25 +158,19 @@ class Collection extends ArchiveObject
             }
         }
 
-        $childMarkers = [];
-        foreach ($collection->getChildrenWithCoordinates() as $child) {
-            $coords = $child->getCoordinates();
-            $thumb  = $child->getThumbnail();
-            $childMarkers[] = [
-                'nid'       => $child->getNodeId(),
-                'title'     => $child->getTitle(),
-                'url'       => getObjRelativeUrl($child),
-                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                'latitude'  => $coords['lat'],
-                'longitude' => $coords['lng'],
-            ];
-            $latSum += $coords['lat'];
-            $lngSum += $coords['lng'];
+        // Lightweight marker rows fetched via a filtered JSON:API query, so this
+        // scales with the number of geocoded children, not the whole collection.
+        $childMarkers = $collection->getChildMarkers();
+        foreach ($childMarkers as $child) {
+            $lat = $child['latitude'];
+            $lng = $child['longitude'];
+            $latSum += $lat;
+            $lngSum += $lng;
             $n++;
-            $minLat = min($minLat ?? $coords['lat'], $coords['lat']);
-            $maxLat = max($maxLat ?? $coords['lat'], $coords['lat']);
-            $minLng = min($minLng ?? $coords['lng'], $coords['lng']);
-            $maxLng = max($maxLng ?? $coords['lng'], $coords['lng']);
+            $minLat = min($minLat ?? $lat, $lat);
+            $maxLat = max($maxLat ?? $lat, $lat);
+            $minLng = min($minLng ?? $lng, $lng);
+            $maxLng = max($maxLng ?? $lng, $lng);
         }
 
         $nodeFields = $collection->getNodeWithoutFieldPrefix();
