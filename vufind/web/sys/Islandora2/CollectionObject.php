@@ -95,9 +95,18 @@ class CollectionObject extends I2Object
      */
     public function getCollectionRelatedPeople(): array
     {
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
+        }
+
+        // Stream children one at a time and discard each after extracting its
+        // related people, so memory stays bounded regardless of collection size.
+        $factory                   = new I2ObjectFactory();
         $collection_related_people = [];
-        foreach ($this->getChildObjects() as $child) {
-            if ($child->related_person_paragraph === null) {
+        foreach ((new Request())->streamChildren($nid) as $childNode) {
+            $child = $factory->fromNode($childNode);
+            if ($child === null || $child->related_person_paragraph === null) {
                 continue;
             }
 
@@ -181,26 +190,33 @@ class CollectionObject extends I2Object
      */
     public function getCollectionThumbnailLink(): ?string
     {
-        if ($this->nodeWithoutFieldPrefix['pika_thumb_url'] === null) {
+        $thumb = $this->nwfp()['pika_thumb_url'] ?? null;
+        if ($thumb === null) {
             return null;
         }
-        return $this->nodeWithoutFieldPrefix['pika_thumb_url']['uri'];
+        return $thumb['uri'];
     }
 
     /**
-     * Returns all child objects that have geographic coordinates set via field_coordinates.
+     * Returns lightweight map markers for child objects that have geographic
+     * coordinates set via field_coordinates.
      *
-     * @return I2Object[] Children that have a non-null getCoordinates() value.
+     * Uses a single server-side filtered JSON:API query (plus one batched media
+     * query for thumbnails) instead of loading every child as a full I2Object,
+     * so memory scales with the number of geocoded children rather than the size
+     * of the whole collection.
+     *
+     * @return array Marker entries of
+     *               ['nid' => int, 'title' => string, 'latitude' => float,
+     *                'longitude' => float, 'thumbnail' => string].
      */
-    public function getChildrenWithCoordinates(): array
+    public function getChildMarkers(): array
     {
-        $result = [];
-        foreach ($this->getChildObjects() as $child) {
-            if ($child->getCoordinates() !== null) {
-                $result[] = $child;
-            }
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
         }
-        return $result;
+        return (new JsonApiClient())->fetchChildMarkers($nid);
     }
 
     /**
