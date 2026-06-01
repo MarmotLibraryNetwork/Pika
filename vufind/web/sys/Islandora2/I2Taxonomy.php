@@ -59,7 +59,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
      * Magic property accessor that proxies to the term with or without the "field_" prefix.
      *
      * @param string $name
-     * @return mixed|null
+     * @return mixed|false Returns mixed if key is found, flase if key doesn't exist.
      */
     public function __get(string $name)
     {
