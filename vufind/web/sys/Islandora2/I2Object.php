@@ -90,13 +90,18 @@ abstract class I2Object implements MediaObjectInterface
         if ($name === 'childrenObjects') {
             return $this->getChildObjects();
         }
-        if (array_key_exists($name, $this->nodeWithoutFieldPrefix)) {
-            return $this->nodeWithoutFieldPrefix[$name];
+        // try both field_name and name for raw node
+        if (array_key_exists('field_' . $name, $this->rawNode)) {
+            return 'field_' . $name;
         } elseif (array_key_exists($name, $this->rawNode)) {
             return $this->rawNode[$name];
+        } 
+        // avoid creating copy unless no other accessor works
+        $node = $this->nwfp();
+        if (array_key_exists($name, $node)) {
+            return $node[$name];
         }
-
-        return null;
+        return false;
     }
 
     /**
@@ -294,7 +299,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getCoordinates(): ?array
     {
-        $coords = $this->nodeWithoutFieldPrefix['coordinates'] ?? null;
+        $coords = $this->rawNode['field_coordinates'] ?? null;
         if (!is_array($coords)) {
             return null;
         }
@@ -313,12 +318,12 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getDescription(): ?string
     {
-        if (isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
-            return $this->nodeWithoutFieldPrefix['description_long'];
-            //return htmlentities($this->nodeWithoutFieldPrefix['description_long']);
-						//Displaying html should be okay
-        } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
-            return $this->nodeWithoutFieldPrefix['description'];
+        if (isset($this->rawNode['field_description_long']) && $this->rawNode['field_description_long'] !== '') {
+            $this->rawNode['field_description_long'];
+            //return htmlentities($this->rawNode['field_description_long']);
+			//Displaying html should be okay
+        } elseif (isset($this->rawNode['field_description']) && $this->rawNode['field_description'] !== '') {
+            return $this->rawNode['field_description'];
         }
         return null;
     }
@@ -330,10 +335,10 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getTitle(): ?string
     {
-        if (isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
-            return $this->nodeWithoutFieldPrefix['display_title'];
-        } elseif (isset($this->nodeWithoutFieldPrefix['title']) && $this->nodeWithoutFieldPrefix['title'] !== '') {
-            return htmlentities($this->nodeWithoutFieldPrefix['title']);
+        if (isset($this->rawNode['field_display_title']) && $this->rawNode['field_display_title'] !== '') {
+            return $this->rawNode['field_display_title'];
+        } elseif (isset($this->rawNode['title']) && $this->rawNode['title'] !== '') {
+            return htmlentities($this->rawNode['title']);
         }
         return null;
     }
@@ -345,8 +350,8 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getLanguage(): ?string
     {
-        if (isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
-            return $this->nodeWithoutFieldPrefix['language']['name'];
+        if (isset($this->rawNode['field_language']['name']) && $this->rawNode['field_language']['name'] !== '') {
+            return $this->rawNode['field_language']['name'];
         }
         return null;
     }
@@ -358,7 +363,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getSubjects(): ?array
     {
-        $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
+        $subjects = (empty($this->rawNode['field_subject']) === false) ? $this->rawNode['field_subject'] : null;
         if ($subjects === null) {
             return null;
         }
@@ -434,7 +439,7 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     public function getParentCollection() {
-        $parent_nid = $this->nodeWithoutFieldPrefix['member_of'] ?? null;
+        $parent_nid = $this->rawNode['field_member_of'] ?? null;
         if ($parent_nid == null)
             return null;
         if(is_array($parent_nid))
@@ -494,7 +499,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getLibraryOrganization()
     {
-        $library_tid = $this->nodeWithoutFieldPrefix['library']['tid'] ?? null;
+        $library_tid = $this->rawNode['field_library']['tid'] ?? null;
         if ($library_tid === null) {
             $this->logger->warn('Warning no library set for node ' . $this->getNodeId());
             return null;
@@ -515,7 +520,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedPlace(): ?array
     {
-        $related_place = $this->nodeWithoutFieldPrefix['related_place'] ?? null;
+        $related_place = $this->rawNode['field_related_place'] ?? null;
         if (is_array($related_place) && array_key_exists('tid', $related_place)) {
             $related_place = [$related_place];
         }
@@ -529,7 +534,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedEvent(): ?array
     {
-        $related_event = $this->nodeWithoutFieldPrefix['related_event'] ?? null;
+        $related_event = $this->rawNode['field_related_event'] ?? null;
         if (is_array($related_event) && array_key_exists('tid', $related_event)) {
             $related_event = [$related_event];
         }
@@ -543,7 +548,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedOrganization(): ?array
     {
-        $related_org = $this->nodeWithoutFieldPrefix['related_org'] ?? null;
+        $related_org = $this->rawNode['field_related_org'] ?? null;
         if (is_array($related_org) && array_key_exists('tid', $related_org)) {
             $related_org = [$related_org];
         }
@@ -560,7 +565,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedPerson(): ?array
     {
-        $related_person = $this->nodeWithoutFieldPrefix['related_person_paragraph'] ?? null;
+        $related_person = $this->nwfp()['related_person_paragraph'] ?? null;
         // if it's a single entry
         if (is_array($related_person) && array_key_exists('id', $related_person)) {
             // get notes
@@ -681,7 +686,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     private function loadMedia(): array
     {
-        $rawMedia = $this->nodeWithoutFieldPrefix['media'] ?? [];
+        $rawMedia = $this->rawNode['media'] ?? [];
         $media = [];
         foreach ($rawMedia as $m) {
             $media[] = new I2Media($m);
