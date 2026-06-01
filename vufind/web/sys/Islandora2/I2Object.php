@@ -37,7 +37,14 @@ abstract class I2Object implements MediaObjectInterface
 {
     protected Logger $logger;
     protected array $rawNode;
-    protected array $nodeWithoutFieldPrefix;
+    /**
+     * Prefix-stripped view of $rawNode, built lazily by nwfp().
+     *
+     * removeFieldPrefix() deep-copies the entire payload, so it is deferred until
+     * a consumer actually reads the stripped view (most do, but objects used only
+     * for raw/model checks never pay for it).
+     */
+    protected ?array $nodeWithoutFieldPrefix = null;
     protected array $media = [];
     protected array $childrenObjects = [];
 
@@ -56,8 +63,20 @@ abstract class I2Object implements MediaObjectInterface
     final public function __construct(array $node, ?Logger $logger = null)
     {
         $this->rawNode = $node;
-        $this->nodeWithoutFieldPrefix = $this->removeFieldPrefix($node);
         $this->logger = $logger ?? new Logger(static::class);
+    }
+
+    /**
+     * Return the prefix-stripped node, building and caching it on first access.
+     *
+     * @return array
+     */
+    protected function nwfp(): array
+    {
+        if ($this->nodeWithoutFieldPrefix === null) {
+            $this->nodeWithoutFieldPrefix = $this->removeFieldPrefix($this->rawNode);
+        }
+        return $this->nodeWithoutFieldPrefix;
     }
 
     /**
@@ -89,7 +108,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getNode(bool $withoutFieldPrefix = true): array
     {
         if ($withoutFieldPrefix) {
-            return $this->getNodeWithoutFieldPrefix();
+            return $this->nwfp();
         }
         return $this->getRawNode();
     }
@@ -111,7 +130,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getNodeWithoutFieldPrefix(): array
     {
-        return $this->nodeWithoutFieldPrefix;
+        return $this->nwfp();
     }
 
     /**
