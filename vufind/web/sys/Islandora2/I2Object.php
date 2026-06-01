@@ -686,7 +686,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     private function loadMedia(): array
     {
-        $rawMedia = $this->rawNode['media'] ?? [];
+        $rawMedia = $this->nwfp()['media'] ?? [];
         $media = [];
         foreach ($rawMedia as $m) {
             $media[] = new I2Media($m);
