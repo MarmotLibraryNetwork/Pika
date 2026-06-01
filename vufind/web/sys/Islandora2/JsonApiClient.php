@@ -20,6 +20,7 @@
 namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/AbstractApiClient.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Curl\Curl;
 
@@ -34,6 +35,9 @@ use Curl\Curl;
 class JsonApiClient extends AbstractApiClient
 {
 	private int $jsonApiTtl = 2592000; // 30 days
+
+	/** Media use term name whose image represents a node's display thumbnail. */
+	private string $thumbnailMediaUse = 'Thumbnail Image';
 
 	/**
 	 * Fetch all taxonomy terms for a given vocabulary from the Drupal JSON:API.
@@ -261,6 +265,272 @@ class JsonApiClient extends AbstractApiClient
 		$result = array_values($terms);
 		$this->cache->set($cacheKey, $result, $this->jsonApiTtl);
 		return $result;
+	}
+
+	/**
+	 * Fetch lightweight map markers for every child of a node that has geographic
+	 * coordinates set via field_coordinates.
+	 *
+	 * Uses JSON:API server-side filtering (children of $nid where field_coordinates
+	 * is populated) plus sparse fieldsets so only the geocoded children — and only
+	 * the fields a marker needs — cross the wire. Thumbnails, which live on related
+	 * media entities (a reverse reference that cannot be included from the node
+	 * side), are resolved in a single batched media query, not per child.
+	 *
+	 * Each returned entry has:
+	 *   'nid'       → int    child node ID
+	 *   'title'     → string display title
+	 *   'url'       → string relative Archive2 detail URL
+	 *   'latitude'  → float
+	 *   'longitude' → float
+	 *   'thumbnail' → string absolute thumbnail URL, or '' when none exists
+	 *
+	 * @param int $nid       Parent node ID.
+	 * @param int $pageLimit JSON:API page size (default 100).
+	 * @return array Flat array of marker entries, empty on failure or when none have coordinates.
+	 */
+	public function fetchChildMarkers(int $nid, int $pageLimit = 100): array
+	{
+		if ($nid <= 0 || empty($this->baseUrl)) {
+			return [];
+		}
+
+		$cacheKey = 'islandora2_child_markers_' . $nid;
+		if (!isset($_REQUEST['reload'])) {
+			$cached = $this->cache->get($cacheKey);
+			if ($cached !== null) {
+				return $cached;
+			}
+		}
+
+		$markers = $this->fetchMarkerNodes($nid, $pageLimit);
+		if (!empty($markers)) {
+			$this->attachThumbnails($markers);
+		}
+
+		$result = array_values($markers);
+		$this->cache->set($cacheKey, $result, $this->jsonApiTtl);
+		return $result;
+	}
+
+	/**
+	 * Fetch the geocoded children of a node as marker entries keyed by child nid.
+	 *
+	 * field_coordinates is a geofield exposed as an array of
+	 * {lat, lng, data, value}; the first entry's lat/lng are used. The detail URL
+	 * is derived from the legacy-resource-type name (falling back to the model
+	 * name), mirroring I2Object::getDisplayModel() / getObjRelativeUrl().
+	 *
+	 * @param int $nid       Parent node ID.
+	 * @param int $pageLimit JSON:API page size.
+	 * @return array Markers keyed by nid, each with an empty 'thumbnail' placeholder.
+	 */
+	private function fetchMarkerNodes(int $nid, int $pageLimit): array
+	{
+		$url = $this->baseUrl . '/jsonapi/node/islandora_object'
+			. '?filter[parent][condition][path]=field_member_of.meta.drupal_internal__target_id'
+			. '&filter[parent][condition][value]=' . $nid
+			. '&filter[coords][condition][path]=' . rawurlencode('field_coordinates.lat')
+			. '&filter[coords][condition][operator]=' . rawurlencode('IS NOT NULL')
+			. '&fields[node--islandora_object]=' . rawurlencode('drupal_internal__nid,title,field_coordinates,field_model,field_legacy_resource_type')
+			. '&include=' . rawurlencode('field_model,field_legacy_resource_type')
+			. '&fields[taxonomy_term--islandora_models]=name'
+			. '&fields[taxonomy_term--legacy_resource_type]=name'
+			. '&page[limit]=' . $pageLimit;
+
+		$markers = [];
+
+		do {
+			$decoded = $this->requestJson($url, 'child-markers', $nid);
+			if ($decoded === null) {
+				break;
+			}
+
+			// Index included taxonomy terms (model + legacy resource type) by UUID → name.
+			$termNames = [];
+			foreach ($decoded['included'] ?? [] as $inc) {
+				if (str_starts_with($inc['type'] ?? '', 'taxonomy_term--')) {
+					$termNames[$inc['id'] ?? ''] = $inc['attributes']['name'] ?? null;
+				}
+			}
+
+			foreach ($decoded['data'] ?? [] as $node) {
+				$attr     = $node['attributes'] ?? [];
+				$childNid = $attr['drupal_internal__nid'] ?? null;
+				$coords   = $attr['field_coordinates'][0] ?? null;
+				if ($childNid === null || !is_array($coords)) {
+					continue;
+				}
+				$lat = $coords['lat'] ?? null;
+				$lng = $coords['lng'] ?? null;
+				if ($lat === null || $lng === null) {
+					continue;
+				}
+				$markers[(int)$childNid] = [
+					'nid'       => (int)$childNid,
+					'title'     => (string)($attr['title'] ?? ''),
+					'url'       => $this->buildDetailUrl((int)$childNid, $node['relationships'] ?? [], $termNames),
+					'latitude'  => (float)$lat,
+					'longitude' => (float)$lng,
+					'thumbnail' => '',
+				];
+			}
+
+			$url = $decoded['links']['next']['href'] ?? null;
+		} while ($url !== null);
+
+		return $markers;
+	}
+
+	/**
+	 * Build the Archive2 detail URL for a node, mirroring getObjRelativeUrl():
+	 * prefer the legacy-resource-type term name, fall back to the model term name,
+	 * then map it through ISLANDORA2_DISPLAY_MODEL_URL_MAP.
+	 *
+	 * @param int   $nid           Child node ID.
+	 * @param array $relationships JSON:API relationships block for the node.
+	 * @param array $termNames     UUID → term name index from the included terms.
+	 * @return string Relative URL, or '#' when the node ID is invalid.
+	 */
+	private function buildDetailUrl(int $nid, array $relationships, array $termNames): string
+	{
+		if ($nid <= 0) {
+			return '#';
+		}
+
+		$legacy = $relationships['field_legacy_resource_type']['data'] ?? null;
+		$model  = $relationships['field_model']['data'] ?? null;
+		// Either relationship may be a to-one object or a to-many list.
+		$legacyUuid = is_array($legacy) ? ($legacy['id'] ?? ($legacy[0]['id'] ?? null)) : null;
+		$modelUuid  = is_array($model)  ? ($model['id']  ?? ($model[0]['id']  ?? null)) : null;
+
+		$displayModel = strtolower((string)($termNames[$legacyUuid] ?? $termNames[$modelUuid] ?? ''));
+		$segment      = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
+
+		return '/Archive2/' . $segment . '/' . urlencode((string)$nid);
+	}
+
+	/**
+	 * Resolve display thumbnails for a set of marker nodes via batched media queries.
+	 *
+	 * Thumbnails are media that reference the node through field_media_of, so they
+	 * are fetched from /jsonapi/media/image filtered by the marker nids (chunked to
+	 * keep URLs bounded) and the "Thumbnail Image" media use, with the thumbnail
+	 * file included. Markers without a thumbnail keep their empty placeholder.
+	 *
+	 * @param array $markers Markers keyed by nid; modified in place to set 'thumbnail'.
+	 */
+	private function attachThumbnails(array &$markers): void
+	{
+		foreach (array_chunk(array_keys($markers), 50) as $chunk) {
+			$url = $this->baseUrl . '/jsonapi/media/image'
+				. '?filter[node][condition][path]=field_media_of.meta.drupal_internal__target_id'
+				. '&filter[node][condition][operator]=IN'
+				. $this->buildInValues('node', $chunk)
+				. '&filter[use][condition][path]=field_media_use.name'
+				. '&filter[use][condition][value]=' . rawurlencode($this->thumbnailMediaUse)
+				. '&include=thumbnail'
+				. '&fields[media--image]=' . rawurlencode('thumbnail,field_media_of')
+				. '&fields[file--file]=uri'
+				. '&page[limit]=50';
+
+			do {
+				$decoded = $this->requestJson($url, 'child-marker-thumbnails', 0);
+				if ($decoded === null) {
+					break;
+				}
+
+				// Index the included thumbnail file entities by UUID → relative URL.
+				$fileUrls = [];
+				foreach ($decoded['included'] ?? [] as $inc) {
+					if (($inc['type'] ?? '') === 'file--file') {
+						$fileUrls[$inc['id'] ?? ''] = $inc['attributes']['uri']['url'] ?? null;
+					}
+				}
+
+				foreach ($decoded['data'] ?? [] as $media) {
+					$rels      = $media['relationships'] ?? [];
+					$targetNid = $rels['field_media_of']['data'][0]['meta']['drupal_internal__target_id'] ?? null;
+					if ($targetNid === null || empty($markers[(int)$targetNid])) {
+						continue;
+					}
+					if ($markers[(int)$targetNid]['thumbnail'] !== '') {
+						continue; // first thumbnail wins
+					}
+					$fileUuid = $rels['thumbnail']['data']['id'] ?? null;
+					$relUrl   = $fileUuid !== null ? ($fileUrls[$fileUuid] ?? null) : null;
+					if (is_string($relUrl) && $relUrl !== '') {
+						$markers[(int)$targetNid]['thumbnail'] = $this->baseUrl . $relUrl;
+					}
+				}
+
+				$url = $decoded['links']['next']['href'] ?? null;
+			} while ($url !== null);
+		}
+	}
+
+	/**
+	 * Build the repeated &filter[name][condition][value][]=... query segment for an IN filter.
+	 *
+	 * @param string $filterName Filter identifier used in the query string.
+	 * @param array  $values     Scalar values to include.
+	 * @return string Query-string fragment beginning with '&', empty when no values.
+	 */
+	private function buildInValues(string $filterName, array $values): string
+	{
+		$fragment = '';
+		foreach ($values as $value) {
+			$fragment .= '&filter[' . $filterName . '][condition][value][]=' . rawurlencode((string)$value);
+		}
+		return $fragment;
+	}
+
+	/**
+	 * Perform a GET against the JSON:API and return the decoded body, or null on any error.
+	 *
+	 * Centralises the curl lifecycle (user agent, error checks, decode, close) shared
+	 * by the marker and thumbnail queries.
+	 *
+	 * @param string $url     Fully-qualified JSON:API URL.
+	 * @param string $context Short label used in log messages.
+	 * @param int    $id      Identifier for log context (e.g. parent nid), 0 when not applicable.
+	 * @return array|null Decoded response, or null on failure.
+	 */
+	private function requestJson(string $url, string $context, int $id): ?array
+	{
+		$curl = new Curl();
+		$curl->setUserAgent($this->userAgent);
+
+		try {
+			$body = $curl->get($url);
+
+			if ($curl->isCurlError()) {
+				$this->logger->error('Curl error fetching ' . $context . ' from JSON:API.', [
+					'id'    => $id,
+					'code'  => $curl->getCurlErrorCode(),
+					'error' => $curl->getCurlErrorMessage(),
+				]);
+				return null;
+			}
+
+			if ($curl->isError()) {
+				$this->logger->warning('HTTP error fetching ' . $context . ' from JSON:API.', [
+					'id'   => $id,
+					'code' => $curl->getHttpStatusCode(),
+				]);
+				return null;
+			}
+
+			return $this->decodeBody($body, $context, $id);
+		} catch (\Throwable $e) {
+			$this->logger->error('Exception fetching ' . $context . ' from JSON:API.', [
+				'id'      => $id,
+				'message' => $e->getMessage(),
+			]);
+			return null;
+		} finally {
+			$curl->close();
+		}
 	}
 
 }
