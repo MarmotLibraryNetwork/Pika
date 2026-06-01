@@ -58,7 +58,7 @@ class CollectionObject extends I2Object
      */
     public function getCollectionDisplay(): ?string
     {
-        return $this->nodeWithoutFieldPrefix['pika_coll_display'] ?? null;
+        return $this->rawNode['field_pika_coll_display'] ?? null;
     }
 
     /**
@@ -68,7 +68,7 @@ class CollectionObject extends I2Object
      */
     public function getCollectionOptions(): ?array
     {
-        return $this->nodeWithoutFieldPrefix['pika_coll_options'] ?? null;
+        return $this->rawNode['field_pika_coll_options'] ?? null;
     }
 
     /**
