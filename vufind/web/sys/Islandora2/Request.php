@@ -197,6 +197,49 @@ class Request extends AbstractApiClient
 	}
 
 	/**
+	 * Yield every child of a node one at a time, fetching pages sequentially.
+	 *
+	 * Unlike fetchAllChildren(), which fetches remaining pages in parallel and
+	 * returns them as a single array, this holds at most one page of raw payloads
+	 * in memory at once. Use it when a caller can process and discard each child
+	 * (e.g. aggregating a field across a large collection) so memory does not grow
+	 * with the collection size. Each page is cached the same way as fetchChildren().
+	 *
+	 * @param int $nid      Parent node ID.
+	 * @param int $pageSize Items per page (max 250 per API call).
+	 * @return \Generator Yields raw child node payloads.
+	 */
+	public function streamChildren(int $nid, int $pageSize = 250): \Generator
+	{
+		if ($nid <= 0) {
+			return;
+		}
+
+		$page    = 1;
+		$yielded = 0;
+
+		do {
+			$response = $this->fetchChildren($nid, $page, $pageSize);
+			if ($response === null) {
+				return;
+			}
+
+			$children = $response['children'] ?? [];
+			if (empty($children)) {
+				return;
+			}
+
+			foreach ($children as $child) {
+				yield $child;
+				$yielded++;
+			}
+
+			$total = (int)($response['total'] ?? 0);
+			$page++;
+		} while ($yielded < $total);
+	}
+
+	/**
 	 * Fetch nodes that reference a taxonomy term.
 	 *
 	 * Returns an empty array when no related nodes exist (404), null on other failures.
