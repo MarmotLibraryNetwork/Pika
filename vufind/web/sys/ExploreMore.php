@@ -30,13 +30,13 @@ class ExploreMore {
 		'mods_genre_s',
 		// Islandora2
 		'ss_model',
-		'ss_name_1',
+		//'ss_name_1',
 		'sm_format',
 		'sm_name_43',
 		'sm_genre',
-		'sm_name_2',
+		//'sm_name_2',
 		'sm_legacy_resource_type',
-		'sm_name_22',
+		//'sm_name_22',
 	];
 
 	/**

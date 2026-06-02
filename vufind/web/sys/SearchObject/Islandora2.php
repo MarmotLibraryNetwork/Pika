@@ -53,17 +53,24 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// Solr field Map
 	private $solrFields = [
 		'id'          => 'its_node_id',
-		'title'       => 'tm_X3b_en_title', //test
-//		'title'       => 'twm_X3b_en_title_ws_token', // production
-		'description' => 'tm_X3b_en_field_description_long',
+//		'title'       => 'tm_X3b_en_title', // This field doesn't have punctuation characters like ":", "'"
+
+		'title'       => 'twm_X3b_en_title_ws_token',
+		//'description' => 'tm_X3b_en_field_description_long',
+		'description' => 'twm_X3b_en_field_description_long_ws_token',
 		'memberOf'    => 'itm_field_member_of', //node ids
 		'legacyPID'   => 'ss_legacy_pid',
 		//'legacyPID'   => 'tm_X3b_en_field_pid',
-		'genre'       => 'sm_name_2',
-		'model'       => 'ss_name_1',
-		'legacyResourceType' => 'sm_name_22',
-		'format'      => 'sm_name_43',
-		'library'     => 'ss_name_23',
+		'genre'       => 'sm_genre',
+		//'genre'       => 'sm_name_2',
+		'model'       => 'ss_model',
+		//'model'       => 'ss_name_1',
+		'legacyResourceType' => 'sm_legacy_resource_type',
+		//'legacyResourceType' => 'sm_name_22',
+		'format'      => 'sm_format',
+		//'format'      => 'sm_name_43',
+		'library'     => 'ss_library',
+		//'library'     => 'ss_name_23',
 //		'rightsCreator' => 'tm_X3b_en_name_41',
 	];
 
@@ -1434,9 +1441,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$filters = [
 			'ss_type:islandoraobject',   // ignore other drupal things
 			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
-			'!ss_name_1:Page',           // Hide Page objects //TODO: temp, revert
-			//'!ss_model:Page',           // Hide Page objects
-			'!itm_field_library:29478', // Hide Boulder Objects (theoretically number-filtering is quicker)
+			//'!ss_name_1:Page',           // Hide Page objects //TODO: temp, remove
+			'!ss_model:Page',           // Hide Page objects
+			'!itm_field_library:29478', // Hide Boulder Objects (contributing library taxonomy tid) (theoretically number-filtering is quicker)
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 
 			// these shouldn't show due to pika controls
@@ -1448,8 +1455,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Pika Search Options
 		// Pika Usage
 		$filters[] = $configArray['Site']['isProduction']
-			? "ss_pika_usage:yes"  // Production: Show "yes" only
-			: "!ss_pika_usage:no"; // Test: Show "yes" and "testonly" (by excluding "no")
+			? 'ss_pika_usage:yes'  // Production: Show "yes" only
+			: '!ss_pika_usage:no'; // Test: Show "yes" and "testonly" (by excluding "no")
 
 		global /** @var \Library $library */ $library;
 		// Hide All other libraries' objects
