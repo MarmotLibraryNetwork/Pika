@@ -8,8 +8,8 @@
       "port": 9003,
       "log": true,
       "xdebugSettings": {
-        "max_children": 128,
-        "max_data": 1024
+        "max_children": 9999,
+        "max_data": -1,
       },
       "pathMappings": {
         "/usr/local/pika": "${workspaceFolder}",

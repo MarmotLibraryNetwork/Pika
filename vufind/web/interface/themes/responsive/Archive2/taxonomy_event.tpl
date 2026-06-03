@@ -15,7 +15,7 @@
 		</div>
 		<div class="col-xs-8">
 			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Stard Date"     value=$start_date}
+			{include file="Archive2/partials/fieldRow.tpl" label="Start Date"     value=$start_date}
 			{include file="Archive2/partials/fieldRow.tpl" label="End Date"       value=$end_date}
 			{include file="Archive2/partials/fieldRow.tpl" label="City"           value=$event_city}
 			{include file="Archive2/partials/fieldRow.tpl" label="County"         value=$event_county}

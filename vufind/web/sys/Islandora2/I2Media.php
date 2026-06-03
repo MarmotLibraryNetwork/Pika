@@ -75,7 +75,10 @@ class I2Media
     {
         if (array_key_exists($name, $this->rawMedia)) {
             return $this->rawMedia[$name];
+        } elseif (array_key_exists('field_' . $name, $this->rawMedia)) {
+            return $this->rawMedia['field_' . $name];
         }
+
         return null;
     }
 

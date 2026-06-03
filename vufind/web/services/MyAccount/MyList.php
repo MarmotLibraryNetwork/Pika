@@ -315,8 +315,8 @@ class MyAccount_MyList extends MyAccount {
 		//create array including all data
 		$itemArray  = [];
 		foreach ($favorites as $listItem){
-			$recordID = $listItem['id'] ?? $listItem['PID'];
-			$isArchive = isset($listItem['PID']);
+			$recordID = $listItem['id'] ?? $listItem['nid'];
+			$isArchive = isset($listItem['nid']);
 			$isCatalog = isset($listItem['id']);
 
 			$title = '';

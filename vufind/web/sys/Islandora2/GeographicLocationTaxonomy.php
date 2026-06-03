@@ -40,9 +40,18 @@ class GeographicLocationTaxonomy extends I2Taxonomy
     /**
      * Alternate geographic name (field_geo_alt_name — different key from other vocabulary types).
      */
-    public function getAlternateName(): ?string
+    public function getAlternateName(): ?array
     {
-        return $this->termWithoutFieldPrefix['geo_alt_name'] ?? null;
+        $altNames = $this->termWithoutFieldPrefix['geo_alt_name'] ?? null;
+        
+        if($altNames === null)
+            return null;
+
+        if(is_string($altNames)) {
+            $altNames = [$altNames];
+        }
+
+        return $altNames;
     }
 
     /**

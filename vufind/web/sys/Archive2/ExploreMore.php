@@ -251,8 +251,9 @@ class ExploreMore {
 		];
 		$searchObject->setSearchTerms($searchTerms);
 
-		$formatFacetField     = 'sm_format'; // Hasn't been reverted yet.
-		$collectionFacetField = 'sm_title_2'; //TODO: change when field is renamed
+		$formatFacetField     = 'sm_format';
+		$collectionFacetField = 'sm_collection';
+		//$collectionFacetField = 'sm_title_2'; //TODO: remove
 		$searchObject->addFacet($formatFacetField, 'Format'); // Related Formats
 		$searchObject->addFacet($collectionFacetField, 'Collection'); // Related Collections
 		$searchObject->setLimit(1);
@@ -366,8 +367,8 @@ class ExploreMore {
 		$tid                           = (int)$library->libraryTid;
 		$libraryFilter                 = "itm_field_library:$tid";
 		$formatFacetField              = 'sm_format';
-		$collectionFacetField          = 'sm_title_2'; // 'sm_collection'
-		$contributingLibraryFacetField = 'ss_name_23'; // 'ss_library'
+		$collectionFacetField          = 'sm_collection';
+		$contributingLibraryFacetField = 'ss_library';
 		$emptySearchTerms              = ['lookfor' => '', 'index' => 'Islandora2Keyword'];
 
 		/** @var \SearchObject_Islandora2 $searchObject */
@@ -604,6 +605,7 @@ class ExploreMore {
 	 * @return array|null
 	 */
 	private function getAcknowledgements(I2Object $obj): ?array {
+		//TODO: Get Acknowledgements for Parent Collection
 		require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 		$factory = new \Islandora2\TaxonomyFactory();
 		$values  = [];
@@ -721,7 +723,8 @@ class ExploreMore {
 			}
 			$values[] = [
 				'label' => $name,
-				'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_field_subject:"' . $name . '"'),
+				'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_subject:"' . $name . '"'),
+				//TODO : remove 'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_field_subject:"' . $name . '"'),
 			];
 		}
 		return empty($values) ? null : ['format' => 'textOnlyList', 'values' => $values];
@@ -937,7 +940,8 @@ class ExploreMore {
 			return [null, null];
 		}
 
-		$collectionTitleField = 'sm_title_2';
+		$collectionTitleField = 'sm_collection';
+		//$collectionTitleField = 'sm_title_2';
 		$collectionNidField   = 'its_nid_1';
 
 		/** @var \SearchObject_Islandora2 $searchObject */
@@ -1064,7 +1068,8 @@ class ExploreMore {
 			}
 			$values[] = [
 				'label' => $name,
-				'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_field_subject:"' . $name . '"'),
+				'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_subject:"' . $name . '"'),
+				// TODO remove 'link'  => '/Archive2/Results?filter[]=' . urlencode('sm_field_subject:"' . $name . '"'),
 			];
 		}
 		return empty($values) ? null : ['format' => 'textOnlyList', 'values' => $values];

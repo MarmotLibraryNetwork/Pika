@@ -8996,7 +8996,7 @@ a.browse-thumbnail-sorted.active {
   margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
-  color: #fff;
+  color: #212529;
   background-color: #a17f6c;
 }
 #browse-sub-category-menu button:focus {
@@ -10540,7 +10540,7 @@ a .header-button:hover {
   background: linear-gradient(to bottom, #a17f6c 0%, #a17f6c 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 #browse-category-carousel .browse-category.selected button {
-  color: #FFF;
+  color: #212529;
 }
 #browse-sub-category-menu button.selected {
   background-color: #a17f6c;

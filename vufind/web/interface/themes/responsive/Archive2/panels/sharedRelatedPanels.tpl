@@ -12,8 +12,11 @@
                         <div class="result-label col-sm-4">
                             {$person.relation_label}
                         </div>
-                        <div class="result-value col-sm-8">
+                        <div class="result-value col-sm-4">
                             <a href="/Archive2/Person/{$person.tid}">{$person.name|escape}</a>
+                        </div>
+                        <div class="result-value col-sm-4">
+                            {if $person.note}{$person.note}{/if}
                         </div>
                     </div>
                 {/foreach}

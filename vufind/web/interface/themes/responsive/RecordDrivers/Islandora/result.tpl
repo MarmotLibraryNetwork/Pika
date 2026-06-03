@@ -120,7 +120,7 @@
 
 		<div class="row">
 			<div class="col-tn-12">
-				{include file='Archive/result-tools-horizontal.tpl'}
+				{include file='Archive2/result-tools-horizontal.tpl'}
 			</div>
 		</div>
 

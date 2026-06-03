@@ -130,9 +130,6 @@ sites/marmot.localhost/sql_backup/marmot_vufind.sql
 *.sql
 *.tmpcss
 
-/package-lock.json
-
-
 # Output file for PRTG sensor #
 ###############################
 vufind/web/solrIndex.json
@@ -146,6 +143,18 @@ CLAUDE.md
 vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
 
 # VSCode
-.vscode/settings.json
+###############################
 .vscode/pika.code-workspace
 .vscode/launch.json
+
+# Claude
+###############################
+CLAUDE.md
+.claude
+.claude/*
+
+# NPM
+###############################
+node_modules
+package.json
+package-lock.json

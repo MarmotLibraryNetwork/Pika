@@ -34,6 +34,10 @@ use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
 {
+    /**
+     * Dispatches to the appropriate collection display template based on the
+     * collection's configured display type (basic, timeline, map, or custom).
+     */
     public function launch()
     {
         global $interface;
@@ -55,7 +59,7 @@ class Collection extends ArchiveObject
                 $this->loadChildrenData($nid);
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
-                $interface->assign('showTimeline', true);
+                $interface->assign('showTimeline', false);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapNoTimeline':
@@ -71,6 +75,12 @@ class Collection extends ArchiveObject
         }
     }
 
+    /**
+     * Fetches a paginated page of child objects for the collection and assigns
+     * them — along with pager links and record-count metadata — to the template.
+     *
+     * @param int $nid Node ID of the parent collection.
+     */
     private function loadChildrenData(int $nid): void
     {
         global $interface;
@@ -108,9 +118,14 @@ class Collection extends ArchiveObject
         $interface->assign('pageLinks',    $pager->getLinks());
     }
 
+    /**
+     * Resolves geolocation data for all places related to the collection and
+     * assigns mapped/unmapped place lists, bounding-box coordinates, and the
+     * configured map zoom level to the template.
+     */
     private function loadMapData(): void
     {
-        global $interface;
+        global $interface, $configArray;
         /** @var CollectionObject $collection */
         $collection     = $this->mediaObject;
         $places         = $collection->getCollectionRelatedPlaces();
@@ -119,13 +134,14 @@ class Collection extends ArchiveObject
         $latSum = $lngSum = $n = 0;
         $minLat = $maxLat = $minLng = $maxLng = null;
 
+        $taxonomyFactory = new TaxonomyFactory();
         foreach ($places as $place) {
-            $term = TaxonomyFactory::fromTid($place['tid']);
+            $term = $taxonomyFactory->fromTid($place['tid']);
             if (!$term) {
                 continue;
             }
             $geo   = $term->getGeolocation();
-            $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url']];
+            $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url'], 'count' => $place['count']];
             if ($geo && isset($geo['lat'], $geo['lng'])) {
                 $entry['latitude']  = $geo['lat'];
                 $entry['longitude'] = $geo['lng'];
@@ -142,11 +158,29 @@ class Collection extends ArchiveObject
             }
         }
 
+        // Lightweight marker rows fetched via a filtered JSON:API query, so this
+        // scales with the number of geocoded children, not the whole collection.
+        $childMarkers = $collection->getChildMarkers();
+        foreach ($childMarkers as $child) {
+            $lat = $child['latitude'];
+            $lng = $child['longitude'];
+            $latSum += $lat;
+            $lngSum += $lng;
+            $n++;
+            $minLat = min($minLat ?? $lat, $lat);
+            $maxLat = max($maxLat ?? $lat, $lat);
+            $minLng = min($minLng ?? $lng, $lng);
+            $maxLng = max($maxLng ?? $lng, $lng);
+        }
+
         $nodeFields = $collection->getNodeWithoutFieldPrefix();
         $mapZoom    = $nodeFields['pika_map_zoom'] ?? 9;
+        $mapsKey    = $configArray['Maps']['apiKey'] ?? '';
 
+        $interface->assign('mapsKey',        $mapsKey);
         $interface->assign('mappedPlaces',   $mappedPlaces);
         $interface->assign('unmappedPlaces', $unmappedPlaces);
+        $interface->assign('childMarkers',   $childMarkers);
         $interface->assign('mapZoom',        $mapZoom);
         $interface->assign('minLat',         $minLat);
         $interface->assign('maxLat',         $maxLat);
@@ -158,6 +192,13 @@ class Collection extends ArchiveObject
         }
     }
 
+    /**
+     * Iterates over the collection's configured component options, renders each
+     * component partial (search box, map, browse scroller, random image, etc.),
+     * and assigns the rendered HTML array to the template.
+     *
+     * @param int $nid Node ID of the collection whose options are being loaded.
+     */
     private function loadCustomComponents(int $nid): void
     {
         global $interface;
@@ -176,7 +217,7 @@ class Collection extends ArchiveObject
                     $parts[1] ?? '/interface/themes/responsive/images/search_component.png');
                 $templates[] = $interface->fetch('Archive2/components/search_component.tpl');
 
-            } elseif ($type === 'googleMap') {
+            } elseif ($type === 'googleMap' || $type === 'map') {
                 $interface->assign('additionalMapCollections', $parts[1] ?? '');
                 $this->loadMapData();
                 $templates[] = $interface->fetch('Archive2/components/map_component.tpl');
@@ -244,6 +285,29 @@ class Collection extends ArchiveObject
                     ? 'Archive2/components/entity_filter_component.tpl'
                     : 'Archive2/components/browse_filter_component.tpl';
                 $templates[] = $interface->fetch($tpl);
+
+            } elseif ($type === 'browseBy') {
+                $subtype = strtolower($parts[1] ?? '');
+                if ($subtype === 'place') {
+                    $rawItems = $collection->getRelatedPlace() ?? [];
+                    $urlBase  = '/Archive2/Place/';
+                    $title    = $parts[2] ?? 'Browse by Place';
+                } elseif ($subtype === 'organization') {
+                    $rawItems = $collection->getRelatedOrganization() ?? [];
+                    $urlBase  = '/Archive2/Organization/';
+                    $title    = $parts[2] ?? 'Browse by Organization';
+                } else {
+                    continue;
+                }
+                $items = array_map(fn($item) => [
+                    'name' => $item['name'],
+                    'url'  => $urlBase . urlencode((string)$item['tid']),
+                ], $rawItems);
+                $half = (int)ceil(count($items) / 2);
+                $interface->assign('browseByTitle',   $title);
+                $interface->assign('browseByColumn1', array_slice($items, 0, $half));
+                $interface->assign('browseByColumn2', array_slice($items, $half));
+                $templates[] = $interface->fetch('Archive2/components/browse_by_component.tpl');
             }
         }
 

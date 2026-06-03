@@ -8,11 +8,12 @@
 </style>
 {strip}
 <div class="row" id="collection-displayMode-toggle">
+<div class="col-xs-12">
 	<div class="btn-group btn-group-sm" data-toggle="buttons">
-		<button tabindex="0" title="Grid" aria-label="change results to grid layout"
+		<button tabindex="0" title="Covers" aria-label="change results to grid layout"
 		        onclick="Pika.Archive2.toggleCollectionDisplayMode('grid')" id="collectionModeGrid"
 		        class="btn btn-sm btn-default displayMode">
-			<span class="thumbnail-icon"></span><span> Grid</span>
+			<span class="thumbnail-icon"></span><span> Covers</span>
 		</button>
 		<button tabindex="0" title="List" aria-label="change results to list layout"
 		        onclick="Pika.Archive2.toggleCollectionDisplayMode('list')" id="collectionModeList"
@@ -20,6 +21,7 @@
 			<span class="list-icon"></span><span> List</span>
 		</button>
 	</div>
+</div>
 </div>
 {/strip}
 {literal}

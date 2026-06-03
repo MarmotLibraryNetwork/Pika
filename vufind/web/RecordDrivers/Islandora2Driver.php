@@ -111,20 +111,21 @@ class Islandora2Driver extends RecordInterface
 		'id'          => 'its_node_id',
 		//'title'       => 'tm_X3b_en_title', //test
 		'title'       => 'twm_X3b_en_title_ws_token', // production TODO: use this field, it has punctuation, whereas the field above does not
-		'description' => 'tm_X3b_en_field_description_long',
+		'description' => 'twm_X3b_en_field_description_long_ws_token',
+		//'description' => 'tm_X3b_en_field_description_long',
 		'memberOf'    => 'itm_field_member_of', //node ids
 		'legacyPID'   => 'ss_legacy_pid',
 		//'legacyPID'   => 'tm_X3b_en_field_pid',
 		//'genre'       => 'sm_name_2',
 		'genre'       => 'sm_genre',
-		'model'       => 'ss_name_1',
-		//'model'       => 'ss_model', TODO revert, temp
+		//'model'       => 'ss_name_1', //TODO remove
+		'model'       => 'ss_model',
 		//'legacyResourceType' => 'sm_name_22',
 		'legacyResourceType' => 'sm_legacy_resource_type',
 		//'format'      => 'sm_name_43',
 		'format'      => 'sm_format',
-		'library'     => 'ss_name_23',
-		//'library'     => 'ss_library', TODO revert, temp
+		//'library'     => 'ss_name_23', // TODO remove
+		'library'     => 'ss_library',
 		//'rightsCreator' => 'tm_X3b_en_name_41',
 		'rightsCreator' => 'sm_rights_creator',
 	];
@@ -288,7 +289,7 @@ class Islandora2Driver extends RecordInterface
 		global $interface;
 
 		$interface->assign('summId', $this->getUniqueID());
-		$interface->assign('jquerySafeId', str_replace(':', '_', $this->getUniqueID()));
+		$interface->assign('jquerySafeId',$this->getUniqueID());
 		//TODO: str_replace likely not needed now
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summUrl', $this->getLinkUrl());
@@ -296,9 +297,9 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('summFormat', $this->getFormat());
 //		$interface->assign('summShortId', null);
 //		$interface->assign('summTitleStatement', null);
-//		$interface->assign('summAuthor', null);
-//		$interface->assign('summPublisher', null);
-//		$interface->assign('summPubDate', null);
+		$interface->assign('summAuthor', null);
+		$interface->assign('summPublisher', null);
+		$interface->assign('summPubDate', null);
 //		$interface->assign('$summSnippets', null);
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
@@ -308,7 +309,7 @@ class Islandora2Driver extends RecordInterface
 		if ($listId){
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry                         = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
+			$listEntry->groupedWorkPermanentId = $this->nodeId;
 			$listEntry->listId                 = $listId;
 			if ($listEntry->find(true)){
 				$interface->assign('listEntryNotes', $listEntry->notes);

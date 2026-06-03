@@ -17,6 +17,7 @@
  */
 
 //class SearchObject_UserListIslandora2 extends \SearchObject\SearchObject_Islandora2 {
+require_once ROOT_DIR . '/sys/SearchObject/UserListSearchObjectTrait.php';
 class SearchObject_UserListIslandora2 extends SearchObject_Islandora2 {
 	use UserListSearchObjectTrait;
 

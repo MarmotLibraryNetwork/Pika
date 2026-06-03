@@ -25,6 +25,26 @@ require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 /* Responsible for displaying video from Islandora2 */
 class Compound extends ArchiveObject
 {
+    /**
+     * Merges related people from all child objects into the parent's list,
+     * deduplicated by taxonomy term ID.
+     */
+    protected function getRelatedPeople(): array
+    {
+        $people   = parent::getRelatedPeople();
+        $seenTids = array_column($people, 'tid');
+        foreach ($this->mediaObject->getChildObjects() as $child) {
+            foreach ($child->getRelatedPerson() ?? [] as $person) {
+                $tid = $person['tid'] ?? null;
+                if ($tid !== null && !in_array($tid, $seenTids, true)) {
+                    $people[]   = $person;
+                    $seenTids[] = $tid;
+                }
+            }
+        }
+        return $people;
+    }
+
     public function launch()
     {
         global $interface;

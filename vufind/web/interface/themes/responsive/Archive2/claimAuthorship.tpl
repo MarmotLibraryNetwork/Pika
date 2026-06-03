@@ -9,6 +9,12 @@
 				<p>Your request was submitted successfully.  The library will contact you with more information soon.</p>
 			{/if}
 		{else}
+		{if $error}
+			<div class="alert alert-danger">
+				<p>There is an error with your request.</p>
+				<p>{$error}</p>
+			</div>
+		{else}
 			{if $claimAuthorshipHeader}
 				{$claimAuthorshipHeader}
 			{else}
@@ -30,7 +36,7 @@
 				{$requestForm}
 			</div>
 		{/if}
-
+	{/if}
 	</div>
 
 {/strip}

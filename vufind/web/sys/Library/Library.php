@@ -2143,8 +2143,8 @@ class Library extends DB_DataObject {
 	 */
 	public static function getLibraryTidChoices(): array
 	{
-		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+		$request = new Islandora2\JsonApiClient();
 		$terms   = $request->fetchVocabulary('library');
 		if (empty($terms)) {
 			return [];
@@ -2158,8 +2158,8 @@ class Library extends DB_DataObject {
 	}
 
 	public static function getLibraryTidType(){
-		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+		$request = new Islandora2\JsonApiClient();
 		$terms   = $request->fetchVocabulary('library');
 		if (empty($terms)) {
 			return 'text';
@@ -2170,8 +2170,8 @@ class Library extends DB_DataObject {
 
 	public static function getCorporateBodyTidChoices(): array
 	{
-		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+		$request = new \Islandora2\JsonApiClient();
 		$terms   = $request->fetchVocabulary('corporate_body');
 		if (empty($terms)) {
 			return [];
@@ -2185,8 +2185,8 @@ class Library extends DB_DataObject {
 
 	public static function getCorporateBodyTidType(): string
 	{
-		require_once ROOT_DIR . '/sys/Islandora2/Request.php';
-		$request = new \Islandora2\Request();
+		require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+		$request = new Islandora2\JsonApiClient();
 		$terms   = $request->fetchVocabulary('corporate_body');
 		return empty($terms) ? 'text' : 'enum';
 	}
