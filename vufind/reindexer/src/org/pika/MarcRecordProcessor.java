@@ -1220,6 +1220,14 @@ abstract class MarcRecordProcessor {
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
 	}
 
+	/**
+	 * Since MARC indicators are not reliably set correctly for access links,
+	 * go through some conditions for things we know are not access links.
+	 * (Cover links have several data points we can check to eliminate them from our list of candidates)
+	 *
+	 * @param urlField The MARC 856 field to analyze
+	 * @return whether this link might be an eContent link or definitely is not
+	 */
 	private boolean isLikelyEContentUrl(DataField urlField){
 		if (urlField.getIndicator2() != '2') {
 			if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
@@ -1227,25 +1235,30 @@ abstract class MarcRecordProcessor {
 				// (some image links do not have a 2nd indicator of 2)
 				// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
 
-				// 2nd indicator of 1 is designate related resource link rather than the access link but some
+				// 2nd indicator of 1 is designated related resource link rather than the access link, but some
 				// eContent does this anyway for the resource link
 				String subFieldZ = "";
 				String subField3 = "";
 				if (urlField.getSubfield('z') != null) {
 					subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
+					if (subFieldZ.contains("image")) {
+						return false; // Definitely not resource url
+					}
 				}
 				if (urlField.getSubfield('3') != null) {
 					subField3 = urlField.getSubfield('3').getData().toLowerCase();
+					if (subField3.contains("image")) {
+						return false;  // Definitely not resource url
+					}
 				}
-				return !subFieldZ.contains("image") && !subField3.contains("image");
+				return true; // Likely resource url
 			}
 		}
 		return false;
 	}
 
 	/**
-	 * @param df
-	 *          a DataField
+	 * @param df  a DataField
 	 * @return the integer (0-9, 0 if blank or other) in the 2nd indicator
 	 */
 	int getInd2AsInt(DataField df) {
