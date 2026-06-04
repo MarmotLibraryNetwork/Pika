@@ -211,15 +211,12 @@ class MyAccount_MyList extends MyAccount {
 		$listItems       = $list->numValidListItems();
 		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
-		$archiveEnabled  = $interface->getVariable('enableArchive') ?? false;
 
 		foreach ($titleSearches[0] as $titleSearch){
 			$titleSearch = trim($titleSearch);
 			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
-				$isArchiveId         = $archiveEnabled && strpos($titleSearch, ':') !== false; // Only check for archive pids if the archive is available.
-				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';          // Initialize from the current search globals
-				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : 'Solr');
+				$searchObject        = SearchObjectFactory::initSearchObject();
 				if (!empty($searchObject)){
 					$searchObject->setLimit(1);
 					$searchObject->init();
@@ -227,7 +224,7 @@ class MyAccount_MyList extends MyAccount {
 					$results = $searchObject->processSearch(false, false);
 					if ($results['response'] && $results['response']['numFound'] >= 1){
 						$firstDoc = $results['response']['docs'][0];
-						$id       = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id']; //Get the id of the document
+						$id       = $firstDoc['id']; //Get the id of the document
 						if (($listItems + $numAdded + 1) <= 2000){
 							$numAdded++;
 						}
