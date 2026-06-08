@@ -256,13 +256,12 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 	$library->whereAdd('objectsToHide != ""');
 	$library->find();
 
-	$success = true;
+	global $pikaLogger;
+	$lineSeparator = "\r\n";
+	$eolSplitter   = "\n"; // Use only the \n character to break into array, depending on trim to catch \r as whitespace
+	$success       = true;
 	while ($library->fetch()) {
-		global $pikaLogger;
-
-		$lineSeparator = "\r\n";
-		$eolSplitter   = "\n"; // Use only the \n character to break into array, depending on trim to catch \r as whitespace
-		if (!str_contains($library->objectsToHide, $lineSeparator)){
+		if (!str_contains($library->objectsToHide, $eolSplitter)){
 			$pikaLogger->error("library {$library->subdomain} objectsToHide is not a multi-line string. It is: {$library->objectsToHide}");
 		}
 		$entries   = explode($eolSplitter, $library->objectsToHide);
@@ -369,23 +368,25 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 	$library->whereAdd("archiveNamespace != ''");
 	$library->find();
 
+	global $pikaLogger;
 	$success = true;
 	while ($library->fetch()) {
 		$tid = $namespaceTidMap[$library->archiveNamespace] ?? null;
 		if ($tid === null) {
 			$success = false;
-			global $pikaLogger;
 			$pikaLogger->error("Found no TID for library archiveNamespace $library->archiveNamespace.");
 			continue;
 		}
 		$library->libraryTid = $tid;
 		if ($library->update() === false) {
+			$pikaLogger->error("Failed to update Library TID for library $library->subdomain.");
 			$success = false;
 		}
 	}
 	return $success;
 }
 function convertArchivePidToCorporateBodyTid(): bool {
+	global $pikaLogger;
 	$success = true;
 	$library = new Library();
 	$library->whereAdd('archivePid IS NOT NULL');
@@ -397,13 +398,13 @@ function convertArchivePidToCorporateBodyTid(): bool {
 		while ($library->fetch()){
 			$TIDs = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
 			if (empty($TIDs)){
-				global $pikaLogger;
 				$pikaLogger->error("Found no Corporate Body TID for legacy archivePID $library->archivePid.");
 				$success = false;
 				continue;
 			}
 			$library->corporateBodyTid = (int) reset($TIDs);
 			if ($library->update() === false){
+				$pikaLogger->error("Failed to update Library Corporate Body TID for library $library->subdomain.");
 				$success = false;
 			}
 		}
@@ -412,6 +413,7 @@ function convertArchivePidToCorporateBodyTid(): bool {
 }
 
 function convertPidToNid(){
+	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('pid IS NOT NULL');
@@ -431,12 +433,14 @@ function convertPidToNid(){
 				$success = true;
 			}
 		}else{
+			$pikaLogger->error("Failed to convert PID $pid to NID for archive request $archiveRequest->id.");
 			$success = false;
 		}
 	}
 	return $success;
 }
 function convertPidToNidAuthorship(){
+	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('pid IS NOT NULL');
@@ -456,6 +460,7 @@ function convertPidToNidAuthorship(){
 				$success = true;
 			}
 		}else{
+			$pikaLogger->error("Failed to convert PID $pid to NID for authorship claim $authorshipClaim->id.");
 			$success = false;
 		}
 	}
@@ -463,6 +468,7 @@ function convertPidToNidAuthorship(){
 }
 
 function getTidFromNid(){
+	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('nid IS NOT NULL');
@@ -480,12 +486,14 @@ function getTidFromNid(){
 			$archiveRequest->libraryTid = $libraryTid;
 			$archiveRequest->update();
 		}else{
+			$pikaLogger->error("Failed to get library TID for NID $nid for archive request $archiveRequest->id.");
 			$success = false;
 		}
 	}
 	return $success;
 }
 function getTidFromNidAuthorship(){
+	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('nid IS NOT NULL');
@@ -503,6 +511,7 @@ function getTidFromNidAuthorship(){
 			$authorshipClaim->libraryTid = $libraryTid;
 			$authorshipClaim->update();
 		}else{
+			$pikaLogger->error("Failed to get library TID for NID $nid for authorship claim $authorshipClaim->id.");
 			$success = false;
 		}
 	}
@@ -543,8 +552,7 @@ function convertListPidToNid():bool {
 					$success = false;
 				}
 			}else{
-
-				$pikaLogger->warn("The object may be a taxonomy", $parts);
+				$pikaLogger->warning("The object may be a taxonomy", $parts);
 				$userListEntry->hidden = true;
 				$userListEntry->update();
 				$success = true;
