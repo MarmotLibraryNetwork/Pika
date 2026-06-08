@@ -1,5 +1,4 @@
 <?php
-@ini_set('memory_limit',-1);
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -524,6 +523,17 @@ function getTidFromNidAuthorship(){
 function convertListPidToNid():bool {
 	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+
+	$library = new Library();
+	$library->whereAdd('archiveNamespace IS NOT NULL && archiveNamespace != ""');
+	$library->find();
+	$nameSpace = $library->fetchAll('archiveNamespace');
+
+	/** @var SearchObject_Islandora2 $islandora2Search */
+	$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+
 	$userListEntry = new UserListEntry();
 	$userListEntry->find();
 	$success = true; // Set as true if there are no list entries to process
@@ -531,15 +541,7 @@ function convertListPidToNid():bool {
 		$pid   = $userListEntry->groupedWorkPermanentId;
 		$parts = explode(':', $pid);
 		if (count($parts) > 1){
-			require_once ROOT_DIR . '/sys/Library/Library.php';
-			$library = new Library();
-			$library->whereAdd('archiveNamespace IS NOT NULL && archiveNamespace != ""');
-			$library->find();
-			$nameSpace = $library->fetchAll('archiveNamespace');
 			if (in_array($parts[0], $nameSpace)){
-				require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
-				/** @var SearchObject_Islandora2 $islandora2Search */
-				$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 				if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
 					foreach ($nids as $nid){
 						$userListEntry->groupedWorkPermanentId = $nid;
