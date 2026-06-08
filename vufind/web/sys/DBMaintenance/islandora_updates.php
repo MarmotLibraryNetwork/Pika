@@ -248,7 +248,7 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 		global $pikaLogger;
 
 		$lineSeparator = "\r\n";
-		$eolSplitter   = "\n";
+		$eolSplitter   = "\n"; // Use only the \n character to break into array, depending on trim to catch \r as whitespace
 		if (!str_contains($library->objectsToHide, $lineSeparator)){
 			$pikaLogger->error("library {$library->subdomain} objectsToHide is not a multi-line string. It is: {$library->objectsToHide}");
 		}
@@ -296,9 +296,11 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 	$library->whereAdd("collectionsToHide != ''");
 	$library->find();
 
-	$success = true;
+	$lineSeparator = "\r\n";
+	$eolSplitter   = "\n"; // Use only the \n character to break into array, depending on trim to catch \r as whitespace
+	$success       = true;
 	while ($library->fetch()) {
-		$entries   = explode("\r\n", $library->collectionsToHide);
+		$entries   = explode($eolSplitter, $library->collectionsToHide);
 		$converted = array_map(function ($entry) use ($pidToNodeId) {
 			$trimmed = trim($entry);
 			return isset($pidToNodeId[$trimmed])
@@ -306,7 +308,7 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 				: $trimmed;
 		}, $entries);
 
-		$newValue = implode("\r\n", $converted);
+		$newValue = implode($lineSeparator, $converted);
 		if ($newValue !== $library->collectionsToHide) {
 			$library->collectionsToHide = $newValue;
 			if ($library->update() === false) {
