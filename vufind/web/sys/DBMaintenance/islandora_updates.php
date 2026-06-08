@@ -263,6 +263,9 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 		$pikaLogger->info("library {$library->subdomain} converted to : ", $converted);
 
 		$newValue = implode($lineSeparator, $converted);
+		if (str_contains($newValue, ':')){
+			$pikaLogger->error("Conversion Objects to Hide failed for {$library->subdomain}.", $converted);
+		}
 		if ($newValue !== $library->objectsToHide) {
 			$library->objectsToHide = $newValue;
 			if ($library->update() === false) {
@@ -291,6 +294,8 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 	];
 
 	require_once ROOT_DIR . '/sys/Library/Library.php';
+	global $pikaLogger;
+
 	$library = new Library();
 	$library->whereAdd('collectionsToHide IS NOT NULL');
 	$library->whereAdd("collectionsToHide != ''");
@@ -309,6 +314,9 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 		}, $entries);
 
 		$newValue = implode($lineSeparator, $converted);
+		if (str_contains($newValue, ':')){
+			$pikaLogger->error("Conversion Collections to Hide failed for {$library->subdomain}.", $converted);
+		}
 		if ($newValue !== $library->collectionsToHide) {
 			$library->collectionsToHide = $newValue;
 			if ($library->update() === false) {
