@@ -1420,6 +1420,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function addFieldsToReturn(array $fields): void{
 		$this->fields .= ',' . implode(',', $fields);
+		//TODO: add duplicate field check
 	}
 
 	/**

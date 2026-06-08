@@ -263,6 +263,7 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 		if (!str_contains($library->objectsToHide, $eolSplitter)){
 			$pikaLogger->error("library {$library->subdomain} objectsToHide is not a multi-line string. It is: {$library->objectsToHide}");
 			$success = false;
+			continue; // short-circuit loop on error; TODO: end loop instead?
 		}
 		$entries   = explode($eolSplitter, $library->objectsToHide);
 		$converted = array_map(function ($entry) use ($pidToNodeId) {
@@ -276,6 +277,7 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 
 		$newValue = implode($lineSeparator, $converted);
 		if (str_contains($newValue, ':')){
+			$success = false;
 			$pikaLogger->error("Conversion Objects to Hide failed for {$library->subdomain}.", $converted);
 		}
 		if ($newValue !== $library->objectsToHide) {
@@ -354,7 +356,7 @@ function convertArchiveNamespaceToLibraryTid(): bool {
 		'gunnison'        => 24147,
 		'lafayette'       => 354,
 		'mesa'            => 261,
-		'montrose'        => null,
+		//'montrose'        => null, //TODO: set a library TID?
 		'pineriver'       => 243,
 		'pitkin'          => 351,
 		'salida'          => 365,
@@ -422,16 +424,18 @@ function convertPidToNid(){
 	$archiveRequest->whereAdd("pid != ''");
 	if ($archiveRequest->find()){
 		// Get the Islandora2 search object
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 		while ($archiveRequest->fetch()){
 			$pid = $archiveRequest->pid;
-			require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
 				foreach ($nids as $nid){
 					$archiveRequest->nid = $nid;
-					$archiveRequest->update();
-					$success = true;
+					if ($archiveRequest->update() === false) {
+						$pikaLogger->error("Failed to update NID for archive request $archiveRequest->id.");
+						$success = false;
+					}
 				}
 			}else{
 				$pikaLogger->error("Failed to convert PID $pid to NID for archive request $archiveRequest->id.");
@@ -458,8 +462,10 @@ function convertPidToNidAuthorship(){
 			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
 				foreach ($nids as $nid){
 					$authorshipClaim->nid = $nid;
-					$authorshipClaim->update();
-					$success = true;
+					if ($authorshipClaim->update() === false) {
+						$pikaLogger->error("Failed to update NID for authorship claim $authorshipClaim->id.");
+						$success = false;
+					}
 				}
 			}else{
 				$pikaLogger->error("Failed to convert PID $pid to NID for authorship claim $authorshipClaim->id.");
@@ -480,14 +486,17 @@ function getTidFromNid(){
 		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		$islandora2Search->addFieldsToReturn(['itm_field_library']);
 		while ($archiveRequest->fetch()){
 			$nid = $archiveRequest->nid;
-			$islandora2Search->addFieldsToReturn(['itm_field_library']);
 			$record     = $islandora2Search->getRecord($nid);
 			$libraryTid = $record[0]['itm_field_library'][0] ?? null;
 			if ($libraryTid !== null){
 				$archiveRequest->libraryTid = $libraryTid;
-				$archiveRequest->update();
+				if ($archiveRequest->update() === false) {
+					$pikaLogger->error("Failed to update libraryTid for archive request $archiveRequest->id.");
+					$success = false;
+				}
 			}else{
 				$pikaLogger->error("Failed to get library TID for NID $nid for archive request $archiveRequest->id.");
 				$success = false;
@@ -506,14 +515,17 @@ function getTidFromNidAuthorship(){
 		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		$islandora2Search->addFieldsToReturn(['itm_field_library']);
 		while ($authorshipClaim->fetch()){
 			$nid = $authorshipClaim->nid;
-			$islandora2Search->addFieldsToReturn(['itm_field_library']);
 			$record     = $islandora2Search->getRecord($nid);
 			$libraryTid = $record[0]['itm_field_library'][0] ?? null;
 			if ($libraryTid !== null){
 				$authorshipClaim->libraryTid = $libraryTid;
-				$authorshipClaim->update();
+				if ($authorshipClaim->update() === false) {
+					$pikaLogger->error("Failed to update libraryTid for authorship claim $authorshipClaim->id.");
+					$success = false;
+				}
 			}else{
 				$pikaLogger->error("Failed to get library TID for NID $nid for authorship claim $authorshipClaim->id.");
 				$success = false;
@@ -552,8 +564,10 @@ function convertListPidToNid():bool {
 					foreach ($nids as $nid){
 						$userListEntry->groupedWorkPermanentId = $nid;
 						$userListEntry->hidden                 = false;
-						$userListEntry->update();
-						$success = true;
+						if ($userListEntry->update() === false) {
+							$pikaLogger->error("Failed to update list entry for PID $pid.");
+							$success = false;
+						}
 					}
 				}else{
 					$pikaLogger->error("There was an error processing the record", $parts);
@@ -562,8 +576,10 @@ function convertListPidToNid():bool {
 			}else{
 				$pikaLogger->warning("The object may be a taxonomy", $parts);
 				$userListEntry->hidden = true;
-				$userListEntry->update();
-				$success = true;
+				if ($userListEntry->update() === false) {
+					$pikaLogger->error("Failed to hide list entry for PID $pid.");
+					$success = false;
+				}
 			}
 		}else{
 			$pikaLogger->notice("Not an archive object", $parts);
