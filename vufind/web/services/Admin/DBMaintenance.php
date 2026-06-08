@@ -207,9 +207,13 @@ class DBMaintenance extends Admin_Admin {
 			] // End of main array
 		);
 
-		// Sort updates by the Release Number
+		// Sort updates by release number, then by optional 'releaseStep' (entries without it sort last)
 		$release_column = array_column($updates, 'release');
-		array_multisort($release_column, SORT_ASC, $updates);
+		$step_column    = array_map(
+			fn($u) => isset($u['releaseStep']) ? (int)$u['releaseStep'] : PHP_INT_MAX,
+			$updates
+		);
+		array_multisort($release_column, SORT_ASC, $step_column, SORT_ASC, SORT_NUMERIC, $updates);
 		return $updates;
 	}
 
