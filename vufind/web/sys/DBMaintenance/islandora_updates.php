@@ -262,6 +262,7 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 	while ($library->fetch()) {
 		if (!str_contains($library->objectsToHide, $eolSplitter)){
 			$pikaLogger->error("library {$library->subdomain} objectsToHide is not a multi-line string. It is: {$library->objectsToHide}");
+			$success = false;
 		}
 		$entries   = explode($eolSplitter, $library->objectsToHide);
 		$converted = array_map(function ($entry) use ($pidToNodeId) {
@@ -327,6 +328,7 @@ function convertCollectionsToHidePidsToNodeIds(): bool {
 		$newValue = implode($lineSeparator, $converted);
 		if (str_contains($newValue, ':')){
 			$pikaLogger->error("Conversion Collections to Hide failed for {$library->subdomain}.", $converted);
+			$success = false;
 		}
 		if ($newValue !== $library->collectionsToHide) {
 			$library->collectionsToHide = $newValue;
@@ -413,27 +415,28 @@ function convertArchivePidToCorporateBodyTid(): bool {
 
 function convertPidToNid(){
 	global $pikaLogger;
+	$success = true;
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('pid IS NOT NULL');
 	$archiveRequest->whereAdd("pid != ''");
-	$archiveRequest->find();
-	$success = true;
-	while ($archiveRequest->fetch()) {
-		$pid = $archiveRequest->pid;
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+	if ($archiveRequest->find()){
 		// Get the Islandora2 search object
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
-		if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
-			foreach ($nids as $nid){
-				$archiveRequest->nid = $nid;
-				$archiveRequest->update();
-				$success = true;
+		while ($archiveRequest->fetch()){
+			$pid = $archiveRequest->pid;
+			require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+				foreach ($nids as $nid){
+					$archiveRequest->nid = $nid;
+					$archiveRequest->update();
+					$success = true;
+				}
+			}else{
+				$pikaLogger->error("Failed to convert PID $pid to NID for archive request $archiveRequest->id.");
+				$success = false;
 			}
-		}else{
-			$pikaLogger->error("Failed to convert PID $pid to NID for archive request $archiveRequest->id.");
-			$success = false;
 		}
 	}
 	return $success;
@@ -444,23 +447,24 @@ function convertPidToNidAuthorship(){
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('pid IS NOT NULL');
 	$authorshipClaim->whereAdd("pid != ''");
-	$authorshipClaim->find();
 	$success = true;
-	while ($authorshipClaim->fetch()) {
-		$pid = $authorshipClaim->pid;
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+	if ($authorshipClaim->find()){
 		// Get the Islandora2 search object
+		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
-		if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
-			foreach ($nids as $nid){
-				$authorshipClaim->nid = $nid;
-				$authorshipClaim->update();
-				$success = true;
+		while ($authorshipClaim->fetch()){
+			$pid = $authorshipClaim->pid;
+			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+				foreach ($nids as $nid){
+					$authorshipClaim->nid = $nid;
+					$authorshipClaim->update();
+					$success = true;
+				}
+			}else{
+				$pikaLogger->error("Failed to convert PID $pid to NID for authorship claim $authorshipClaim->id.");
+				$success = false;
 			}
-		}else{
-			$pikaLogger->error("Failed to convert PID $pid to NID for authorship claim $authorshipClaim->id.");
-			$success = false;
 		}
 	}
 	return $success;
@@ -471,22 +475,23 @@ function getTidFromNid(){
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('nid IS NOT NULL');
-	$archiveRequest->find();
 	$success = true;
-	while ($archiveRequest->fetch()) {
-		$nid = $archiveRequest->nid;
+	if ($archiveRequest->find()){
 		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
-		$islandora2Search->addFieldsToReturn(['itm_field_library']);
-		$record = $islandora2Search->getRecord($nid);
-		$libraryTid = $record[0]['itm_field_library'][0] ?? null;
-		if($libraryTid !== null){
-			$archiveRequest->libraryTid = $libraryTid;
-			$archiveRequest->update();
-		}else{
-			$pikaLogger->error("Failed to get library TID for NID $nid for archive request $archiveRequest->id.");
-			$success = false;
+		while ($archiveRequest->fetch()){
+			$nid = $archiveRequest->nid;
+			$islandora2Search->addFieldsToReturn(['itm_field_library']);
+			$record     = $islandora2Search->getRecord($nid);
+			$libraryTid = $record[0]['itm_field_library'][0] ?? null;
+			if ($libraryTid !== null){
+				$archiveRequest->libraryTid = $libraryTid;
+				$archiveRequest->update();
+			}else{
+				$pikaLogger->error("Failed to get library TID for NID $nid for archive request $archiveRequest->id.");
+				$success = false;
+			}
 		}
 	}
 	return $success;
@@ -496,22 +501,23 @@ function getTidFromNidAuthorship(){
 	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('nid IS NOT NULL');
-	$authorshipClaim->find();
 	$success = true;
-	while ($authorshipClaim->fetch()) {
-		$nid = $authorshipClaim->nid;
+	if ($authorshipClaim->find()){
 		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
-		$islandora2Search->addFieldsToReturn(['itm_field_library']);
-		$record = $islandora2Search->getRecord($nid);
-		$libraryTid = $record[0]['itm_field_library'][0] ?? null;
-		if($libraryTid !== null){
-			$authorshipClaim->libraryTid = $libraryTid;
-			$authorshipClaim->update();
-		}else{
-			$pikaLogger->error("Failed to get library TID for NID $nid for authorship claim $authorshipClaim->id.");
-			$success = false;
+		while ($authorshipClaim->fetch()){
+			$nid = $authorshipClaim->nid;
+			$islandora2Search->addFieldsToReturn(['itm_field_library']);
+			$record     = $islandora2Search->getRecord($nid);
+			$libraryTid = $record[0]['itm_field_library'][0] ?? null;
+			if ($libraryTid !== null){
+				$authorshipClaim->libraryTid = $libraryTid;
+				$authorshipClaim->update();
+			}else{
+				$pikaLogger->error("Failed to get library TID for NID $nid for authorship claim $authorshipClaim->id.");
+				$success = false;
+			}
 		}
 	}
 	return $success;
