@@ -240,7 +240,7 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 	require_once ROOT_DIR . '/sys/Library/Library.php';
 	$library = new Library();
 	$library->whereAdd('objectsToHide IS NOT NULL');
-	$library->whereAdd("objectsToHide != ''");
+	$library->whereAdd('objectsToHide != ""');
 	$library->find();
 
 	$success = true;
@@ -252,12 +252,16 @@ function convertObjectsToHidePidsToNodeIds(): bool {
 				? (string) $pidToNodeId[$trimmed]
 				: $trimmed;
 		}, $entries);
+		global $pikaLogger;
+		$pikaLogger->info("library {$library->subdomain} collections to hide :", $entries);
+		$pikaLogger->info("library {$library->subdomain} converted to :", $converted);
 
 		$newValue = implode("\r\n", $converted);
 		if ($newValue !== $library->objectsToHide) {
 			$library->objectsToHide = $newValue;
 			if ($library->update() === false) {
 				$success = false;
+				$pikaLogger->error("library {$library->subdomain} update failed");
 			}
 		}
 	}
