@@ -42,7 +42,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_drop_archive_subjects' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 0,
+			'releaseStep'     => 0,
 			'title'           => 'Remove Archive Subjects table',
 			'description'     => 'Drop the unused archive_subjects table; the ArchiveSubject feature was never put into use.',
 			'continueOnError' => true,
@@ -53,7 +53,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_convert_objectsToHide_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 1,
+			'releaseStep'     => 1,
 			'title'           => 'Convert objectsToHide PIDs to nodeIds',
 			'description'     => 'Converts library.objectsToHide entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
 			'continueOnError' => false,
@@ -64,7 +64,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_convert_collectionsToHide_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 2,
+			'releaseStep'     => 2,
 			'title'           => 'Convert collectionsToHide PIDs to nodeIds',
 			'description'     => 'Converts library.collectionsToHide entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
 			'continueOnError' => false,
@@ -75,7 +75,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_convert_privateCollections_pids_to_nodeIds' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 3,
+			'releaseStep'     => 3,
 			'title'           => 'Convert archive_private_collections PIDs to nodeIds',
 			'description'     => 'Converts archive_private_collections.privateCollections entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
 			'continueOnError' => false,
@@ -86,7 +86,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_archive_private_collections_add_type' => [
 			'release'         => 'Islandora2',  // TODO: change to release number
-			'releaseStep'    => 4,
+			'releaseStep'     => 4,
 			'title'           => 'Add type column to archive_private_collections',
 			'description'     => 'Adds an enum type column to distinguish collection vs object entries; tags the existing row as type=collection.',
 			'continueOnError' => false,
@@ -97,7 +97,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_convert_archiveNamespace_to_libraryTid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 5,
+			'releaseStep'     => 5,
 			'title'           => 'Convert library.archiveNamespace to libraryTid',
 			'description'     => 'Adds a libraryTid column, looks up each library\'s archivePid entity PID in Islandora2 Solr to find its taxonomy term ID, stores the result, then alters the column to INT UNSIGNED.',
 			'continueOnError' => false,
@@ -109,7 +109,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_library_add_corporateBodyTid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 6,
+			'releaseStep'     => 6,
 			'title'           => 'Add corporateBodyTid column to library table and convert archivePid to corporateBodyTid',
 			'description'     => 'Adds a corporateBodyTid column to store the Islandora2 Corporate Body taxonomy term ID for each library, used to populate acknowledgement thumbnails on Archive object pages.',
 			'continueOnError' => false,
@@ -121,9 +121,9 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_library_archive_search_facet_setting_migration' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 7,
+			'releaseStep'     => 7,
 			'title'           => 'Migrate Archive Search Facet Settings to Islandora2',
-			'description'     => 'DONT RUN TILL FACET CONFIGURATION DONE; Updates facetName values in library_archive_search_facet_setting from legacy Islandora (MODS) field names to their Islandora2 Solr field equivalents.',
+			'description'     => 'Updates facetName values in library_archive_search_facet_setting from legacy Islandora (MODS) field names to their Islandora2 Solr field equivalents.',
 			'continueOnError' => true,
 			'sql'             => [
 				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_subject' WHERE facetName = 'mods_subject_topic_ms';",
@@ -142,7 +142,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_add_nid_and_convert_legacy_pid_to_nid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 8,
+			'releaseStep'     => 8,
 			'title'           => 'Add nid column to Archive Requests',
 			'description'     => 'Adds Node ID column to Archive Requests table to reflect the new Islandora Structure',
 			'continueOnError' => true,
@@ -154,7 +154,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_add_LibraryTid_and_lookup_by_nid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 9,
+			'releaseStep'     => 9,
 			'title'           => 'RUN AFTER "Add nid column to Archive Requests" Adds LibraryTid',
 			'description'     => 'Adds librayTid column to Archive Requests table to enable filtering',
 			'continueOnError' => true,
@@ -165,7 +165,7 @@ function getIslandoraUpdates(): array{
 		],
 		'Islandora2_add_nid_and_convert_legacy_pid_to_nid_for_authorship_claim' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 10,
+			'releaseStep'     => 10,
 			'title'           => 'Add nid column to Authorship Claims',
 			'description'     => 'Adds Node ID column to Authorship Claims table to reflect the new Islandora Structure',
 			'continueOnError' => true,
@@ -176,7 +176,7 @@ function getIslandoraUpdates(): array{
 		],
 		'Islandora2_add_LibraryTid_and_lookup_by_nid_for_authorship_claim' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 11,
+			'releaseStep'     => 11,
 			'title'           => 'Add libraryTid for filtering purposes. RUN AFTER "Add nid column to Authorship Claims',
 			'description'     => 'Adds librayTid column to Archive Requests table to enable filtering',
 			'continueOnError' => true,
@@ -187,9 +187,9 @@ function getIslandoraUpdates(): array{
 		],
 		'Islandora2_convert_list_pid_to_nid' => [
 			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'    => 12,
-			'title'           => 'Convert List PID to Nid',
-			'description'     => 'RUN THIS STEP BY ITSELF; Converts the archive user list pid to the nid in the user_list_entry',
+			'releaseStep'     => 12,
+			'title'           => 'Convert List PID to Nid; RUN THIS STEP BY ITSELF',
+			'description'     => 'Converts the archive user list pid to the nid in the user_list_entry',
 			'continueOnError' => true,
 			'sql'             => [
 				"ALTER TABLE user_list_entry ADD COLUMN hidden BOOL NULL DEFAULT FALSE AFTER weight;",
