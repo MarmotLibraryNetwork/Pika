@@ -526,7 +526,7 @@ function convertListPidToNid():bool {
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 	$userListEntry = new UserListEntry();
 	$userListEntry->find();
-	$success = false;
+	$success = true; // Set as true if there are no list entries to process
 	while($userListEntry->fetch()){
 		$pid   = $userListEntry->groupedWorkPermanentId;
 		$parts = explode(':', $pid);
