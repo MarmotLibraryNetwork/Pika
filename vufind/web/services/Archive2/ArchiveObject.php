@@ -310,7 +310,7 @@ class ArchiveObject extends \Action
         $interface->assign('production_team', $productionTeam ?: null);
 
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
-        $interface->assign('related_organization', $this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_organization', $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization()));
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
         $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
 
@@ -605,6 +605,30 @@ class ArchiveObject extends \Action
         }
         unset($event);
         return $events;
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-organization entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $orgs Output of I2Object::getRelatedOrganization()
+     * @return array|null
+     */
+    private function enrichRelatedOrganizationsWithThumbnails(?array $orgs): ?array
+    {
+        if (empty($orgs)) {
+            return $orgs;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($orgs as &$org) {
+            $tid               = $org['tid'] ?? null;
+            $term              = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb             = $term?->getThumbnail();
+            $org['thumbnail']  = $thumb['url'] ?? null;
+        }
+        unset($org);
+        return $orgs;
     }
 
     /**
