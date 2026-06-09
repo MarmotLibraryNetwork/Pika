@@ -1,5 +1,6 @@
 {strip}
-<div class="archiveComponentContainer col-sm-12 col-md-6">
+<div class="row">
+<div class="archiveComponentContainer col-sm-12">
 <hr>
 	<form action="/Archive2/Results" id="searchComponentForm">
 		<div class="input-group">
@@ -11,5 +12,6 @@
 			<input type="hidden" name="filter[]" value="sm_collection:{$title|escape:'url'}">
 		</div>
 	</form>
+</div>
 </div>
 {/strip}
