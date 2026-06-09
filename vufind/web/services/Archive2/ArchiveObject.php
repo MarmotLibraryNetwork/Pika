@@ -317,9 +317,13 @@ class ArchiveObject extends \Action
         // Reload URL
         $cacheReloadUrl = $this->mediaObject->getAbsoluteUrl() . '?reload=true';
         $interface->assign('cache_reload_url', $cacheReloadUrl);
-        // like to Islandora node
-        $islandoraUrl = rtrim($configArray['Islandora2']['url'], "/") . "/node/" . $this->mediaObject->getNodeId();
-        $interface->assign('islandora_url', $islandoraUrl);
+        // Link to Islandora node; Link to Islandora Pika JSON for opac Admins
+        $islandoraUrl         = rtrim($configArray['Islandora2']['url'], '/') . '/node/' . $this->mediaObject->getNodeId();
+				$islandoraPikaJsonUrl = rtrim($configArray['Islandora2']['url'], '/') . '/pika-json/node/' . $this->mediaObject->getNodeId();
+        $interface->assign([
+	        'islandora_url'           => $islandoraUrl,
+	        'islandora_pika_json_url' => $islandoraPikaJsonUrl,
+        ]);
 
 
         // Analytics

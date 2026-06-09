@@ -4,6 +4,12 @@
 			<div class="result-label col-sm-4">Islandora URL:</div>
 			<div class="result-value col-sm-8"><a href="{$islandora_url}" target="_blank">{$islandora_url}</a></div>
 		</div>
+		{if $userRoles && (in_array('opacAdmin', $userRoles))}
+			<div class="row archive-field-row">
+				<div class="result-label col-sm-4">Islandora Pika JSON:</div>
+				<div class="result-value col-sm-8"><a href="{$islandora_pika_json_url}" target="_blank">{$islandora_pika_json_url}</a></div>
+			</div>
+		{/if}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Reload Cache:</div>
 			<div class="result-value col-sm-8"><a href="{$cache_reload_url}">{$cache_reload_url}</a></div>
