@@ -3,8 +3,12 @@
 		{if $value|@count > 0}
 			<dl class="archive-field-values list-unstyled">
 				{foreach from=$value key=subKey item=subValue}
-					<dt>{$subKey|replace:'_':' '|capitalize}</dt>
-					<dd>{include file="Archive2/partials/renderValue.tpl" value=$subValue}</dd>
+					{if is_numeric($subKey)}
+						<div>{include file="Archive2/partials/renderValue.tpl" value=$subValue}</div>
+					{else}
+						<dt>{$subKey|replace:'_':' '|capitalize}</dt>
+						<dd>{include file="Archive2/partials/renderValue.tpl" value=$subValue}</dd>
+					{/if}
 				{/foreach}
 			</dl>
 		{else}

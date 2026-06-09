@@ -18,7 +18,6 @@
 				{include file="Archive2/partials/fieldRow.tpl" label="Related Materials Note" value=$rel_materials_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Ownership Note" value=$ownership_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Reproduction Note" value=$repro_note}
-				{include file="Archive2/partials/fieldRow.tpl" label="Record Content Source" value=$record_content_source}
 				{include file="Archive2/partials/fieldRow.tpl" label="Research Level" value=$research_level}
 				{include file="Archive2/partials/fieldRow.tpl" label="Research Type" value=$research_type}
 				{include file="Archive2/partials/fieldRow.tpl" label="History" value=$history}

@@ -250,6 +250,11 @@ class ArchiveObject extends \Action
         $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
         $interface->assign('physical_description', $extent);
 
+				// Condition (physical description)
+				$condition = ($this->mediaObject->condition !== null) ? $this->mediaObject->condition : null;
+				$interface->assign('physical_condition', $condition);
+
+
         // Library
         // Get the Corporate Body associated with the library
         $libraryTerm = $this->mediaObject->getLibraryOrganization();
