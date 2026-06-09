@@ -60,10 +60,12 @@ class Collection extends ArchiveObject
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
                 $interface->assign('showTimeline', false);
+                $this->loadChildrenData($nid);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapNoTimeline':
                 $interface->assign('showTimeline', false);
+                $this->loadChildrenData($nid);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'custom':
