@@ -60,7 +60,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'subject'              => 'Subjects',
 		'acknowledgements'     => 'Acknowledgements', //production Team
 		'externalLinks'        => 'Links',
-		'moreDetails'          => 'More Details',
+		'moreDetails'          => 'More Details', //TODO: label 'Catalog Details' after switch to Islandora2
 		'rightsStatements'     => 'Rights Statements',
 		'staffView'            => 'Staff View',
 	];
