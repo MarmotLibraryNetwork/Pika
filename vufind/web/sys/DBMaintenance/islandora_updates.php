@@ -1,5 +1,4 @@
 <?php
-@ini_set('memory_limit',-1);
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -118,19 +117,17 @@ function getIslandoraUpdates(): array{
 			'description'     => 'DONT RUN TILL FACET CONFIGURATION DONE; Updates facetName values in library_archive_search_facet_setting from legacy Islandora (MODS) field names to their Islandora2 Solr field equivalents.',
 			'continueOnError' => true,
 			'sql'             => [
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_field_subject' WHERE facetName = 'mods_subject_topic_ms';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_name_2' WHERE facetName = 'mods_genre_s';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_title_2' WHERE facetName = 'RELS_EXT_isMemberOfCollection_uri_ms';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_name_8' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_person_entityTitle_ms';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_name_9' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_place_entityTitle_ms';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_name_11' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_event_entityTitle_ms';",
-				"UPDATE library_archive_search_facet_setting SET facetName = 'ss_name_23' WHERE facetName = 'namespace_s';",
-				// TODO: Determine Islandora2 equivalent for 'Described Entity' and update the statement below
-				//"UPDATE library_archive_search_facet_setting SET facetName = 'ISLANDORA2_EQUIVALENT' WHERE facetName = 'mods_extension_marmotLocal_describedEntity_entityTitle_ms';",
-				// TODO: Determine Islandora2 equivalent for 'Pictured Entity' and update the statement below
-				//"UPDATE library_archive_search_facet_setting SET facetName = 'ISLANDORA2_EQUIVALENT' WHERE facetName = 'mods_extension_marmotLocal_picturedEntity_entityTitle_ms';",
-				// TODO: Determine Islandora2 equivalent for 'Included In' (ancestors_ms) and update the statement below
-				//"UPDATE library_archive_search_facet_setting SET facetName = 'ISLANDORA2_EQUIVALENT' WHERE facetName = 'ancestors_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_subject' WHERE facetName = 'mods_subject_topic_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_genre' WHERE facetName = 'mods_genre_s';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_collection' WHERE facetName = 'RELS_EXT_isMemberOfCollection_uri_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_related_person' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_person_entityTitle_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_related_place' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_place_entityTitle_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'sm_related_event' WHERE facetName = 'mods_extension_marmotLocal_relatedEntity_event_entityTitle_ms';",
+				"UPDATE library_archive_search_facet_setting SET facetName = 'ss_library' WHERE facetName = 'namespace_s';",
+				// No Equivalents for these facets so will remove them
+				"DELETE FROM library_archive_search_facet_setting WHERE facetName = 'mods_extension_marmotLocal_describedEntity_entityTitle_ms';",
+				"DELETE FROM library_archive_search_facet_setting WHERE facetName = 'mods_extension_marmotLocal_picturedEntity_entityTitle_ms';",
+				"DELETE FROM library_archive_search_facet_setting WHERE facetName = 'ancestors_ms';",
 			]
 		],
 
@@ -484,22 +481,25 @@ function getTidFromNidAuthorship(){
 function convertListPidToNid():bool {
 	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+
+	$library = new Library();
+	$library->whereAdd('archiveNamespace IS NOT NULL && archiveNamespace != ""');
+	$library->find();
+	$nameSpace = $library->fetchAll('archiveNamespace');
+
+	/** @var SearchObject_Islandora2 $islandora2Search */
+	$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+
 	$userListEntry = new UserListEntry();
 	$userListEntry->find();
 	$success = false;
-	while($userListEntry->fetch()){
+	while ($userListEntry->fetch()){
 		$pid   = $userListEntry->groupedWorkPermanentId;
 		$parts = explode(':', $pid);
 		if (count($parts) > 1){
-			require_once ROOT_DIR . '/sys/Library/Library.php';
-			$library = new Library();
-			$library->whereAdd('archiveNamespace IS NOT NULL && archiveNamespace != ""');
-			$library->find();
-			$nameSpace = $library->fetchAll('archiveNamespace');
 			if (in_array($parts[0], $nameSpace)){
-				require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
-				/** @var SearchObject_Islandora2 $islandora2Search */
-				$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 				if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
 					foreach ($nids as $nid){
 						$userListEntry->groupedWorkPermanentId = $nid;
@@ -512,7 +512,6 @@ function convertListPidToNid():bool {
 					$success = false;
 				}
 			}else{
-
 				$pikaLogger->warn("The object may be a taxonomy", $parts);
 				$userListEntry->hidden = true;
 				$userListEntry->update();

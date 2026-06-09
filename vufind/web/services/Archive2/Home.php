@@ -159,8 +159,8 @@ class Archive2_Home extends Action {
 		$searchObject->addFilter('bs_field_pika_shown_homepage:true');
 		if ($libraryProjects) {
 			$searchObject->addFilter("itm_field_library:{$library->libraryTid}");
-			//$searchObject->setSort('sm_collection asc'); // Set sort by collection name TODO revert, temp
-			$searchObject->setSort('sm_title_2 asc'); // Set sort by collection name
+			$searchObject->setSort('sm_collection asc'); // Set sort by collection name
+			//$searchObject->setSort('sm_title_2 asc'); // Set sort by collection name //TODO: remove
 		} else {
 			$searchObject->addFilter("!itm_field_library:{$library->libraryTid}");
 			$searchObject->setSort('ds_created desc');

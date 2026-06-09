@@ -783,7 +783,7 @@
   "Islandora2Keyword": {
     "QueryFields" : {
       /* Title Fields */
-      "tm_X3b_en_title": [
+      "twm_X3b_en_title_ws_token": [ /*tm_X3b_en_title doesn't have punctuation characters */
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200],
         ["proximal", 800],
@@ -801,16 +801,20 @@
         ["onePhrase", 1100]
       ],
 */
-      "sm_title_2": [/* collection string TODO:remove */
-        ["onePhrase", 800]
-      ],
       "sm_collection": [/* collection string */
         ["onePhrase", 800]
       ],
       /* Description Fields */
-      "tm_X3b_en_field_description_long": [ /* Main Description */
+      "twm_X3b_en_field_description_long_ws_token": [ /* Main Description */
         ["and", 500]
       ],
+/*
+      "tm_X3b_en_field_description_long": [ */
+/* Main Description *//*
+
+        ["and", 500]
+      ],
+*/
       "tm_X3b_en_field_acq_note": [ /* Acquisition Note */
         ["and", 100]
       ],
@@ -838,35 +842,20 @@
       "twm_X3b_en_subject_name_ws_token": /* Subject (text-tokenized)*/ [
         ["onePhrase", 400]
       ],
-      "tm_X3b_en_name_30": /* Subject (text)*/ [
-        ["and", 300]
-      ],
-      "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
+      "tm_X3b_en_subject_geographic_fulltext": /* Subject (Geographic) (text)*/ [
         ["and", 300]
       ],
       /* Related Marmot Entities */
-      "tm_X3b_en_name_39": [ /*Related Organizations TODO: remove */
-        ["and", 10]
-      ],
       "tm_X3b_en_field_related_organization": [ /*Related Organizations */
         ["and", 10]
       ],
       "tm_X3b_en_field_linked_agent_fulltext" : [ /*Linked Agent (Contributors) */
         ["and", 10]
       ],
-      "tm_X3b_en_name_40" : [ /* Related Places TODO: remove */
-        ["and", 10]
-      ],
       "tm_X3b_en_txt_related_place" : [ /* Related Places */
         ["and", 10]
       ],
-      "tm_X3b_en_name_38" : [ /* Related Events TODO: remove */
-        ["and", 10]
-      ],
       "tm_X3b_en_txt_related_event" : [ /* Related Events */
-        ["and", 10]
-      ],
-      "sm_name_8": [ /* Related People: TODO remove */
         ["and", 10]
       ],
       "tm_X3b_en_txt_related_person": [ /* Related People  */
@@ -909,9 +898,6 @@
         ["exact", 10]
       ],
       "sm_physical_form" : [
-        ["exact", 10] /*TODO: onePhrase? */
-      ],
-      "sm_field_physical_form" : [ /*TODO: remove */
         ["exact", 10] /*TODO: onePhrase? */
       ],
       "tm_X3b_en_field_phys_desc_note" : [ /* Physical Description Note (contains colon characters) */
@@ -976,10 +962,13 @@
   "Islandora2KeywordProper": {
     "QueryFields" : {
       /* Title Fields */
-      "tm_X3b_en_title": [
+      "twm_X3b_en_title_ws_token": [
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200]
-
+       ],
+      "tm_X3b_en_title": [ /* This field doesn't have punctuation characters like ":", "'" */
+        ["exact", 1800], /*TODO: does exact work on text fields? */
+        ["onePhrase", 1200]
        ],
       "tm_X3b_en_field_subtitle": [
         ["onePhrase", 1200],
@@ -988,11 +977,15 @@
       "ss_field_album_title": [ /*TODO: needs a text field */
         ["exact", 1100]
       ],
-      "sm_title_2": [/* collection string */
+      "sm_collection": [/* collection string */
         ["exact", 800]
       ],
       /* Description Fields */
-      "tm_X3b_en_field_description_long": [ /* Main Description */
+      "twm_X3b_en_field_description_long_ws_token": [ /* Main Description */
+        ["exact", 500]
+      ],
+      /* Description Fields */
+      "tm_X3b_en_field_description_long": [ /* Main Description : This field doesn't have punctuation characters like ":", "'" */
         ["exact", 500]
       ],
       "tm_X3b_en_field_acq_note": [ /* Acquisition Note */
@@ -1022,35 +1015,20 @@
       "twm_X3b_en_subject_name_ws_token": /* Subject (general?)*/ [
         ["exact", 400]
       ],
-      "tm_X3b_en_name_30": /* Subject (text)*/ [
-        ["exact", 300]
-      ],
-      "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
+      "tm_X3b_en_subject_geographic_fulltext": /* Subject (Geographic) (text)*/ [
         ["exact", 300]
       ],
       /* Related Marmot Entities */
-      "tm_X3b_en_name_39": [ /*Related Organizations TODO: remove */
-        ["exact", 10]
-      ],
       "tm_X3b_en_field_related_organization": [ /*Related Organizations */
         ["exact", 10]
       ],
       "tm_X3b_en_field_linked_agent_fulltext" : [ /*Linked Agent (Contributors) */
         ["exact", 10]
       ],
-      "tm_X3b_en_name_40" : [ /* Related Places TODO: remove */
-        ["exact", 10]
-      ],
       "tm_X3b_en_txt_related_place" : [ /* Related Places */
         ["exact", 10]
       ],
-      "tm_X3b_en_name_38" : [ /* Related Events TODO: remove */
-        ["exact", 10]
-      ],
       "tm_X3b_en_txt_related_event" : [ /* Related Events */
-        ["exact", 10]
-      ],
-      "sm_name_8": [ /* Related People: TODO remove */
         ["exact", 10]
       ],
       "tm_X3b_en_txt_related_person": [ /* Related People  */
@@ -1091,7 +1069,7 @@
       "sm_field_technique" : [ /*Technique (general?) */
         ["exact", 10]
       ],
-      "sm_field_physical_form" : [
+      "sm_physical_form" : [
         ["exact", 10] /*TODO: onePhrase? */
       ],
       "tm_X3b_en_field_phys_desc_note" : [ /* Physical Description Note (contains colon characters) */
@@ -1150,7 +1128,13 @@
 
   "Islandora2Title": {
     "QueryFields": {
-      "tm_X3b_en_title": [
+      "twm_X3b_en_title_ws_token": [
+        ["exact", 1800], /*TODO: does exact work on text fields? */
+        ["onePhrase", 1200],
+        ["proximal", 800],
+        ["and", 500]
+      ],
+      "tm_X3b_en_title": [ /* This field doesn't have punctuation characters like ":", "'" */
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200],
         ["proximal", 800],
@@ -1167,9 +1151,6 @@
       "tm_X3b_en_field_alternative_title": [
         ["onePhrase", 1100],
         ["and", 600]
-      ],
-      "sm_title_2": [ /* collection string */
-        ["onePhrase", 1200]
       ],
       "sm_collection": [ /* collection string  TODO: text field? */
         ["onePhrase", 1200]
@@ -1188,7 +1169,11 @@
 
   "Islandora2TitleProper": {
     "QueryFields": {
-      "tm_X3b_en_title": [
+      "twm_X3b_en_title_ws_token": [
+        ["exact", 1800],
+        ["onePhrase", 1200]
+      ],
+      "tm_X3b_en_title": [ /* This field doesn't have punctuation characters like ":", "'" */
         ["exact", 1800],
         ["onePhrase", 1200]
       ],
@@ -1204,7 +1189,7 @@
         ["exact", 1100],
         ["onePhrase", 600]
       ],
-      "sm_title_2": [ /* collection string */
+      "sm_collection": [ /* collection string */
         ["exact", 1200]
       ],
       "ss_field_album_title": [ /*TODO: needs a text field */
@@ -1224,14 +1209,11 @@
     /*TODO: Build Dismax Query? */
     "QueryFields": {
       "twm_X3b_en_subject_name_ws_token": /* Subject (text-tokenized) (displays with punctuation) */ [
-        ["onePhrase", 500] /* TODO: should this be searched ? */
-      ],
-      "tm_X3b_en_name_30": /* Subject (text) */ [
-        ["onePhrase", 400],
+        ["onePhrase", 500],
         ["and", 300],
         ["or", null]
       ],
-      "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
+      "tm_X3b_en_subject_geographic_fulltext": /* Subject (Geographic) (text)*/ [
         ["onePhrase", 400],
         ["and", 300],
         ["or", null]
@@ -1246,10 +1228,7 @@
       "twm_X3b_en_subject_name_ws_token": /* Subject (text-tokenized) (displays with punctuation) */ [
         ["onePhrase", 500]
       ],
-      "tm_X3b_en_name_30": /* Subject (text) */ [
-        ["onePhrase", 400]
-      ],
-      "tm_X3b_en_name_34": /* Subject (Geographic) (text)*/ [
+      "tm_X3b_en_subject_geographic_fulltext": /* Subject (Geographic) (text)*/ [
         ["onePhrase", 400]
       ]
     }
