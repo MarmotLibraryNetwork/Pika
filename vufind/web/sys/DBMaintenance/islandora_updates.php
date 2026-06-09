@@ -72,25 +72,25 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
-		'Islandora2_convert_privateCollections_pids_to_nodeIds' => [
-			'release'         => 'Islandora2', // TODO: change to release number
-			'releaseStep'     => 3,
-			'title'           => 'Convert archive_private_collections PIDs to nodeIds',
-			'description'     => 'Converts archive_private_collections.privateCollections entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
-			'continueOnError' => false,
-			'sql'             => [
-				'convertPrivateCollectionsPidsToNodeIds'
-			]
-		],
-
 		'Islandora2_archive_private_collections_add_type' => [
 			'release'         => 'Islandora2',  // TODO: change to release number
-			'releaseStep'     => 4,
+			'releaseStep'     => 3,
 			'title'           => 'Add type column to archive_private_collections',
 			'description'     => 'Adds an enum type column to distinguish collection vs object entries; tags the existing row as type=collection.',
 			'continueOnError' => false,
 			'sql'             => [
 				"ALTER TABLE archive_private_collections ADD COLUMN type ENUM('collection','object') NOT NULL DEFAULT 'collection' AFTER id",
+			]
+		],
+
+		'Islandora2_convert_privateCollections_pids_to_nodeIds' => [
+			'release'         => 'Islandora2', // TODO: change to release number
+			'releaseStep'     => 4,
+			'title'           => 'Convert archive_private_collections PIDs to nodeIds',
+			'description'     => 'Converts archive_private_collections.privateCollections entries from legacy Islandora PID format (namespace:id) to plain integer nodeIds.',
+			'continueOnError' => false,
+			'sql'             => [
+				'convertPrivateCollectionsPidsToNodeIds'
 			]
 		],
 
