@@ -49,8 +49,8 @@
 	</div>
 
 	{include file="Archive2/components/search_component.tpl"}
-		<hr />
-	{include file="Archive2/components/child_objects_grid.tpl"}
+
+	{include file="Archive2/components/timeline_component.tpl"}
 
 	{*include file="Archive2/metadata.tpl"*}
 {/strip}
@@ -109,6 +109,7 @@
 				infoWindow.close();
 				infoWindow.setContent('<a href="{$place.url|escape:javascript}">{$place.label|escape:javascript}</a><br>' + count + ' items for this location');
 				infoWindow.open({ldelim}anchor: marker, map: map{rdelim});
+				Pika.Archive2.setTimelinePlace('{$place.label|escape:javascript}');
 				{rdelim});
 				{rdelim})();
 			{/if}
@@ -134,8 +135,7 @@
 		{rdelim}
 	</script>
 	<script
-		src="https://maps.googleapis.com/maps/api/js?key={$mapsKey}&loading=async&libraries=marker&callback=initCollectionMap"
-		async defer></script>
+		src="https://maps.googleapis.com/maps/api/js?key={$mapsKey}&loading=async&libraries=marker&callback=initCollectionMap" async defer></script>
 {/if}
 
 {literal}
