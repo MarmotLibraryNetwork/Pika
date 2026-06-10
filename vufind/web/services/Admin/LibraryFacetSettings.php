@@ -49,7 +49,9 @@ class LibraryFacetSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-		return LibraryFacetSetting::getObjectStructure();
+		$structure                      = LibraryFacetSetting::getObjectStructure();
+		$structure['libraryId']['type'] = 'label'; // Make LibraryId read-only for users
+		return $structure;
 	}
 
 	function getPrimaryKeyColumn(){
