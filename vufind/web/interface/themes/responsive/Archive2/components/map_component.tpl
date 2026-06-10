@@ -74,6 +74,7 @@ function initCollectionMapComponent() {ldelim}
 			infoWindow.close();
 			infoWindow.setContent('<a href="{$place.url|escape:javascript}">{$place.label|escape:javascript}</a><br>' + count + ' items for this location');
 			infoWindow.open({ldelim}anchor: marker, map: map{rdelim});
+			Pika.Archive2.setTimelinePlace('{$place.label|escape:javascript}');
 		{rdelim});
 	{rdelim})();
 	{/if}

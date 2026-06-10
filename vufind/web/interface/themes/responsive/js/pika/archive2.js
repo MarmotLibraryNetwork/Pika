@@ -148,6 +148,129 @@ Pika.Archive2 = (function(){
 				}
 			).fail(Pika.ajaxFail);
 		},
+		/**
+		 * State for the filterable collection child-object grid used by the
+		 * timeline and map collection displays. The initial grid is rendered
+		 * server-side; filter/place/page changes reload it via AJAX.
+		 */
+		timeline: {
+			nid: null,
+			showTimeline: false,
+			groupByYear: false,
+			placeName: '',
+			dateFilter: '',
+			page: 1
+		},
+
+		/**
+		 * Record the timeline state for the current collection page.
+		 * Called from timeline_component.tpl on page load.
+		 *
+		 * @param {number}  nid          Node ID of the collection
+		 * @param {boolean} showTimeline Whether the decade date-filter buttons are shown
+		 * @param {boolean} groupByYear  Whether items are grouped under year headings
+		 */
+		initCollectionTimeline: function(nid, showTimeline, groupByYear) {
+			this.timeline.nid          = nid;
+			this.timeline.showTimeline = showTimeline;
+			this.timeline.groupByYear  = groupByYear;
+			this.timeline.placeName    = '';
+			this.timeline.dateFilter   = '';
+			this.timeline.page         = 1;
+		},
+
+		/**
+		 * Reload the child-object grid (and optionally the date-filter buttons)
+		 * for the current timeline state.
+		 *
+		 * @param {boolean} includeFilters  Rebuild the date-filter buttons too
+		 *                                  (used when the selected place changes)
+		 */
+		loadTimelineObjects: function(includeFilters) {
+			var state = this.timeline;
+			if (!state.nid) return;
+			var objectsContainer = $('#timeline-objects');
+			objectsContainer.css('opacity', 0.5);
+			$.getJSON('/Archive2/AJAX', {
+				method: 'getCollectionTimelineObjects',
+				nid: state.nid,
+				placeName: state.placeName,
+				dateFilter: state.dateFilter,
+				page: state.page,
+				showTimeline: state.showTimeline ? 1 : 0,
+				groupByYear: state.groupByYear ? 1 : 0,
+				includeFilters: includeFilters ? 1 : 0
+			}, function(data) {
+				objectsContainer.css('opacity', 1);
+				if (data.success) {
+					objectsContainer.html(data.html);
+					if (data.filtersHtml !== undefined) {
+						$('#timeline-date-filters').html(data.filtersHtml);
+					}
+					Pika.Archive2.applyCollectionDisplayMode();
+				} else if (data.message) {
+					Pika.showMessage('Error', data.message);
+				}
+			}).fail(function() {
+				objectsContainer.css('opacity', 1);
+				Pika.ajaxFail();
+			});
+		},
+
+		/**
+		 * Apply a decade date filter ('' or 'all' clears it).
+		 * Called by the buttons in timeline_date_filters.tpl.
+		 *
+		 * @param {string} value   Decade start year (e.g. '1920'), 'unknown', or ''
+		 * @param {Element} button The clicked button, for active-state styling
+		 */
+		setTimelineDateFilter: function(value, button) {
+			this.timeline.dateFilter = (value === 'all') ? '' : value;
+			this.timeline.page = 1;
+			if (button) {
+				$(button).addClass('active').siblings().removeClass('active');
+			}
+			this.loadTimelineObjects(false);
+		},
+
+		/**
+		 * Restrict the grid to objects related to a place (map marker click).
+		 * Resets the date filter since its counts are place-specific.
+		 *
+		 * @param {string} placeName  Display name of the Place taxonomy term
+		 */
+		setTimelinePlace: function(placeName) {
+			if (this.timeline.placeName === placeName) return;
+			this.timeline.placeName  = placeName;
+			this.timeline.dateFilter = '';
+			this.timeline.page       = 1;
+			this.loadTimelineObjects(true);
+		},
+
+		/** Clear the place restriction and show the whole collection again. */
+		clearTimelinePlace: function() {
+			this.timeline.placeName  = '';
+			this.timeline.dateFilter = '';
+			this.timeline.page       = 1;
+			this.loadTimelineObjects(true);
+			return false;
+		},
+
+		/**
+		 * Go to a page of the current (possibly filtered) grid.
+		 *
+		 * @param {number} page  1-indexed page number
+		 */
+		gotoTimelinePage: function(page) {
+			this.timeline.page = Math.max(1, page);
+			this.loadTimelineObjects(false);
+			var objectsTop = $('#timeline-objects').offset();
+			if (objectsTop) {
+				$('html, body').animate({scrollTop: objectsTop.top - 80}, 200);
+			}
+			return false;
+		},
+
 		showSaveToListForm: function (trigger, id){
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();

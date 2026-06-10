@@ -30,9 +30,11 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
+require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 
 use Islandora2\I2ObjectFactory;
 use Archive2\ExploreMore;
+use Archive2\CollectionTimelineData;
 
 class Archive2_AJAX extends AJAXHandler {
 
@@ -44,6 +46,7 @@ class Archive2_AJAX extends AJAXHandler {
 		'getRelatedObjectsForOrganization',
 		'getRelatedObjectsForEvent',
 		'getRelatedObjectsForPlace',
+		'getCollectionTimelineObjects',
 		'showSaveToListForm',
 		'saveToList',
 	];
@@ -466,6 +469,56 @@ class Archive2_AJAX extends AJAXHandler {
 			'hasResults' => true,
 			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
 		];
+	}
+
+	/**
+	 * Fetch a filtered, paginated page of a collection's child objects for the
+	 * timeline/map collection displays, plus (optionally) the rebuilt decade
+	 * date-filter buttons.
+	 *
+	 * Called via: /Archive2/AJAX?method=getCollectionTimelineObjects&nid={nid}
+	 * Optional params: placeName, dateFilter (decade start year or 'unknown'),
+	 * page, showTimeline (0/1), includeFilters (0/1).
+	 */
+	function getCollectionTimelineObjects(): array {
+		$nid = (int)($_REQUEST['nid'] ?? 0);
+		if ($nid <= 0) {
+			return ['success' => false, 'message' => 'A valid collection node id is required.'];
+		}
+
+		$placeName = trim(strip_tags($_REQUEST['placeName'] ?? ''));
+		if ($placeName !== '' && (str_contains($placeName, '/') || str_contains($placeName, '\\'))) {
+			$this->logger->warning('getCollectionTimelineObjects: rejected place name containing slash.', ['placeName' => $placeName]);
+			return ['success' => false, 'message' => 'Invalid place name.'];
+		}
+		$placeName = $placeName === '' ? null : $placeName;
+
+		$dateFilter = trim($_REQUEST['dateFilter'] ?? '');
+		if ($dateFilter !== '' && $dateFilter !== 'all' && $dateFilter !== 'unknown' && !ctype_digit($dateFilter)) {
+			return ['success' => false, 'message' => 'Invalid date filter.'];
+		}
+		$dateFilter = ($dateFilter === '' || $dateFilter === 'all') ? null : $dateFilter;
+
+		$page           = max(1, (int)($_REQUEST['page'] ?? 1));
+		$showTimeline   = !empty($_REQUEST['showTimeline']);
+		$includeFilters = !empty($_REQUEST['includeFilters']);
+		$groupByYear    = !empty($_REQUEST['groupByYear']);
+
+		global $interface;
+		$data = CollectionTimelineData::load($nid, $placeName, $dateFilter, $page);
+		CollectionTimelineData::assignToInterface($data, $nid, $showTimeline, $placeName, $dateFilter);
+		$interface->assign('groupByYear', $groupByYear);
+
+		$response = [
+			'success'    => true,
+			'totalCount' => $data['total'],
+			'placeName'  => $placeName,
+			'html'       => $interface->fetch('Archive2/components/timeline_objects_grid.tpl'),
+		];
+		if ($includeFilters && $showTimeline) {
+			$response['filtersHtml'] = $interface->fetch('Archive2/components/timeline_date_filters.tpl');
+		}
+		return $response;
 	}
 
 	/**
