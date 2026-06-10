@@ -26,7 +26,6 @@ abstract class FacetSetting extends DB_DataObject {
 	public $facetName;
 	public $weight;
 	public $numEntriesToShowByDefault; //
-	public $showAsDropDown;            //True or false
 	public $sortMode;                  //alphabetically = alphabetically, num_results = by number of results
 	public $showAboveResults;
 	public $showInResults;
@@ -93,7 +92,6 @@ abstract class FacetSetting extends DB_DataObject {
 			'facetName'                 => ['property' => 'facetName', 'type' => 'enum', 'label' => 'Facet', 'values' => empty($availableFacets) ? self::getAvailableFacets() : $availableFacets, 'description' => 'The facet to include'],
 			'displayName'               => ['property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the facet for display to the user'],
 			'numEntriesToShowByDefault' => ['property' => 'numEntriesToShowByDefault', 'type' => 'integer', 'label' => 'Num Entries', 'description' => 'The number of values to show by default.', 'default' => '5'],
-			'showAsDropDown'            => ['property' => 'showAsDropDown', 'type' => 'checkbox', 'label' => 'Drop Down?', 'description' => 'Whether or not the facets should be shown in a drop down list', 'default' => '0'],
 			'sortMode'                  => ['property' => 'sortMode', 'type' => 'enum', 'label' => 'Sort', 'values' => ['alphabetically' => 'Alphabetically', 'num_results' => 'By number of results'], 'description' => 'How the facet values should be sorted.', 'default' => 'num_results'],
 			'showAboveResults'          => ['property' => 'showAboveResults', 'type' => 'checkbox', 'label' => 'Show Above Results', 'description' => 'Whether or not the facets should be shown above the results', 'default' => 0],
 			'showInResults'             => ['property' => 'showInResults', 'type' => 'checkbox', 'label' => 'Show on Results Page', 'description' => 'Whether or not the facets should be shown in regular search results', 'default' => 1],
@@ -108,7 +106,6 @@ abstract class FacetSetting extends DB_DataObject {
 	function setupTopFacet($facetName, $displayName){
 		$this->facetName            = $facetName;
 		$this->displayName          = $displayName;
-		$this->showAsDropDown       = false;
 		$this->sortMode             = 'num_results';
 		$this->showInResults        = true;
 		$this->showInAuthorResults  = true;
@@ -121,7 +118,6 @@ abstract class FacetSetting extends DB_DataObject {
 	function setupSideFacet($facetName, $displayName, $collapseByDefault){
 		$this->facetName            = $facetName;
 		$this->displayName          = $displayName;
-		$this->showAsDropDown       = false;
 		$this->sortMode             = 'num_results';
 		$this->showInResults        = true;
 		$this->showInAuthorResults  = true;
@@ -135,7 +131,6 @@ abstract class FacetSetting extends DB_DataObject {
 	function setupAdvancedFacet($facetName, $displayName){
 		$this->facetName            = $facetName;
 		$this->displayName          = $displayName;
-		$this->showAsDropDown       = false;
 		$this->sortMode             = 'num_results';
 		$this->showAboveResults     = false;
 		$this->showInResults        = false;

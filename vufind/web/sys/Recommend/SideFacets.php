@@ -249,9 +249,6 @@ class SideFacets implements RecommendationInterface {
 					if ($facetSetting->numEntriesToShowByDefault > 0){
 						$sideFacets[$facetKey]['valuesToShow'] = $facetSetting->numEntriesToShowByDefault;
 					}
-					if ($facetSetting->showAsDropDown){
-						$sideFacets[$facetKey]['showAsDropDown'] = $facetSetting->showAsDropDown;
-					}
 					if ($facetSetting->useMoreFacetPopup && count($sideFacets[$facetKey]['list']) > 12){
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = true;
 						$sideFacets[$facetKey]['sortedList']         = $sideFacets[$facetKey]['list'];

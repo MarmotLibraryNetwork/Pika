@@ -370,14 +370,12 @@ class Library extends DB_DataObject {
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['libraryId']);
 		unset($facetSettingStructure['numEntriesToShowByDefault']);
-		unset($facetSettingStructure['showAsDropDown']);
 		//unset($facetSettingStructure['sortMode']);
 
 		$archiveSearchfacetSettingStructure = LibraryArchive2SearchFacetSetting::getObjectStructure();
 		unset($archiveSearchfacetSettingStructure['weight']);
 		unset($archiveSearchfacetSettingStructure['libraryId']);
 		unset($archiveSearchfacetSettingStructure['numEntriesToShowByDefault']);
-		unset($archiveSearchfacetSettingStructure['showAsDropDown']);
 		unset($archiveSearchfacetSettingStructure['showAboveResults']);
 		unset($archiveSearchfacetSettingStructure['showInAdvancedSearch']);
 		unset($archiveSearchfacetSettingStructure['showInAuthorResults']);

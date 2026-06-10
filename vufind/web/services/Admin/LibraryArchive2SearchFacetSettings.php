@@ -52,7 +52,6 @@ class LibraryArchive2SearchFacetSettings extends ObjectEditor {
 		$structure                      = LibraryArchive2SearchFacetSetting::getObjectStructure();
 		$structure['libraryId']['type'] = 'label'; // Make LibraryId read-only for user
 		// Remove unused settings
-		unset($structure['showAsDropDown']);
 		unset($structure['showAboveResults']);
 		unset($structure['showInAdvancedSearch']);
 		unset($structure['showInAuthorResults']);
