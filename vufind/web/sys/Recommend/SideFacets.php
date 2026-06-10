@@ -55,14 +55,13 @@ class SideFacets implements RecommendationInterface {
 			$config           = getExtraConfigArray($iniName);
 			$this->mainFacets = $config[$mainSection] ?? [];
 		}elseif ($searchObject->getSearchType() == 'islandora2'){
-			//TODO: library overrides
-			//$searchLibrary                 = Library::getActiveLibrary();
-//			$hasArchiveSearchLibraryFacets = !empty($searchLibrary->archiveSearchFacets);
-//			if ($hasArchiveSearchLibraryFacets){
-//				$facets = $searchLibrary->archiveSearchFacets;
-//			}else{
+			$searchLibrary                 = Library::getActiveLibrary();
+			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
+			if ($hasArchiveSearchLibraryFacets){
+				$facets = $searchLibrary->archiveSearchFacets;
+			}else{
 				$facets = Library::getDefaultArchive2SearchFacets();
-//			}
+			}
 			$this->facetSettings = [];
 			$this->mainFacets    = [];
 
@@ -75,6 +74,11 @@ class SideFacets implements RecommendationInterface {
 						$this->facetSettings[$facetName] = $facet;
 						$this->mainFacets[$facetName]    = $facet->displayName;
 					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
+						// Advanced-search-only facets store just the display name here rather than
+						// the full facet object. These are NOT added to $this->mainFacets, so they
+						// never appear in $sideFacets (from getFacetList) and are never reached by
+						// the processing loop below. The display name entry is unused in this path
+						// and is present only to mirror the pattern in the islandora block.
 						$this->facetSettings[$facetName] = $facet->displayName;
 					}
 				}
@@ -249,9 +253,6 @@ class SideFacets implements RecommendationInterface {
 					}
 					if ($facetSetting->numEntriesToShowByDefault > 0){
 						$sideFacets[$facetKey]['valuesToShow'] = $facetSetting->numEntriesToShowByDefault;
-					}
-					if ($facetSetting->showAsDropDown){
-						$sideFacets[$facetKey]['showAsDropDown'] = $facetSetting->showAsDropDown;
 					}
 					if ($facetSetting->useMoreFacetPopup && count($sideFacets[$facetKey]['list']) > 12){
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = true;

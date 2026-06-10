@@ -49,7 +49,9 @@ class LocationFacetSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-		return LocationFacetSetting::getObjectStructure();
+		$structure                       = LocationFacetSetting::getObjectStructure();
+		$structure['locationId']['type'] = 'label'; // Make LocatoinId read-only for users
+		return $structure;
 	}
 
 	function getPrimaryKeyColumn(){

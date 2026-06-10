@@ -19,7 +19,8 @@
 require_once ROOT_DIR . '/sys/Search/FacetSetting.php';
 
 class LibraryArchiveSearchFacetSetting extends FacetSetting {
-	public $__table = 'library_archive_search_facet_setting';    // table name
+	const string ISLANDORA_FACET_INI = 'islandoraFacets';
+	public $__table                  = 'library_archive_search_facet_setting';    // table name
 	public $libraryId;
 
 	static $defaultFacetList = [
@@ -39,7 +40,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
@@ -49,7 +50,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 
 		$structure = parent::getObjectStructure(self::getAvailableFacets());
 		$structure['libraryId'] = ['property' =>'libraryId', 'type' =>'enum', 'values' =>$libraryList, 'label' =>'Library', 'description' =>'The id of a library'];
-		//TODO: needed? for copy facets button?
+		// Id used by the edit facet setting page
 
 		return $structure;
 	}
@@ -59,7 +60,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 	}
 
 	static public function getAvailableFacets(){
-		$config            = getExtraConfigArray('islandoraFacets');
+		$config          = getExtraConfigArray(self::ISLANDORA_FACET_INI);
 		$availableFacets = $config['Results'] ?? self::$defaultFacetList;
 		return $availableFacets;
 	}

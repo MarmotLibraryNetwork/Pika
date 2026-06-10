@@ -419,12 +419,12 @@ function convertPidToNid(){
 	global $pikaLogger;
 	$success = true;
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('pid IS NOT NULL');
 	$archiveRequest->whereAdd("pid != ''");
 	if ($archiveRequest->find()){
 		// Get the Islandora2 search object
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 		while ($archiveRequest->fetch()){
@@ -448,13 +448,13 @@ function convertPidToNid(){
 function convertPidToNidAuthorship(){
 	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('pid IS NOT NULL');
 	$authorshipClaim->whereAdd("pid != ''");
 	$success = true;
 	if ($authorshipClaim->find()){
 		// Get the Islandora2 search object
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 		while ($authorshipClaim->fetch()){
@@ -479,11 +479,11 @@ function convertPidToNidAuthorship(){
 function getTidFromNid(){
 	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 	$archiveRequest = new Archive2\ArchiveRequest();
 	$archiveRequest->whereAdd('nid IS NOT NULL');
 	$success = true;
 	if ($archiveRequest->find()){
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 		$islandora2Search->addFieldsToReturn(['itm_field_library']);
@@ -508,11 +508,11 @@ function getTidFromNid(){
 function getTidFromNidAuthorship(){
 	global $pikaLogger;
 	require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 	$authorshipClaim = new Archive2\ClaimAuthorshipRequest();
 	$authorshipClaim->whereAdd('nid IS NOT NULL');
 	$success = true;
 	if ($authorshipClaim->find()){
-		require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 		$islandora2Search->addFieldsToReturn(['itm_field_library']);
@@ -553,6 +553,7 @@ function convertListPidToNid():bool {
 	$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
 
 	$userListEntry = new UserListEntry();
+	$userListEntry->whereAdd("nid LIKE '%:%'");
 	$userListEntry->find();
 	$success = true; // Set as true if there are no list entries to process
 	while($userListEntry->fetch()){
