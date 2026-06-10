@@ -58,9 +58,10 @@ class Admin_Libraries extends ObjectEditor {
 		if (UserAccount::userHasRole('opacAdmin')){
 			$library = new Library();
 			$library->orderBy($orderBy ?? 'subdomain');
-			$library->find();
-			while ($library->fetch()){
-				$libraryList[$library->libraryId] = clone $library;
+			if ($library->find()){
+				while ($library->fetch()){
+					$libraryList[$library->libraryId] = clone $library;
+				}
 			}
 		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'partnerAdmin'])){
 			$patronLibrary                          = UserAccount::getUserHomeLibrary();
@@ -69,11 +70,12 @@ class Admin_Libraries extends ObjectEditor {
 
 		if (UserAccount::userHasRole('partnerAdmin') && count($libraryList) == 1){
 			$partnerLibrary = new Library();
-			$partnerLibrary->partnerOfSystem = UserAccount::getUserHomeLibrary()->libraryId;
+			$partnerLibrary->partnerOfSystem      = UserAccount::getUserHomeLibrary()->libraryId;
 			$partnerLibrary->archiveOnlyInterface = true;
-			$partnerLibrary->find();
-			while ($partnerLibrary->fetch()){
-				$libraryList[$partnerLibrary->libraryId] = clone $partnerLibrary;
+			if ($partnerLibrary->find()){
+				while ($partnerLibrary->fetch()){
+					$libraryList[$partnerLibrary->libraryId] = clone $partnerLibrary;
+				}
 			}
 		}
 
@@ -81,10 +83,12 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-        $lib = new Library();
+		$lib             = new Library();
 		$objectStructure = $lib->getObjectStructure();
 		$user            = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
+			// Hide isDefault switch for non-opac admin users
+			//TODO: make read-only instead?
 			unset($objectStructure['isDefault']);
 		}
 		return $objectStructure;
@@ -104,6 +108,7 @@ class Admin_Libraries extends ObjectEditor {
 				['label' => 'Clone Library', 'onclick' => 'Pika.Admin.cloneLibraryFromSelection()'],
 			];
 		}
+		return [];
 	}
 
 	function getAllowableRoles(){
@@ -169,22 +174,23 @@ class Admin_Libraries extends ObjectEditor {
 			}
 			$library            = new Library();
 			$library->libraryId = $libraryId;
-			$library->find(true);
-			$library->clearFacets();
+			if ($library->find(true)){
+				$library->clearFacets();
 
-			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom            = new Library();
-			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$libraryToCopyFrom->find(true);
-
-			$facetsToCopy = $libraryToCopyFrom->facets;
-			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId        = $libraryId;
-				$facet->id               = null;
-				$facetsToCopy[$facetKey] = $facet;
+				$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
+				$libraryToCopyFrom            = new Library();
+				$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
+				if ($libraryToCopyFrom->find(true)){
+					$facetsToCopy = $libraryToCopyFrom->facets;
+					foreach ($facetsToCopy as $facetKey => $facet){
+						$facet->libraryId        = $libraryId;
+						$facet->id               = null;
+						$facetsToCopy[$facetKey] = $facet;
+					}
+					$library->facets = $facetsToCopy;
+					$library->update();
+				}
 			}
-			$library->facets = $facetsToCopy;
-			$library->update();
 			$this->navigateToLibraryPage($libraryId);
 		}else{
 			//Prompt user for the library to copy from
@@ -216,22 +222,23 @@ class Admin_Libraries extends ObjectEditor {
 			}
 			$library            = new Library();
 			$library->libraryId = $libraryId;
-			$library->find(true);
-			$library->clearArchiveSearchFacets();
+			if ($library->find(true)){
+				$library->clearArchiveSearchFacets();
 
-			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom            = new Library();
-			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$libraryToCopyFrom->find(true);
-
-			$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
-			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId        = $libraryId;
-				$facet->id               = null;
-				$facetsToCopy[$facetKey] = $facet;
+				$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
+				$libraryToCopyFrom            = new Library();
+				$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
+				if ($libraryToCopyFrom->find(true)){
+					$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
+					foreach ($facetsToCopy as $facetKey => $facet){
+						$facet->libraryId        = $libraryId;
+						$facet->id               = null;
+						$facetsToCopy[$facetKey] = $facet;
+					}
+					$library->archiveSearchFacets = $facetsToCopy;
+					$library->update();
+				}
 			}
-			$library->archiveSearchFacets = $facetsToCopy;
-			$library->update();
 			$this->navigateToLibraryPage($libraryId);
 		}else{
 			//Prompt user for the library to copy from
@@ -262,8 +269,7 @@ class Admin_Libraries extends ObjectEditor {
 		if ($library->find(true)){
 			$library->clearFacets();
 
-			$defaultFacets = Library::getDefaultFacets($libraryId);
-
+			$defaultFacets   = Library::getDefaultFacets($libraryId);
 			$library->facets = $defaultFacets;
 			$library->update();
 
