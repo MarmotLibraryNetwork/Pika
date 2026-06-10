@@ -67,7 +67,8 @@ class LibraryArchive2SearchFacetSetting extends FacetSetting {
 	}
 
 	function getEditLink(){
-		return '/Admin/' . __CLASS__ .'?objectAction=edit&id=' . $this->id;
+		return '/Admin/' . __CLASS__ .'s?objectAction=edit&id=' . $this->id;
+		// Uses plural form of the current class, which is the Admin class, thus appended 's' in the URL
 	}
 	static public function getAvailableFacets(){
 		$config          = getExtraConfigArray(self::ISLANDORA2_FACET_INI);

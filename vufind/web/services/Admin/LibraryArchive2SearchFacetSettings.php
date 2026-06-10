@@ -19,14 +19,14 @@
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class LibraryArchiveSearchFacetSettings extends ObjectEditor {
+class LibraryArchive2SearchFacetSettings extends ObjectEditor {
 
 	function getObjectType(){
-		return 'LibraryArchiveSearchFacetSetting';
+		return 'LibraryArchive2SearchFacetSetting';
 	}
 
 	function getToolName(){
-		return 'LibraryArchiveSearchFacetSettings';
+		return 'LibraryArchive2SearchFacetSettings';
 	}
 
 	function getPageTitle(){
@@ -34,23 +34,22 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor {
 	}
 
 	function getAllObjects($orderBy = null){
-		$facetsList = [];
-		$library    = new LibraryArchiveSearchFacetSetting();
-		if (!empty($_REQUEST['libraryId'])){
-			$libraryId          = $_REQUEST['libraryId'];
-			$library->libraryId = $libraryId;
+		$facetsList   = [];
+		$facetSetting = new LibraryArchive2SearchFacetSetting();
+		if (!empty($_REQUEST['libraryId']) && ctype_digit($_REQUEST['libraryId'])){
+			$facetSetting->libraryId = $_REQUEST['libraryId'];
 		}
-		$library->orderBy($orderBy ?? 'weight');
-		$library->find();
-		while ($library->fetch()){
-			$facetsList[$library->id] = clone $library;
+		$facetSetting->orderBy($orderBy ?? 'weight');
+		if ($facetSetting->find()){
+			while ($facetSetting->fetch()){
+				$facetsList[$facetSetting->id] = clone $facetSetting;
+			}
 		}
-
 		return $facetsList;
 	}
 
 	function getObjectStructure(){
-		return LibraryArchiveSearchFacetSetting::getObjectStructure();
+		return LibraryArchive2SearchFacetSetting::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn(){
@@ -62,26 +61,26 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+		return ['opacAdmin', 'libraryAdmin'];
 	}
 
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
+		UserAccount::getLoggedInUser(); // Populate for fetching roles
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
+		UserAccount::getLoggedInUser();  // Populate for fetching roles
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
 	function getAdditionalObjectActions($existingObject){
-		$objectActions = array();
+		$objectActions = [];
 		if (isset($existingObject) && $existingObject != null){
-			$objectActions[] = array(
+			$objectActions[] = [
 				'text' => 'Return to Library',
 				'url'  => '/Admin/Libraries?objectAction=edit&id=' . $existingObject->libraryId,
-			);
+			];
 		}
 		return $objectActions;
 	}
