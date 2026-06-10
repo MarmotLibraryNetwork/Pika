@@ -159,8 +159,14 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function copyFacetsFromLibrary(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
+			if (!isset($_REQUEST['libraryToCopyFrom']) || !ctype_digit($_REQUEST['libraryToCopyFrom'])){
+				$this->navigateToLibraryPage($libraryId);
+			}
 			$library            = new Library();
 			$library->libraryId = $libraryId;
 			$library->find(true);
@@ -247,6 +253,9 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function resetFacetsToDefault(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
@@ -264,23 +273,27 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function resetArchiveSearchFacetsToDefault(){
-		if (ctype_digit( $_REQUEST['id'])){
-			$libraryId          = $_REQUEST['id'];
-			$library            = new Library();
-			$library->libraryId = $libraryId;
-			if ($library->find(true)){
-				$library->clearArchiveSearchFacets();
-				$defaultFacets                = Library::getDefaultArchive2SearchFacets($libraryId);
-				$library->archiveSearchFacets = $defaultFacets;
-				$library->update();
-
-				$_REQUEST['objectAction'] = 'edit';
-			}
-			$this->navigateToLibraryPage($libraryId);
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
 		}
+		$libraryId          = $_REQUEST['id'];
+		$library            = new Library();
+		$library->libraryId = $libraryId;
+		if ($library->find(true)){
+			$library->clearArchiveSearchFacets();
+			$defaultFacets                = Library::getDefaultArchive2SearchFacets($libraryId);
+			$library->archiveSearchFacets = $defaultFacets;
+			$library->update();
+
+			$_REQUEST['objectAction'] = 'edit';
+		}
+		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function resetMoreDetailsToDefault(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
@@ -310,6 +323,9 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function resetArchiveMoreDetailsToDefault(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
@@ -328,6 +344,9 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function defaultMaterialsRequestForm(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
@@ -342,6 +361,9 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function defaultMaterialsRequestFormats(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
@@ -356,6 +378,9 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function defaultArchiveExploreMoreOptions(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$library            = new Library();
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
