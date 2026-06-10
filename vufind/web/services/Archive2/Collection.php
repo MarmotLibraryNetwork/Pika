@@ -25,6 +25,7 @@ require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
 use Islandora2\CollectionObject;
@@ -46,7 +47,9 @@ class Collection extends ArchiveObject
 
         /** @var CollectionObject $collection */
         $collection  = $this->mediaObject;
-        $displayType = $collection->getCollectionDisplay() ?? 'basic';
+        // ?style= override mirrors the old Archive/Exhibit.php behavior (handy
+        // for previewing a display type before configuring it on the node)
+        $displayType = $_REQUEST['style'] ?? $collection->getCollectionDisplay() ?? 'basic';
         $nid         = $collection->getNodeId();
 
         $thumb = $collection->getThumbnail();
@@ -56,16 +59,14 @@ class Collection extends ArchiveObject
 
         switch ($displayType) {
             case 'timeline':
-                $this->loadChildrenData($nid);
+                $this->loadTimelineData($nid, true, true);
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
-                $interface->assign('showTimeline', false);
-                $this->loadChildrenData($nid);
+                $this->loadTimelineData($nid, true);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapNoTimeline':
-                $interface->assign('showTimeline', false);
-                $this->loadChildrenData($nid);
+                $this->loadTimelineData($nid, false);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'custom':
@@ -75,6 +76,25 @@ class Collection extends ArchiveObject
                 $this->loadChildrenData($nid);
                 return parent::display('collection_basic.tpl', $collection->getTitle());
         }
+    }
+
+    /**
+     * Loads the initial (unfiltered, page 1 unless requested) state of the
+     * filterable child-object grid used by the timeline and map displays.
+     * Subsequent filter/place/page changes are AJAX reloads of the same
+     * templates via Archive2_AJAX::getCollectionTimelineObjects().
+     *
+     * @param int  $nid          Node ID of the parent collection.
+     * @param bool $showTimeline Whether the decade date-filter buttons are shown.
+     * @param bool $groupByYear  Whether the grid groups items under year headings.
+     */
+    private function loadTimelineData(int $nid, bool $showTimeline, bool $groupByYear = false): void
+    {
+        global $interface;
+        $page = max(1, (int)($_REQUEST['page'] ?? 1));
+        $data = CollectionTimelineData::load($nid, null, null, $page);
+        CollectionTimelineData::assignToInterface($data, $nid, $showTimeline);
+        $interface->assign('groupByYear', $groupByYear);
     }
 
     /**
@@ -223,6 +243,10 @@ class Collection extends ArchiveObject
                 $interface->assign('additionalMapCollections', $parts[1] ?? '');
                 $this->loadMapData();
                 $templates[] = $interface->fetch('Archive2/components/map_component.tpl');
+                // Filterable child grid below the map: marker clicks filter it by
+                // place and the decade date-filter buttons filter it by time.
+                $this->loadTimelineData($nid, true);
+                $templates[] = $interface->fetch('Archive2/components/timeline_component.tpl');
 
             } elseif ($type === 'browseCollectionByTitle' || $type === 'scroller') {
                 $childNid = (int)($parts[1] ?? 0);
