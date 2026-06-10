@@ -21,34 +21,9 @@
 		</div>
 		{/if}
 
-		{if $recordCount}
-		<p class="text-muted" style="margin-top:0.5em;">{$recordCount} objects</p>
-		{/if}
-
-		{* Year-grouped grid — grouping done in template to keep PHP simple *}
-		{assign var="current_year" value=""}
-		{assign var="year_open" value=false}
-		{foreach from=$relatedImages item=image}
-			{if $image.date != $current_year}
-				{if $year_open}</div></div>{/if}
-				{assign var="current_year" value=$image.date}
-				{assign var="year_open" value=true}
-				<div class="collection-timeline-year" style="margin-top:1.5em;">
-				<h2 class="timeline-year-heading" style="border-bottom:2px solid #ccc; padding-bottom:0.25em;">{if $current_year}{$current_year}{else}Unknown{/if}</h2>
-				<div class="row">
-			{/if}
-			<div class="col-xs-6 col-sm-4 col-md-3">
-				<a href="{$image.url}" class="thumbnail">
-					{if $image.thumbnail}
-					<img src="{$image.thumbnail}" alt="{$image.title|escape}">
-					{/if}
-					<div class="caption"><p>{$image.title}</p></div>
-				</a>
-			</div>
-		{/foreach}
-		{if $year_open}</div></div>{/if}
-
-		{if $pageLinks.all}<div class="pagination" style="margin-top:1em;">{$pageLinks.all}</div>{/if}
+		{* Decade date filters + year-grouped child grid (EDTF dates); filtering
+		   and pagination reload via Pika.Archive2 AJAX *}
+		{include file="Archive2/components/timeline_component.tpl"}
 
 		{/if}
 	</div>
