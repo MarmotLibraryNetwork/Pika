@@ -55,14 +55,13 @@ class SideFacets implements RecommendationInterface {
 			$config           = getExtraConfigArray($iniName);
 			$this->mainFacets = $config[$mainSection] ?? [];
 		}elseif ($searchObject->getSearchType() == 'islandora2'){
-			//TODO: library overrides
-			//$searchLibrary                 = Library::getActiveLibrary();
-//			$hasArchiveSearchLibraryFacets = !empty($searchLibrary->archiveSearchFacets);
-//			if ($hasArchiveSearchLibraryFacets){
-//				$facets = $searchLibrary->archiveSearchFacets;
-//			}else{
+			$searchLibrary                 = Library::getActiveLibrary();
+			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
+			if ($hasArchiveSearchLibraryFacets){
+				$facets = $searchLibrary->archiveSearchFacets;
+			}else{
 				$facets = Library::getDefaultArchive2SearchFacets();
-//			}
+			}
 			$this->facetSettings = [];
 			$this->mainFacets    = [];
 
