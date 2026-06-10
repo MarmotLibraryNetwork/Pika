@@ -74,6 +74,11 @@ class SideFacets implements RecommendationInterface {
 						$this->facetSettings[$facetName] = $facet;
 						$this->mainFacets[$facetName]    = $facet->displayName;
 					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
+						// Advanced-search-only facets store just the display name here rather than
+						// the full facet object. These are NOT added to $this->mainFacets, so they
+						// never appear in $sideFacets (from getFacetList) and are never reached by
+						// the processing loop below. The display name entry is unused in this path
+						// and is present only to mirror the pattern in the islandora block.
 						$this->facetSettings[$facetName] = $facet->displayName;
 					}
 				}

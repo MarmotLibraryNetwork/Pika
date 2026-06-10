@@ -1857,7 +1857,7 @@ class Library extends DB_DataObject {
 
 	public function clearArchiveSearchFacets(){
 		$this->clearOneToManyOptions('LibraryArchive2SearchFacetSetting');
-		$this->archiveSearchfacets = [];
+		$this->archiveSearchFacets = [];
 	}
 
 	public function saveCombinedResultSections(){

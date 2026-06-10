@@ -61,7 +61,7 @@ class LibraryArchive2SearchFacetSetting extends FacetSetting {
 
 		$structure              = parent::getObjectStructure(self::getAvailableFacets());
 		$structure['libraryId'] = ['property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library'];
-		//TODO: needed? for copy facets button?
+		// ID used by the edit facet setting page
 
 		return $structure;
 	}

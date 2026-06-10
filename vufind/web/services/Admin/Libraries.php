@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Libraries extends ObjectEditor {
@@ -198,8 +200,14 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	function copyArchiveSearchFacetsFromLibrary(){
+		if (!isset($_REQUEST['id']) || !ctype_digit($_REQUEST['id'])){
+			$this->navigateToLibraryPage();
+		}
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
+			if (!isset($_REQUEST['libraryToCopyFrom']) || !ctype_digit($_REQUEST['libraryToCopyFrom'])){
+				$this->navigateToLibraryPage($libraryId);
+			}
 			$library            = new Library();
 			$library->libraryId = $libraryId;
 			$library->find(true);
@@ -216,7 +224,7 @@ class Admin_Libraries extends ObjectEditor {
 				$facet->id               = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
-			$library->facets = $facetsToCopy;
+			$library->archiveSearchFacets = $facetsToCopy;
 			$library->update();
 			$this->navigateToLibraryPage($libraryId);
 		}else{
@@ -262,16 +270,14 @@ class Admin_Libraries extends ObjectEditor {
 			$library->libraryId = $libraryId;
 			if ($library->find(true)){
 				$library->clearArchiveSearchFacets();
-
-				$defaultFacets = Library::getDefaultArchive2SearchFacets($libraryId);
-
+				$defaultFacets                = Library::getDefaultArchive2SearchFacets($libraryId);
 				$library->archiveSearchFacets = $defaultFacets;
 				$library->update();
 
 				$_REQUEST['objectAction'] = 'edit';
 			}
+			$this->navigateToLibraryPage($libraryId);
 		}
-		$this->navigateToLibraryPage($libraryId);
 	}
 
 	function resetMoreDetailsToDefault(){
@@ -367,12 +373,18 @@ class Admin_Libraries extends ObjectEditor {
 	}
 
 	/**
-	 * Send user directly to a Library's admin page
+	 * Send the user directly to a Library's admin page.
+	 * If the libraryId isn't defined or isn't numeric, go to the library list.
 	 *
-	 * @param $libraryId  ID of the library to navigate to.
+	 * @param int $libraryId  ID of the library to navigate to.
 	 */
-	private function navigateToLibraryPage($libraryId): void{
-		header('Location: /Admin/Libraries?objectAction=edit&id=' . $libraryId);
+	#[NoReturn]
+	private function navigateToLibraryPage($libraryId = null): void{
+		if (!empty($libraryId) && is_numeric($libraryId)){
+			header('Location: /Admin/Libraries?objectAction=edit&id=' . $libraryId);
+		} else {
+			header('Location: /Admin/Libraries');
+		}
 		die();
 	}
 
