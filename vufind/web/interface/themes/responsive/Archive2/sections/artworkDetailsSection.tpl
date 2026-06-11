@@ -76,4 +76,14 @@
 			</div>
 		</div>
 	{/if}
-{/strip }
+	{if $installationDates}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">Installation{if $installationDates|@count > 1}s{/if}:</div>
+			<div class="result-value col-sm-8">
+				{foreach from=$installationDates item=installationDate}
+					<div>{$installationDate|escape}</div>
+				{/foreach}
+			</div>
+		</div>
+	{/if}
+{/strip}

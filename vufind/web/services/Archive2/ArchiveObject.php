@@ -391,6 +391,28 @@ class ArchiveObject extends \Action
         }
         $interface->assign('stylePeriods', $stylePeriods ?: null);
 
+        // Process installation date strings into human-readable display values.
+        // Entries are EDTF-style strings: a single year ("2015"), a full date ("2016-10-08"),
+        // or a date range with start and end separated by "/" ("2016-10-08/2017-10-07").
+        $rawInstallations = $nodeData['installations'] ?? null;
+        $installationDates = [];
+        if ($rawInstallations !== null) {
+            $items = is_array($rawInstallations) ? $rawInstallations : [$rawInstallations];
+            foreach ($items as $item) {
+                $raw = trim((string)$item);
+                if ($raw === '') {
+                    continue;
+                }
+                if (str_contains($raw, '/')) {
+                    [$start, $end]       = explode('/', $raw, 2);
+                    $installationDates[] = $this->formatInstallationDate(trim($start)) . ' to ' . $this->formatInstallationDate(trim($end));
+                } else {
+                    $installationDates[] = $this->formatInstallationDate($raw);
+                }
+            }
+        }
+        $interface->assign('installationDates', $installationDates ?: null);
+
         // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
         $transcriptMedia = array_values(array_filter(
             $this->mediaObject->getMedia(),
@@ -533,6 +555,21 @@ class ArchiveObject extends \Action
         }
 
         return self::MODEL_VIEWER_MAP[$model] ?? null;
+    }
+
+    /**
+     * Formats a single EDTF date string for display.
+     * Full dates (YYYY-MM-DD) are returned as "Month D, YYYY"; year-only values pass through as-is.
+     */
+    private function formatInstallationDate(string $date): string
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+            if ($dt !== false) {
+                return $dt->format('F j, Y');
+            }
+        }
+        return $date;
     }
 
     /**
