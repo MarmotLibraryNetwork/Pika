@@ -298,8 +298,6 @@ class ArchiveObject extends \Action
             $interviewLocations[] = $interviewLocation;
         }
         $interface->assign('interview_locations', $interviewLocations);
-        $interface->assign('linked_agents_display', $this->normalizeLinkedAgents());
-		    //Linked Agents (Creator): normalize each entry for display with role label and conditional link.
 
         // Related Entity processing
         $relatedPeople = $this->getRelatedPeople();
@@ -308,6 +306,15 @@ class ArchiveObject extends \Action
         // so they don't also appear in the Related People section.
         $productionTeam = $this->buildProductionTeam($relatedPeople);
         $interface->assign('production_team', $productionTeam ?: null);
+
+        // Linked Agents (Details section): exclude names already shown in Acknowledgements
+        // to avoid showing the same person in both sections.
+        $productionTeamNames = array_column($productionTeam, 'name');
+        $linkedAgentsDisplay = array_values(array_filter(
+            $this->normalizeLinkedAgents(),
+            fn($agent) => !in_array($agent['name'], $productionTeamNames, true)
+        ));
+        $interface->assign('linked_agents_display', $linkedAgentsDisplay ?: null);
 
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
         $interface->assign('related_organization', $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization()));
