@@ -6,7 +6,7 @@
 		</a>
 		<div id="locationGeographyPanelBody" class="panel-collapse collapse">
 			<div class="panel-body">
-				{include file="Archive2/partials/fieldRow.tpl" label="Coordinates" value=$coordinates}
+				{include file="Archive2/partials/fieldRow.tpl" label="Coordinates" value=$coordinates} {* This is likely the art installation coordinates *}
 				{include file="Archive2/partials/fieldRow.tpl" label="Coordinates Text" value=$coordinates_text}
 				{include file="Archive2/partials/fieldRow.tpl" label="Original Location" value=$original_location}
 				{include file="Archive2/partials/fieldRow.tpl" label="Place Published" value=$place_published}
