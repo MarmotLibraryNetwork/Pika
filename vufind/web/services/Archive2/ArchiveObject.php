@@ -313,6 +313,7 @@ class ArchiveObject extends \Action
         $interface->assign('related_organization', $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization()));
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
         $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
+        $interface->assign('related_objects', $this->mediaObject->getRelatedObjects());
 
         // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
         $parentCollections = $this->resolveParentCollections();

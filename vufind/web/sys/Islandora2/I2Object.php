@@ -616,6 +616,52 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return the related archive objects linked via the related_object_paragraph field.
+     *
+     * Each entry includes the object's nid, title, thumbnail URL (extracted from the
+     * embedded Thumbnail Image media), and optional note.
+     *
+     * @return array|null Array of related object entries, or null when none are present.
+     */
+    public function getRelatedObjects(): ?array
+    {
+        $raw = $this->nwfp()['related_object_paragraph'] ?? null;
+        if ($raw === null) {
+            return null;
+        }
+        // Normalize a single paragraph entry (associative array) to a list.
+        if (is_array($raw) && array_key_exists('id', $raw)) {
+            $raw = [$raw];
+        }
+        $objects = [];
+        foreach ($raw as $entry) {
+            $relObj = $entry['related_object'] ?? null;
+            if ($relObj === null) {
+                continue;
+            }
+            $nid = $relObj['nid'] ?? null;
+            if ($nid === null) {
+                $this->logger->warn('related_object_paragraph entry missing nid on node ' . $this->getNodeId());
+                continue;
+            }
+            $thumbnailUrl = null;
+            foreach ($relObj['media'] ?? [] as $mediaItem) {
+                if (($mediaItem['media_use']['name'] ?? null) === 'Thumbnail Image') {
+                    $thumbnailUrl = $mediaItem['thumbnail']['url'] ?? null;
+                    break;
+                }
+            }
+            $objects[] = [
+                'nid'       => $nid,
+                'title'     => $relObj['title'] ?? null,
+                'note'      => $entry['related_object_note'] ?? null,
+                'thumbnail' => $thumbnailUrl,
+            ];
+        }
+        return empty($objects) ? null : $objects;
+    }
+
+    /**
      * Remove the "field_" prefix from every string key within the array.
      *
      * @param array $ar
