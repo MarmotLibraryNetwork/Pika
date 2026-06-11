@@ -857,11 +857,11 @@ class ArchiveObject extends \Action
      * Entries from both sources are merged by name so a person appearing in both
      * lists gets a single entry with their roles concatenated (e.g. "Editor, Interviewer").
      *
-     * Each entry: ['role' => string, 'code' => string|null, 'name' => string].
+     * Each entry: ['role' => string, 'code' => string|null, 'name' => string, 'tid' => int|null, 'vocabulary' => string|null].
      *
      * @param array $relatedPeople Output of I2Object::getRelatedPerson(); matched entries are
      *                             removed so they are not duplicated in the Related People section.
-     * @return array<array{role: string, code: string|null, name: string}>
+     * @return array<array{role: string, code: string|null, name: string, tid: int|null, vocabulary: string|null}>
      */
     private function buildProductionTeam(array &$relatedPeople): array
     {
@@ -891,7 +891,15 @@ class ArchiveObject extends \Action
                 if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
                     continue;
                 }
-                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
+                $tid        = isset($agent['tid']) ? (int)$agent['tid'] : null;
+                $vocabulary = $agent['vid'] ?? null;
+                if ($vocabulary === null) {
+                    $rel        = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+                    $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
+                        ? 'corporate_body'
+                        : 'person';
+                }
+                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
             }
         }
 
@@ -906,7 +914,9 @@ class ArchiveObject extends \Action
           if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)){
 	          continue;
           }
-          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
+          $tid        = isset($person['tid']) ? (int)$person['tid'] : null;
+          $vocabulary = $person['vid'] ?? 'person';
+          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
 					unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
         }
         return $team;
@@ -934,15 +944,15 @@ class ArchiveObject extends \Action
 
     /**
      * Adds or merges a production team member into $team, keyed by $byName.
-     * When the name already exists, the role is appended with ", ".
+     * When the name already exists, the role is appended with ", "; tid/vocabulary from the first entry are kept.
      */
-    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code): void
+    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code, ?int $tid = null, ?string $vocabulary = null): void
     {
         if (isset($byName[$name])) {
             $team[$byName[$name]]['role'] .= ', ' . $role;
         } else {
             $byName[$name] = count($team);
-            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name];
+            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name, 'tid' => $tid, 'vocabulary' => $vocabulary];
         }
     }
 
