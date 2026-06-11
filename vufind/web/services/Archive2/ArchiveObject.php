@@ -404,14 +404,27 @@ class ArchiveObject extends \Action
                     continue;
                 }
                 if (str_contains($raw, '/')) {
-                    [$start, $end]       = explode('/', $raw, 2);
-                    $installationDates[] = $this->formatInstallationDate(trim($start)) . ' to ' . $this->formatInstallationDate(trim($end));
+                    [$start, $end] = explode('/', $raw, 2);
+                    $start         = trim($start);
+                    $end           = trim($end);
+                    if ($start === '') {
+                        $installationDates[] = 'ending ' . $this->formatInstallationDate($end);
+                    } elseif ($end === '') {
+                        $installationDates[] = $this->formatInstallationDate($start);
+                    } else {
+                        $installationDates[] = $this->formatInstallationDate($start) . ' to ' . $this->formatInstallationDate($end);
+                    }
                 } else {
                     $installationDates[] = $this->formatInstallationDate($raw);
                 }
             }
         }
         $interface->assign('installationDates', $installationDates ?: null);
+        $interface->assign('installationLabel', count($installationDates) > 1 ? 'Installations' : 'Installation');
+				// Do label assignment here to avoid SMARTY deprecation of |@count modifier structure
+
+	      //TODO: coordinates will display as the Artwork section Installation Location.
+	      // we will need a guard for non-art objects; and alternate place to display the coordinates.
 
         // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
         $transcriptMedia = array_values(array_filter(
@@ -559,7 +572,7 @@ class ArchiveObject extends \Action
 
     /**
      * Formats a single EDTF date string for display.
-     * Full dates (YYYY-MM-DD) are returned as "Month D, YYYY"; year-only values pass through as-is.
+     * Full dates (YYYY-MM-DD) → "Month D, YYYY"; partial dates (YYYY-MM) → "Month YYYY"; year-only values pass through as-is.
      */
     private function formatInstallationDate(string $date): string
     {
@@ -567,6 +580,12 @@ class ArchiveObject extends \Action
             $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
             if ($dt !== false) {
                 return $dt->format('F j, Y');
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m', $date);
+            if ($dt !== false) {
+                return $dt->format('F Y');
             }
         }
         return $date;
