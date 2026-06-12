@@ -50,7 +50,11 @@
 
 								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
 									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
-
+										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
+											<li>
+												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+											</li>
+										{/foreach}
 									{else}
 										{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 											{foreach from=$basicSearchTypes item=searchDesc key=searchVal}

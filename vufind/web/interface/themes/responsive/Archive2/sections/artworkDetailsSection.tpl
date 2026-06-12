@@ -76,4 +76,35 @@
 			</div>
 		</div>
 	{/if}
-{/strip }
+	{if $installationDates}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">{$installationLabel}:</div>
+			<div class="result-value col-sm-8">
+				{foreach from=$installationDates item=installationDate}
+					<div>{$installationDate|escape}</div>
+				{/foreach}
+			</div>
+		</div>
+	{/if}
+	{if $coordinates.lat || $coordinates.lng}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">Installation Location:</div>
+			<div class="result-value col-sm-8">
+				<dl class="archive-field-values list-unstyled">
+					{if $coordinates.lat}
+						<dt>Latitude:</dt>
+						<dd>{$coordinates.lat|escape}</dd>
+					{/if}
+					{if $coordinates.lng}
+						<dt>Longitude:</dt>
+						<dd>{$coordinates.lng|escape}</dd>
+					{/if}
+					{if $coordinates.lat && $coordinates.lng}
+						<dt>Coordinates:</dt>
+						<dd>({$coordinates.lat|escape}, {$coordinates.lng|escape})</dd>
+					{/if}
+				</dl>
+			</div>
+		</div>
+	{/if}
+{/strip}

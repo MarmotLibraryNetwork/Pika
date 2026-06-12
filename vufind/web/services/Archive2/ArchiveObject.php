@@ -298,8 +298,6 @@ class ArchiveObject extends \Action
             $interviewLocations[] = $interviewLocation;
         }
         $interface->assign('interview_locations', $interviewLocations);
-        $interface->assign('linked_agents_display', $this->normalizeLinkedAgents());
-		    //Linked Agents (Creator): normalize each entry for display with role label and conditional link.
 
         // Related Entity processing
         $relatedPeople = $this->getRelatedPeople();
@@ -309,10 +307,20 @@ class ArchiveObject extends \Action
         $productionTeam = $this->buildProductionTeam($relatedPeople);
         $interface->assign('production_team', $productionTeam ?: null);
 
+        // Linked Agents (Details section): exclude names already shown in Acknowledgements
+        // to avoid showing the same person in both sections.
+        $productionTeamNames = array_column($productionTeam, 'name');
+        $linkedAgentsDisplay = array_values(array_filter(
+            $this->normalizeLinkedAgents(),
+            fn($agent) => !in_array($agent['name'], $productionTeamNames, true)
+        ));
+        $interface->assign('linked_agents_display', $linkedAgentsDisplay ?: null);
+
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
         $interface->assign('related_organization', $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization()));
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
         $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
+        $interface->assign('related_objects', $this->mediaObject->getRelatedObjects());
 
         // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
         $parentCollections = $this->resolveParentCollections();
@@ -389,6 +397,41 @@ class ArchiveObject extends \Action
             }
         }
         $interface->assign('stylePeriods', $stylePeriods ?: null);
+
+        // Process installation date strings into human-readable display values.
+        // Entries are EDTF-style strings: a single year ("2015"), a full date ("2016-10-08"),
+        // or a date range with start and end separated by "/" ("2016-10-08/2017-10-07").
+        $rawInstallations = $nodeData['installations'] ?? null;
+        $installationDates = [];
+        if ($rawInstallations !== null) {
+            $items = is_array($rawInstallations) ? $rawInstallations : [$rawInstallations];
+            foreach ($items as $item) {
+                $raw = trim((string)$item);
+                if ($raw === '') {
+                    continue;
+                }
+                if (str_contains($raw, '/')) {
+                    [$start, $end] = explode('/', $raw, 2);
+                    $start         = trim($start);
+                    $end           = trim($end);
+                    if ($start === '') {
+                        $installationDates[] = 'ending ' . $this->formatInstallationDate($end);
+                    } elseif ($end === '') {
+                        $installationDates[] = $this->formatInstallationDate($start);
+                    } else {
+                        $installationDates[] = $this->formatInstallationDate($start) . ' to ' . $this->formatInstallationDate($end);
+                    }
+                } else {
+                    $installationDates[] = $this->formatInstallationDate($raw);
+                }
+            }
+        }
+        $interface->assign('installationDates', $installationDates ?: null);
+        $interface->assign('installationLabel', count($installationDates) > 1 ? 'Installations' : 'Installation');
+				// Do label assignment here to avoid SMARTY deprecation of |@count modifier structure
+
+	      //TODO: coordinates will display as the Artwork section Installation Location.
+	      // we will need a guard for non-art objects; and alternate place to display the coordinates.
 
         // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
         $transcriptMedia = array_values(array_filter(
@@ -532,6 +575,27 @@ class ArchiveObject extends \Action
         }
 
         return self::MODEL_VIEWER_MAP[$model] ?? null;
+    }
+
+    /**
+     * Formats a single EDTF date string for display.
+     * Full dates (YYYY-MM-DD) → "Month D, YYYY"; partial dates (YYYY-MM) → "Month YYYY"; year-only values pass through as-is.
+     */
+    private function formatInstallationDate(string $date): string
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+            if ($dt !== false) {
+                return $dt->format('F j, Y');
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m', $date);
+            if ($dt !== false) {
+                return $dt->format('F Y');
+            }
+        }
+        return $date;
     }
 
     /**
@@ -800,11 +864,11 @@ class ArchiveObject extends \Action
      * Entries from both sources are merged by name so a person appearing in both
      * lists gets a single entry with their roles concatenated (e.g. "Editor, Interviewer").
      *
-     * Each entry: ['role' => string, 'code' => string|null, 'name' => string].
+     * Each entry: ['role' => string, 'code' => string|null, 'name' => string, 'tid' => int|null, 'vocabulary' => string|null].
      *
      * @param array $relatedPeople Output of I2Object::getRelatedPerson(); matched entries are
      *                             removed so they are not duplicated in the Related People section.
-     * @return array<array{role: string, code: string|null, name: string}>
+     * @return array<array{role: string, code: string|null, name: string, tid: int|null, vocabulary: string|null}>
      */
     private function buildProductionTeam(array &$relatedPeople): array
     {
@@ -834,7 +898,15 @@ class ArchiveObject extends \Action
                 if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
                     continue;
                 }
-                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
+                $tid        = isset($agent['tid']) ? (int)$agent['tid'] : null;
+                $vocabulary = $agent['vid'] ?? null;
+                if ($vocabulary === null) {
+                    $rel        = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+                    $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
+                        ? 'corporate_body'
+                        : 'person';
+                }
+                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
             }
         }
 
@@ -849,7 +921,9 @@ class ArchiveObject extends \Action
           if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)){
 	          continue;
           }
-          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code);
+          $tid        = isset($person['tid']) ? (int)$person['tid'] : null;
+          $vocabulary = $person['vid'] ?? 'person';
+          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
 					unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
         }
         return $team;
@@ -877,15 +951,15 @@ class ArchiveObject extends \Action
 
     /**
      * Adds or merges a production team member into $team, keyed by $byName.
-     * When the name already exists, the role is appended with ", ".
+     * When the name already exists, the role is appended with ", "; tid/vocabulary from the first entry are kept.
      */
-    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code): void
+    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code, ?int $tid = null, ?string $vocabulary = null): void
     {
         if (isset($byName[$name])) {
             $team[$byName[$name]]['role'] .= ', ' . $role;
         } else {
             $byName[$name] = count($team);
-            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name];
+            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name, 'tid' => $tid, 'vocabulary' => $vocabulary];
         }
     }
 
