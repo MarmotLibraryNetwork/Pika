@@ -141,7 +141,7 @@ class ArchiveObject extends \Action
         $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
 
         // EDTF date fields: reformat ISO dates to human-readable form.
-        $edtfDateFields = ['edtf_date_created', 'edtf_date_issued', 'edtf_date', 'date_captured', 'copyright_date', 'postmark', 'conference_date'];
+        $edtfDateFields = ['edtf_date_created', 'edtf_date_issued', 'edtf_date', 'date_captured', 'copyright_date', 'postmark'];
         foreach ($edtfDateFields as $field) {
             if (isset($nodeData[$field]) && is_string($nodeData[$field])) {
                 $interface->assign($field, $this->formatEdtfDate($nodeData[$field]));
@@ -189,6 +189,47 @@ class ArchiveObject extends \Action
             $languageName = $this->mediaObject->language['name'];
         }
         $interface->assign('languageName', $languageName);
+
+        // Research Level arrives as a taxonomy term array; only the name is needed for display.
+	      // Note that: Research Type arrives as a simple string, not as a taxonomy term array.
+        if (isset($nodeData['research_level']['name'])) {
+            $interface->assign('research_level', $nodeData['research_level']['name']);
+        }
+
+        // Presented At: if the string matches a related event name, expose the event tid for linking.
+        $presentedAtEventTid = null;
+        $presentedAt         = $nodeData['presented_at'] ?? null;
+        if (!empty($presentedAt)) {
+            $rawRelatedEvent = $nodeData['related_event'] ?? null;
+            if (is_array($rawRelatedEvent)) {
+                $events = isset($rawRelatedEvent['tid']) ? [$rawRelatedEvent] : array_values($rawRelatedEvent);
+                foreach ($events as $event) {
+                    if (isset($event['name']) && $event['name'] === $presentedAt) {
+                        $presentedAtEventTid = (int)$event['tid'];
+                        break;
+                    }
+                }
+            }
+        }
+        $interface->assign('presented_at_event_tid', $presentedAtEventTid);
+
+        // Conference date: format YYYY-MM → "Month YYYY", YYYY-MM-DD → "Month D, YYYY", keep plain years.
+        // Values that don't match a recognized date pattern are suppressed (erroneous free-text entries).
+        $conferenceDate    = null;
+        $rawConferenceDate = $nodeData['conference_date'] ?? null;
+        if (!empty($rawConferenceDate) && is_string($rawConferenceDate)) {
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawConferenceDate)) {
+                $dt             = \DateTimeImmutable::createFromFormat('Y-m-d', $rawConferenceDate);
+                $conferenceDate = $dt !== false ? $dt->format('F j, Y') : null;
+            } elseif (preg_match('/^\d{4}-\d{2}$/', $rawConferenceDate)) {
+                $dt             = \DateTimeImmutable::createFromFormat('Y-m', $rawConferenceDate);
+                $conferenceDate = $dt !== false ? $dt->format('F Y') : null;
+            } elseif (preg_match('/^\d{4}$/', $rawConferenceDate)) {
+                $conferenceDate = $rawConferenceDate;
+            }
+            // Non-matching text: $conferenceDate remains null
+        }
+        $interface->assign('conference_date', $conferenceDate);
 
         // Rights Holder: normalize taxonomy term(s) for conditional linking.
         $rawRightsHolder = $nodeData['rights_holder'] ?? null;
@@ -317,7 +358,13 @@ class ArchiveObject extends \Action
         $interface->assign('linked_agents_display', $linkedAgentsDisplay ?: null);
 
         $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
-        $interface->assign('related_organization', $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization()));
+        $enrichedOrgs = $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_organization', $enrichedOrgs);
+        $supportingDepts = array_values(array_filter(
+            $enrichedOrgs ?? [],
+            fn($org) => ($org['relation'] ?? '') === 'local:sup'
+        ));
+        $interface->assign('supporting_departments', $supportingDepts ?: null);
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
         $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
         $interface->assign('related_objects', $this->mediaObject->getRelatedObjects());
