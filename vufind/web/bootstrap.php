@@ -356,12 +356,23 @@ function loadSearchInformation(){
 		}else{
 			global $locationSingleton;
 			global $library;
+			global $configArray;
 			$location = $locationSingleton->getActiveLocation();
-			[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = SearchSources::getCombinedSearchSetupParameters($location, $library);
-			if ($enableCombinedResults && $showCombinedResultsFirst){
-				$searchSource = 'combinedResults';
-			}else{
-				$searchSource = 'local';
+			if ($library && $library->archiveOnlyInterface) {
+				// Archive-only interfaces should default to archive search even when the
+				// module hasn't been determined yet (e.g. root URL '/' before loadModuleActionId runs).
+				if (!empty($configArray['Islandora2']['enabled']) && $library->enableArchive) {
+					$searchSource = 'islandora2';
+				} elseif (!empty($configArray['Islandora']['enabled']) && $library->enableArchive) {
+					$searchSource = 'islandora';
+				}
+			} else {
+				[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = SearchSources::getCombinedSearchSetupParameters($location, $library);
+				if ($enableCombinedResults && $showCombinedResultsFirst){
+					$searchSource = 'combinedResults';
+				}else{
+					$searchSource = 'local';
+				}
 			}
 		}
 	}

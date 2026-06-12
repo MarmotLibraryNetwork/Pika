@@ -1,4 +1,4 @@
-{if $related_person}
+{if !empty($related_person)}
     <div class="panel" id="relatedPersonPanel">
         <a data-toggle="collapse" href="#relatedPersonPanelBody">
             <div class="panel-heading">
@@ -24,7 +24,7 @@
         </div>
     </div>
 {/if}
-{if $related_place}
+{if !empty($related_place)}
     <div class="panel" id="relatedPlacePanel">
         <a data-toggle="collapse" href="#relatedPlacePanelBody">
             <div class="panel-heading">
@@ -48,7 +48,7 @@
     </div>
 {/if}
 
-{if $related_organization}
+{if !empty($related_organization)}
     <div class="panel" id="relatedOrgPanel">
         <a data-toggle="collapse" href="#relatedOrgPanelBody">
             <div class="panel-heading">

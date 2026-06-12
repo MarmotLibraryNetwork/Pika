@@ -231,10 +231,15 @@ Pika.Searches = (function(){
 		enableSearchTypes: function(){
 			var searchTypeElement = $("#searchSource");
 			var catalogType = "catalog";
-			if (searchTypeElement){
-				var selectedSearchType = $(searchTypeElement.find(":selected"));
-				if (selectedSearchType){
-					catalogType = selectedSearchType.data("catalog_type");
+			if (searchTypeElement.length > 0) {
+				if (searchTypeElement.is('select')) {
+					var selectedSearchType = searchTypeElement.find(":selected");
+					if (selectedSearchType.length > 0) {
+						catalogType = selectedSearchType.data("catalog_type");
+					}
+				} else {
+					// Single-source interface uses a hidden input; read data-catalog_type directly
+					catalogType = searchTypeElement.data("catalog_type") || searchTypeElement.val();
 				}
 			}
 			if (catalogType == 'islandora2'){

@@ -133,12 +133,10 @@
 			<div class="row text-center">
 				<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
 					{if $searchSources|@count == 1}
-						{if $archiveOnly}
-							{* searchSource is islandora or islandora2 *}
-						<input type="hidden" name="searchSource" value="{$searchSource}">
-						{else}
-						<input type="hidden" name="searchSource" value="{$searchSource}">
-							{/if}
+						{* Use the actual source key so the form submits the correct value even on a fresh session *}
+						{foreach from=$searchSources key=singleSourceKey item=singleSource}
+							<input type="hidden" name="searchSource" id="searchSource" value="{$singleSourceKey}" data-catalog_type="{$singleSource.catalogType}">
+						{/foreach}
 					{else}
 					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-control">
 						{foreach from=$searchSources item=searchOption key=searchKey}
