@@ -38,7 +38,7 @@ class CorporateBodyTaxonomy extends I2Taxonomy
     }
 
     /** Alternate or variant name for the organization (field_alternate_name). */
-    public function getAlternateName(): ?string
+    public function getAlternateName(): mixed
     {
         return $this->termWithoutFieldPrefix['alternate_name'] ?? null;
     }
