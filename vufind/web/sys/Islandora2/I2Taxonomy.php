@@ -248,6 +248,10 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         for ($i = 0; $i < $count; $i++) {
             $raw     = array_merge($places[$i] ?? [], $addlInfo[$i] ?? []);
             $tid     = $raw['tid'] ?? null;
+            $name    = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue; // Skip entries with no identifying data (API placeholder with all-empty fields)
+            }
             $vocab   = strtolower($raw['vocabulary'] ?? '');
             $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? null;
             $url     = ($segment && !empty($tid))
@@ -255,7 +259,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
                 : '#';
             $result[] = [
                 'tid'            => isset($tid) ? (int)$tid : null,
-                'name'           => $raw['name'] ?? '',
+                'name'           => $name,
                 'url'            => $url,
                 'relation'       => $raw['relation'] ?? null,
                 'relation_label' => $raw['relation_label'] ?? null,
