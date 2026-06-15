@@ -397,7 +397,10 @@ function convertArchivePidToCorporateBodyTid(): bool {
 	if ($library->find()){
 		/** @var SearchObject_Islandora2 $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
-
+		if (!$searchObject->pingServer(false)){
+			$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+			return false;
+		}
 		while ($library->fetch()){
 			$TIDs = $searchObject->getLegacyEntitiesTIDs([$library->archivePid]);
 			if (empty($TIDs)){
@@ -427,6 +430,10 @@ function convertPidToNid(){
 		// Get the Islandora2 search object
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if (!$islandora2Search->pingServer(false)){
+			$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+			return false;
+		}
 		while ($archiveRequest->fetch()){
 			$pid = $archiveRequest->pid;
 			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
@@ -457,6 +464,10 @@ function convertPidToNidAuthorship(){
 		// Get the Islandora2 search object
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if (!$islandora2Search->pingServer(false)){
+			$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+			return false;
+		}
 		while ($authorshipClaim->fetch()){
 			$pid = $authorshipClaim->pid;
 			if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
@@ -486,6 +497,10 @@ function getTidFromNid(){
 	if ($archiveRequest->find()){
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if (!$islandora2Search->pingServer(false)){
+			$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+			return false;
+		}
 		$islandora2Search->addFieldsToReturn(['itm_field_library']);
 		while ($archiveRequest->fetch()){
 			$nid = $archiveRequest->nid;
@@ -515,6 +530,10 @@ function getTidFromNidAuthorship(){
 	if ($authorshipClaim->find()){
 		/** @var SearchObject_Islandora2 $islandora2Search */
 		$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+		if (!$islandora2Search->pingServer(false)){
+			$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+			return false;
+		}
 		$islandora2Search->addFieldsToReturn(['itm_field_library']);
 		while ($authorshipClaim->fetch()){
 			$nid = $authorshipClaim->nid;
@@ -551,6 +570,10 @@ function convertListPidToNid():bool {
 
 	/** @var SearchObject_Islandora2 $islandora2Search */
 	$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+	if (!$islandora2Search->pingServer(false)){
+		$pikaLogger->error('Islandora2 Solr ping failed; skipping update.');
+		return false;
+	}
 
 	$userListEntry = new UserListEntry();
 	$userListEntry->whereAdd("nid LIKE '%:%'");
