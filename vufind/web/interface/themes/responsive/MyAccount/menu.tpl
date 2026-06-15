@@ -397,9 +397,11 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "ArchiveRequests"} active{/if}"><a href="/Admin/ArchiveRequests">Archive Material Requests</a></div>
 							<div class="adminMenuLink{if $action == "AuthorshipClaims"} active{/if}"><a href="/Admin/AuthorshipClaims">Archive Authorship Claims</a></div>
+{* Hide till Islandora2 equivalent is created; or these pages are removed. pascal 6/15/2026
 							<hr class="menu">
 							<div class="adminMenuLink{if $action == "ArchiveUsage"} active{/if}"><a href="/Admin/ArchiveUsageByNamespace">Archive Usage by Namespace</a></div>
 							<div class="adminMenuLink{if $action == "ArchiveUsageByContentType"} active{/if}"><a href="/Admin/ArchiveUsageByContentType">Archive Usage by Content Type</a></div>
+*}
 							{if in_array('archives', $userRoles) && in_array('opacAdmin', $userRoles)}
 								<hr class="menu">
 								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="/Admin/ArchivePrivateCollections">Archive Private Collections and Objects</a></div>
