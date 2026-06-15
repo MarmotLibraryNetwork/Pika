@@ -43,7 +43,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
 	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
 	// The remaining fields mirror Islandora2Driver's solrFields map.
-	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,score';
+	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
 	//TODO: modified date field
 	//TODO: which created date field should we use?
 	//its_edtf_year,sm_field_display_title
@@ -1173,18 +1173,19 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 		$this->limit = 50;
 		$result      = $this->processSearch(false, false);
-		foreach ($result['response']['docs'] as &$currentDoc){
+		foreach ($result['response']['docs'] as $key => $currentDoc){
 			$record = RecordDriverFactory::initRecordDriver($currentDoc);
 			if (!PEAR_Singleton::isError($record)){
-				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
-				$currentDoc['title_display']   = $record->getTitle();
-				$image                         = $record->getBookcoverUrl('medium');
-				$description                   = "<img src='$image'/> " . $record->getDescription();
-				$currentDoc['rss_description'] = $description;
-				$currentDoc['rss_date']        = date('r', strtotime($currentDoc['fgs_createdDate_dt']));
-				//TODO: convert to Islandora2 date field
+				$currentDoc['recordUrl']          = $record->getAbsoluteUrl();
+				$currentDoc['title_display']      = $record->getTitle();
+				$image                            = $record->getBookcoverUrl('medium');
+				$description                      = "<img src='$image'/> " . $record->getDescription();
+				$currentDoc['rss_description']    = $description;
+				$currentDoc['rss_date']           = date('r', strtotime($currentDoc['ds_created'] ?? ''));
+				$result['response']['docs'][$key] = $currentDoc;
 			}else{
-				unset($currentDoc);
+				// Drop records that failed to load so they don't reach the feed
+				unset($result['response']['docs'][$key]);
 			}
 		}
 
