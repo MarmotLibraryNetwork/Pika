@@ -1138,29 +1138,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		}
 	}
 
-	/**
-	 * Filter Collections in Facet lists
-	 *
-	 * @param $nid
-	 * @return void
-	 */
-	private function showCollectionAsFacet($nid){
-		$okToShow = true;
-		global /** @var \Library $library */ $library;
-		if ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace){
-			//TODO: method to get namespace; then check nid namespace
-			//$okToShow = ($namespace == $library->archiveNamespace);
-		} elseif (!empty($library->collectionsToHide)){
-			$collections = array_map('trim', explode("\n\r", $library->collectionsToHide));
-			$okToShow = !in_array($nid, $collections);
-		}
-		if ($okToShow){
-			//TODO: check if object for $nid is Valid for Pika based on "includeInPika" setting
-		}
-		return $okToShow;
-	}
-
-
 		/**
 	 * Turn our results into an RSS feed
 	 *
