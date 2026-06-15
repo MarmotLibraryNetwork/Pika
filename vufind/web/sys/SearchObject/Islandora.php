@@ -640,7 +640,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 		$recordStart = ($this->page - 1) * $this->limit;
 		$pingResult  = $this->indexEngine->pingServer(false);
 		if (!$pingResult){
-			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
+			return PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 
 		// Get time before the query
