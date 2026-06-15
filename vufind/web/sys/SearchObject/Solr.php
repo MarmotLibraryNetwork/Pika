@@ -2344,6 +2344,7 @@ class SearchObject_Solr extends SearchObject_Base {
 
 	private function getFieldsToReturn(){
 		if (isset($_REQUEST['allFields'])){
+			//TODO: log instances of this occurring
 			$fieldsToReturn = $this->fieldsFull;
 		}else{
 			$fieldsToReturn = SearchObject_Solr::$fields;
