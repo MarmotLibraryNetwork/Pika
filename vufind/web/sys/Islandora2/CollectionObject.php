@@ -62,13 +62,83 @@ class CollectionObject extends I2Object
     }
 
     /**
-     * Returns the display options configured for this collection, or null if not set.
+     * Returns the display options configured for this collection.
      *
-     * @return array|null Value of the `pika_coll_options` field.
+     * The underlying `field_pika_coll_options` field comes back as either a
+     * single string (one option) or an array (several options); callers iterate
+     * the result, so always hand back an array of option strings.
+     *
+     * @return array List of option strings, empty when none are configured.
      */
-    public function getCollectionOptions(): ?array
+    public function getCollectionOptions(): array
     {
-        return $this->rawNode['field_pika_coll_options'] ?? null;
+        return self::normalizeFieldValues($this->rawNode['field_pika_coll_options'] ?? null);
+    }
+
+    /**
+     * Returns the curator-defined child order for this collection as node ids.
+     *
+     * `field_pika_coll_order` arrives as a list of nid strings (pika-json) but
+     * legacy data may store a newline-separated string; both are normalized to
+     * an ordered list of ints.
+     *
+     * @return int[] Ordered child node ids, empty when no order is configured.
+     */
+    public function getCollectionOrder(): array
+    {
+        return self::normalizeCollectionOrder($this->rawNode['field_pika_coll_order'] ?? null);
+    }
+
+    /**
+     * Normalize a raw field value (string, array of scalars, or array of
+     * `['value'|'target_id' => ...]` entries) into a flat list of non-empty
+     * strings.
+     *
+     * @param mixed $raw
+     * @return string[]
+     */
+    private static function normalizeFieldValues($raw): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        if (is_string($raw)) {
+            return [$raw];
+        }
+        if (!is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $entry) {
+            if (is_array($entry)) {
+                $entry = $entry['value'] ?? $entry['target_id'] ?? '';
+            }
+            if (is_scalar($entry) && (string)$entry !== '') {
+                $out[] = (string)$entry;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Normalize a raw `field_pika_coll_order` value into an ordered list of
+     * integer node ids.
+     *
+     * @param mixed $raw Array of nid strings/ints, or a newline-separated string.
+     * @return int[]
+     */
+    public static function normalizeCollectionOrder($raw): array
+    {
+        if (is_string($raw)) {
+            $raw = preg_split('/[\r\n]+/', trim($raw)) ?: [];
+        }
+        $out = [];
+        foreach (self::normalizeFieldValues($raw) as $value) {
+            if (ctype_digit($value)) {
+                $out[] = (int)$value;
+            }
+        }
+        return $out;
     }
 
     /**
