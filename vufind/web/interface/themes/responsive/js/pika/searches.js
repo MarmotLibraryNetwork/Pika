@@ -150,6 +150,15 @@ Pika.Searches = (function(){
 				var usingHorizontalSearchBox = $('#horizontal-search-box').is(':visible');
 				$("#lookfor").autocomplete({
 					source:function(request,response){
+						var searchSourceEl = $('#searchSource');
+						var catalogType = searchSourceEl.is('select')
+								? (searchSourceEl.find(':selected').data('catalog_type') || searchSourceEl.val())
+								: (searchSourceEl.data('catalog_type') || searchSourceEl.val());
+						if (catalogType === 'islandora2' || catalogType === 'genealogy' || catalogType === 'islandora'){
+							// Skip suggestions for archive and genealogy searches, since the suggestions come from catalog searches
+							response([]);
+							return;
+						}
 						var url    = "/Search/AJAX",
 								params = {
 									'method'   :'GetAutoSuggestList',
