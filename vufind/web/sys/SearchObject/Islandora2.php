@@ -50,30 +50,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	//TODO: construct good default list
 	//private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 
-	// Solr field Map
-	private $solrFields = [
-		'id'          => 'its_node_id',
-//		'title'       => 'tm_X3b_en_title', // This field doesn't have punctuation characters like ":", "'"
-
-		'title'       => 'twm_X3b_en_title_ws_token',
-		//'description' => 'tm_X3b_en_field_description_long',
-		'description' => 'twm_X3b_en_field_description_long_ws_token',
-		'memberOf'    => 'itm_field_member_of', //node ids
-		'legacyPID'   => 'ss_legacy_pid',
-		//'legacyPID'   => 'tm_X3b_en_field_pid',
-		'genre'       => 'sm_genre',
-		//'genre'       => 'sm_name_2',
-		'model'       => 'ss_model',
-		//'model'       => 'ss_name_1',
-		'legacyResourceType' => 'sm_legacy_resource_type',
-		//'legacyResourceType' => 'sm_name_22',
-		'format'      => 'sm_format',
-		//'format'      => 'sm_name_43',
-		'library'     => 'ss_library',
-		//'library'     => 'ss_name_23',
-//		'rightsCreator' => 'tm_X3b_en_name_41',
-	];
-
 	// HTTP Method
 	private $method = 'GET';
 
@@ -867,7 +843,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	public function getResultRecordSet(){
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $solrDocument){
-			// Include Additional Information for Emailing a list of Archive (islandora1) Objects
+			// Include Additional Information for Emailing a list of Archive (islandora2) Objects
 			$recordDriver           = RecordDriverFactory::initRecordDriver($solrDocument);
 			$solrDocument['url']    = $recordDriver->getLinkUrl();
 			$solrDocument['format'] = $recordDriver->getFormat();
@@ -928,15 +904,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		return $this->getResultHTML(true);
 	}
 
-	/**
-	 * Extract solr field value using an easier to understand key
-	 * @param array $solrDoc
-	 * @param string $field
-	 * @return mixed
-	 */
-	private function getSolrFieldValue(array $solrDoc, string $field){
-		return $solrDoc[$this->solrFields[$field]];
-	}
 	private function getResultHTML($getCombinedResult = false):array{
 		global $interface;
 		$html = [];
