@@ -1,4 +1,5 @@
 {strip}
+	{include file="Archive2/partials/fieldRow.tpl" label="Material Description" value=$material_description}
 	{if $material}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Material:</div>

@@ -104,6 +104,10 @@ class AJAX extends AJAXHandler {
 	 * @return array
 	 */
 	function GetAutoSuggestList(): array{
+		global $library;
+		if ($library && $library->archiveOnlyInterface){
+			return [];
+		}
 		require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
 		/** @var Memcache $memCache */
 		global $memCache;
