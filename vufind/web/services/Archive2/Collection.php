@@ -35,6 +35,9 @@ use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
 {
+    /** Maximum number of items rendered into a single scroller carousel. */
+    private const SCROLLER_ITEM_LIMIT = 24;
+
     /**
      * Dispatches to the appropriate collection display template based on the
      * collection's configured display type (basic, timeline, map, or custom).
@@ -231,7 +234,8 @@ class Collection extends ArchiveObject
         $factory    = new I2ObjectFactory();
 
         foreach ($options as $option) {
-            $parts = explode('|', $option);
+            // Tolerate stray whitespace in the stored option (e.g. " scroller|18784").
+            $parts = array_map('trim', explode('|', trim($option)));
             $type  = $parts[0];
 
             if ($type === 'searchCollection') {
@@ -338,5 +342,46 @@ class Collection extends ArchiveObject
         }
 
         $interface->assign('collectionTemplates', $templates);
+    }
+
+    /**
+     * Resolves the ordered list of child objects to show for a collection.
+     *
+     * The curator-defined `field_pika_coll_order` drives both membership and
+     * order: nodes it names come first, in that order. Some migrated sub-
+     * collections have no membership at all and exist only as an order list, so
+     * a named node that isn't a member is fetched directly by id. Any members
+     * not named in the order list are appended in API order. When no order is
+     * configured, the membership children are returned as-is.
+     *
+     * @param CollectionObject $source Collection whose children to resolve.
+     * @param int|null         $cap    Maximum items to return, or null for all.
+     * @return array Ordered I2Object instances.
+     */
+    private function resolveOrderedChildren(CollectionObject $source, ?int $cap): array
+    {
+        $members = [];
+        foreach ($source->getChildObjects() as $obj) {
+            $members[$obj->getNodeId()] = $obj;
+        }
+
+        $factory = new I2ObjectFactory();
+        $ordered = [];
+        foreach ($source->getCollectionOrder() as $oid) {
+            if (isset($members[$oid])) {
+                $ordered[] = $members[$oid];
+                unset($members[$oid]);
+            } else {
+                $obj = $factory->fromNodeId($oid);
+                if ($obj !== null) {
+                    $ordered[] = $obj;
+                }
+            }
+            if ($cap !== null && count($ordered) >= $cap) {
+                return $ordered;
+            }
+        }
+        $ordered = array_merge($ordered, array_values($members));
+        return $cap !== null ? array_slice($ordered, 0, $cap) : $ordered;
     }
 }
