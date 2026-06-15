@@ -252,27 +252,61 @@ class Collection extends ArchiveObject
                 $this->loadTimelineData($nid, true);
                 $templates[] = $interface->fetch('Archive2/components/timeline_component.tpl');
 
-            } elseif ($type === 'browseCollectionByTitle' || $type === 'scroller') {
+            } elseif ($type === 'scroller') {
+                // "scroller|<nid>" shows that child collection's children; a bare
+                // "scroller" shows the current collection's own children.
+                $childNid = (int)($parts[1] ?? 0);
+                $source   = $childNid > 0 ? $factory->fromNodeId($childNid) : $collection;
+                $items    = [];
+                $title    = '';
+                $srcNid   = 0;
+                if ($source instanceof CollectionObject) {
+                    $children = $this->resolveOrderedChildren($source, self::SCROLLER_ITEM_LIMIT);
+                    foreach ($children as $obj) {
+                        $items[] = [
+                            'nid'       => $obj->getNodeId(),
+                            'title'     => $obj->getTitle(),
+                            'url'       => getObjRelativeUrl($obj),
+                            'thumbnail' => $obj->getThumbnailUrl(),
+                        ];
+                    }
+                    $title  = $source->getTitle();
+                    $srcNid = $source->getNodeId();
+                } elseif ($source !== null) {
+                    // A scroller pointed at a single object: show it as one tile.
+                    $items  = [[
+                        'nid'       => $source->getNodeId(),
+                        'title'     => $source->getTitle(),
+                        'url'       => getObjRelativeUrl($source),
+                        'thumbnail' => $source->getThumbnailUrl(),
+                    ]];
+                    $srcNid = $source->getNodeId();
+                }
+                if (!empty($items)) {
+                    $interface->assign('browseCollectionTitle', $title);
+                    $interface->assign('browseCollectionItems', $items);
+                    $interface->assign('browseCollectionNid', $srcNid);
+                    $templates[] = $interface->fetch('Archive2/components/scroller_component.tpl');
+                }
+
+            } elseif ($type === 'browseCollectionByTitle') {
                 $childNid = (int)($parts[1] ?? 0);
                 if ($childNid > 0) {
                     $childCollection = $factory->fromNodeId($childNid);
                     if ($childCollection instanceof CollectionObject) {
+                        $children  = $this->resolveOrderedChildren($childCollection, null);
                         $childItems = [];
-                        foreach ($childCollection->getChildObjects() as $obj) {
-                            $thumb        = $obj->getThumbnail();
+                        foreach ($children as $obj) {
                             $childItems[] = [
                                 'nid'       => $obj->getNodeId(),
                                 'title'     => $obj->getTitle(),
                                 'url'       => getObjRelativeUrl($obj),
-                                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+                                'thumbnail' => $obj->getThumbnailUrl(),
                             ];
                         }
                         $interface->assign('browseCollectionTitle', $childCollection->getTitle());
                         $interface->assign('browseCollectionItems', $childItems);
-                        $tpl = $type === 'scroller'
-                            ? 'Archive2/components/scroller_component.tpl'
-                            : 'Archive2/components/browse_titles_component.tpl';
-                        $templates[] = $interface->fetch($tpl);
+                        $templates[] = $interface->fetch('Archive2/components/browse_titles_component.tpl');
                     }
                 }
 
