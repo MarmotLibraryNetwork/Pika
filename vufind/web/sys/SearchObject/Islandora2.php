@@ -46,6 +46,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
 	//TODO: modified date field
 	//TODO: which created date field should we use?
+	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
 	//its_edtf_year,sm_field_display_title
 
 	// HTTP Method
