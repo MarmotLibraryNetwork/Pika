@@ -1461,18 +1461,31 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			: '!ss_pika_usage:no'; // Test: Show "yes" and "testonly" (by excluding "no")
 
 		global /** @var \Library $library */ $library;
+		if (!isset($library)){
+			$this->getLogger()->error('Library not set when calling '. __FUNCTION__. '. Needed for correct standard filtering.');
+		}
+		$libraryTid = $library->libraryTid ?? null; // Prevent PHP error notice when $library isn't set
+
 		// Hide All other libraries' objects
-		if ($library->hideAllCollectionsFromOtherLibraries && !empty($library->libraryTid)){
+		if (!empty($library->hideAllCollectionsFromOtherLibraries) && !empty($library->libraryTid)){
 			$filters[] = "itm_field_library:$library->libraryTid";
 		}
 
 		// Collections Hidden by the Current Library's Interface
-		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
-		if ($filter) $filters[] = $filter;
+		if (!empty($library->collectionsToHide)){
+			$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
+			if ($filter){
+				$filters[] = $filter;
+			}
+		}
 
 		// Objects Hidden by the Current Library's Interface
-		$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
-		if ($filter) $filters[] = $filter;
+		if (!empty($library->objectsToHide)){
+			$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
+			if ($filter){
+				$filters[] = $filter;
+			}
+		}
 
 		// Private Collections — hidden from all libraries except the owning library.
 		// withOwningLibraryEscape() wraps each NOT filter so that documents belonging to the
@@ -1484,14 +1497,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			// Exclude objects that are members of private collections
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 
 			// Exclude the collection nodes themselves
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!its_node_id'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 		}
@@ -1502,7 +1515,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		if ($privateObjectsObj->find(true)){
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 		}
