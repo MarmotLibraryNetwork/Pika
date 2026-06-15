@@ -82,6 +82,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 	// OTHER VARIABLES
 	const string IDFIELD = 'its_node_id';
+	const string TITLE_FIELD = 'twm_X3b_en_title_ws_token';
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
@@ -707,8 +708,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 								if (key_exists(self::IDFIELD, $previousRecord)) {
 									$interface->assign('previousType', $this->resultsModule);
 									$interface->assign('previousUrl', $previousRecord['url']);
-									$interface->assign('previousTitle', $previousRecord['fgs_label_s']);
-									//TODO:  update title solr field
+									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
+									$previousTitle = is_array($previousRecord[self::TITLE_FIELD]) ? $previousRecord[self::TITLE_FIELD][0] : $previousRecord[self::TITLE_FIELD];
+									$interface->assign('previousTitle', $previousTitle);
 								}
 							}
 						}
@@ -725,11 +727,12 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 							//Convert back to 1 based index
 							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 							if (isset($nextRecord)) {
-								if (key_exists('PID', $nextRecord)) {
-									$interface->assign('nextType', 'Archive');
+								if (key_exists(self::IDFIELD, $nextRecord)) {
+									$interface->assign('nextType', $this->resultsModule);
 									$interface->assign('nextUrl', $nextRecord['url']);
-									$interface->assign('nextTitle', $nextRecord['fgs_label_s']);
-									//TODO:  update title solr field
+									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
+									$nextTitle = is_array($nextRecord[self::TITLE_FIELD]) ? $nextRecord[self::TITLE_FIELD][0] : $nextRecord[self::TITLE_FIELD];
+									$interface->assign('nextTitle', $nextTitle);
 								}
 							}
 						}
@@ -1214,6 +1217,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				$description                   = "<img src='$image'/> " . $record->getDescription();
 				$currentDoc['rss_description'] = $description;
 				$currentDoc['rss_date']        = date('r', strtotime($currentDoc['fgs_createdDate_dt']));
+				//TODO: convert to Islandora2 date field
 			}else{
 				unset($currentDoc);
 			}
