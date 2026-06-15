@@ -11,10 +11,11 @@
 	{/if}
 	{if $parent_title}
 		<li>
-	<span>{if $parent_rel_url}<a href="{$parent_rel_url}">{/if}
-			{$parent_title|escape}
+			<span>
+				{if $parent_rel_url}<a href="{$parent_rel_url}">{/if}
+				{$parent_title|escape}
+				{if $parent_rel_url}</a>{/if}
 			</span>
-			{if $parent_rel_url}</a>{/if}
 			<span class="divider">&raquo;</span>
 		</li>
 	{/if}
