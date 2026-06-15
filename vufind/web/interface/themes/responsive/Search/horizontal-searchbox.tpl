@@ -89,7 +89,7 @@
 				</div>
 
 					{if !$hiddenSearchSource}
-						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7" {if $archiveOnly} style="margin-top:-1px;"{/if}>
+						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7"{* {if $archiveOnly} style="margin-top:-1px;"{/if} I don't know why this is done. pascal 6/15/2026 *}>
 							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
