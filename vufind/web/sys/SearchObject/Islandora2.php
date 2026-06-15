@@ -40,15 +40,13 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// Index
 	private $index = null;
 	// Field List
-	private $fields = '*,score';
-	//private $fields = 'its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_name_2,ss_name_1,ss_name_23,sm_field_edtf_date_created,ds_changed,score';
+	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
+	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
+	// The remaining fields mirror Islandora2Driver's solrFields map.
+	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,score';
 	//TODO: modified date field
 	//TODO: which created date field should we use?
-
 	//its_edtf_year,sm_field_display_title
-
-	//TODO: construct good default list
-	//private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 
 	// HTTP Method
 	private $method = 'GET';
