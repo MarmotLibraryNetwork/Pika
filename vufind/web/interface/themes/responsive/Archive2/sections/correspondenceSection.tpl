@@ -13,7 +13,7 @@
 		</div>
 	{/if}
 {/foreach}
-{if isset($includes_stamp)}
+{if $display_model eq 'Postcard' && isset($includes_stamp)}{* $includes_stamp is boolean and likely set for every object *}
 	{if $includes_stamp}{assign var="stamp_display" value="Yes"}{else}{assign var="stamp_display" value="No"}{/if}
 	{include file="Archive2/partials/fieldRow.tpl" label="Includes Stamp" value=$stamp_display}
 {/if}
