@@ -110,7 +110,7 @@ class Archive2_ClaimAuthorship extends Action{
 							if ($emailResult === true){
 							} elseif (PEAR_Singleton::isError($emailResult)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
-								$pikaLogger->error("Archive Claim Authorship Mail Error: {$emailResult->message}", $emailResult);
+								$pikaLogger->error("Archive Claim Authorship Mail Error: {$emailResult->message}");
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
 								$pikaLogger->error("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body");
