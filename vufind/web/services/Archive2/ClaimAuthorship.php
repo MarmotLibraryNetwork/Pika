@@ -145,7 +145,7 @@ class Archive2_ClaimAuthorship extends Action{
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
-		$this->display('claimAuthorship.tpl', 'Archival Material Copy Request');
+		$this->display('archive2-claim-authorship.tpl', 'Archival Material Claim Authorship');
 	}
 
 	function insertObject($structure){
