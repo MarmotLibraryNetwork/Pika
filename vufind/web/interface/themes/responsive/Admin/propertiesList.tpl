@@ -296,12 +296,19 @@
 					{/literal}
 				{/if}
 
+
+
 				{if $objectType == "MergedGroupedWork" || $objectType == "NonGroupedRecord"}
 					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
 					 but there could be a better sorting method to pick out. - pascal *}
 					{literal}
 				"order": [[4, "desc"]]
 					{/literal}
+
+				{elseif $objectType == "Archive2\ArchiveRequest" || $objectType == "Archive2\ClaimAuthorship"}
+				{literal}
+					"order": [[5, "desc"]]
+				{/literal}
 				{else}
 					{literal}
 				"order": [[0, "asc"]]
