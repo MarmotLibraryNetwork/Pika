@@ -94,7 +94,7 @@ class Archive2_ClaimAuthorship extends Action{
 				if ($newObject !== false){
 					$interface->assign('requestResult', $newObject);
 					$interface->assign('requestedObject', $claimedObject);
-					$body = $interface->fetch('Emails/claim-authorship-request.tpl');
+					$body = $interface->fetch('Emails/archive2-claim-authorship.tpl');
 
 
 					if (!empty($owningLibrary)){
@@ -145,7 +145,7 @@ class Archive2_ClaimAuthorship extends Action{
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
-		$this->display('archive2-claim-authorship.tpl', 'Archival Material Claim Authorship');
+		$this->display('claimAuthorship.tpl', 'Archival Material Claim Authorship');
 	}
 
 	function insertObject($structure){
