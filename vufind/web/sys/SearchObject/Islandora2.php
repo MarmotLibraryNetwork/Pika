@@ -40,39 +40,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// Index
 	private $index = null;
 	// Field List
-	private $fields = '*,score';
-	//private $fields = 'its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_name_2,ss_name_1,ss_name_23,sm_field_edtf_date_created,ds_changed,score';
+	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
+	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
+	// The remaining fields mirror Islandora2Driver's solrFields map.
+	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
 	//TODO: modified date field
 	//TODO: which created date field should we use?
-
+	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
 	//its_edtf_year,sm_field_display_title
-
-	//TODO: construct good default list
-	//private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
-
-	// Solr field Map
-	private $solrFields = [
-		'id'          => 'its_node_id',
-//		'title'       => 'tm_X3b_en_title', // This field doesn't have punctuation characters like ":", "'"
-
-		'title'       => 'twm_X3b_en_title_ws_token',
-		//'description' => 'tm_X3b_en_field_description_long',
-		'description' => 'twm_X3b_en_field_description_long_ws_token',
-		'memberOf'    => 'itm_field_member_of', //node ids
-		'legacyPID'   => 'ss_legacy_pid',
-		//'legacyPID'   => 'tm_X3b_en_field_pid',
-		'genre'       => 'sm_genre',
-		//'genre'       => 'sm_name_2',
-		'model'       => 'ss_model',
-		//'model'       => 'ss_name_1',
-		'legacyResourceType' => 'sm_legacy_resource_type',
-		//'legacyResourceType' => 'sm_name_22',
-		'format'      => 'sm_format',
-		//'format'      => 'sm_name_43',
-		'library'     => 'ss_library',
-		//'library'     => 'ss_name_23',
-//		'rightsCreator' => 'tm_X3b_en_name_41',
-	];
 
 	// HTTP Method
 	private $method = 'GET';
@@ -82,6 +57,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 	// OTHER VARIABLES
 	const string IDFIELD = 'its_node_id';
+	const string TITLE_FIELD = 'twm_X3b_en_title_ws_token';
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
@@ -548,7 +524,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$recordStart = ($this->page - 1) * $this->limit;
 		$pingResult  = $this->indexEngine->pingServer(false);
 		if (!$pingResult){
-			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
+			// Stop searching here on ping fail
+			return PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 
 		// Get time before the query
@@ -706,8 +683,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 								if (key_exists(self::IDFIELD, $previousRecord)) {
 									$interface->assign('previousType', $this->resultsModule);
 									$interface->assign('previousUrl', $previousRecord['url']);
-									$interface->assign('previousTitle', $previousRecord['fgs_label_s']);
-									//TODO:  update title solr field
+									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
+									$previousTitle = is_array($previousRecord[self::TITLE_FIELD]) ? $previousRecord[self::TITLE_FIELD][0] : $previousRecord[self::TITLE_FIELD];
+									$interface->assign('previousTitle', $previousTitle);
 								}
 							}
 						}
@@ -724,11 +702,12 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 							//Convert back to 1 based index
 							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 							if (isset($nextRecord)) {
-								if (key_exists('PID', $nextRecord)) {
-									$interface->assign('nextType', 'Archive');
+								if (key_exists(self::IDFIELD, $nextRecord)) {
+									$interface->assign('nextType', $this->resultsModule);
 									$interface->assign('nextUrl', $nextRecord['url']);
-									$interface->assign('nextTitle', $nextRecord['fgs_label_s']);
-									//TODO:  update title solr field
+									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
+									$nextTitle = is_array($nextRecord[self::TITLE_FIELD]) ? $nextRecord[self::TITLE_FIELD][0] : $nextRecord[self::TITLE_FIELD];
+									$interface->assign('nextTitle', $nextTitle);
 								}
 							}
 						}
@@ -863,7 +842,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	public function getResultRecordSet(){
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $solrDocument){
-			// Include Additional Information for Emailing a list of Archive (islandora1) Objects
+			// Include Additional Information for Emailing a list of Archive (islandora2) Objects
 			$recordDriver           = RecordDriverFactory::initRecordDriver($solrDocument);
 			$solrDocument['url']    = $recordDriver->getLinkUrl();
 			$solrDocument['format'] = $recordDriver->getFormat();
@@ -924,15 +903,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		return $this->getResultHTML(true);
 	}
 
-	/**
-	 * Extract solr field value using an easier to understand key
-	 * @param array $solrDoc
-	 * @param string $field
-	 * @return mixed
-	 */
-	private function getSolrFieldValue(array $solrDoc, string $field){
-		return $solrDoc[$this->solrFields[$field]];
-	}
 	private function getResultHTML($getCombinedResult = false):array{
 		global $interface;
 		$html = [];
@@ -1169,29 +1139,6 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		}
 	}
 
-	/**
-	 * Filter Collections in Facet lists
-	 *
-	 * @param $nid
-	 * @return void
-	 */
-	private function showCollectionAsFacet($nid){
-		$okToShow = true;
-		global /** @var \Library $library */ $library;
-		if ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace){
-			//TODO: method to get namespace; then check nid namespace
-			//$okToShow = ($namespace == $library->archiveNamespace);
-		} elseif (!empty($library->collectionsToHide)){
-			$collections = array_map('trim', explode("\n\r", $library->collectionsToHide));
-			$okToShow = !in_array($nid, $collections);
-		}
-		if ($okToShow){
-			//TODO: check if object for $nid is Valid for Pika based on "includeInPika" setting
-		}
-		return $okToShow;
-	}
-
-
 		/**
 	 * Turn our results into an RSS feed
 	 *
@@ -1204,17 +1151,19 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 		$this->limit = 50;
 		$result      = $this->processSearch(false, false);
-		foreach ($result['response']['docs'] as &$currentDoc){
+		foreach ($result['response']['docs'] as $key => $currentDoc){
 			$record = RecordDriverFactory::initRecordDriver($currentDoc);
 			if (!PEAR_Singleton::isError($record)){
-				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
-				$currentDoc['title_display']   = $record->getTitle();
-				$image                         = $record->getBookcoverUrl('medium');
-				$description                   = "<img src='$image'/> " . $record->getDescription();
-				$currentDoc['rss_description'] = $description;
-				$currentDoc['rss_date']        = date('r', strtotime($currentDoc['fgs_createdDate_dt']));
+				$currentDoc['recordUrl']          = $record->getAbsoluteUrl();
+				$currentDoc['title_display']      = $record->getTitle();
+				$image                            = $record->getBookcoverUrl('medium');
+				$description                      = "<img src='$image'/> " . $record->getDescription();
+				$currentDoc['rss_description']    = $description;
+				$currentDoc['rss_date']           = date('r', strtotime($currentDoc['ds_created'] ?? ''));
+				$result['response']['docs'][$key] = $currentDoc;
 			}else{
-				unset($currentDoc);
+				// Drop records that failed to load so they don't reach the feed
+				unset($result['response']['docs'][$key]);
 			}
 		}
 
@@ -1460,18 +1409,31 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			: '!ss_pika_usage:no'; // Test: Show "yes" and "testonly" (by excluding "no")
 
 		global /** @var \Library $library */ $library;
+		if (!isset($library)){
+			$this->getLogger()->error('Library not set when calling '. __FUNCTION__. '. Needed for correct standard filtering.');
+		}
+		$libraryTid = $library->libraryTid ?? null; // Prevent PHP error notice when $library isn't set
+
 		// Hide All other libraries' objects
-		if ($library->hideAllCollectionsFromOtherLibraries && !empty($library->libraryTid)){
+		if (!empty($library->hideAllCollectionsFromOtherLibraries) && !empty($library->libraryTid)){
 			$filters[] = "itm_field_library:$library->libraryTid";
 		}
 
 		// Collections Hidden by the Current Library's Interface
-		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
-		if ($filter) $filters[] = $filter;
+		if (!empty($library->collectionsToHide)){
+			$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
+			if ($filter){
+				$filters[] = $filter;
+			}
+		}
 
 		// Objects Hidden by the Current Library's Interface
-		$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
-		if ($filter) $filters[] = $filter;
+		if (!empty($library->objectsToHide)){
+			$filter = $this->nodeIdsToFilter($library->objectsToHide, '!its_node_id');
+			if ($filter){
+				$filters[] = $filter;
+			}
+		}
 
 		// Private Collections — hidden from all libraries except the owning library.
 		// withOwningLibraryEscape() wraps each NOT filter so that documents belonging to the
@@ -1483,14 +1445,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			// Exclude objects that are members of private collections
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!itm_field_member_of'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 
 			// Exclude the collection nodes themselves
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateCollectionsObj->privateCollections, '!its_node_id'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 		}
@@ -1501,7 +1463,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		if ($privateObjectsObj->find(true)){
 			$filter = $this->withOwningLibraryEscape(
 				$this->nodeIdsToFilter($privateObjectsObj->privateCollections, '!its_node_id'),
-				$library->libraryTid
+				$libraryTid
 			);
 			if ($filter) $filters[] = $filter;
 		}

@@ -5,6 +5,7 @@
 
 		{if $can_view == false}
 			{include file="Archive/noAccess.tpl"}
+			
 		{else}
 
 			{if $thumbnail}

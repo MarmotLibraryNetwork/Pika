@@ -242,6 +242,37 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return a best-effort thumbnail URL for this node.
+     *
+     * Prefers a dedicated "thumbnail image" media; when none exists (e.g. page
+     * objects that only carry a Service File image with no media-use term),
+     * falls back to the generated thumbnail derivative on any other media.
+     *
+     * @return string Thumbnail URL, or '' when no usable image is available.
+     */
+    public function getThumbnailUrl(): string
+    {
+        $thumb = $this->getThumbnail();
+        if ($thumb && $thumb->thumbnailUrl !== '') {
+            return $thumb->thumbnailUrl;
+        }
+        // Only image media carry a usable picture; other media (OCR text, FITS,
+        // etc.) expose a generic file-type icon as their thumbnail, so skip them.
+        foreach ($this->getMedia() as $m) {
+            if ($m->bundle !== 'image') {
+                continue;
+            }
+            if ($m->thumbnailUrl !== '') {
+                return $m->thumbnailUrl;
+            }
+            if ($m->fileUrl !== '') {
+                return $m->fileUrl;
+            }
+        }
+        return '';
+    }
+
+    /**
      * Return all thumbnail media objects associated with this node.
      *
      * @return I2Media[]|null Array of thumbnail media objects, or null when none exist.

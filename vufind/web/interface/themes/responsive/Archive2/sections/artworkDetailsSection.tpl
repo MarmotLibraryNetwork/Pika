@@ -1,3 +1,4 @@
+{if $display_model eq 'Postcard'}{* Art information section is not applicable to postcards *}{else}
 {strip}
 	{include file="Archive2/partials/fieldRow.tpl" label="Material Description" value=$material_description}
 	{if $material}
@@ -109,3 +110,4 @@
 		</div>
 	{/if}
 {/strip}
+{/if}

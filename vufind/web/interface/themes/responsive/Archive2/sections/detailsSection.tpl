@@ -29,9 +29,24 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Date Captured" value=$date_captured}
 	{include file="Archive2/partials/fieldRow.tpl" label="Copyright Date" value=$copyright_date}
 	{include file="Archive2/partials/fieldRow.tpl" label="Date (Text)" value=$date_text}
-	{include file="Archive2/partials/fieldRow.tpl" label="Postmark" value=$postmark}
 	{include file="Archive2/partials/fieldRow.tpl" label="Physical Form" value=$physical_form}
 	{include file="Archive2/partials/fieldRow.tpl" label="Extent" value=$extent}
+	{if $display_model eq 'Postcard' && $material}
+		{if $material}
+			<div class="row archive-field-row">
+				<div class="result-label col-sm-4">Material:</div>
+				<div class="result-value col-sm-8">
+					{if is_array($material)}
+						{foreach from=$material item=materialLine}
+							<div>{$materialLine|escape}</div>
+						{/foreach}
+					{else}
+						{$material|escape}
+					{/if}
+				</div>
+			</div>
+		{/if}
+	{/if}
 	{include file="Archive2/partials/fieldRow.tpl" label="Condition" value=$physical_condition}
 	{include file="Archive2/partials/fieldRow.tpl" label="Statement of Responsibility" value=$statement_of_responsibility}
 	{include file="Archive2/partials/fieldRow.tpl" label="Publisher" value=$publisher}
