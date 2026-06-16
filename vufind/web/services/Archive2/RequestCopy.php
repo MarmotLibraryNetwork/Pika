@@ -45,8 +45,8 @@ class Archive2_RequestCopy extends Action {
 		if(!empty($nid)){
 			/** @var \Islandora2Driver $requestedObject */
 			$requestedObject = new Islandora2Driver($nid);
-			$request        = new Islandora2\Request();
-			if($requestedObject->getNodeId() && $requestedArray = $request->fetch("node", $nid)){
+			$request         = new Islandora2\Request();
+			if($requestedObject->getNodeId() && $requestedArray = $request->fetch('node', $nid)){
 				$owningTid = $requestedArray['field_library']['tid'];
 				require_once ROOT_DIR . '/sys/Library/Library.php';
 				$owningLibrary             = new Library();
