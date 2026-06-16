@@ -105,7 +105,7 @@ class Archive2_RequestCopy extends Action {
 							if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 								$body .= $requestedObject->getAbsoluteUrl();
 								require_once ROOT_DIR . '/sys/Mailer.php';
-								$libraryArchiveEmail = $owningLibrary->archiveRequestEmail ?? $configArray['Site']['email'];
+								$libraryArchiveEmail = !empty($owningLibrary->archiveRequestEmail) ? $owningLibrary->archiveRequestEmail: $configArray['Site']['email'];
 								$mail        = new VuFindMailer();
 								$subject     = 'New Request for Copies of Archive Content';
 								$emailResult = $mail->send($libraryArchiveEmail, $newObject->email, $subject, $body);
