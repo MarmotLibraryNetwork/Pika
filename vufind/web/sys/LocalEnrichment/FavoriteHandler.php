@@ -476,8 +476,7 @@ class FavoriteHandler {
 					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side')); // only side facet needed for archive searches
 
 					if (!empty($_REQUEST['filter'])){
-						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
-						//TODO: Likely user (Islandora2 Search object)->getFilteredNodeIds
+						$searchFilteredIds         = $archiveSearchObject->getFilteredNodeIds($this->archiveIds);
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
 					} else {
