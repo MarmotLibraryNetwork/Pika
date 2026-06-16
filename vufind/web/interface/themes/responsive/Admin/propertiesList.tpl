@@ -305,7 +305,7 @@
 				"order": [[4, "desc"]]
 					{/literal}
 
-				{elseif $objectType == "Archive2\ArchiveRequest" || $objectType == "Archive2\ClaimAuthorship"}
+				{elseif $objectType == "Archive2\ArchiveRequest" || $objectType == "Archive2\ClaimAuthorshipRequest"}
 				{literal}
 					"order": [[5, "desc"]]
 				{/literal}
