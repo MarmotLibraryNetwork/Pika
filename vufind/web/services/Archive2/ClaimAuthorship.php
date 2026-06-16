@@ -28,7 +28,7 @@ class Archive2_ClaimAuthorship extends Action{
 	function launch(){
 		global $configArray;
 		global $interface;
-
+		global $pikaLogger;
 		$claimAuthorshipFields = Archive2\ClaimAuthorshipRequest::getObjectStructure();
 
 		if (!isset($_REQUEST['id'])){
@@ -110,9 +110,9 @@ class Archive2_ClaimAuthorship extends Action{
 							if ($emailResult === true){
 							} elseif (PEAR_Singleton::isError($emailResult)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
+								$pikaLogger->error("Archive Claim Authorship Mail Error: {$emailResult->message}", $emailResult);
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
-								global $pikaLogger;
 								$pikaLogger->error("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body");
 							}
 						} else {
