@@ -130,6 +130,16 @@ class TaxonomyObject extends \Action
             $interface->assign('subjects',               $this->taxonomyObject->getSubjects());
         }
 
+        // Staff view
+        $isStaffUser = \UserAccount::userHasRole('archives')
+            || \UserAccount::userHasRole('opacAdmin')
+            || \UserAccount::userHasRole('libraryAdmin');
+        $interface->assign('isStaffUser', $isStaffUser);
+
+        $islandoraBaseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+        $interface->assign('islandora_taxonomy_url',          $islandoraBaseUrl . '/taxonomy/term/' . $this->tid);
+        $interface->assign('islandora_taxonomy_pika_json_url', $islandoraBaseUrl . '/pika-json/taxonomy/' . $this->tid);
+
     }
 
     /**
