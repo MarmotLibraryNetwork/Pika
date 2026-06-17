@@ -33,16 +33,20 @@
         </a>
         <div id="relatedPlacePanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                {foreach from=$related_place item=place}
-                    <div class="row archive-field-row">
-                        <div class="result-label col-sm-4">
-                            {$place.relation_label}
-                        </div>
-                        <div class="result-value col-sm-8">
-                            <a href="/Archive2/Place/{$place.tid}">{$place.name|escape}</a>
-                        </div>
-                    </div>
-                {/foreach}
+                <div class="related-objects results-covers home-page-browse-thumbnails">
+                    {foreach from=$related_place item=place}
+                        <figure class="browse-thumbnail-sorted">
+                            <a href="{$place.url|escape}"{if $place.name} data-title="{$place.name|escape}"{/if}>
+                                <img src="{if $place.thumbnail}{$place.thumbnail|escape}{else}/interface/themes/responsive/images/places.png{/if}"
+                                     alt="{$place.name|escape}">
+                            </a>
+                            <figcaption class="explore-more-category-title">
+                                <strong>{$place.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
+                                {if $place.relation_label} ({$place.relation_label|stripRelatorCode|escape}){/if}
+                            </figcaption>
+                        </figure>
+                    {/foreach}
+                </div>
             </div>
         </div>
     </div>
