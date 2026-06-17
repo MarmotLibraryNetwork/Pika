@@ -300,14 +300,36 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         }
         $related_orgs = $this->termWithoutFieldPrefix['related_organization'] ?? null;
 
-        if($related_orgs === null)
+        if ($related_orgs === null) {
             return null;
+        }
 
-        if(array_key_exists('tid', $related_orgs)) {
+        // Normalize single entry to a list
+        if (array_key_exists('tid', $related_orgs)) {
             $related_orgs = [$related_orgs];
         }
 
-        return $related_orgs;
+        $result = [];
+        foreach ($related_orgs as $raw) {
+            $tid  = $raw['tid'] ?? null;
+            $name = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue;
+            }
+            $vocab   = strtolower($raw['vocabulary'] ?? 'corporate_body');
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Organization';
+            $url     = (!empty($tid)) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#';
+            $result[] = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $name,
+                'url'            => $url,
+                'thumbnail'      => $raw['field_thumbnail']['url'] ?? null,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+        }
+
+        return $result ?: null;
     }
 
     /**

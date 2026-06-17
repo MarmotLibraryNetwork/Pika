@@ -62,16 +62,20 @@
         </a>
         <div id="relatedOrgPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                {foreach from=$related_organization item=org}
-                    <div class="row archive-field-row">
-                        <div class="result-label col-sm-4">
-                            {$org.relation_label}
-                        </div>
-                        <div class="result-value col-sm-8">
-                            <a href="/Archive2/Organization/{$org.tid}">{$org.name|escape}</a>
-                        </div>
-                    </div>
-                {/foreach}
+                <div class="related-objects results-covers home-page-browse-thumbnails">
+                    {foreach from=$related_organization item=org}
+                        <figure class="browse-thumbnail-sorted">
+                            <a href="{$org.url|escape}"{if $org.name} data-title="{$org.name|escape}"{/if}>
+                                <img src="{if $org.thumbnail}{$org.thumbnail|escape}{else}/interface/themes/responsive/images/organization.png{/if}"
+                                     alt="{$org.name|escape}">
+                            </a>
+                            <figcaption class="explore-more-category-title">
+                                <strong>{$org.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
+                                {if $org.relation_label} ({$org.relation_label|stripRelatorCode|escape}){/if}
+                            </figcaption>
+                        </figure>
+                    {/foreach}
+                </div>
             </div>
         </div>
     </div>
