@@ -75,42 +75,6 @@
 				</div>
 			{/if}
 
-			{if $related_place}
-				<div class="panel" id="corpBodyRelatedPlacePanel">
-					<a data-toggle="collapse" href="#corpBodyRelatedPlacePanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Address</h2>
-						</div>
-					</a>
-					<div id="corpBodyRelatedPlacePanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-
-							{if is_array($related_place) && $related_place.tid}
-								<div class="row archive-field-row">
-									<div class="result-label col-sm-4">
-										{$related_place.relation_label|escape} {if $related_place.start_date_rel_place}{$related_place.start_date_rel_place} -{/if} {if $related_place.end_date_rel_place}{$related_place.end_date_rel_place}{/if}
-									</div>
-									<div class="result-value col-sm-8">
-										<a href="/Archive2/Place?tid={$related_place.tid}">{$related_place.name|escape}</a>
-									</div>
-								</div>
-							{else}
-								{foreach from=$related_place item=place}
-									<div class="row archive-field-row">
-										<div class="result-label col-sm-4">
-											{$place.relation_label|escape} {if $place.start_date_rel_place|escape}{$place.start_date_rel_place} -{/if} {if $place.end_date_rel_place}{$place.end_date_rel_place}{/if}
-										</div>
-										<div class="result-value col-sm-8">
-											<a href="/Archive2/Place/{$place.tid}">{$place.name|escape}</a>
-										</div>
-									</div>
-								{/foreach}
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
-
 			{include file="Archive2/panels/sharedRelatedPanels.tpl"}
 			{include file="Archive2/panels/subjectsPanel.tpl"}
 		</div>

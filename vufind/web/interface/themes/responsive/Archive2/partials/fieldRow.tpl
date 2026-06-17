@@ -9,8 +9,8 @@
 	{/if}
 	{if $hasValue || $debugDetails}
 	<div class="row archive-field-row">
-		<div class="result-label col-sm-4">{$label}: </div>
-		<div class="result-value col-sm-8">
+		<div class="result-label col-xs-4">{$label}: </div>
+		<div class="result-value col-xs-8">
 			{if $hasValue}
 				{include file="Archive2/partials/renderValue.tpl" value=$value}
 			{else}

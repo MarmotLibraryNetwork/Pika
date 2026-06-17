@@ -124,11 +124,22 @@ class TaxonomyObject extends \Action
             $interface->assign('related_place',          $this->taxonomyObject->getRelatedPlace());
             $interface->assign('related_organization',   $this->taxonomyObject->getRelatedOrganization());
             $interface->assign('related_person',         $this->taxonomyObject->getRelatedPerson());
+            $interface->assign('related_event',          $this->taxonomyObject->getRelatedEvent());
         }
         // subjects
         if($this->taxonomyObject->termWithoutFieldPrefix['vocabulary'] != "person") {
             $interface->assign('subjects',               $this->taxonomyObject->getSubjects());
         }
+
+        // Staff view
+        $isStaffUser = \UserAccount::userHasRole('archives')
+            || \UserAccount::userHasRole('opacAdmin')
+            || \UserAccount::userHasRole('libraryAdmin');
+        $interface->assign('isStaffUser', $isStaffUser);
+
+        $islandoraBaseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+        $interface->assign('islandora_taxonomy_url',          $islandoraBaseUrl . '/taxonomy/term/' . $this->tid);
+        $interface->assign('islandora_taxonomy_pika_json_url', $islandoraBaseUrl . '/pika-json/taxonomy/' . $this->tid);
 
     }
 

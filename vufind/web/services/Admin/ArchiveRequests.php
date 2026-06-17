@@ -47,15 +47,15 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$object->orderBy($orderBy ?? 'dateRequested desc');
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
-			$homeLibrary      = $user->getHomeLibrary();
-			$libraryTid = $homeLibrary->libraryTid;
+			$homeLibrary         = $user->getHomeLibrary();
+			$libraryTid          = $homeLibrary->libraryTid;
 			$object->$libraryTid = $libraryTid;
 		}
-		$object->find();
-		while ($object->fetch()){
-			$list[$object->id] = clone $object;
+		if ($object->find()){
+			while ($object->fetch()){
+				$list[$object->id] = clone $object;
+			}
 		}
-
 		return $list;
 	}
 	function getObjectStructure(){

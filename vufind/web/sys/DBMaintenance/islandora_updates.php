@@ -576,7 +576,7 @@ function convertListPidToNid():bool {
 	}
 
 	$userListEntry = new UserListEntry();
-	$userListEntry->whereAdd("nid LIKE '%:%'");
+	$userListEntry->whereAdd("groupedWorkPermanentId LIKE '%:%'");
 	$userListEntry->find();
 	$success = true; // Set as true if there are no list entries to process
 	while($userListEntry->fetch()){

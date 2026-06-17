@@ -36,7 +36,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 
 	static $moreDetailsOptions = [
 		'description'          => 'Description',
-		'bio'                  => 'Biographical Information',
+		//'bio'                  => 'Biographical Information', //T Taxonomy Section
 		'wikipedia'            => 'From Wikipedia',
 		'familyDetails'        => 'Family Details',
 		'addresses'            => 'Addresses',
@@ -54,13 +54,13 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'relatedOrganizations' => 'Related Organizations',
 		'relatedPlaces'        => 'Related Places',
 		'relatedEvents'        => 'Related Events',
-		'demographics'         => 'Demographic Details',
+		//'demographics'         => 'Demographic Details',
 		'education'            => 'Academic Record',
 		'notes'                => 'Notes',
 		'subject'              => 'Subjects',
 		'acknowledgements'     => 'Acknowledgements', //production Team
 		'externalLinks'        => 'Links',
-		'moreDetails'          => 'More Details', //TODO: label 'Catalog Details' after switch to Islandora2
+		'moreDetails'          => 'Catalog Details', //TODO: label 'Catalog Details' after switch to Islandora2
 		'rightsStatements'     => 'Rights Statements',
 		'staffView'            => 'Staff View',
 	];

@@ -28,7 +28,7 @@ class Archive2_ClaimAuthorship extends Action{
 	function launch(){
 		global $configArray;
 		global $interface;
-
+		global $pikaLogger;
 		$claimAuthorshipFields = Archive2\ClaimAuthorshipRequest::getObjectStructure();
 
 		if (!isset($_REQUEST['id'])){
@@ -94,7 +94,7 @@ class Archive2_ClaimAuthorship extends Action{
 				if ($newObject !== false){
 					$interface->assign('requestResult', $newObject);
 					$interface->assign('requestedObject', $claimedObject);
-					$body = $interface->fetch('Emails/claim-authorship-request.tpl');
+					$body = $interface->fetch('Emails/archive2-claim-authorship.tpl');
 
 
 					if (!empty($owningLibrary)){
@@ -102,7 +102,7 @@ class Archive2_ClaimAuthorship extends Action{
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							require_once ROOT_DIR . '/sys/Mailer.php';
 							$body        .= $claimedObject->getAbsoluteUrl();
-							$libraryArchiveEmail = $owningLibrary->archiveRequestEmail ?? $configArray['Site']['email'];
+							$libraryArchiveEmail = !empty($owningLibrary->archiveRequestEmail) ? $owningLibrary->archiveRequestEmail: $configArray['Site']['email'];
 							$mail        = new VuFindMailer();
 							$subject     = 'New Authorship Claim for Archive Content';
 							$emailResult = $mail->send($libraryArchiveEmail, $newObject->email, $subject, $body);
@@ -110,9 +110,9 @@ class Archive2_ClaimAuthorship extends Action{
 							if ($emailResult === true){
 							} elseif (PEAR_Singleton::isError($emailResult)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
+								$pikaLogger->error("Archive Claim Authorship Mail Error: {$emailResult->message}", is_array($emailResult->backtrace) ? $emailResult->backtrace : []);
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
-								global $pikaLogger;
 								$pikaLogger->error("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body");
 							}
 						} else {
@@ -145,7 +145,7 @@ class Archive2_ClaimAuthorship extends Action{
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
-		$this->display('claimAuthorship.tpl', 'Archival Material Copy Request');
+		$this->display('claimAuthorship.tpl', 'Archival Material Claim Authorship');
 	}
 
 	function insertObject($structure){

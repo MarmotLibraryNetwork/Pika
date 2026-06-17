@@ -192,7 +192,6 @@ class UserList extends DB_DataObject {
 						if (!$listEntry->hidden){
 							$catalogIDs[] = $listEntry->groupedWorkPermanentId;
 						}
-
 					}
 					$listEntries[] = $listEntry->groupedWorkPermanentId;
 				}
@@ -287,7 +286,7 @@ class UserList extends DB_DataObject {
 	 */
 	function removeListEntry($workToRemove){
 		// Remove the Saved List Entry
-		if(str_contains($workToRemove, 'islandora2-')){
+		if(str_contains($workToRemove->groupedWorkPermanentId, 'islandora2-')){
 			$workToRemove = str_replace('islandora2-', '', $workToRemove);
 		}
 		if ($workToRemove instanceof UserListEntry){

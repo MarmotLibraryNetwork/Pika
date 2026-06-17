@@ -1421,10 +1421,17 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 		// Collections Hidden by the Current Library's Interface
 		if (!empty($library->collectionsToHide)){
+			// Hide the children objects of the collections
 			$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!itm_field_member_of');
 			if ($filter){
 				$filters[] = $filter;
 			}
+		}
+
+		// Collections Hidden by the Current Library's Interface
+		$filter = $this->nodeIdsToFilter($library->collectionsToHide, '!its_node_id');
+		if ($filter){
+			$filters[] = $filter;
 		}
 
 		// Objects Hidden by the Current Library's Interface

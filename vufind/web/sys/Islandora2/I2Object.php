@@ -551,11 +551,14 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedPlace(): ?array
     {
-        $related_place = $this->rawNode['field_related_place'] ?? null;
-        if (is_array($related_place) && array_key_exists('tid', $related_place)) {
-            $related_place = [$related_place];
+        $raw = $this->rawNode['field_related_place'] ?? null;
+        if (empty($raw)) {
+            return null;
         }
-        return $related_place;
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'geo_location', 'Place');
     }
 
     /**
@@ -565,11 +568,14 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedEvent(): ?array
     {
-        $related_event = $this->rawNode['field_related_event'] ?? null;
-        if (is_array($related_event) && array_key_exists('tid', $related_event)) {
-            $related_event = [$related_event];
+        $raw = $this->rawNode['field_related_event'] ?? null;
+        if (empty($raw)) {
+            return null;
         }
-        return $related_event;
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'event', 'Event');
     }
 
     /**
@@ -579,11 +585,14 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedOrganization(): ?array
     {
-        $related_org = $this->rawNode['field_related_org'] ?? null;
-        if (is_array($related_org) && array_key_exists('tid', $related_org)) {
-            $related_org = [$related_org];
+        $raw = $this->rawNode['field_related_org'] ?? null;
+        if (empty($raw)) {
+            return null;
         }
-        return $related_org;
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'corporate_body', 'Organization');
     }
 
     /**
@@ -596,26 +605,54 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getRelatedPerson(): ?array
     {
-        $related_person = $this->nwfp()['related_person_paragraph'] ?? null;
-        // if it's a single entry
-        if (is_array($related_person) && array_key_exists('id', $related_person)) {
-            // get notes
-            $note = $this->getRelatedPersonNote($related_person);
-            $related_person['note'] = $note;
-            $related_person = [$related_person['related_person']];
-            // multiple persons
-        } elseif ($related_person !== null) {
-            $tmp_people = [];
-            foreach ($related_person as $person) {
-                $this_person = $person['related_person'];
-                // get notes
-                $note = $this->getRelatedPersonNote($person);
-                $this_person['note'] = $note;
-                $tmp_people[] = $this_person;
-            }
-            $related_person = $tmp_people;
+        $paragraphs = $this->nwfp()['related_person_paragraph'] ?? null;
+        if ($paragraphs === null) {
+            return null;
         }
-        return $related_person;
+        if (is_array($paragraphs) && array_key_exists('id', $paragraphs)) {
+            $paragraphs = [$paragraphs];
+        }
+        $raw = [];
+        foreach ($paragraphs as $paragraph) {
+            $entry         = $paragraph['related_person'] ?? [];
+            $entry['note'] = $this->getRelatedPersonNote($paragraph);
+            $raw[]         = $entry;
+        }
+        return $this->normalizeRelatedTerms($raw, 'person', 'Person');
+    }
+
+    /**
+     * Normalize a list of raw taxonomy term references into a consistent shape
+     * consumed by the relatedTaxonomyTiles partial.
+     *
+     * Each entry shape: ['tid', 'name', 'url', 'thumbnail', 'relation', 'relation_label'].
+     * Note is preserved when present (used by related-person data).
+     */
+    private function normalizeRelatedTerms(array $entries, string $defaultVocab, string $defaultSegment): ?array
+    {
+        $result = [];
+        foreach ($entries as $raw) {
+            $tid  = $raw['tid'] ?? null;
+            $name = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue;
+            }
+            $vocab   = strtolower($raw['vocabulary'] ?? $defaultVocab);
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? $defaultSegment;
+            $entry   = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $name,
+                'url'            => !empty($tid) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#',
+                'thumbnail'      => $raw['thumbnail'] ?? null,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+            if (isset($raw['note'])) {
+                $entry['note'] = $raw['note'];
+            }
+            $result[] = $entry;
+        }
+        return $result ?: null;
     }
 
     private function getRelatedPersonNote(array $person)
