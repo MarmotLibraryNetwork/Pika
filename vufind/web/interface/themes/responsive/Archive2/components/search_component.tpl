@@ -9,7 +9,7 @@
 			<div class="input-group-btn">
 				<button class="btn btn-primary" type="submit">GO</button>
 			</div>
-			<input type="hidden" name="filter[]" value="sm_collection:{$title|escape:'url'}">
+			<input type="hidden" name="filter[]" value="sm_collection:{$title}">
 		</div>
 	</form>
 </div>
