@@ -7,39 +7,40 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-4">
+		<div class="col-lg-6">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail"
-					style="max-width:300px; margin:0; float: left;">
-			{/if}
-		</div>
-		<div class="col-xs-8">
-			{include file="Archive2/partials/fieldRow.tpl" label="Given Name"    value=$given_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"   value=$middle_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-			{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year}
-			{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year}
-			{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
+					style="max-width:300px; margin:0;">{* TODO: move to stylesheet *}
+			{* removed float; left-floating the image causing the parent div to have no width; and the text would display over image *}
+		{/if}
+	</div>
+	<div class="col-lg-6">
+		{include file="Archive2/partials/fieldRow.tpl" label="Given Name"    value=$given_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"   value=$middle_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year}
+		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year}
+		{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
+	</div>
+</div>
+<br class="clearfix">
+{if $term_description}
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="taxonomy-description">
+				{$term_description}
+			</div>
+
 		</div>
 	</div>
-	<br class="clearfix">
-	{if $term_description}
-		<div class="row">
-			<div class="col-xs-12">
-				<div class="taxonomy-description">
-					{$term_description}
-				</div>
+{/if}
 
-			</div>
-		</div>
-	{/if}
-	
-	<div class="taxonomy-detail taxonomy-person">
-		<div id="person-detail-accordion" class="panel-group">
+<div class="taxonomy-detail taxonomy-person">
+	<div id="person-detail-accordion" class="panel-group">
 
-			{* Related Objects — populated via AJAX on page load *}
+		{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="personRelatedObjectsPanel">
 				<a data-toggle="collapse" href="#personRelatedObjectsPanelBody">
 					<div class="panel-heading">
