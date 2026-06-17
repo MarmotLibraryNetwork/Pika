@@ -218,9 +218,11 @@ class Collection extends ArchiveObject
     }
 
     /**
-     * Iterates over the collection's configured component options, renders each
-     * component partial (search box, map, browse scroller, random image, etc.),
-     * and assigns the rendered HTML array to the template.
+     * Iterates over the collection's configured component options (search box,
+     * map, browse scroller, random image, etc.) and assigns the data and presence
+     * flags each component needs. The components themselves are laid out and
+     * {include}d by collection_custom.tpl, so arrangement is controlled in the
+     * template rather than by the order of the configured options.
      *
      * @param int $nid Node ID of the collection whose options are being loaded.
      */
@@ -230,8 +232,22 @@ class Collection extends ArchiveObject
         /** @var CollectionObject $collection */
         $collection = $this->mediaObject;
         $options    = $collection->getCollectionOptions() ?? [];
-        $templates  = [];
         $factory    = new I2ObjectFactory();
+
+        // Layout is owned by collection_custom.tpl. This method only decides which
+        // components are present (still driven by the curator's field_pika_coll_options)
+        // and gathers their data. Singletons are exposed as boolean flags; repeatable
+        // components as arrays the template loops over and {include}s, passing each
+        // instance's data as local include variables to avoid collisions on the shared
+        // variable names the component templates read.
+        $showSearchComponent    = false;
+        $showMapComponent       = false;
+        $showBrowseAll          = false;
+        $scrollerComponents     = [];
+        $browseTitleComponents  = [];
+        $browseFilterComponents = [];
+        $browseByComponents     = [];
+        $randomImageComponents  = [];
 
         foreach ($options as $option) {
             // Tolerate stray whitespace in the stored option (e.g. " scroller|18784").
@@ -241,16 +257,15 @@ class Collection extends ArchiveObject
             if ($type === 'searchCollection') {
                 $interface->assign('searchComponentImage',
                     $parts[1] ?? '/interface/themes/responsive/images/search_component.png');
-                $templates[] = $interface->fetch('Archive2/components/search_component.tpl');
+                $showSearchComponent = true;
 
             } elseif ($type === 'googleMap' || $type === 'map') {
                 $interface->assign('additionalMapCollections', $parts[1] ?? '');
                 $this->loadMapData();
-                $templates[] = $interface->fetch('Archive2/components/map_component.tpl');
                 // Filterable child grid below the map: marker clicks filter it by
                 // place and the decade date-filter buttons filter it by time.
                 $this->loadTimelineData($nid, true);
-                $templates[] = $interface->fetch('Archive2/components/timeline_component.tpl');
+                $showMapComponent = true;
 
             } elseif ($type === 'scroller') {
                 // "scroller|<nid>" shows that child collection's children; a bare
@@ -283,10 +298,11 @@ class Collection extends ArchiveObject
                     $srcNid = $source->getNodeId();
                 }
                 if (!empty($items)) {
-                    $interface->assign('browseCollectionTitle', $title);
-                    $interface->assign('browseCollectionItems', $items);
-                    $interface->assign('browseCollectionNid', $srcNid);
-                    $templates[] = $interface->fetch('Archive2/components/scroller_component.tpl');
+                    $scrollerComponents[] = [
+                        'title' => $title,
+                        'items' => $items,
+                        'nid'   => $srcNid,
+                    ];
                 }
 
             } elseif ($type === 'browseCollectionByTitle') {
@@ -304,9 +320,10 @@ class Collection extends ArchiveObject
                                 'thumbnail' => $obj->getThumbnailUrl(),
                             ];
                         }
-                        $interface->assign('browseCollectionTitle', $childCollection->getTitle());
-                        $interface->assign('browseCollectionItems', $childItems);
-                        $templates[] = $interface->fetch('Archive2/components/browse_titles_component.tpl');
+                        $browseTitleComponents[] = [
+                            'title' => $childCollection->getTitle(),
+                            'items' => $childItems,
+                        ];
                     }
                 }
 
@@ -325,12 +342,13 @@ class Collection extends ArchiveObject
                             $randomObj = $factory->fromNode($response['children'][0]);
                             if ($randomObj) {
                                 $thumb = $randomObj->getThumbnail();
-                                $interface->assign('randomObject', [
-                                    'title'     => $randomObj->getTitle(),
-                                    'url'       => getObjRelativeUrl($randomObj),
-                                    'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                                ]);
-                                $templates[] = $interface->fetch('Archive2/components/random_image_component.tpl');
+                                $randomImageComponents[] = [
+                                    'object' => [
+                                        'title'     => $randomObj->getTitle(),
+                                        'url'       => getObjRelativeUrl($randomObj),
+                                        'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+                                    ],
+                                ];
                             }
                         }
                     }
@@ -338,17 +356,15 @@ class Collection extends ArchiveObject
 
             } elseif ($type === 'browseAllObjects') {
                 $interface->assign('collectionNid', $nid);
-                $templates[] = $interface->fetch('Archive2/components/browse_all_component.tpl');
+                $showBrowseAll = true;
 
             } elseif ($type === 'browseFilter' || $type === 'browseEntityFilter') {
-                $interface->assign('browseFilterFacetName', $parts[1] ?? '');
-                $interface->assign('browseFilterLabel',     $parts[2] ?? '');
-                $interface->assign('browseFilterImage',
-                    $parts[3] ?? '/interface/themes/responsive/images/search_component.png');
-                $tpl = $type === 'browseEntityFilter'
-                    ? 'Archive2/components/entity_filter_component.tpl'
-                    : 'Archive2/components/browse_filter_component.tpl';
-                $templates[] = $interface->fetch($tpl);
+                $browseFilterComponents[] = [
+                    'facet'  => $parts[1] ?? '',
+                    'label'  => $parts[2] ?? '',
+                    'image'  => $parts[3] ?? '/interface/themes/responsive/images/search_component.png',
+                    'entity' => $type === 'browseEntityFilter',
+                ];
 
             } elseif ($type === 'browseBy') {
                 $subtype = strtolower($parts[1] ?? '');
@@ -368,14 +384,22 @@ class Collection extends ArchiveObject
                     'url'  => $urlBase . urlencode((string)$item['tid']),
                 ], $rawItems);
                 $half = (int)ceil(count($items) / 2);
-                $interface->assign('browseByTitle',   $title);
-                $interface->assign('browseByColumn1', array_slice($items, 0, $half));
-                $interface->assign('browseByColumn2', array_slice($items, $half));
-                $templates[] = $interface->fetch('Archive2/components/browse_by_component.tpl');
+                $browseByComponents[] = [
+                    'title' => $title,
+                    'col1'  => array_slice($items, 0, $half),
+                    'col2'  => array_slice($items, $half),
+                ];
             }
         }
 
-        $interface->assign('collectionTemplates', $templates);
+        $interface->assign('showSearchComponent',    $showSearchComponent);
+        $interface->assign('showMapComponent',       $showMapComponent);
+        $interface->assign('showBrowseAll',          $showBrowseAll);
+        $interface->assign('scrollerComponents',     $scrollerComponents);
+        $interface->assign('browseTitleComponents',  $browseTitleComponents);
+        $interface->assign('browseFilterComponents', $browseFilterComponents);
+        $interface->assign('browseByComponents',     $browseByComponents);
+        $interface->assign('randomImageComponents',  $randomImageComponents);
     }
 
     /**
