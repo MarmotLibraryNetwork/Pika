@@ -53,6 +53,34 @@
     </div>
 {/if}
 
+{if !empty($related_event)}
+    <div class="panel" id="relatedEventPanel">
+        <a data-toggle="collapse" href="#relatedEventPanelBody">
+            <div class="panel-heading">
+                <h2 class="panel-title">Related Events</h2>
+            </div>
+        </a>
+        <div id="relatedEventPanelBody" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="related-objects results-covers home-page-browse-thumbnails">
+                    {foreach from=$related_event item=event}
+                        <figure class="browse-thumbnail-sorted">
+                            <a href="{$event.url|escape}"{if $event.name} data-title="{$event.name|escape}"{/if}>
+                                <img src="{if $event.thumbnail}{$event.thumbnail|escape}{else}/interface/themes/responsive/images/events.png{/if}"
+                                     alt="{$event.name|escape}">
+                            </a>
+                            <figcaption class="explore-more-category-title">
+                                <strong>{$event.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
+                                {if $event.relation_label} ({$event.relation_label|stripRelatorCode|escape}){/if}
+                            </figcaption>
+                        </figure>
+                    {/foreach}
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
+
 {if !empty($related_organization)}
     <div class="panel" id="relatedOrgPanel">
         <a data-toggle="collapse" href="#relatedOrgPanelBody">

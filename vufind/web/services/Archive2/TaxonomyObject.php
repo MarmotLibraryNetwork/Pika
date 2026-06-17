@@ -124,6 +124,7 @@ class TaxonomyObject extends \Action
             $interface->assign('related_place',          $this->taxonomyObject->getRelatedPlace());
             $interface->assign('related_organization',   $this->taxonomyObject->getRelatedOrganization());
             $interface->assign('related_person',         $this->taxonomyObject->getRelatedPerson());
+            $interface->assign('related_event',          $this->taxonomyObject->getRelatedEvent());
         }
         // subjects
         if($this->taxonomyObject->termWithoutFieldPrefix['vocabulary'] != "person") {

@@ -344,14 +344,36 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         }
         $related_event = $this->termWithoutFieldPrefix['related_event'] ?? null;
 
-        if($related_event === null)
+        if ($related_event === null) {
             return null;
+        }
 
-        if(array_key_exists('tid', $related_event)) {
+        // Normalize single entry to a list
+        if (array_key_exists('tid', $related_event)) {
             $related_event = [$related_event];
         }
 
-        return $related_event;
+        $result = [];
+        foreach ($related_event as $raw) {
+            $tid  = $raw['tid'] ?? null;
+            $name = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue;
+            }
+            $vocab   = strtolower($raw['vocabulary'] ?? 'event');
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Event';
+            $url     = (!empty($tid)) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#';
+            $result[] = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $name,
+                'url'            => $url,
+                'thumbnail'      => $raw['field_thumbnail']['url'] ?? null,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+        }
+
+        return $result ?: null;
     }
 
     /**
