@@ -489,7 +489,6 @@ class FavoriteHandler {
 						$archiveSearchObject->setQueryIDs($idsToDisplayForThisPage);// do solr search by Ids
 						$archiveSearchObject->setLimit($recordsPerPage);
 						$archiveSearchObject->setPage(1);
-						$archiveSearchObject->setSort($this->sort);
 						$archiveSearchObject->setPrimarySearch(false);
 						$archiveResult       = $archiveSearchObject->processSearch(false, false, true);
 						$archiveSearchObject->setPage($page);
