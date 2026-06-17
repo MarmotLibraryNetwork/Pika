@@ -7,20 +7,7 @@
         </a>
         <div id="relatedPersonPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="related-objects results-covers home-page-browse-thumbnails">
-                    {foreach from=$related_person item=person}
-                        <figure class="browse-thumbnail-sorted">
-                            <a href="{$person.url|escape}"{if $person.name} data-title="{$person.name|escape}"{/if}>
-                                <img src="{if $person.thumbnail}{$person.thumbnail|escape}{else}/interface/themes/responsive/images/people.png{/if}"
-                                     alt="{$person.name|escape}">
-                            </a>
-                            <figcaption class="explore-more-category-title">
-                                <strong>{$person.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
-                                {if $person.relation_label} ({$person.relation_label|stripRelatorCode|escape}){/if}
-                            </figcaption>
-                        </figure>
-                    {/foreach}
-                </div>
+                {include file="Archive2/partials/relatedTaxonomyTiles.tpl" items=$related_person defaultImage="/interface/themes/responsive/images/people.png"}
             </div>
         </div>
     </div>
@@ -34,20 +21,7 @@
         </a>
         <div id="relatedPlacePanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="related-objects results-covers home-page-browse-thumbnails">
-                    {foreach from=$related_place item=place}
-                        <figure class="browse-thumbnail-sorted">
-                            <a href="{$place.url|escape}"{if $place.name} data-title="{$place.name|escape}"{/if}>
-                                <img src="{if $place.thumbnail}{$place.thumbnail|escape}{else}/interface/themes/responsive/images/places.png{/if}"
-                                     alt="{$place.name|escape}">
-                            </a>
-                            <figcaption class="explore-more-category-title">
-                                <strong>{$place.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
-                                {if $place.relation_label} ({$place.relation_label|stripRelatorCode|escape}){/if}
-                            </figcaption>
-                        </figure>
-                    {/foreach}
-                </div>
+                {include file="Archive2/partials/relatedTaxonomyTiles.tpl" items=$related_place defaultImage="/interface/themes/responsive/images/places.png"}
             </div>
         </div>
     </div>
@@ -62,20 +36,7 @@
         </a>
         <div id="relatedEventPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="related-objects results-covers home-page-browse-thumbnails">
-                    {foreach from=$related_event item=event}
-                        <figure class="browse-thumbnail-sorted">
-                            <a href="{$event.url|escape}"{if $event.name} data-title="{$event.name|escape}"{/if}>
-                                <img src="{if $event.thumbnail}{$event.thumbnail|escape}{else}/interface/themes/responsive/images/events.png{/if}"
-                                     alt="{$event.name|escape}">
-                            </a>
-                            <figcaption class="explore-more-category-title">
-                                <strong>{$event.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
-                                {if $event.relation_label} ({$event.relation_label|stripRelatorCode|escape}){/if}
-                            </figcaption>
-                        </figure>
-                    {/foreach}
-                </div>
+                {include file="Archive2/partials/relatedTaxonomyTiles.tpl" items=$related_event defaultImage="/interface/themes/responsive/images/events.png"}
             </div>
         </div>
     </div>
@@ -90,20 +51,7 @@
         </a>
         <div id="relatedOrgPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                <div class="related-objects results-covers home-page-browse-thumbnails">
-                    {foreach from=$related_organization item=org}
-                        <figure class="browse-thumbnail-sorted">
-                            <a href="{$org.url|escape}"{if $org.name} data-title="{$org.name|escape}"{/if}>
-                                <img src="{if $org.thumbnail}{$org.thumbnail|escape}{else}/interface/themes/responsive/images/organization.png{/if}"
-                                     alt="{$org.name|escape}">
-                            </a>
-                            <figcaption class="explore-more-category-title">
-                                <strong>{$org.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
-                                {if $org.relation_label} ({$org.relation_label|stripRelatorCode|escape}){/if}
-                            </figcaption>
-                        </figure>
-                    {/foreach}
-                </div>
+                {include file="Archive2/partials/relatedTaxonomyTiles.tpl" items=$related_organization defaultImage="/interface/themes/responsive/images/organization.png"}
             </div>
         </div>
     </div>
