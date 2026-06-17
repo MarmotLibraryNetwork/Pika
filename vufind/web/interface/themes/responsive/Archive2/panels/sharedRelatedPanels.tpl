@@ -7,19 +7,20 @@
         </a>
         <div id="relatedPersonPanelBody" class="panel-collapse collapse">
             <div class="panel-body">
-                {foreach from=$related_person item=person}
-                    <div class="row archive-field-row">
-                        <div class="result-label col-sm-4">
-                            {$person.relation_label}
-                        </div>
-                        <div class="result-value col-sm-4">
-                            <a href="/Archive2/Person/{$person.tid}">{$person.name|escape}</a>
-                        </div>
-                        <div class="result-value col-sm-4">
-                            {if $person.note}{$person.note}{/if}
-                        </div>
-                    </div>
-                {/foreach}
+                <div class="related-objects results-covers home-page-browse-thumbnails">
+                    {foreach from=$related_person item=person}
+                        <figure class="browse-thumbnail-sorted">
+                            <a href="{$person.url|escape}"{if $person.name} data-title="{$person.name|escape}"{/if}>
+                                <img src="{if $person.thumbnail}{$person.thumbnail|escape}{else}/interface/themes/responsive/images/people.png{/if}"
+                                     alt="{$person.name|escape}">
+                            </a>
+                            <figcaption class="explore-more-category-title">
+                                <strong>{$person.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
+                                {if $person.relation_label} ({$person.relation_label|stripRelatorCode|escape}){/if}
+                            </figcaption>
+                        </figure>
+                    {/foreach}
+                </div>
             </div>
         </div>
     </div>

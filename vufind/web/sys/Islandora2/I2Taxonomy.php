@@ -188,25 +188,39 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
         if(!array_key_exists('related_place', $this->termWithoutFieldPrefix)) {
             return false;
         }
-        $person = $this->termWithoutFieldPrefix['related_person_paragraph'] ?? null;
-        
-        if($person === null)
+        $paragraphs = $this->termWithoutFieldPrefix['related_person_paragraph'] ?? null;
+
+        if ($paragraphs === null) {
             return null;
-
-        // Only a single related person
-        if(array_key_exists('related_person', $person)) {
-            return [$person['related_person']];
         }
 
-        // Multipule related people 
-        // Only return the related person part.
-        $people = [];
-         
-        foreach($person as $p) {
-            $people[] = $p['related_person'];
+        // Normalize single entry to a list
+        if (array_key_exists('related_person', $paragraphs)) {
+            $paragraphs = [$paragraphs];
         }
 
-        return $people;
+        $result = [];
+        foreach ($paragraphs as $p) {
+            $raw  = $p['related_person'] ?? [];
+            $tid  = $raw['tid'] ?? null;
+            $name = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue;
+            }
+            $vocab   = strtolower($raw['vocabulary'] ?? 'person');
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Person';
+            $url     = (!empty($tid)) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#';
+            $result[] = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $name,
+                'url'            => $url,
+                'thumbnail'      => $raw['field_thumbnail']['url'] ?? null,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+        }
+
+        return $result ?: null;
     }
 
     /**
