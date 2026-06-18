@@ -37,7 +37,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 	static $moreDetailsOptions = [
 		'description'          => 'Description',
 		//'bio'                  => 'Biographical Information', //T Taxonomy Section
-		'wikipedia'            => 'From Wikipedia',
+		//'wikipedia'            => 'From Wikipedia',
 		'familyDetails'        => 'Family Details',
 		'addresses'            => 'Addresses',
 		'details'              => 'Details',
@@ -105,26 +105,26 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'bio';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
-
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'wikipedia';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
-
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'familyDetails';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'bio';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
+//
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'wikipedia';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
+//
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'familyDetails';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
