@@ -8,12 +8,13 @@
 	{else}
 
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-xs-12" style="text-align: center;">
 			{if $thumbnail}
-			<img src="{$thumbnail}" class="img-responsive thumbnail" style="max-width:300px; float:left; margin: 0 1em 1em 0;" alt="{$title|escape}">
+			<img src="{$thumbnail}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto" alt="{$title|escape}">
 			{/if}
-			{$description}
-			<div class="clearfix"></div>
+		</div>
+		<div class="col-xs-12" class="lead">
+		{$description}
 		</div>
 	</div>
 
