@@ -8,12 +8,13 @@
 	{else}
 
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-xs-12" style="text-align: center;">
 			{if $thumbnail}
-			<img src="{$thumbnail}" class="img-responsive thumbnail" style="max-width:300px; float:left; margin: 0 1em 1em 0;" alt="{$title|escape}">
+			<img src="{$thumbnail}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto" alt="{$title|escape}">
 			{/if}
-			{$description}
-			<div class="clearfix"></div>
+		</div>
+		<div class="col-xs-12" class="lead">
+		{$description}
 		</div>
 	</div>
 
@@ -65,6 +66,18 @@
 						browseFilterLabel=$filter.label
 						browseFilterImage=$filter.image}
 				{/if}
+			{/foreach}
+		</div>
+	{/if}
+
+	{if $browseSubjectComponents}
+		<div class="row">
+			{foreach from=$browseSubjectComponents item=subjectBox}
+				{include file="Archive2/components/browse_subjects_component.tpl"
+					browseSubjectsTitle=$subjectBox.title
+					browseSubjectsImage=$subjectBox.image
+					browseSubjectsItems=$subjectBox.items
+					browseSubjectsId=$subjectBox.id}
 			{/foreach}
 		</div>
 	{/if}

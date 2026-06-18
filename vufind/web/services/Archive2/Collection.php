@@ -247,6 +247,7 @@ class Collection extends ArchiveObject
         $browseTitleComponents  = [];
         $browseFilterComponents = [];
         $browseByComponents     = [];
+        $browseSubjectComponents = [];
         $randomImageComponents  = [];
 
         foreach ($options as $option) {
@@ -389,6 +390,26 @@ class Collection extends ArchiveObject
                     'col1'  => array_slice($items, 0, $half),
                     'col2'  => array_slice($items, $half),
                 ];
+
+            } elseif ($type === 'browseBySubject') {
+                // Subjects from the collection and its children, each linking to a
+                // subject search scoped to this collection. Format:
+                // "browseBySubject|<optional title>|<optional image url>".
+                $items = array_map(fn($s) => [
+                    'name'  => $s['name'],
+                    'count' => $s['count'],
+                    'url'   => '/Archive2/Results?filter[]=sm_subject:%22'
+                               . rawurlencode($s['name']) . '%22'
+                               . '&filter[]=itm_field_member_of:' . $nid,
+                ], $collection->getCollectionSubjects());
+                if (!empty($items)) {
+                    $browseSubjectComponents[] = [
+                        'title' => $parts[1] ?? 'Browse by Subject',
+                        'image' => $parts[2] ?? '/interface/themes/responsive/images/search_component.png',
+                        'items' => $items,
+                        'id'    => $nid . '_' . count($browseSubjectComponents),
+                    ];
+                }
             }
         }
 
@@ -399,6 +420,7 @@ class Collection extends ArchiveObject
         $interface->assign('browseTitleComponents',  $browseTitleComponents);
         $interface->assign('browseFilterComponents', $browseFilterComponents);
         $interface->assign('browseByComponents',     $browseByComponents);
+        $interface->assign('browseSubjectComponents', $browseSubjectComponents);
         $interface->assign('randomImageComponents',  $randomImageComponents);
     }
 
