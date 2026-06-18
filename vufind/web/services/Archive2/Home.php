@@ -32,6 +32,15 @@ class Archive2_Home extends Action {
 		global $pikaLogger;
 		$logger = $pikaLogger->withName(__CLASS__);
 
+		// The archive home page is a dedicated landing page: always show the archive
+		// search box regardless of the user's session searchSource. The session is
+		// intentionally not updated here, so navigating away restores the user's prior
+		// search context.
+		//Note: the global variable also needs updating for the horizontal searchbox
+		global $searchSource;
+		$searchSource = 'islandora2';
+		$interface->assign('searchSource', 'islandora2');
+
 		$relatedProjects = $this->loadRelatedProjects(true);
 		$interface->assign('relatedProjectsLibrary', $relatedProjects);
 		// If there are no library projects, the other projects carousel below will display
