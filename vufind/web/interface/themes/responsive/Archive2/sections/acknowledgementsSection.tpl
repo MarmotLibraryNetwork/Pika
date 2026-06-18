@@ -11,6 +11,7 @@
 					{else}
 						{$member.name|escape}
 					{/if}
+					{if $member.note} ({$member.note|escape}){/if}
 				</div>
 			</div>
 		{/foreach}

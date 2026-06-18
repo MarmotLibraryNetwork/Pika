@@ -54,25 +54,30 @@ class ArchiveObject extends \Action
 	private const NON_PRODUCTION_TEAM_ROLES = [
 		'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
 		'interviewee', 'member', 'parade marshal', 'parent', 'participant',
-		'president', 'rodeo royalty', 'described', 'author', 'sibling',
+		'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
 		'spouse', 'pictured', 'student',
+
 	]; //TODO replace use with one the arrays below
 
 	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
-		'pda', // Production Assistant
+		'ack', // Acknowledgement
+		'dpr', // Digital Production team
 		'edt', // Editor
 		'ivr', // Interviewer
+		'pda', // Production Assistant
+		'pro', // Producer
+		'sen', // Sound Engineer
 		'trc', // Transcriber
-		'prf', // Performer
-		'cmp', // Composer
-		'lyr', // Lyricist
-		'dpr', // Digital Production team
+
+		//		'cmp', // Composer
+		//		'lyr', // Lyricist
+		//		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
 
 		//TODO: populate with all codes
 	];
 	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
 	private const NON_PRODUCTION_RELATOR_CODES = [
-		
+
 	];
 
     /** Loads the media object from the `id` query parameter. */
@@ -875,7 +880,8 @@ class ArchiveObject extends \Action
             }
 
             [$roleLabel, $code] = $this->parseRoleLabel(
-                $agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
+                //$agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
+                $agent['relation_label'] ?? ''
             );
             $label = $roleLabel !== '' ? $roleLabel : 'Creator';
             if ($code !== null) {
@@ -934,13 +940,7 @@ class ArchiveObject extends \Action
                 if (empty($name)) {
                     continue;
                 }
-                [$roleLabel, $code] = $this->parseRoleLabel(
-                    $agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
-                );
-								if (isset($agent['rel']) || isset($agent['role'])){
-									$this->logger->debug('$agent key "rel" or "role" present. Explain in code these cases', $agent);
-									//TODO: if we never seen this triggered, removed unneeded logic above
-								}
+                [$roleLabel, $code] = $this->parseRoleLabel($agent['relation_label'] ?? '');
                 $role = strtolower($roleLabel);
                 if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
                     continue;
