@@ -225,6 +225,33 @@ class CollectionObject extends I2Object
     }
 
     /**
+     * Returns the subjects (field_subject) found across the collection's children
+     * AND on the collection node itself, deduplicated by tid and sorted by name.
+     *
+     * Children contribute a per-subject object count via the JSON:API aggregation.
+     * A subject declared only on the collection node (not on any child) is included
+     * with a count of 0.
+     *
+     * @return array Entries of ['tid' => int, 'name' => string, 'count' => int].
+     */
+    public function getCollectionSubjects(): array
+    {
+        $byTid = [];
+        foreach ($this->aggregateTermsViaApi('field_subject') as $s) {
+            $byTid[$s['tid']] = ['tid' => $s['tid'], 'name' => $s['name'], 'count' => $s['count']];
+        }
+        // Merge in the collection node's own subjects not already contributed by a child.
+        foreach ($this->getSubjects() ?? [] as $own) {
+            $tid = (int)($own['tid'] ?? 0);
+            if ($tid > 0 && !isset($byTid[$tid])) {
+                $byTid[$tid] = ['tid' => $tid, 'name' => $own['name'], 'count' => 0];
+            }
+        }
+
+        return $this->sortByName(array_values($byTid));
+    }
+
+    /**
      * Fetches deduplicated taxonomy terms for a given field across all children via
      * a single JSON:API server-side filtered query, then builds Archive2 URLs.
      *
