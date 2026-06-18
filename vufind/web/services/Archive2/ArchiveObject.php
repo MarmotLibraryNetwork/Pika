@@ -314,15 +314,15 @@ class ArchiveObject extends \Action
 
         // Interview Location
         // NOTE: field_location is labeled as Interview Location in UI
-        $rawInterviewLocations = ($this->mediaObject->location !== null) ? $this->mediaObject->location : [];
+        // Use $nodeData (field_ prefix already stripped recursively) so sub-keys like
+        // city/state/street match what the mapping below expects.
+        $rawInterviewLocations = $nodeData['location'] ?? [];
         $interviewLocations = [];
-        // Determine if the location field has multipule locations
-        // Single entry, put it into an array
-        if (array_key_exists('id', $rawInterviewLocations)) {
-            $tempLoc = $rawInterviewLocations;
-            unset($rawInterviewLocations);
-            $rawInterviewLocations = [];
-            $rawInterviewLocations[] = $tempLoc;
+        // A single location arrives as an associative array; multiple locations arrive as
+        // a sequential (list) array. Wrap the single-location case so the foreach below
+        // always iterates over an array of location entries.
+        if (!empty($rawInterviewLocations) && !array_is_list($rawInterviewLocations)) {
+            $rawInterviewLocations = [$rawInterviewLocations];
         }
 
         foreach ($rawInterviewLocations as $rawInterviewLocation) {
