@@ -8,6 +8,7 @@
 			<figcaption class="explore-more-category-title">
 				<strong>{$item.name|escape|removeTrailingPunctuation|truncate:60:"..."}</strong>
 				{if $item.relation_label} ({$item.relation_label|stripRelatorCode|escape}){/if}
+				{if $item.note}<br>{$item.note|escape}{/if}
 			</figcaption>
 		</figure>
 	{/foreach}
