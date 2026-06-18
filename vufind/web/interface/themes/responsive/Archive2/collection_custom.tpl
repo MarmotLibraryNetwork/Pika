@@ -70,6 +70,18 @@
 		</div>
 	{/if}
 
+	{if $browseSubjectComponents}
+		<div class="row">
+			{foreach from=$browseSubjectComponents item=subjectBox}
+				{include file="Archive2/components/browse_subjects_component.tpl"
+					browseSubjectsTitle=$subjectBox.title
+					browseSubjectsImage=$subjectBox.image
+					browseSubjectsItems=$subjectBox.items
+					browseSubjectsId=$subjectBox.id}
+			{/foreach}
+		</div>
+	{/if}
+
 	{if $browseTitleComponents || $randomImageComponents}
 		<div class="row">
 			{foreach from=$browseTitleComponents item=browseTitle}
