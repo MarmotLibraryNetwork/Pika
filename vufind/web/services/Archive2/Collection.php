@@ -353,7 +353,10 @@ class Collection extends ArchiveObject
                 }
 
             } elseif ($type === 'browseAllObjects') {
-                $interface->assign('collectionNid', $nid);
+                // Render the collection's children as an inline paginated grid
+                // (same data + pager as the basic display) instead of a link out
+                // to a search. Paging is driven by ?page= on the collection URL.
+                $this->loadChildrenData($nid);
                 $showBrowseAll = true;
 
             } elseif ($type === 'browseFilter' || $type === 'browseEntityFilter') {
