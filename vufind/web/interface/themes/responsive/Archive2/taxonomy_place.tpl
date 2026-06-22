@@ -7,13 +7,13 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-4">
+		<div class="col-lg-6">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail"
-					style="max-width:280px; margin:0; float: left;">
+					style="max-width:300px; margin:0;">{* removed float; left-floating the image causing the parent div to have no width; and the text would display over image *}
 			{/if}
 		</div>
-		<div class="col-xs-8">
+		<div class="col-lg-6">
 			{if $alternate_name}
 				
 					<div class="row taxonomy-alt_name">
