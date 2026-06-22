@@ -655,30 +655,18 @@ abstract class I2Object implements MediaObjectInterface
         return $result ?: null;
     }
 
-    private function getRelatedPersonNote(array $person)
+    private function getRelatedPersonNote(array $person): ?string
     {
-        $current_note = $person['related_person_note'];
-        $note = null;
-
-        if ($current_note !== null) {
-            // if the field start with relators or local, ignore it, the string following it
-            // isn't for display
-            if (!str_starts_with($current_note, 'relators') && !str_starts_with($current_note, 'local')) {
-                // find the seperator
-                $seperator = '';
-                if (stristr($current_note, 'relator')) {
-                    $seperator = 'relator';
-                } elseif (stristr($current_note, 'local')) {
-                    $seperator = 'local';
-                } else {
-                    $this->logger->warn('Using raw Related Person Note for node ID: ' . $this->getNodeId());
-                    return $current_note;
-                }
-                $parts = explode($seperator, $person['related_person_note']);
-                if ($parts[0] && is_string($parts[0])) {
-                    $note = $parts[0];
-                }
-            }
+        $note = $person['related_person_note'];
+        if ($note === null) {
+            return null;
+        }
+        // Data should be clean display text. Warn and extract prefix if legacy relator/local phrases are present.
+        if (stristr($note, 'relator') || stristr($note, 'local')) {
+            $this->logger->warn('Related Person note contains unexpected relator/local phrase for node ID: ' . $this->getNodeId(), [$note]);
+            $separator = stristr($note, 'relator') ? 'relator' : 'local';
+            $parts     = explode($separator, $note);
+            return ($parts[0] && is_string($parts[0])) ? trim($parts[0]) : null;
         }
         return $note;
     }

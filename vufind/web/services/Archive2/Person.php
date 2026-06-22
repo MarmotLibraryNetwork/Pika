@@ -61,7 +61,8 @@ class Person extends TaxonomyObject
         // Military data — only assign the block if any field is populated
         if ($person->hasMilitaryData()) {
             $interface->assign('military', [
-                'branch'    => $person->getMilitaryBranch(),
+                'branch'     => $person->getMilitaryBranch(),
+                'branch_url' => $person->getMilitaryBranchUrl(),
                 'conflict'  => $person->getMilitaryConflict(),
                 'rank'      => $person->getMilitaryRank(),
                 'is_pow'    => $person->getMilitaryIsPow(),
@@ -85,6 +86,25 @@ class Person extends TaxonomyObject
         }
 
         $interface->assign('related_place', $person->getRelatedPlace());
+
+        // Links section
+        $links = [];
+        $genealogyLink = $person->getGenealogyLink();
+        if ($genealogyLink) {
+            $links[] = $genealogyLink;
+        }
+        $externalLinks = $person->getExternalLink();
+        if (is_array($externalLinks)) {
+            foreach ($externalLinks as $raw) {
+                if (!empty($raw['uri'])) {
+                    $links[] = [
+                        'uri'   => $raw['uri'],
+                        'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
+                    ];
+                }
+            }
+        }
+        $interface->assign('links', $links ?: null);
 
         // Obituary data from the Genealogy database, linked via field_genealogy_link
         $interface->assign('obituaries', $this->loadObituaries($person));

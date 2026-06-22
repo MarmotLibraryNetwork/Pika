@@ -402,7 +402,10 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
             return false;
         }
         $links = $this->termWithoutFieldPrefix['external_link'] ?? null;
-        if(array_key_exists('uri', $links)) {
+        if (!is_array($links)) {
+            return null;
+        }
+        if (array_key_exists('uri', $links)) {
             $links = [$links];
         }
         return $links;

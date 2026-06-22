@@ -107,7 +107,18 @@
 					</a>
 					<div id="personMilitaryPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Branch"          value=$military.branch}
+							{if $military.branch}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Branch: </div>
+									<div class="result-value col-xs-8">
+										{if $military.branch_url}
+											<a href="{$military.branch_url|escape}">{$military.branch|escape}</a>
+										{else}
+											{$military.branch|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
 							{include file="Archive2/partials/fieldRow.tpl" label="Conflict"        value=$military.conflict}
 							{include file="Archive2/partials/fieldRow.tpl" label="Rank"            value=$military.rank}
 							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start}
@@ -136,6 +147,25 @@
 							{include file="Archive2/partials/fieldRow.tpl" label="Degree"            value=$academic.degree_name}
 							{include file="Archive2/partials/fieldRow.tpl" label="Discipline"        value=$academic.discipline}
 							{include file="Archive2/partials/fieldRow.tpl" label="Graduation Date"   value=$academic.graduation_date}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $links}
+				<div class="panel" id="personLinksPanel">
+					<a data-toggle="collapse" href="#personLinksPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Links</h2>
+						</div>
+					</a>
+					<div id="personLinksPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							<ul class="list-unstyled">
+								{foreach from=$links item=link}
+									<li><a href="{$link.uri|escape}">{$link.title|escape}</a></li>
+								{/foreach}
+							</ul>
 						</div>
 					</div>
 				</div>

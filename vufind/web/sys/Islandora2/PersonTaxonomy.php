@@ -106,6 +106,19 @@ class PersonTaxonomy extends I2Taxonomy
         return is_string($raw) ? $raw : null;
     }
 
+    /** URL to the Organization page for the military branch, or null when not a corporate_body term. */
+    public function getMilitaryBranchUrl(): ?string
+    {
+        $raw = $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        if (!is_array($raw) || empty($raw['tid'])) {
+            return null;
+        }
+        if (($raw['vocabulary'] ?? null) !== 'corporate_body') {
+            return null;
+        }
+        return '/Archive2/Organization/' . urlencode((string)$raw['tid']);
+    }
+
     /** Military conflict or war name (field_military_conflict). */
     public function getMilitaryConflict(): ?string
     {
@@ -186,6 +199,24 @@ class PersonTaxonomy extends I2Taxonomy
             || $this->getDegreeName() !== null
             || $this->getDegreeDiscipline() !== null
             || $this->getGraduationDate() !== null;
+    }
+
+    /**
+     * Return the genealogy link as a ['uri' => ..., 'title' => ...] array, or null when absent.
+     *
+     * Uses the title as the display text and uri as the href.
+     * Falls back to the uri as the title when the title is empty.
+     */
+    public function getGenealogyLink(): ?array
+    {
+        $raw = $this->termWithoutFieldPrefix['genealogy_link'] ?? null;
+        if (!is_array($raw) || empty($raw['uri'])) {
+            return null;
+        }
+        return [
+            'uri'   => $raw['uri'],
+            'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
+        ];
     }
 
     /**
