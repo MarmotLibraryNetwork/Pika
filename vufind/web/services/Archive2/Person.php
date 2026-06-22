@@ -87,6 +87,25 @@ class Person extends TaxonomyObject
 
         $interface->assign('related_place', $person->getRelatedPlace());
 
+        // Links section
+        $links = [];
+        $genealogyLink = $person->getGenealogyLink();
+        if ($genealogyLink) {
+            $links[] = $genealogyLink;
+        }
+        $externalLinks = $person->getExternalLink();
+        if (is_array($externalLinks)) {
+            foreach ($externalLinks as $raw) {
+                if (!empty($raw['uri'])) {
+                    $links[] = [
+                        'uri'   => $raw['uri'],
+                        'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
+                    ];
+                }
+            }
+        }
+        $interface->assign('links', $links ?: null);
+
         // Obituary data from the Genealogy database, linked via field_genealogy_link
         $interface->assign('obituaries', $this->loadObituaries($person));
 

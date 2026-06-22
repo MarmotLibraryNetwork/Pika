@@ -202,6 +202,24 @@ class PersonTaxonomy extends I2Taxonomy
     }
 
     /**
+     * Return the genealogy link as a ['uri' => ..., 'title' => ...] array, or null when absent.
+     *
+     * Uses the title as the display text and uri as the href.
+     * Falls back to the uri as the title when the title is empty.
+     */
+    public function getGenealogyLink(): ?array
+    {
+        $raw = $this->termWithoutFieldPrefix['genealogy_link'] ?? null;
+        if (!is_array($raw) || empty($raw['uri'])) {
+            return null;
+        }
+        return [
+            'uri'   => $raw['uri'],
+            'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
+        ];
+    }
+
+    /**
      * Extract the Genealogy person ID from field_genealogy_link.
      *
      * The field value is expected to be a URL matching the pattern used by
