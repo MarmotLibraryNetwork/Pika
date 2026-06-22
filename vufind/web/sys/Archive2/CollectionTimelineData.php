@@ -52,6 +52,10 @@ class CollectionTimelineData {
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
+		// The default Islandora2 field list omits the date fields; request them so
+		// each doc carries its year (used for the grid's date display and the
+		// year-grouping headings — otherwise every item groups under "Unknown").
+		$searchObject->addFieldsToReturn(['its_edtf_year', 'sm_field_edtf_date_created']);
 		$searchObject->addFilter('itm_field_member_of:' . $nid);
 		if (!empty($placeName)){
 			$searchObject->addFilter('sm_related_place:"' . str_replace('"', '\\"', $placeName) . '"');
