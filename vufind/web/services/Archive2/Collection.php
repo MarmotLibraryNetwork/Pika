@@ -157,13 +157,11 @@ class Collection extends ArchiveObject
         $latSum = $lngSum = $n = 0;
         $minLat = $maxLat = $minLng = $maxLng = null;
 
-        $taxonomyFactory = new TaxonomyFactory();
+        // Fetch every place's coordinates in one batched JSON:API query keyed by tid,
+        // rather than a per-term taxonomy lookup (which was an N+1 over the places).
+        $geoByTid = $collection->getPlaceGeolocations(array_column($places, 'tid'));
         foreach ($places as $place) {
-            $term = $taxonomyFactory->fromTid($place['tid']);
-            if (!$term) {
-                continue;
-            }
-            $geo   = $term->getGeolocation();
+            $geo   = $geoByTid[$place['tid']] ?? null;
             $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url'], 'count' => $place['count']];
             if ($geo && isset($geo['lat'], $geo['lng'])) {
                 $entry['latitude']  = $geo['lat'];
