@@ -39,7 +39,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'description'          => 'Description',
 		//'bio'                  => 'Biographical Information', //T Taxonomy Section
 		//'wikipedia'            => 'From Wikipedia',
-		'familyDetails'        => 'Family Details',
+		//'familyDetails'        => 'Family Details',
 		'addresses'            => 'Addresses',
 		'details'              => 'Details',
 //		'militaryService'      => 'Military Service',
