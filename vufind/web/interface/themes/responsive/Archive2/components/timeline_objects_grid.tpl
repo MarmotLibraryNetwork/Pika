@@ -21,7 +21,7 @@
 						{if $current_year != "__none__"}</div></div>{/if}
 						{assign var="current_year" value=$collectionChild.year}
 						<div class="collection-timeline-year col-xs-12">
-						<h2 class="timeline-year-heading" style="border-bottom:2px solid #ccc; padding-bottom:0.25em;">{if $collectionChild.year}{$collectionChild.year}{else}Unknown{/if}</h2>
+						<h2 class="timeline-year-heading h4" style="border-bottom:2px solid #ccc; padding-bottom:0.25em;">{if $collectionChild.year}{$collectionChild.year}{else}Unknown date{/if}</h2>
 						<div class="row">
 					{/if}
 					{include file="Archive2/partials/collection-item.tpl"}
