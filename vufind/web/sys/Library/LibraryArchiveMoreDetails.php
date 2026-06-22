@@ -34,6 +34,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 	public $collapseByDefault;
 	public $weight;
 
+	//TODO: database update to remove the commented out options here.
 	static $moreDetailsOptions = [
 		'description'          => 'Description',
 		//'bio'                  => 'Biographical Information', //T Taxonomy Section
@@ -41,15 +42,15 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'familyDetails'        => 'Family Details',
 		'addresses'            => 'Addresses',
 		'details'              => 'Details',
-		'militaryService'      => 'Military Service',
+//		'militaryService'      => 'Military Service',
 		'transcription'        => 'Transcription',
 		'correspondence'       => 'Correspondence Information',
 		'academicResearch'     => 'Academic Research Information',
 		'artworkDetails'       => 'Art Information',
 		'musicDetails'         => 'Music Information',
 		'relatedObjects'       => 'Related Objects',
-		'obituaries'           => 'Obituaries',
-		'burialDetails'        => 'Burial Details',
+//		'obituaries'           => 'Obituaries',
+//		'burialDetails'        => 'Burial Details',
 		'relatedPeople'        => 'Related People',
 		'relatedOrganizations' => 'Related Organizations',
 		'relatedPlaces'        => 'Related Places',
@@ -133,12 +134,12 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'militaryService';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'militaryService';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
