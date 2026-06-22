@@ -317,6 +317,19 @@ class CollectionObject extends I2Object
     }
 
     /**
+     * Batch-fetches geographic coordinates for the given place taxonomy term ids in a
+     * single JSON:API query, keyed by tid. Replaces per-term taxonomy lookups when
+     * mapping a collection's related places.
+     *
+     * @param array $tids geo_location taxonomy term ids.
+     * @return array<int,array{lat:float,lng:float}> Coordinates keyed by tid.
+     */
+    public function getPlaceGeolocations(array $tids): array
+    {
+        return (new JsonApiClient())->fetchGeolocations($tids);
+    }
+
+    /**
      * Returns the total number of direct children in this collection.
      */
     public function getTotalChildCount(): int
