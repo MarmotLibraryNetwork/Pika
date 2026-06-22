@@ -61,7 +61,8 @@ class Person extends TaxonomyObject
         // Military data — only assign the block if any field is populated
         if ($person->hasMilitaryData()) {
             $interface->assign('military', [
-                'branch'    => $person->getMilitaryBranch(),
+                'branch'     => $person->getMilitaryBranch(),
+                'branch_url' => $person->getMilitaryBranchUrl(),
                 'conflict'  => $person->getMilitaryConflict(),
                 'rank'      => $person->getMilitaryRank(),
                 'is_pow'    => $person->getMilitaryIsPow(),

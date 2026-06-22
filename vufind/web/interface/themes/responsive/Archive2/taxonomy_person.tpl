@@ -107,7 +107,18 @@
 					</a>
 					<div id="personMilitaryPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Branch"          value=$military.branch}
+							{if $military.branch}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Branch: </div>
+									<div class="result-value col-xs-8">
+										{if $military.branch_url}
+											<a href="{$military.branch_url|escape}">{$military.branch|escape}</a>
+										{else}
+											{$military.branch|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
 							{include file="Archive2/partials/fieldRow.tpl" label="Conflict"        value=$military.conflict}
 							{include file="Archive2/partials/fieldRow.tpl" label="Rank"            value=$military.rank}
 							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start}

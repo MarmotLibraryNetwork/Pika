@@ -106,6 +106,19 @@ class PersonTaxonomy extends I2Taxonomy
         return is_string($raw) ? $raw : null;
     }
 
+    /** URL to the Organization page for the military branch, or null when not a corporate_body term. */
+    public function getMilitaryBranchUrl(): ?string
+    {
+        $raw = $this->termWithoutFieldPrefix['military_branch'] ?? null;
+        if (!is_array($raw) || empty($raw['tid'])) {
+            return null;
+        }
+        if (($raw['vocabulary'] ?? null) !== 'corporate_body') {
+            return null;
+        }
+        return '/Archive2/Organization/' . urlencode((string)$raw['tid']);
+    }
+
     /** Military conflict or war name (field_military_conflict). */
     public function getMilitaryConflict(): ?string
     {
