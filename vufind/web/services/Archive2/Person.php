@@ -107,8 +107,10 @@ class Person extends TaxonomyObject
         }
         $interface->assign('links', $links ?: null);
 
-        // Obituary data from the Genealogy database, linked via field_genealogy_link
-        $interface->assign('obituaries', $this->loadObituaries($person));
+        // Genealogy database data, linked via field_genealogy_link
+        $genealogyPerson = $this->loadGenealogyPerson($person);
+        $interface->assign('obituaries', $this->loadObituaries($genealogyPerson));
+        $interface->assign('burial',     $this->loadBurialData($genealogyPerson));
 
         $interface->assign('taxonomy_type_template', 'taxonomy_person');
 
@@ -117,15 +119,12 @@ class Person extends TaxonomyObject
     }
 
     /**
-     * Load obituaries for this person from the Genealogy database.
-     *
-     * Looks up the Genealogy personId via field_genealogy_link on the taxonomy
-     * term, then fetches all Obituary records for that person.
+     * Load the Genealogy Person record linked via field_genealogy_link, or null when absent.
      *
      * @param PersonTaxonomy $person
-     * @return \Obituary[]|null  Array of Obituary objects, or null when no link exists.
+     * @return \Person|null
      */
-    private function loadObituaries(PersonTaxonomy $person): ?array
+    private function loadGenealogyPerson(PersonTaxonomy $person): ?\Person
     {
         $personId = $person->getGenealogyPersonId();
         if (!$personId) {
@@ -135,11 +134,48 @@ class Person extends TaxonomyObject
         require_once ROOT_DIR . '/sys/Genealogy/Person.php';
         $genealogyPerson           = new \Person();
         $genealogyPerson->personId = $personId;
-        if (!$genealogyPerson->find(true)) {
+        return $genealogyPerson->find(true) ? $genealogyPerson : null;
+    }
+
+    /**
+     * @param \Person|null $genealogyPerson
+     * @return \Obituary[]|null
+     */
+    private function loadObituaries(?\Person $genealogyPerson): ?array
+    {
+        if (!$genealogyPerson) {
+            return null;
+        }
+        $obituaries = $genealogyPerson->obituaries;
+        return !empty($obituaries) ? $obituaries : null;
+    }
+
+    /**
+     * Return burial details from the Genealogy database as an array, or null when
+     * no burial fields are populated.
+     *
+     * @param \Person|null $genealogyPerson
+     * @return array|null
+     */
+    private function loadBurialData(?\Person $genealogyPerson): ?array
+    {
+        if (!$genealogyPerson) {
             return null;
         }
 
-        $obituaries = $genealogyPerson->obituaries;
-        return !empty($obituaries) ? $obituaries : null;
+        $burial = [
+            'cemetery_name'         => $genealogyPerson->cemeteryName         ?: null,
+            'cemetery_location'     => $genealogyPerson->cemeteryLocation     ?: null,
+            'cemetery_avenue'       => $genealogyPerson->cemeteryAvenue       ?: null,
+            'addition'              => $genealogyPerson->addition              ?: null,
+            'block'                 => $genealogyPerson->block                 ?: null,
+            'lot'                   => $genealogyPerson->lot                   ?: null,
+            'grave'                 => $genealogyPerson->grave                 ?: null,
+            'tombstone_inscription' => $genealogyPerson->tombstoneInscription ?: null,
+            'mortuary_name'         => $genealogyPerson->mortuaryName         ?: null,
+        ];
+
+        $hasData = array_filter($burial, fn($v) => $v !== null);
+        return $hasData ? $burial : null;
     }
 }

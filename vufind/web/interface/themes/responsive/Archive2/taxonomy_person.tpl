@@ -98,6 +98,36 @@
 					</div>
 				</div>
 			{/if}
+			{if $burial}
+				<div class="panel" id="personBurialPanel">
+					<a data-toggle="collapse" href="#personBurialPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Burial Details</h2>
+						</div>
+					</a>
+					<div id="personBurialPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Name"     value=$burial.cemetery_name}
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Location" value=$burial.cemetery_location}
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Avenue"   value=$burial.cemetery_avenue}
+							{if $burial.addition || $burial.block || $burial.lot || $burial.grave}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Burial Location: </div>
+									<div class="result-value col-xs-8">
+										{if $burial.addition}Addition {$burial.addition|escape}{if $burial.block || $burial.lot || $burial.grave}, {/if}{/if}
+										{if $burial.block}Block {$burial.block|escape}{if $burial.lot || $burial.grave}, {/if}{/if}
+										{if $burial.lot}Lot {$burial.lot|escape}{if $burial.grave}, {/if}{/if}
+										{if $burial.grave}Grave {$burial.grave|escape}{/if}
+									</div>
+								</div>
+							{/if}
+							{include file="Archive2/partials/fieldRow.tpl" label="Tombstone Inscription" value=$burial.tombstone_inscription}
+							{include file="Archive2/partials/fieldRow.tpl" label="Mortuary Name"         value=$burial.mortuary_name}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{if $military}
 				<div class="panel" id="personMilitaryPanel">
 					<a data-toggle="collapse" href="#personMilitaryPanelBody">
