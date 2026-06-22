@@ -23,7 +23,6 @@ namespace Archive2;
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
-require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 require_once ROOT_DIR . '/sys/Pager.php';
@@ -31,7 +30,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 use Islandora2\CollectionObject;
 use Islandora2\I2ObjectFactory;
 use Islandora2\Request;
-use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
 {
