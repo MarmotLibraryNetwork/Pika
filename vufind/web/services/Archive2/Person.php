@@ -63,7 +63,8 @@ class Person extends TaxonomyObject
             $interface->assign('military', [
                 'branch'     => $person->getMilitaryBranch(),
                 'branch_url' => $person->getMilitaryBranchUrl(),
-                'conflict'  => $person->getMilitaryConflict(),
+                'conflict'     => $person->getMilitaryConflict(),
+                'conflict_url' => $person->getMilitaryConflictUrl(),
                 'rank'      => $person->getMilitaryRank(),
                 'is_pow'    => $person->getMilitaryIsPow(),
                 'svc_start' => $person->getMilitarySvcStartDate(),

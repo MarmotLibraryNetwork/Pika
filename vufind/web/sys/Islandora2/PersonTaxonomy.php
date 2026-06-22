@@ -129,6 +129,19 @@ class PersonTaxonomy extends I2Taxonomy
         return is_string($raw) ? $raw : null;
     }
 
+    /** URL to the Event page for the military conflict, or null when not an event vocabulary term. */
+    public function getMilitaryConflictUrl(): ?string
+    {
+        $raw = $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        if (!is_array($raw) || empty($raw['tid'])) {
+            return null;
+        }
+        if (($raw['vocabulary'] ?? null) !== 'event') {
+            return null;
+        }
+        return '/Archive2/Event/' . urlencode((string)$raw['tid']);
+    }
+
     /** Military rank (field_military_rank). */
     public function getMilitaryRank(): ?string
     {

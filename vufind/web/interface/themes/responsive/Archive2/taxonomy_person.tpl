@@ -119,8 +119,19 @@
 									</div>
 								</div>
 							{/if}
-							{include file="Archive2/partials/fieldRow.tpl" label="Conflict"        value=$military.conflict}
-							{include file="Archive2/partials/fieldRow.tpl" label="Rank"            value=$military.rank}
+							{if $military.conflict}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Conflict: </div>
+									<div class="result-value col-xs-8">
+										{if $military.conflict_url}
+											<a href="{$military.conflict_url|escape}">{$military.conflict|escape}</a>
+										{else}
+											{$military.conflict|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
+							{include file="Archive2/partials/fieldRow.tpl" label="Highest Rank Attained" value=$military.rank}
 							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start}
 							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end}
 							{if $military.is_pow}
