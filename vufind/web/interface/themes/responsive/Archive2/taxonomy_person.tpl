@@ -132,8 +132,8 @@
 								</div>
 							{/if}
 							{include file="Archive2/partials/fieldRow.tpl" label="Highest Rank Attained" value=$military.rank}
-							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start}
-							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end}
+							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end   isDate=true}
 							{if $military.is_pow}
 								<div class="row archive-field-row">
 									<div class="result-label col-sm-4">POW:</div>
