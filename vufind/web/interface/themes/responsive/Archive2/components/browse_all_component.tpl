@@ -6,12 +6,24 @@
 				<div class="archiveComponentHeader">Browse All</div>
 			</div>
 		</div>
-		<div class="col-xs-12">
-			<a class="btn btn-default" href="/Archive2/Results?filter[]=sm_collection:{$title|escape:'url'}" style="margin: 12px 0;">
-				{*TODO: move inline style to CSS *}
-				View all objects in this collection
-			</a>
-		</div>
 	</div>
+
+	{if $collectionChildren}
+		<div class="row" style="margin-top: 1em;">
+			<div class="col-xs-12">
+				{if $recordCount}
+				<p>{$recordCount} items in this collection.</p>
+				{/if}
+				{include file="Archive2/components/collection-displayMode-toggle.tpl"}
+			</div>
+		</div>
+
+		<div class="row collection-grid" id="collection-display-container">
+			{foreach from=$collectionChildren item=collectionChild}
+			{include file="Archive2/partials/collection-item.tpl"}
+			{/foreach}
+		</div>
+		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+	{/if}
 </div>
 {/strip}

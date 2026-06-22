@@ -486,6 +486,55 @@ class JsonApiClient extends AbstractApiClient
 	}
 
 	/**
+	 * Batch-fetch geographic coordinates for a set of geo_location taxonomy terms.
+	 *
+	 * Replaces per-term taxonomy lookups with a single IN-filtered JSON:API query
+	 * (chunked by 50 ids). Geolocation only exists on the geo_location vocabulary, so
+	 * tids outside it simply aren't returned and the caller treats them as unmapped.
+	 *
+	 * @param array $tids Taxonomy term ids (geo_location vocabulary).
+	 * @return array<int,array{lat:float,lng:float}> Keyed by tid; only terms with coordinates.
+	 */
+	public function fetchGeolocations(array $tids): array
+	{
+		$tids = array_values(array_unique(array_filter(array_map('intval', $tids))));
+		if (empty($tids) || empty($this->baseUrl)) {
+			return [];
+		}
+
+		$result = [];
+		foreach (array_chunk($tids, 50) as $chunk) {
+			$url = $this->baseUrl . '/jsonapi/taxonomy_term/geo_location'
+				. '?filter[tid][condition][path]=drupal_internal__tid'
+				. '&filter[tid][condition][operator]=IN'
+				. $this->buildInValues('tid', $chunk)
+				. '&fields[taxonomy_term--geo_location]='
+				. rawurlencode('drupal_internal__tid,field_geo_geolocation')
+				. '&page[limit]=50';
+
+			do {
+				$decoded = $this->requestJson($url, 'place-geolocations', 0);
+				if ($decoded === null) {
+					break;
+				}
+
+				foreach ($decoded['data'] ?? [] as $term) {
+					$attrs = $term['attributes'] ?? [];
+					$tid   = $attrs['drupal_internal__tid'] ?? null;
+					$geo   = $attrs['field_geo_geolocation'] ?? null;
+					if ($tid !== null && isset($geo['lat'], $geo['lng'])) {
+						$result[(int)$tid] = ['lat' => (float)$geo['lat'], 'lng' => (float)$geo['lng']];
+					}
+				}
+
+				$url = $decoded['links']['next']['href'] ?? null;
+			} while ($url !== null);
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Perform a GET against the JSON:API and return the decoded body, or null on any error.
 	 *
 	 * Centralises the curl lifecycle (user agent, error checks, decode, close) shared

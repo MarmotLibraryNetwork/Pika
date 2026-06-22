@@ -23,7 +23,6 @@ namespace Archive2;
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
-require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 require_once ROOT_DIR . '/sys/Pager.php';
@@ -31,7 +30,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 use Islandora2\CollectionObject;
 use Islandora2\I2ObjectFactory;
 use Islandora2\Request;
-use Islandora2\TaxonomyFactory;
 
 class Collection extends ArchiveObject
 {
@@ -159,13 +157,11 @@ class Collection extends ArchiveObject
         $latSum = $lngSum = $n = 0;
         $minLat = $maxLat = $minLng = $maxLng = null;
 
-        $taxonomyFactory = new TaxonomyFactory();
+        // Fetch every place's coordinates in one batched JSON:API query keyed by tid,
+        // rather than a per-term taxonomy lookup (which was an N+1 over the places).
+        $geoByTid = $collection->getPlaceGeolocations(array_column($places, 'tid'));
         foreach ($places as $place) {
-            $term = $taxonomyFactory->fromTid($place['tid']);
-            if (!$term) {
-                continue;
-            }
-            $geo   = $term->getGeolocation();
+            $geo   = $geoByTid[$place['tid']] ?? null;
             $entry = ['tid' => $place['tid'], 'label' => $place['name'], 'url' => $place['url'], 'count' => $place['count']];
             if ($geo && isset($geo['lat'], $geo['lng'])) {
                 $entry['latitude']  = $geo['lat'];
@@ -248,6 +244,7 @@ class Collection extends ArchiveObject
         $browseFilterComponents = [];
         $browseByComponents     = [];
         $browseSubjectComponents = [];
+        $browseRelatedComponents = [];
         $randomImageComponents  = [];
 
         foreach ($options as $option) {
@@ -356,7 +353,10 @@ class Collection extends ArchiveObject
                 }
 
             } elseif ($type === 'browseAllObjects') {
-                $interface->assign('collectionNid', $nid);
+                // Render the collection's children as an inline paginated grid
+                // (same data + pager as the basic display) instead of a link out
+                // to a search. Paging is driven by ?page= on the collection URL.
+                $this->loadChildrenData($nid);
                 $showBrowseAll = true;
 
             } elseif ($type === 'browseFilter' || $type === 'browseEntityFilter') {
@@ -395,13 +395,7 @@ class Collection extends ArchiveObject
                 // Subjects from the collection and its children, each linking to a
                 // subject search scoped to this collection. Format:
                 // "browseBySubject|<optional title>|<optional image url>".
-                $items = array_map(fn($s) => [
-                    'name'  => $s['name'],
-                    'count' => $s['count'],
-                    'url'   => '/Archive2/Results?filter[]=sm_subject:%22'
-                               . rawurlencode($s['name']) . '%22'
-                               . '&filter[]=itm_field_member_of:' . $nid,
-                ], $collection->getCollectionSubjects());
+                $items = $this->buildFacetBrowseItems($nid, 'sm_subject');
                 if (!empty($items)) {
                     $browseSubjectComponents[] = [
                         'title' => $parts[1] ?? 'Browse by Subject',
@@ -409,6 +403,30 @@ class Collection extends ArchiveObject
                         'items' => $items,
                         'id'    => $nid . '_' . count($browseSubjectComponents),
                     ];
+                }
+
+            } elseif ($type === 'browseByRelated') {
+                // Related entities (person/place/organization/event) from the collection
+                // and its children, each linking to a search scoped to this collection.
+                // Format: "browseByRelated|<subtype>|<optional title>|<optional image url>".
+                $subtype = strtolower($parts[1] ?? '');
+                $solrFieldMap = [
+                    'person'       => 'sm_related_person',
+                    'place'        => 'sm_related_place',
+                    'organization' => 'sm_related_organization',
+                    'event'        => 'sm_related_event',
+                ];
+                if (isset($solrFieldMap[$subtype])) {
+                    $solrField = $solrFieldMap[$subtype];
+                    $items = $this->buildFacetBrowseItems($nid, $solrField);
+                    if (!empty($items)) {
+                        $browseRelatedComponents[] = [
+                            'title' => $parts[2] ?? ('Browse by ' . ucfirst($subtype)),
+                            'image' => $parts[3] ?? '/interface/themes/responsive/images/search_component.png',
+                            'items' => $items,
+                            'id'    => $nid . '_' . count($browseRelatedComponents),
+                        ];
+                    }
                 }
             }
         }
@@ -421,7 +439,95 @@ class Collection extends ArchiveObject
         $interface->assign('browseFilterComponents', $browseFilterComponents);
         $interface->assign('browseByComponents',     $browseByComponents);
         $interface->assign('browseSubjectComponents', $browseSubjectComponents);
+        $interface->assign('browseRelatedComponents', $browseRelatedComponents);
         $interface->assign('randomImageComponents',  $randomImageComponents);
+    }
+
+    /**
+     * Builds an Archive2 search-results URL filtered to a single facet value and
+     * scoped to the given collection (members of $nid).
+     *
+     * Embedded double-quotes and backslashes in $value are backslash-escaped so the
+     * Solr phrase query stays valid — SearchObject\Islandora2::setFinalFilterQuery()
+     * wraps the parsed value in quotes without escaping, so a value like
+     * Claude Raymond "Ray" Monson would otherwise produce a broken phrase.
+     *
+     * @param string $solrField Solr facet field (e.g. 'sm_subject', 'sm_related_place').
+     * @param string $value     Raw facet value (term name).
+     * @param int    $nid       Collection node id to scope results to.
+     * @return string Relative Archive2 Results URL.
+     */
+    private function buildScopedFilterUrl(string $solrField, string $value, int $nid): string
+    {
+        $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+        return '/Archive2/Results?filter[]=' . $solrField . ':%22'
+            . rawurlencode($escaped) . '%22'
+            . '&filter[]=itm_field_member_of:' . $nid;
+    }
+
+    /**
+     * Builds the browse-box items (name, per-collection object count, scoped search
+     * URL) for a Solr facet field. Terms and counts come from a single Solr facet
+     * query scoped to this collection's members, using the same search core and
+     * standard filters as the Archive2 Results page — so each displayed count equals
+     * the number of results its link returns. Terms that match no member object are
+     * naturally excluded.
+     *
+     * @param int    $nid       Collection node id whose members to facet over.
+     * @param string $solrField Solr facet field (e.g. 'sm_subject', 'sm_related_place').
+     * @return array List of ['name' => string, 'count' => int, 'url' => string], sorted by name.
+     */
+    private function buildFacetBrowseItems(int $nid, string $solrField): array
+    {
+        $items = [];
+        foreach ($this->getMemberFacetCounts($nid, $solrField) as $name => $count) {
+            $items[] = [
+                'name'  => $name,
+                'count' => $count,
+                'url'   => $this->buildScopedFilterUrl($solrField, $name, $nid),
+            ];
+        }
+        return $items;
+    }
+
+    /**
+     * Runs a facet-only Solr search over the members of a collection and returns
+     * [term => count], sorted case-insensitively by term. Mirrors the genre-facet
+     * pattern in Archive2\Home so the counts match the live Results page.
+     *
+     * @param int    $nid       Collection node id (itm_field_member_of value).
+     * @param string $solrField Solr facet field to tally.
+     * @return array<string,int> Facet term => object count.
+     */
+    private function getMemberFacetCounts(int $nid, string $solrField): array
+    {
+        /** @var \SearchObject_Islandora2 $searchObject */
+        $searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+        $searchObject->init();
+        $searchObject->setDebugging(false, false);
+        // Skip the browse box gracefully if Solr is unreachable rather than letting
+        // processSearch() raise a fatal PEAR error that takes down the whole collection
+        // page (mirrors the availability check in Search\Home).
+        if (!$searchObject->pingServer(false)) {
+            return [];
+        }
+        $searchObject->addFilter('itm_field_member_of:' . $nid);
+        $searchObject->addFacet($solrField);
+        $searchObject->setFacetLimit(-1); // all terms, not just the configured default
+        $searchObject->setLimit(0);       // facet data only, no documents
+
+        $response = $searchObject->processSearch(true, true);
+
+        $counts = [];
+        if (is_array($response) && empty($response['error'])
+            && !empty($response['facet_counts']['facet_fields'][$solrField])) {
+            foreach ($response['facet_counts']['facet_fields'][$solrField] as $facetValue) {
+                // Each entry is [value, count].
+                $counts[(string)$facetValue[0]] = (int)$facetValue[1];
+            }
+        }
+        ksort($counts, SORT_FLAG_CASE | SORT_STRING);
+        return $counts;
     }
 
     /**
