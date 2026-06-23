@@ -37,10 +37,17 @@ class EventTaxonomy extends I2Taxonomy
         return ($term['vid'] ?? null) === 'event';
     }
 
-    /** Alternate or variant name for the event (field_alternate_name). */
+    /** Alternate or variant name for the event (field_alternate_name).
+     * The API sometimes splits the name across array elements, e.g.:
+     * "field_alternate_name": ["Vietnam War,", " 1961-1975"]
+     */
     public function getAlternateName(): ?string
     {
-        return $this->termWithoutFieldPrefix['alternate_name'] ?? null;
+        $val = $this->termWithoutFieldPrefix['alternate_name'] ?? null;
+        if (is_array($val)) {
+            $val = implode('', $val);
+        }
+        return is_string($val) && $val !== '' ? $val : null;
     }
 
     /**
