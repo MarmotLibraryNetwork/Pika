@@ -188,7 +188,11 @@ class PersonTaxonomy extends I2Taxonomy
     /** Degree name (e.g. "B.A.") (field_degree_name). */
     public function getDegreeName(): ?string
     {
-        return $this->termWithoutFieldPrefix['degree_name'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['degree_name'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
     /** Degree discipline or field of study (field_degree_discipline). */
