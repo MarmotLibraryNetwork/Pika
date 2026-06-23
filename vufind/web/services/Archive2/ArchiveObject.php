@@ -246,6 +246,9 @@ class ArchiveObject extends \Action
         }
         $interface->assign('conference_date', $conferenceDate);
 
+        $rawPublishedIn = $nodeData['published_in'] ?? null;
+        $interface->assign('published_in', !empty($rawPublishedIn) ? (array)$rawPublishedIn : null);
+
         // Rights Holder: normalize taxonomy term(s) for conditional linking.
         $rawRightsHolder = $nodeData['rights_holder'] ?? null;
         $rightsHolderData = [];

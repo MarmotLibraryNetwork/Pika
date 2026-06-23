@@ -179,7 +179,7 @@
 				<div class="panel" id="personAcademicPanel">
 					<a data-toggle="collapse" href="#personAcademicPanelBody">
 						<div class="panel-heading">
-							<h2 class="panel-title">Academic</h2>
+							<h2 class="panel-title">Academic Information</h2>
 						</div>
 					</a>
 					<div id="personAcademicPanelBody" class="panel-collapse collapse">
