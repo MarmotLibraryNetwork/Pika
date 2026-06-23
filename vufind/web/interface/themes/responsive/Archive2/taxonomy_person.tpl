@@ -15,13 +15,13 @@
 		{/if}
 	</div>
 	<div class="col-lg-6">
-		{include file="Archive2/partials/fieldRow.tpl" label="Given Name"    value=$given_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"   value=$middle_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Given Name"     value=$given_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"    value=$middle_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"    value=$family_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"    value=$maiden_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year isDate=true}
-		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"     value=$birth_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"     value=$death_year isDate=true}
 		{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
 	</div>
 </div>
