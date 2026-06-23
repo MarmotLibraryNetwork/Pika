@@ -185,6 +185,20 @@ class PersonTaxonomy extends I2Taxonomy
         return $this->termWithoutFieldPrefix['academic_position_title'] ?? null;
     }
 
+    /** Start date of the academic position (field_academic_pos_start_date). */
+    public function getAcademicPositionStartDate(): ?string
+    {
+        $val = $this->termWithoutFieldPrefix['academic_pos_start_date'] ?? null;
+        return is_string($val) && $val !== '' ? $val : null;
+    }
+
+    /** End date of the academic position (field_academic_pos_end_date). */
+    public function getAcademicPositionEndDate(): ?string
+    {
+        $val = $this->termWithoutFieldPrefix['academic_pos_end_date'] ?? null;
+        return is_string($val) && $val !== '' ? $val : null;
+    }
+
     /** Degree name (e.g. "B.A.") (field_degree_name). */
     public function getDegreeName(): ?string
     {
@@ -213,6 +227,8 @@ class PersonTaxonomy extends I2Taxonomy
     public function hasAcademicData(): bool
     {
         return $this->getAcademicPositionTitle() !== null
+            || $this->getAcademicPositionStartDate() !== null
+            || $this->getAcademicPositionEndDate() !== null
             || $this->getDegreeName() !== null
             || $this->getDegreeDiscipline() !== null
             || $this->getGraduationDate() !== null;

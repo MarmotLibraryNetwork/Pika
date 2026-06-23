@@ -184,10 +184,12 @@
 					</a>
 					<div id="personAcademicPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Position Title"    value=$academic.position_title}
-							{include file="Archive2/partials/fieldRow.tpl" label="Degree"            value=$academic.degree_name}
-							{include file="Archive2/partials/fieldRow.tpl" label="Discipline"        value=$academic.discipline}
-							{include file="Archive2/partials/fieldRow.tpl" label="Graduation Date"   value=$academic.graduation_date}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position Title"      value=$academic.position_title}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position Start Date" value=$academic.position_start isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position End Date"   value=$academic.position_end   isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Degree"              value=$academic.degree_name}
+							{include file="Archive2/partials/fieldRow.tpl" label="Degree Discipline"   value=$academic.discipline}
+							{include file="Archive2/partials/fieldRow.tpl" label="Graduation Date"     value=$academic.graduation_date isDate=true}
 						</div>
 					</div>
 				</div>

@@ -78,6 +78,8 @@ class Person extends TaxonomyObject
         if ($person->hasAcademicData()) {
             $interface->assign('academic', [
                 'position_title' => $person->getAcademicPositionTitle(),
+                'position_start' => $person->getAcademicPositionStartDate(),
+                'position_end'   => $person->getAcademicPositionEndDate(),
                 'degree_name'    => $person->getDegreeName(),
                 'discipline'     => $person->getDegreeDiscipline(),
                 'graduation_date' => $person->getGraduationDate(),
