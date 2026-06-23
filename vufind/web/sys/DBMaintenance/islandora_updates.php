@@ -38,7 +38,6 @@ function getIslandoraUpdates(): array{
 
 
 	return [
-
 		'Islandora2_drop_archive_subjects' => [
 			'release'         => '2026.02.0',
 			'releaseStep'     => 0,
@@ -196,7 +195,23 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
-	];
+		'Islandora2_remove_more_details_sections' => [
+			'release'         => '2026.02.0',
+			'releaseStep'     => 13,
+			'title'           => 'Remove Archive More Details sections',
+			'description'     => 'Remove settings for sections related to taxonomies',
+			'continueOnError' => true,
+			'sql'             => [
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'bio'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'familyDetails'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'obituaries'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'burialDetails'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'demographics'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'relatedObjects'",
+			]
+		],
+
+	]; // End of main array
 }
 
 // Functions definitions that get executed by any of the updates above
