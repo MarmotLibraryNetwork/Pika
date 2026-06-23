@@ -884,6 +884,7 @@ class ExploreMore {
 			'lookfor' => $searchTerm,
 			'index'   => 'Keyword',
 		]);
+		$searchObject->addFilter('recordtype:grouped_work'); // Exclude user lists
 
 		if (!empty($excludeIds)) {
 			$searchObject->addHiddenFilter('!'. $searchObject::IDFIELD, implode(' OR ', $excludeIds));
@@ -1024,6 +1025,7 @@ class ExploreMore {
 		$searchObject = \SearchObjectFactory::initSearchObject();
 		$searchObject->init('local', $searchTerm);
 		$searchObject->setSearchTerms(['lookfor' => $searchTerm, 'index' => 'Keyword']);
+		$searchObject->addFilter('recordtype:grouped_work'); // Exclude user lists
 		$searchObject->setPage(1);
 		$searchObject->setLimit(5);
 		$results = $searchObject->processSearch(true, false);

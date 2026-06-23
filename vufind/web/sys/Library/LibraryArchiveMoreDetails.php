@@ -37,19 +37,19 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 	static $moreDetailsOptions = [
 		'description'          => 'Description',
 		//'bio'                  => 'Biographical Information', //T Taxonomy Section
-		//'wikipedia'            => 'From Wikipedia',
-		'familyDetails'        => 'Family Details',
+		'wikipedia'            => 'From Wikipedia', //TODO: rebuild once connections to wikipedia can be fixed
+		//'familyDetails'        => 'Family Details',
 		'addresses'            => 'Addresses',
 		'details'              => 'Details',
-		'militaryService'      => 'Military Service',
+//		'militaryService'      => 'Military Service',
 		'transcription'        => 'Transcription',
 		'correspondence'       => 'Correspondence Information',
 		'academicResearch'     => 'Academic Research Information',
 		'artworkDetails'       => 'Art Information',
 		'musicDetails'         => 'Music Information',
-		'relatedObjects'       => 'Related Objects',
-		'obituaries'           => 'Obituaries',
-		'burialDetails'        => 'Burial Details',
+		//'relatedObjects'       => 'Related Objects', // Taxonomy only
+//		'obituaries'           => 'Obituaries',
+//		'burialDetails'        => 'Burial Details',
 		'relatedPeople'        => 'Related People',
 		'relatedOrganizations' => 'Related Organizations',
 		'relatedPlaces'        => 'Related Places',
@@ -60,7 +60,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'subject'              => 'Subjects',
 		'acknowledgements'     => 'Acknowledgements', //production Team
 		'externalLinks'        => 'Links',
-		'moreDetails'          => 'Catalog Details', //TODO: label 'Catalog Details' after switch to Islandora2
+		'moreDetails'          => 'Catalog Details',
 		'rightsStatements'     => 'Rights Statements',
 		'staffView'            => 'Staff View',
 	];
@@ -74,10 +74,11 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
-		$library->find();
-		$libraryList = array();
-		while ($library->fetch()){
-			$libraryList[$library->libraryId] = $library->displayName;
+		$libraryList = [];
+		if ($library->find()){
+			while ($library->fetch()){
+				$libraryList[$library->libraryId] = $library->displayName;
+			}
 		}
 
 		$structure = [
@@ -111,14 +112,14 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 //		$defaultOption->collapseByDefault = false;
 //		$defaultOption->weight            = count($defaultOptions) + 101;
 //		$defaultOptions[]                 = $defaultOption;
-//
-//		$defaultOption                    = new LibraryArchiveMoreDetails();
-//		$defaultOption->libraryId         = $libraryId;
-//		$defaultOption->section           = 'wikipedia';
-//		$defaultOption->collapseByDefault = false;
-//		$defaultOption->weight            = count($defaultOptions) + 101;
-//		$defaultOptions[]                 = $defaultOption;
-//
+
+		$defaultOption                    = new LibraryArchiveMoreDetails();
+		$defaultOption->libraryId         = $libraryId;
+		$defaultOption->section           = 'wikipedia';
+		$defaultOption->collapseByDefault = false;
+		$defaultOption->weight            = count($defaultOptions) + 101;
+		$defaultOptions[]                 = $defaultOption;
+
 //		$defaultOption                    = new LibraryArchiveMoreDetails();
 //		$defaultOption->libraryId         = $libraryId;
 //		$defaultOption->section           = 'familyDetails';
@@ -133,12 +134,12 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'militaryService';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'militaryService';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
@@ -182,37 +183,30 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'relatedObjects';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'relatedObjects';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'obituaries';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'obituaries';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'burialDetails';
-		$defaultOption->collapseByDefault = true;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'burialDetails';
+//		$defaultOption->collapseByDefault = true;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
 		$defaultOption->section           = 'relatedPeople';
-		$defaultOption->collapseByDefault = false;
-		$defaultOption->weight            = count($defaultOptions) + 101;
-		$defaultOptions[]                 = $defaultOption;
-
-		$defaultOption                    = new LibraryArchiveMoreDetails();
-		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'relatedOrganizations';
 		$defaultOption->collapseByDefault = false;
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
@@ -226,17 +220,24 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'relatedEvents';
+		$defaultOption->section           = 'relatedOrganizations';
 		$defaultOption->collapseByDefault = false;
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
-		$defaultOption->section           = 'demographics';
+		$defaultOption->section           = 'relatedEvents';
 		$defaultOption->collapseByDefault = false;
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
+
+//		$defaultOption                    = new LibraryArchiveMoreDetails();
+//		$defaultOption->libraryId         = $libraryId;
+//		$defaultOption->section           = 'demographics';
+//		$defaultOption->collapseByDefault = false;
+//		$defaultOption->weight            = count($defaultOptions) + 101;
+//		$defaultOptions[]                 = $defaultOption;
 
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;

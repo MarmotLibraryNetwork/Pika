@@ -1,7 +1,8 @@
 {strip}
-{if $research_type || $research_level || $conference_date || $presented_at || $supporting_departments || $debugDetails}
+{if $research_type || $research_level || $published_in || $conference_date || $presented_at || $supporting_departments || $debugDetails}
 	{include file="Archive2/partials/fieldRow.tpl" label="Research Type" value=$research_type|ucfirst}
 	{include file="Archive2/partials/fieldRow.tpl" label="Research Level" value=$research_level|ucfirst}
+	{include file="Archive2/partials/fieldRow.tpl" label="Published In" value=$published_in}
 	{if $presented_at || $debugDetails}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Presented At:</div>

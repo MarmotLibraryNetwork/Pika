@@ -129,6 +129,19 @@ class PersonTaxonomy extends I2Taxonomy
         return is_string($raw) ? $raw : null;
     }
 
+    /** URL to the Event page for the military conflict, or null when not an event vocabulary term. */
+    public function getMilitaryConflictUrl(): ?string
+    {
+        $raw = $this->termWithoutFieldPrefix['military_conflict'] ?? null;
+        if (!is_array($raw) || empty($raw['tid'])) {
+            return null;
+        }
+        if (($raw['vocabulary'] ?? null) !== 'event') {
+            return null;
+        }
+        return '/Archive2/Event/' . urlencode((string)$raw['tid']);
+    }
+
     /** Military rank (field_military_rank). */
     public function getMilitaryRank(): ?string
     {
@@ -172,10 +185,28 @@ class PersonTaxonomy extends I2Taxonomy
         return $this->termWithoutFieldPrefix['academic_position_title'] ?? null;
     }
 
+    /** Start date of the academic position (field_academic_pos_start_date). */
+    public function getAcademicPositionStartDate(): ?string
+    {
+        $val = $this->termWithoutFieldPrefix['academic_pos_start_date'] ?? null;
+        return is_string($val) && $val !== '' ? $val : null;
+    }
+
+    /** End date of the academic position (field_academic_pos_end_date). */
+    public function getAcademicPositionEndDate(): ?string
+    {
+        $val = $this->termWithoutFieldPrefix['academic_pos_end_date'] ?? null;
+        return is_string($val) && $val !== '' ? $val : null;
+    }
+
     /** Degree name (e.g. "B.A.") (field_degree_name). */
     public function getDegreeName(): ?string
     {
-        return $this->termWithoutFieldPrefix['degree_name'] ?? null;
+        $raw = $this->termWithoutFieldPrefix['degree_name'] ?? null;
+        if (is_array($raw)) {
+            return $raw['name'] ?? null;
+        }
+        return is_string($raw) ? $raw : null;
     }
 
     /** Degree discipline or field of study (field_degree_discipline). */
@@ -196,6 +227,8 @@ class PersonTaxonomy extends I2Taxonomy
     public function hasAcademicData(): bool
     {
         return $this->getAcademicPositionTitle() !== null
+            || $this->getAcademicPositionStartDate() !== null
+            || $this->getAcademicPositionEndDate() !== null
             || $this->getDegreeName() !== null
             || $this->getDegreeDiscipline() !== null
             || $this->getGraduationDate() !== null;

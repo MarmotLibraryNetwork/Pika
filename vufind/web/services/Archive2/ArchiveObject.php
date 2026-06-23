@@ -201,6 +201,16 @@ class ArchiveObject extends \Action
             $interface->assign('research_level', $nodeData['research_level']['name']);
         }
 
+        // Physical Form: normalize taxonomy term(s) to name string(s) for display.
+        // A single term arrives as ['tid'=>..., 'name'=>..., 'vocabulary'=>...];
+        // multiple terms arrive as a numeric array of such objects.
+        $rawPhysicalForm = $nodeData['physical_form'] ?? null;
+        if (!empty($rawPhysicalForm)) {
+            $items = isset($rawPhysicalForm['name']) ? [$rawPhysicalForm] : (array)$rawPhysicalForm;
+            $names = array_values(array_filter(array_column($items, 'name')));
+            $interface->assign('physical_form', count($names) === 1 ? $names[0] : $names);
+        }
+
         // Presented At: if the string matches a related event name, expose the event tid for linking.
         $presentedAtEventTid = null;
         $presentedAt         = $nodeData['presented_at'] ?? null;
@@ -235,6 +245,9 @@ class ArchiveObject extends \Action
             // Non-matching text: $conferenceDate remains null
         }
         $interface->assign('conference_date', $conferenceDate);
+
+        $rawPublishedIn = $nodeData['published_in'] ?? null;
+        $interface->assign('published_in', !empty($rawPublishedIn) ? (array)$rawPublishedIn : null);
 
         // Rights Holder: normalize taxonomy term(s) for conditional linking.
         $rawRightsHolder = $nodeData['rights_holder'] ?? null;
@@ -293,7 +306,12 @@ class ArchiveObject extends \Action
         $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
-        $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
+        // Drupal stores escaped commas as "\," in some text fields (e.g. "Print\, Photographic
+        // Original"); replace them with plain "," so they render correctly in the browser.
+        $extent = ($this->mediaObject->extent !== null && $this->mediaObject->extent !== false)
+            ? str_replace('\\,', ',', (string)$this->mediaObject->extent)
+            : null;
+        $interface->assign('extent', $extent);
         $interface->assign('physical_description', $extent);
 
 				// Condition (physical description)

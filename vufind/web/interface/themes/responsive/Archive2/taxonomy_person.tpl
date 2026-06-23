@@ -20,8 +20,8 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year}
-		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year}
+		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year isDate=true}
 		{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
 	</div>
 </div>
@@ -37,8 +37,8 @@
 	</div>
 {/if}
 
-<div class="taxonomy-detail taxonomy-person">
-	<div id="person-detail-accordion" class="panel-group">
+<div class=" taxonomy-detail taxonomy-person">
+	<div id="more-details-accordion" class="panel-group">
 
 		{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="personRelatedObjectsPanel">
@@ -98,6 +98,36 @@
 					</div>
 				</div>
 			{/if}
+			{if $burial}
+				<div class="panel" id="personBurialPanel">
+					<a data-toggle="collapse" href="#personBurialPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Burial Details</h2>
+						</div>
+					</a>
+					<div id="personBurialPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Name"     value=$burial.cemetery_name}
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Location" value=$burial.cemetery_location}
+							{include file="Archive2/partials/fieldRow.tpl" label="Cemetery Avenue"   value=$burial.cemetery_avenue}
+							{if $burial.addition || $burial.block || $burial.lot || $burial.grave}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Burial Location: </div>
+									<div class="result-value col-xs-8">
+										{if $burial.addition}Addition {$burial.addition|escape}{if $burial.block || $burial.lot || $burial.grave}, {/if}{/if}
+										{if $burial.block}Block {$burial.block|escape}{if $burial.lot || $burial.grave}, {/if}{/if}
+										{if $burial.lot}Lot {$burial.lot|escape}{if $burial.grave}, {/if}{/if}
+										{if $burial.grave}Grave {$burial.grave|escape}{/if}
+									</div>
+								</div>
+							{/if}
+							{include file="Archive2/partials/fieldRow.tpl" label="Tombstone Inscription" value=$burial.tombstone_inscription}
+							{include file="Archive2/partials/fieldRow.tpl" label="Mortuary Name"         value=$burial.mortuary_name}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{if $military}
 				<div class="panel" id="personMilitaryPanel">
 					<a data-toggle="collapse" href="#personMilitaryPanelBody">
@@ -119,10 +149,21 @@
 									</div>
 								</div>
 							{/if}
-							{include file="Archive2/partials/fieldRow.tpl" label="Conflict"        value=$military.conflict}
-							{include file="Archive2/partials/fieldRow.tpl" label="Rank"            value=$military.rank}
-							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start}
-							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end}
+							{if $military.conflict}
+								<div class="row archive-field-row">
+									<div class="result-label col-xs-4">Conflict: </div>
+									<div class="result-value col-xs-8">
+										{if $military.conflict_url}
+											<a href="{$military.conflict_url|escape}">{$military.conflict|escape}</a>
+										{else}
+											{$military.conflict|escape}
+										{/if}
+									</div>
+								</div>
+							{/if}
+							{include file="Archive2/partials/fieldRow.tpl" label="Highest Rank Attained" value=$military.rank}
+							{include file="Archive2/partials/fieldRow.tpl" label="Service Start"   value=$military.svc_start isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end   isDate=true}
 							{if $military.is_pow}
 								<div class="row archive-field-row">
 									<div class="result-label col-sm-4">POW:</div>
@@ -138,15 +179,17 @@
 				<div class="panel" id="personAcademicPanel">
 					<a data-toggle="collapse" href="#personAcademicPanelBody">
 						<div class="panel-heading">
-							<h2 class="panel-title">Academic</h2>
+							<h2 class="panel-title">Academic Information</h2>
 						</div>
 					</a>
 					<div id="personAcademicPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
-							{include file="Archive2/partials/fieldRow.tpl" label="Position Title"    value=$academic.position_title}
-							{include file="Archive2/partials/fieldRow.tpl" label="Degree"            value=$academic.degree_name}
-							{include file="Archive2/partials/fieldRow.tpl" label="Discipline"        value=$academic.discipline}
-							{include file="Archive2/partials/fieldRow.tpl" label="Graduation Date"   value=$academic.graduation_date}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position Title"      value=$academic.position_title}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position Start Date" value=$academic.position_start isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Position End Date"   value=$academic.position_end   isDate=true}
+							{include file="Archive2/partials/fieldRow.tpl" label="Degree"              value=$academic.degree_name}
+							{include file="Archive2/partials/fieldRow.tpl" label="Degree Discipline"   value=$academic.discipline}
+							{include file="Archive2/partials/fieldRow.tpl" label="Graduation Date"     value=$academic.graduation_date isDate=true}
 						</div>
 					</div>
 				</div>
