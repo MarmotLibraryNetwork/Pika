@@ -201,6 +201,16 @@ class ArchiveObject extends \Action
             $interface->assign('research_level', $nodeData['research_level']['name']);
         }
 
+        // Physical Form: normalize taxonomy term(s) to name string(s) for display.
+        // A single term arrives as ['tid'=>..., 'name'=>..., 'vocabulary'=>...];
+        // multiple terms arrive as a numeric array of such objects.
+        $rawPhysicalForm = $nodeData['physical_form'] ?? null;
+        if (!empty($rawPhysicalForm)) {
+            $items = isset($rawPhysicalForm['name']) ? [$rawPhysicalForm] : (array)$rawPhysicalForm;
+            $names = array_values(array_filter(array_column($items, 'name')));
+            $interface->assign('physical_form', count($names) === 1 ? $names[0] : $names);
+        }
+
         // Presented At: if the string matches a related event name, expose the event tid for linking.
         $presentedAtEventTid = null;
         $presentedAt         = $nodeData['presented_at'] ?? null;
