@@ -75,7 +75,7 @@
 	{/if}
 
 	<div class="taxonomy-detail taxonomy-geographic-location">
-		<div id="geo-location-detail-accordion" class="panel-group">
+		<div id="more-details-accordion" class="panel-group">
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="placeRelatedObjectsPanel">
