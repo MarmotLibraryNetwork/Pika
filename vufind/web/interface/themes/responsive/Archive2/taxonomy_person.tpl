@@ -20,8 +20,8 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year}
-		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year}
+		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year isDate=true}
 		{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
 	</div>
 </div>
