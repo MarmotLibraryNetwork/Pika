@@ -17,7 +17,11 @@
 	{else}
 		{if $value ne '' && $value ne null}
 			{if $isDate}
-				{$value|date_format:"%B %e, %Y"}
+				{if $value|@strlen == 4 && $value|@is_numeric}
+					{$value}
+				{else}
+					{$value|date_format:"%B %e, %Y"}
+				{/if}
 			{else}
 				{$value}
 			{/if}
