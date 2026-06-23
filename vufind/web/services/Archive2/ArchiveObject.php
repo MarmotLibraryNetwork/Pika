@@ -293,7 +293,12 @@ class ArchiveObject extends \Action
         $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
-        $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
+        // Drupal stores escaped commas as "\," in some text fields (e.g. "Print\, Photographic
+        // Original"); replace them with plain "," so they render correctly in the browser.
+        $extent = ($this->mediaObject->extent !== null && $this->mediaObject->extent !== false)
+            ? str_replace('\\,', ',', (string)$this->mediaObject->extent)
+            : null;
+        $interface->assign('extent', $extent);
         $interface->assign('physical_description', $extent);
 
 				// Condition (physical description)
