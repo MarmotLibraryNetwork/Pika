@@ -671,6 +671,7 @@ class ExploreMore {
 		if ($objLibraryTid > 0) {
 			$contributingLibrary             = new \Library();
 			$contributingLibrary->libraryTid = $objLibraryTid;
+			$addedContributingLibrary        = false;
 			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid) && $contributingLibrary->corporateBodyTid > 0) {
 				/** @var \Islandora2\Organization $term */
 				$term = $factory->fromTid((int)$contributingLibrary->corporateBodyTid);
@@ -681,20 +682,36 @@ class ExploreMore {
 						'image' => $thumbnail['url'] ?? null,
 						'link'  => $term->getUrl(),
 					];
+					$addedContributingLibrary = true;
+				}
+			}
+			if (!$addedContributingLibrary) {
+				// Fallback for libraries with no matching Pika Library row or corporateBodyTid
+				// (e.g., partner institutions on a different Pika server).
+				// The library vocabulary term in Islandora carries a field_related_organization
+				// pointing to the equivalent Corporate Body term; use the first entry.
+				$libraryTerm = $factory->fromTid($objLibraryTid);
+				if ($libraryTerm !== null) {
+					$relatedOrgs = $libraryTerm->getRelatedOrganization();
+					if (!empty($relatedOrgs)) {
+						$org      = $relatedOrgs[0];
+						$values[] = [
+							'label' => 'Contributed by ' . ($org['name'] ?? ''),
+							'image' => $org['thumbnail'] ?? null,
+							'link'  => $org['url'] ?? '#',
+						];
+					} else {
+						$this->logger->warn(
+							'ExploreMore: library term ' . $objLibraryTid . ' has no related organization; cannot build contributing library tile.'
+						);
+					}
+				} else {
+					$this->logger->warn(
+						'ExploreMore: library term ' . $objLibraryTid . ' not found in Islandora; cannot build contributing library tile.'
+					);
 				}
 			}
 		}
-		// TODO: Fallback for contributing libraries not in the Pika Library table.
-		// Lafayette on MLN1 Pika server; MLN1 libraries on MLN2 Pika server
-		//   Some objects are contributed by organizations that have a Corporate Body
-		//   taxonomy term in Islandora2 but no corresponding row in the library table
-		//   (e.g. partner institutions, historical collections donors).
-		//   Fallback approach: read $obj->library (field_library on the node), which
-		//   carries the library vocabulary tid. From that tid, find the matching
-		//   archivePid via the library Solr index or a DB lookup, then resolve to a
-		//   Corporate Body tid via getLegacyEntitiesTIDs() — or alternatively, query
-		//   Solr directly for Corporate Body terms whose ss_contributing_library field
-		//   matches the library tid, if such a field is indexed.
 
 		if (empty($values)) {
 			return null;

@@ -323,7 +323,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
                 'tid'            => isset($tid) ? (int)$tid : null,
                 'name'           => $name,
                 'url'            => $url,
-                'thumbnail'      => $raw['field_thumbnail']['url'] ?? null,
+                'thumbnail'      => $raw['field_thumbnail']['url'] ?? $raw['thumbnail']['url'] ?? null, // $raw['thumbnail']['url'] is needed for related org attached to contributing library taxonomy term
                 'relation'       => $raw['relation'] ?? null,
                 'relation_label' => $raw['relation_label'] ?? null,
             ];
