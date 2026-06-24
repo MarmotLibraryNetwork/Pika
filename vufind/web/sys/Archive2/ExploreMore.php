@@ -642,6 +642,29 @@ class ExploreMore {
 			}
 		}
 
+		// Related organizations with Acknowledgement relation (local:ack) from field_related_org
+		$relatedOrgs = $obj->related_org;
+		if (!empty($relatedOrgs) && is_array($relatedOrgs)) {
+			if (array_key_exists('tid', $relatedOrgs)) {
+				$relatedOrgs = [$relatedOrgs];
+			}
+			foreach ($relatedOrgs as $org) {
+				if (($org['relation'] ?? '') !== 'local:ack') {
+					continue;
+				}
+				$tid  = isset($org['tid']) ? (int)$org['tid'] : 0;
+				$name = $org['name'] ?? '';
+				if ($tid <= 0 || $name === '') {
+					continue;
+				}
+				$values[] = [
+					'label' => $name,
+					'image' => $org['field_thumbnail']['url'] ?? null,
+					'link'  => '/Archive2/Organization/' . $tid,
+				];
+			}
+		}
+
 		// Contributing Library — look up the object's contributing library and use its corporateBodyTid
 		$raw           = $obj->library;
 		$objLibraryTid = is_array($raw) ? (int)($raw['tid'] ?? 0) : (int)($raw ?? 0);
