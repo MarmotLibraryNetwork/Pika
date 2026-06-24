@@ -319,15 +319,10 @@ class ArchiveObject extends \Action
 				$interface->assign('physical_condition', $condition);
 
 
-        // Library
+        // Contributing Library
         // Get the Corporate Body associated with the library
         $libraryTerm = $this->mediaObject->getLibraryOrganization();
-        // If corporte body term isn't found use the Library vocab term
-        if ($libraryTerm === null) {
-            $interface->assign('library_name', $this->mediaObject->library['name'] ?? null);
-            $interface->assign('library_tid', $this->mediaObject->library['tid'] ?? null);
-            $interface->assign('library_url', null);
-        } else {
+				if (!empty($libraryTerm)) {
             $interface->assign('library_name', $libraryTerm->name ?? null);
             $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
             $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
@@ -340,7 +335,7 @@ class ArchiveObject extends \Action
         // Use $nodeData (field_ prefix already stripped recursively) so sub-keys like
         // city/state/street match what the mapping below expects.
         $rawInterviewLocations = $nodeData['location'] ?? [];
-        $interviewLocations = [];
+        $interviewLocations    = [];
         // A single location arrives as an associative array; multiple locations arrive as
         // a sequential (list) array. Wrap the single-location case so the foreach below
         // always iterates over an array of location entries.

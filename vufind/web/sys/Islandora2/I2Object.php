@@ -525,24 +525,54 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return the library organization taxonomy term associated with this node.
+     * Return the Corporate Body taxonomy term for this node's contributing library.
      *
-     * @return mixed The taxonomy term object, or null when unavailable.
+     * Primary path: looks up the Pika Library row by libraryTid to read its
+     * corporateBodyTid, then resolves that to an Islandora term.
+     *
+     * Fallback: fetches the library vocabulary term from Islandora and resolves
+     * via the first entry in its field_related_organization (ignoring relation).
+     *
+     * @return TaxonomyObjectInterface|null The Corporate Body term, or null when unavailable.
      */
-    public function getLibraryOrganization()
+    public function getLibraryOrganization(): ?TaxonomyObjectInterface
     {
-        $library_tid = $this->rawNode['field_library']['tid'] ?? null;
-        if ($library_tid === null) {
-            $this->logger->warn('Warning no library set for node ' . $this->getNodeId());
+        $libraryTid = isset($this->rawNode['field_library']['tid']) ? (int)$this->rawNode['field_library']['tid'] : 0;
+        if ($libraryTid <= 0) {
+            $this->logger->warn('Warning: no library set for node ' . $this->getNodeId());
             return null;
         }
+
         $taxonomy = new TaxonomyFactory();
-        $library  = $taxonomy->fromTid($library_tid);
-        if ($library === null) {
-            $this->logger->warn('Warning no Corporate Body related to library tid ' . $library_tid);
+
+        // Primary: resolve via the Pika Library DB row → corporateBodyTid
+        $pikaLibrary             = new \Library();
+        $pikaLibrary->libraryTid = $libraryTid;
+        if ($pikaLibrary->find(true) && !empty($pikaLibrary->corporateBodyTid) && $pikaLibrary->corporateBodyTid > 0) {
+            $term = $taxonomy->fromTid((int)$pikaLibrary->corporateBodyTid);
+            if ($term !== null) {
+                return $term;
+            }
+        }
+
+        // Fallback: fetch the library vocabulary term from Islandora and use the
+        // first entry in field_related_organization to reach the Corporate Body term.
+        $libraryTerm = $taxonomy->fromTid($libraryTid);
+        if ($libraryTerm === null) {
+            $this->logger->warn('Warning: library term ' . $libraryTid . ' not found in Islandora for node ' . $this->getNodeId());
             return null;
         }
-        return $library;
+        $relatedOrgs = $libraryTerm->getRelatedOrganization();
+        if (empty($relatedOrgs)) {
+            $this->logger->warn('Warning: library term ' . $libraryTid . ' has no related organization for node ' . $this->getNodeId());
+            return null;
+        }
+        $orgTid = isset($relatedOrgs[0]['tid']) ? (int)$relatedOrgs[0]['tid'] : 0;
+        if ($orgTid <= 0) {
+            $this->logger->warn('Warning: related organization on library term ' . $libraryTid . ' has no tid for node ' . $this->getNodeId());
+            return null;
+        }
+        return $taxonomy->fromTid($orgTid);
     }
 
     /**
