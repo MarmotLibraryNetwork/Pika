@@ -311,19 +311,12 @@ class WikipediaParser {
 	public function getWikipediaPage($baseURL, $queryTerm = null){
 		$pageUrl = $baseURL . urlencode($queryTerm);
 		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
-			global $configArray, $interface;
 			$this->logger->info('Wikipedia page URL: ' . $pageUrl);
-			// Wikipedia requires a User Agent string with all requests
-			// User string is built with components recommended at: https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
-			$userAgent       = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
-			$siteEmail       = $configArray['Site']['email'];
-			$siteURL         = $configArray['Site']['url'];
-			$version         = $interface ? rtrim($interface->getVariable('gitBranch')) : '';
-			$userAgentString = "User-Agent: $userAgent/$version ($siteURL; $siteEmail)\r\n";
+			$userAgentString = $this->constructUserAgent();
 			$ctx             = stream_context_create(['http' => ['header' => $userAgentString]]);
 			$result          = file_get_contents($pageUrl, false, $ctx);
 			if (empty($result)){
-				$this->logger->error('Failed to get wikipedia page results');
+				$this->logger->error('Failed to get Wikipedia page results');
 			} else{
 				$jsonResult = json_decode($result, true);
 				$info       = $this->parseWikipedia($jsonResult, $baseURL);
@@ -333,5 +326,20 @@ class WikipediaParser {
 			}
 		}
 		return null;
+	}
+
+/**
+ *  Wikipedia requires a User Agent string with all requests
+ *  User string is built with components recommended at: https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
+ * @return string
+ */
+	public function constructUserAgent(): string{
+		global $configArray, $interface;
+		$userAgent       = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+		$siteEmail       = $configArray['Site']['email'];
+		$siteURL         = $configArray['Site']['url'];
+		$version         = $interface ? rtrim($interface->getVariable('gitBranch')) : '';
+		$userAgentString = "User-Agent: $userAgent/$version ($siteURL; $siteEmail)\r\n";
+		return $userAgentString;
 	}
 }
