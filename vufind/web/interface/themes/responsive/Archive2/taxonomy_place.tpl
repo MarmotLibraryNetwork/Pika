@@ -76,6 +76,21 @@
 	<div class="taxonomy-detail taxonomy-geographic-location">
 		<div id="more-details-accordion" class="panel-group">
 
+			{if $wikipediaData}
+				<div class="panel active" id="placeWikipediaPanel">
+					<a data-toggle="collapse" href="#placeWikipediaPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">From Wikipedia</h2>
+						</div>
+					</a>
+					<div id="placeWikipediaPanelBody" class="panel-collapse collapse in">
+						<div class="panel-body">
+							{include file="Archive2/sections/wikipediaSection.tpl"}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="placeRelatedObjectsPanel">
 				<a data-toggle="collapse" href="#placeRelatedObjectsPanelBody">

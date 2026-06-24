@@ -311,8 +311,17 @@ class WikipediaParser {
 	public function getWikipediaPage($baseURL, $queryTerm = null){
 		$pageUrl = $baseURL . urlencode($queryTerm);
 		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
+			global $configArray, $interface;
 			$this->logger->info('Wikipedia page URL: ' . $pageUrl);
-			$result     = file_get_contents($pageUrl);
+			// Wikipedia requires a User Agent string with all requests
+			// User string is built with components recommended at: https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
+			$userAgent       = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+			$siteEmail       = $configArray['Site']['email'];
+			$siteURL         = $configArray['Site']['url'];
+			$version         = $interface ? rtrim($interface->getVariable('gitBranch')) : '';
+			$userAgentString = "User-Agent: $userAgent/$version ($siteURL; $siteEmail)\r\n";
+			$ctx             = stream_context_create(['http' => ['header' => $userAgentString]]);
+			$result          = file_get_contents($pageUrl, false, $ctx);
 			if (empty($result)){
 				$this->logger->error('Failed to get wikipedia page results');
 			} else{

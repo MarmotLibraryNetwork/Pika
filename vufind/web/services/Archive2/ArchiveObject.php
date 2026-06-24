@@ -537,7 +537,9 @@ class ArchiveObject extends \Action
         $interface->assign('transcription', $transcription ?: null);
 
         // Normalize Drupal link fields for externalLinksSection.tpl.
-        $interface->assign('externalLinks',   $this->normalizeLinkField($nodeData['external_link']     ?? null) ?: null);
+        $externalLinks = $this->normalizeLinkField($nodeData['external_link'] ?? null);
+        $interface->assign('externalLinks',   $externalLinks ?: null);
+        $this->loadWikipediaData($externalLinks);
         $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
         $rawGenealogyLinks = $this->normalizeLinkField($nodeData['genealogy_link'] ?? null);
         foreach ($rawGenealogyLinks as &$link) {
@@ -1250,6 +1252,32 @@ class ArchiveObject extends \Action
         $k = trim($restriction);
         $restrictions[$k] = 1;
         return $restrictions;
+    }
+
+    /**
+     * Scans the normalized external links for a Wikipedia URL and, if found, fetches
+     * the Wikipedia article via the API and assigns `wikipediaData` and `wiki_lang`
+     * to the template. Mirrors IslandoraDriver::loadLinkedData() for the wikipedia case.
+     */
+    private function loadWikipediaData(array $externalLinks): void {
+        global $interface, $configArray;
+        foreach ($externalLinks as $link) {
+            $uri = $link['uri'] ?? '';
+            if (!str_contains($uri, 'wikipedia.org/wiki/')) {
+                continue;
+            }
+            $lang       = preg_match('|https?://([a-z]{2,3})\.wikipedia\.org/wiki/|', $uri, $m) ? $m[1] : 'en';
+            $searchTerm = preg_replace('|https?://[a-z]{2,3}\.wikipedia\.org/wiki/|', '', $uri);
+            require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
+            $parser = new \ExternalEnrichment\WikipediaParser($lang);
+            $apiUrl = "http://{$lang}.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=" . urlencode(urldecode($searchTerm));
+            $data   = $parser->getWikipediaPage($apiUrl);
+            if ($data) {
+                $interface->assign('wikipediaData', $data);
+                $interface->assign('wiki_lang', substr($configArray['Site']['language'], 0, 2));
+            }
+            break;
+        }
     }
 
     /**

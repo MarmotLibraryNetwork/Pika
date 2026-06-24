@@ -131,6 +131,10 @@ class TaxonomyObject extends \Action
             $interface->assign('subjects',               $this->taxonomyObject->getSubjects());
         }
 
+        // Wikipedia data from external links
+        $externalLinks = $this->taxonomyObject->getExternalLink();
+        $this->loadWikipediaData(is_array($externalLinks) ? $externalLinks : []);
+
         // Staff view
         $isStaffUser = \UserAccount::userHasRole('archives')
             || \UserAccount::userHasRole('opacAdmin')
@@ -141,6 +145,32 @@ class TaxonomyObject extends \Action
         $interface->assign('islandora_taxonomy_url',          $islandoraBaseUrl . '/taxonomy/term/' . $this->tid);
         $interface->assign('islandora_taxonomy_pika_json_url', $islandoraBaseUrl . '/pika-json/taxonomy/' . $this->tid);
 
+    }
+
+    /**
+     * Scans external links for a Wikipedia URL and, if found, fetches the article
+     * via the Wikipedia API and assigns `wikipediaData` and `wiki_lang` to the template.
+     * Mirrors the approach used in ArchiveObject::loadWikipediaData().
+     */
+    private function loadWikipediaData(array $externalLinks): void {
+        global $interface, $configArray;
+        foreach ($externalLinks as $link) {
+            $uri = $link['uri'] ?? '';
+            if (!str_contains($uri, 'wikipedia.org/wiki/')) {
+                continue;
+            }
+            $lang       = preg_match('|https?://([a-z]{2,3})\.wikipedia\.org/wiki/|', $uri, $m) ? $m[1] : 'en';
+            $searchTerm = preg_replace('|https?://[a-z]{2,3}\.wikipedia\.org/wiki/|', '', $uri);
+            require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
+            $parser = new \ExternalEnrichment\WikipediaParser($lang);
+            $apiUrl = "http://{$lang}.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=" . urlencode(urldecode($searchTerm));
+            $data   = $parser->getWikipediaPage($apiUrl);
+            if ($data) {
+                $interface->assign('wikipediaData', $data);
+                $interface->assign('wiki_lang', substr($configArray['Site']['language'], 0, 2));
+            }
+            break;
+        }
     }
 
     /**
