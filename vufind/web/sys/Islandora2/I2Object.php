@@ -166,8 +166,8 @@ abstract class I2Object implements MediaObjectInterface
     public function getDisplayModel(): ?string
     {
         $displayModel = $this->legacy_resource_type['name'] ?? null;
-        $displayModel = strtolower($displayModel) ?? null;
-        if ($displayModel === null OR $displayModel === 'book' OR $displayModel === 'article') {
+        
+        if ($displayModel === null || strtolower($displayModel) === 'book' || strtolower($displayModel) === 'article') {
             $displayModel = $this->getObjectModel();
         }
         return $displayModel;
