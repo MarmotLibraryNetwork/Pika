@@ -81,16 +81,19 @@ class WikipediaParser {
 		preg_match_all('/\{([^{}]++|(?R))*\}/s', $body['*'], $matches);
 		// print "<p>".htmlentities($body['*'])."</p>\n";
 		$firstInfoBox = null;
-		foreach ($matches[1] as $m){
+		// Use $matches[0] (full pattern match) rather than $matches[1] (capturing group).
+		// The capturing group is repeating, so PHP PCRE only retains the last iteration —
+		// when the infobox contains nested templates the last iteration is a trailing text
+		// fragment, not the opening "{Infobox" line, causing detection to fail.
+		foreach ($matches[0] as $m){
 			// If this is the Infobox
-			if (substr($m, 0, 8) == '{Infobox'){
+			if (strtolower(substr($m, 0, 9)) == '{{infobox'){
 				// Keep the string for later, we need the body block that follows it
-				$infoboxStr = "{" . $m . "}";
 				if ($firstInfoBox == null){
-					$firstInfoBox = $infoboxStr;
+					$firstInfoBox = $m;
 				}
-				// Get rid of the last pair of braces and split
-				$infobox = explode("\n|", substr($m, 1, -1));
+				// Strip the outer {{ and }} and split on newline+pipe
+				$infobox = explode("\n|", substr($m, 2, -2));
 				// Look through every row of the infobox
 				foreach ($infobox as $row){
 					$data  = explode('=', $row);
