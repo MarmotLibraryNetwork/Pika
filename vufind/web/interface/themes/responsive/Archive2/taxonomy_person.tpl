@@ -9,19 +9,17 @@
 	<div class="row">
 		<div class="col-lg-6">
 			{if $thumbnail && $thumbnail.url}
-				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail"
-					style="max-width:300px; margin:0;">{* TODO: move to stylesheet *}
-			{* removed float; left-floating the image causing the parent div to have no width; and the text would display over image *}
-		{/if}
+				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail">
+			{/if}
 	</div>
 	<div class="col-lg-6">
-		{include file="Archive2/partials/fieldRow.tpl" label="Given Name"    value=$given_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"   value=$middle_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"   value=$family_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"   value=$maiden_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Given Name"     value=$given_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Middle Name"    value=$middle_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Family Name"    value=$family_name}
+		{include file="Archive2/partials/fieldRow.tpl" label="Maiden Name"    value=$maiden_name}
 		{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
-		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"    value=$birth_year isDate=true}
-		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"    value=$death_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Birth Year"     value=$birth_year isDate=true}
+		{include file="Archive2/partials/fieldRow.tpl" label="Death Year"     value=$death_year isDate=true}
 		{include file="Archive2/partials/fieldRow.tpl" label="Race/Ethnicity" value=$race_ethnicity}
 	</div>
 </div>

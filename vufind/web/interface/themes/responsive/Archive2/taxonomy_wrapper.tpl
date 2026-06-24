@@ -2,12 +2,11 @@
 {include file="Archive/search-results-navigation.tpl"}
 <h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 
-<div class="col-xs-6">
+<div class="col-xs-6 taxonomy-wrapper-thumbnail-col">
 	{if $thumbnail && $thumbnail.url}
 	<img src="{$thumbnail.url|escape}"
 	     alt="{$term_title|escape}"
-	     class="img-responsive taxonomy-thumbnail "
-	     style="max-width:390px; margin:0; float: left;">
+	     class="img-responsive taxonomy-thumbnail">
 	{/if}
 </div>
 <div class="col-xs-6">
@@ -32,7 +31,7 @@
 		</div>
 	{/if}
 </div>
-	<br class="clearfix" style="clear: both">
+	<br class="clearfix">
 	{include file="Archive2/$taxonomy_type_template.tpl"}
 
 	{include file="Archive2/taxonomy_related_objects.tpl"}

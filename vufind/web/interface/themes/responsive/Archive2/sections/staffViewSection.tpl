@@ -17,9 +17,9 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Node ID" value=$nid}
 		{include file="Archive2/partials/fieldRow.tpl" label="UUID" value=$uuid}
 		{*{include file="Archive2/partials/fieldRow.tpl" label="Status" value=$status} //This always displays as 1 *}
-		{include file="Archive2/partials/fieldRow.tpl" label="Created" value=$created}{*TODO: patron-friendly display of EDFT conventions? *}
+		{include file="Archive2/partials/fieldRow.tpl" label="Created" value=$created}
 		{include file="Archive2/partials/fieldRow.tpl" label="Changed" value=$changed}
-		{include file="Archive2/partials/fieldRow.tpl" label="Entered On" value=$record_creation_date}
+		{include file="Archive2/partials/fieldRow.tpl" label="Entered On" value=$record_creation_date isDate=true}
 		{include file="Archive2/partials/fieldRow.tpl" label="Entered By" value=$record_origin}
 		{*{include file="Archive2/partials/fieldRow.tpl" label="Record Content Source" value=$record_content_source}
 			Currently Boulder-only field *}
