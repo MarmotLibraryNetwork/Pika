@@ -312,15 +312,15 @@ class MyAccount_MyList extends MyAccount {
 		//create array including all data
 		$itemArray  = [];
 		foreach ($favorites as $listItem){
-			$recordID = $listItem['id'] ?? $listItem['nid'];
-			$isArchive = isset($listItem['nid']);
+			$recordID = $listItem['id'] ?? $listItem['its_node_id'];
+			$isArchive = isset($listItem['its_node_id']);
 			$isCatalog = isset($listItem['id']);
 
 			$title = '';
 			if ($isCatalog && !empty($listItem['title_display'])){
 				$title = $listItem['title_display'];
-			} elseif ($isArchive && !empty($listItem['fgs_label_s'])){
-				$title = $listItem['fgs_label_s'];
+			} elseif ($isArchive && !empty($listItem['twm_X3b_en_title_ws_token'][0])){
+				$title = $listItem['twm_X3b_en_title_ws_token'][0];
 			}
 			$author = '';
 			if (!empty($listItem['author_display'])){
@@ -339,8 +339,8 @@ class MyAccount_MyList extends MyAccount {
 			$typeString = 'format_category_' . $GLOBALS['solrScope'];
 			if ($isCatalog && isset($listItem[$typeString])){
 				$type = $listItem[$typeString][0];
-			} elseif ($isArchive && isset($listItem['mods_genre_s'])){
-				$type = $listItem['mods_genre_s'];
+			} elseif ($isArchive && isset($listItem['sm_format'][0])){
+				$type = $listItem['sm_format'][0];
 			}
 
 
