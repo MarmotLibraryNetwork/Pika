@@ -537,9 +537,9 @@ abstract class I2Object implements MediaObjectInterface
             return null;
         }
         $taxonomy = new TaxonomyFactory();
-        $library = $taxonomy->fromTid($library_tid);
+        $library  = $taxonomy->fromTid($library_tid);
         if ($library === null) {
-            $this->logger->warn('Warning no Corperate Body related to library tid ' . $library_tid);
+            $this->logger->warn('Warning no Corporate Body related to library tid ' . $library_tid);
             return null;
         }
         return $library;

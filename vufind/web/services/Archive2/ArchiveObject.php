@@ -359,7 +359,12 @@ class ArchiveObject extends \Action
                 'address2' => $rawInterviewLocation['address_2'] ?? '',
                 'id'       => $rawInterviewLocation['id'],
             ];
-            $interviewLocations[] = $interviewLocation;
+            // Skip paragraph entries where every address sub-field is empty (e.g. a
+            // freshly-created paragraph node with no data filled in yet).
+            $addressFields = array_diff_key($interviewLocation, ['id' => true]);
+            if (array_filter($addressFields)) {
+                $interviewLocations[] = $interviewLocation;
+            }
         }
         $interface->assign('interview_locations', $interviewLocations);
 
