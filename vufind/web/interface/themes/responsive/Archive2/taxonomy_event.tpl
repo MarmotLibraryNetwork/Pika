@@ -36,6 +36,21 @@
 	<div class="taxonomy-detail taxonomy-event">
 		<div id="more-details-accordion" class="panel-group">
 
+			{if $wikipediaData}
+				<div class="panel active" id="eventWikipediaPanel">
+					<a data-toggle="collapse" href="#eventWikipediaPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">From Wikipedia</h2>
+						</div>
+					</a>
+					<div id="eventWikipediaPanelBody" class="panel-collapse collapse in">
+						<div class="panel-body">
+							{include file="Archive2/sections/wikipediaSection.tpl"}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="eventRelatedObjectsPanel">
 				<a data-toggle="collapse" href="#eventRelatedObjectsPanelBody">

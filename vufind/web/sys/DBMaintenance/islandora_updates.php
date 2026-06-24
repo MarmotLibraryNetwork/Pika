@@ -203,6 +203,7 @@ function getIslandoraUpdates(): array{
 			'continueOnError' => true,
 			'sql'             => [
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'bio'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'militaryService'",
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'familyDetails'",
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'obituaries'",
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'burialDetails'",
