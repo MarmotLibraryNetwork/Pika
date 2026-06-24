@@ -716,6 +716,7 @@ class ArchiveObject extends \Action
             $place['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($place);
+        usort($places, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $places;
     }
 
@@ -740,6 +741,7 @@ class ArchiveObject extends \Action
             $event['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($event);
+        usort($events, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $events;
     }
 
@@ -764,6 +766,7 @@ class ArchiveObject extends \Action
             $org['thumbnail']  = $thumb['url'] ?? null;
         }
         unset($org);
+        usort($orgs, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $orgs;
     }
 
@@ -788,6 +791,7 @@ class ArchiveObject extends \Action
             $person['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($person);
+        usort($people, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $people;
     }
 
