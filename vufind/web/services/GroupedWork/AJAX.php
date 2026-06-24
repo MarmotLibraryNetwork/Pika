@@ -1789,7 +1789,7 @@ function getSaveSeriesToListForm(){
 			'success' => true,
 			'title'   => $title,
 			'message' => $message,
-			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList(' . $idString . ')" class="tool btn btn-primary">Add All To List</button>'
+			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList([' . $idString . '])" class="tool btn btn-primary">Add All To List</button>'
 		];
 	}
 

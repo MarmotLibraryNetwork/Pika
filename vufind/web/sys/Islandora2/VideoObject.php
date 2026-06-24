@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -44,31 +45,45 @@ class VideoObject extends I2Object
 
     /**
      * Get the primary video media
-     * 
+     *
      */
-    public function getVideo() {
+    public function getVideo()
+    {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->bundle === 'video' && $m->use === 'Original File') {
-                return $m;
+
+        // prefer service file over original video
+        // orginal can be of a format incompatible with browsers
+        $video_return = null;
+        foreach ($media as $m) {
+            if ($m->bundle === 'video' && $m->use === 'Service File') {
+                $video_return = $m;
             }
         }
-        return null;
+        // fallback to original media of service file can't be found
+        if ($video_return === null) {
+            foreach ($media as $m) {
+                if ($m->bundle === 'video' && $m->use === 'Original File') {
+                    return $m;
+                }
+            }
+        }
+        return $video_return;
     }
 
-    public function getVideoPoster() {
+    public function getVideoPoster()
+    {
         $media = $this->getMedia();
         // Possible to have more than one "poster" image attached
         $images = [];
-        foreach($media as $m) {
-            if($m->bundle === 'image' && $m->use === 'Thumbnail Image') {
+        foreach ($media as $m) {
+            if ($m->bundle === 'image' && $m->use === 'Thumbnail Image') {
                 $images[] = $m;
             }
         }
-        if(empty($images)) {
+        if (empty($images)) {
             return null;
         }
-        if(count($images) === 1) {
+        if (count($images) === 1) {
             return $images[0];
         }
         // If more than 1 thumbnail, get the newest
@@ -76,5 +91,5 @@ class VideoObject extends I2Object
         // Return the newest image
         return $sorted[0];
     }
-    
+
 }
