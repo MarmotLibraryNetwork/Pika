@@ -35,6 +35,10 @@ class Organization extends TaxonomyObject
     {
         global $interface;
 
+        if ($this->taxonomyObject === null) {
+            parent::launch(); // shows error page and halts
+        }
+
         if (!($this->taxonomyObject instanceof CorporateBodyTaxonomy)) {
             $this->logger->error('Organization controller received wrong taxonomy type.', [
                 'tid'      => $_GET['tid'] ?? null,

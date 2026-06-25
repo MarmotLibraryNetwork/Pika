@@ -35,6 +35,10 @@ class Event extends TaxonomyObject
     {
         global $interface;
 
+        if ($this->taxonomyObject === null) {
+            parent::launch(); // shows error page and halts
+        }
+
         if (!($this->taxonomyObject instanceof EventTaxonomy)) {
             $this->logger->error('Event controller received wrong taxonomy type.', [
                 'tid'      => $_GET['tid'] ?? null,
