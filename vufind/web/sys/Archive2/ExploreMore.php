@@ -670,9 +670,11 @@ class ExploreMore {
 				if ($tid <= 0 || $name === '') {
 					continue;
 				}
-				$values[] = [
+				$term      = $factory->fromTid($tid);
+				$thumbnail = $term?->getThumbnail();
+				$values[]  = [
 					'label' => $prefix . $name,
-					'image' => $org['field_thumbnail']['url'] ?? null,
+					'image' => $thumbnail['url'] ?? null,
 					'link'  => '/Archive2/Organization/' . $tid,
 					'sort'  => $sortValue,
 				];
@@ -695,7 +697,7 @@ class ExploreMore {
 						'label' => 'Contributed by ' . $term->name,
 						'image' => $thumbnail['url'] ?? null,
 						'link'  => $term->getUrl(),
-						'sort' => 5, // Sort last
+						'sort'  => 5, // Sort last
 					];
 					$addedContributingLibrary = true;
 				}
