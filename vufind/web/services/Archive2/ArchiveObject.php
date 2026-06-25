@@ -121,8 +121,12 @@ class ArchiveObject extends \Action
         global $configArray;
 
         if ($this->mediaObject === null) {
-            $this->logger->error('Attempted to launch with null mediaObject.');
-            return;
+            $this->logger->error('Attempted to launch Archive2 page with null mediaObject; archive may be unreachable.', [
+                'nid'   => $_GET['id'] ?? null,
+                'class' => static::class,
+            ]);
+            parent::display('unavailable.tpl', 'Archive Object Unavailable');
+            die();
         }
 
         $interface->assign('showExploreMore', true);
