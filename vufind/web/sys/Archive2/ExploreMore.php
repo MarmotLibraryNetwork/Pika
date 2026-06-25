@@ -74,6 +74,15 @@ class ExploreMore {
 		'acknowledgement' => '',   // shown without prefix
 	];
 
+	/** Sort priority for linked_agent branding roles — mirrors field_related_org sort values. */
+	private const BRANDING_ROLE_SORT = [
+		'owner'           => 1,
+		'donor'           => 2,
+		'funder'          => 3,
+		'sponsor'         => 3,
+		'acknowledgement' => 4,
+	];
+
 	private Logger $logger;
 
 	public function __construct() {
@@ -595,11 +604,13 @@ class ExploreMore {
 	}
 
 	/**
-	 * Donor, funder, owner, and contributing-library acknowledgements for this object.
+	 * Owner, donor, funder, acknowledgement, and contributing-library tiles for this object.
 	 *
-	 * Reads branding-role linked_agent entries and the object's contributing library
-	 * field. Each entry is shown as an image tile (Corporate Body taxonomy thumbnail)
-	 * linking to its /Archive2/Organization?tid=N page.
+	 * Sources: branding-role linked_agent entries (owner, donor, funder, sponsor,
+	 * acknowledgement), field_related_org entries with relations relators:own,
+	 * relators:dnr, relators:fnd, or local:ack, and the object's contributing library.
+	 * Each entry is shown as an image tile (Corporate Body taxonomy thumbnail)
+	 * linking to its /Archive2/Organization page.
 	 *
 	 * @param I2Object $obj
 	 * @return array|null
@@ -613,7 +624,7 @@ class ExploreMore {
 		// Branding agents from linked_agent
 		$linkedAgents = $obj->linked_agent;
 		if (!empty($linkedAgents) && is_array($linkedAgents)) {
-			if (isset($linkedAgents['name'])) {
+			if (array_key_exists('name', $linkedAgents)) {
 				$linkedAgents = [$linkedAgents];
 			}
 			foreach ($linkedAgents as $agent) {
@@ -638,11 +649,13 @@ class ExploreMore {
 					'label' => $label,
 					'image' => $thumbnail['url'] ?? null,
 					'link'  => $term->getUrl(),
+					'sort'  => self::BRANDING_ROLE_SORT[$rel] ?? 99,
 				];
 			}
 		}
 
-		// Related organizations with Acknowledgement relation (local:ack) from field_related_org
+		// Related organizations from field_related_org with owner (relators:own), donor (relators:dnr),
+		// funder (relators:fnd), or acknowledgement (local:ack) relations
 		$relatedOrgs = $obj->related_org;
 		if (!empty($relatedOrgs) && is_array($relatedOrgs)) {
 			if (array_key_exists('tid', $relatedOrgs)) {
@@ -688,7 +701,7 @@ class ExploreMore {
 			$contributingLibrary             = new \Library();
 			$contributingLibrary->libraryTid = $objLibraryTid;
 			$addedContributingLibrary        = false;
-			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid) && $contributingLibrary->corporateBodyTid > 0) {
+			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid)) {
 				/** @var \Islandora2\Organization $term */
 				$term = $factory->fromTid((int)$contributingLibrary->corporateBodyTid);
 				if ($term !== null) {
@@ -714,12 +727,13 @@ class ExploreMore {
 					$relatedOrgs = $libraryTerm->getRelatedOrganization();
 					if (!empty($relatedOrgs)) {
 						$org      = $relatedOrgs[0];
+						$orgTerm       = $factory->fromTid((int)($org['tid'] ?? 0));
+						$orgThumbnail  = $orgTerm?->getThumbnail();
 						$values[] = [
 							'label' => 'Contributed by ' . ($org['name'] ?? ''),
-							'image' => $org['thumbnail'] ?? null,
+							'image' => $orgThumbnail['url'] ?? null,
 							'link'  => $org['url'] ?? '#',
-							'sort' => 5, // Sort last
-
+							'sort'  => 5, // Sort last
 						];
 					} else {
 						$this->logger->warn(
@@ -737,6 +751,14 @@ class ExploreMore {
 		if (empty($values)) {
 			return null;
 		}
+
+		// Sort tiles by role priority: owner=1, donor=2, funder/sponsor=3, ack=4, library=5.
+		// Applies to both field_related_org and linked_agent sources (via BRANDING_ROLE_SORT).
+		// Then alphabetically by label within each group.
+		usort($values, function ($a, $b) {
+			$sortCmp = ($a['sort'] ?? 99) <=> ($b['sort'] ?? 99);
+			return $sortCmp !== 0 ? $sortCmp : strcasecmp($a['label'] ?? '', $b['label'] ?? '');
+		});
 
 		return ['format' => 'list', 'values' => $values, 'showTitles' => true];
 	}
