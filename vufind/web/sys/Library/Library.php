@@ -983,7 +983,8 @@ class Library extends DB_DataObject {
 					'property'   => 'archiveMoreDetailsSection', 'type' => 'section', 'label' => 'Archive More Details ', 'hideInLists' => true,
 					'helpLink'   => '',
 					'properties' => [
-						'archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode' => ['property' => 'archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode', 'label' => 'Related Object/Entity Sections Display Mode', 'type' => 'enum', 'values' => self::$archiveMoreDetailsDisplayModeOptions, 'default' => 'tiled', 'description' => 'How related objects and entities will be displayed in the More Details accordion on Archive pages.'],
+						//'archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode' => ['property' => 'archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode', 'label' => 'Related Object/Entity Sections Display Mode', 'type' => 'enum', 'values' => self::$archiveMoreDetailsDisplayModeOptions, 'default' => 'tiled', 'description' => 'How related objects and entities will be displayed in the More Details accordion on Archive pages.'],
+						// Ignored this for Islandora2 TODO: delete table column
 
 						'archiveMoreDetailsOptions' => [
 							'property'                   => 'archiveMoreDetailsOptions',

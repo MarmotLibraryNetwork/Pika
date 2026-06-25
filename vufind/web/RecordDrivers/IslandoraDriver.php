@@ -98,10 +98,10 @@ abstract class IslandoraDriver extends RecordInterface {
 	private function getCachedData(){
 		if ($this->islandoraObjectCache == null) {
 			require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-			$this->islandoraObjectCache = new IslandoraObjectCache();
+			$this->islandoraObjectCache      = new IslandoraObjectCache();
 			$this->islandoraObjectCache->pid = $this->pid;
 			if (!$this->islandoraObjectCache->find(true)){
-				$this->islandoraObjectCache = new IslandoraObjectCache();
+				$this->islandoraObjectCache      = new IslandoraObjectCache();
 				$this->islandoraObjectCache->pid = $this->pid;
 				$this->islandoraObjectCache->insert();
 			}
