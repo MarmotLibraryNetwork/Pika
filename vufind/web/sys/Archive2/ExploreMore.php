@@ -649,7 +649,17 @@ class ExploreMore {
 				$relatedOrgs = [$relatedOrgs];
 			}
 			foreach ($relatedOrgs as $org) {
-				if (($org['relation'] ?? '') !== 'local:ack') {
+				$relation = $org['relation'] ?? '';
+				if ($relation === 'relators:own') {
+					$prefix = 'Owned by ';
+					$sortValue = 1;
+				} elseif ($relation === 'local:ack') {
+					$prefix = '';
+					$sortValue = 3;
+				} elseif ($relation === 'relators:fnd') {
+					$prefix = 'Funded by ';
+					$sortValue = 2;
+				} else {
 					continue;
 				}
 				$tid  = isset($org['tid']) ? (int)$org['tid'] : 0;
@@ -658,9 +668,10 @@ class ExploreMore {
 					continue;
 				}
 				$values[] = [
-					'label' => $name,
+					'label' => $prefix . $name,
 					'image' => $org['field_thumbnail']['url'] ?? null,
 					'link'  => '/Archive2/Organization/' . $tid,
+					'sort' => $sortValue,
 				];
 			}
 		}
@@ -681,9 +692,12 @@ class ExploreMore {
 						'label' => 'Contributed by ' . $term->name,
 						'image' => $thumbnail['url'] ?? null,
 						'link'  => $term->getUrl(),
+						'sort' => 4, // Sort last
 					];
 					$addedContributingLibrary = true;
 				}
+			} else if ($contributingLibrary->N && (empty($contributingLibrary->corporateBodyTid) || $contributingLibrary->corporateBodyTid === 0)){
+				$this->logger->warn("Contributing library $contributingLibrary->subdomain does not have the Coporate Body TID set");
 			}
 			if (!$addedContributingLibrary) {
 				// Fallback for libraries with no matching Pika Library row or corporateBodyTid
@@ -699,6 +713,8 @@ class ExploreMore {
 							'label' => 'Contributed by ' . ($org['name'] ?? ''),
 							'image' => $org['thumbnail'] ?? null,
 							'link'  => $org['url'] ?? '#',
+							'sort' => 4, // Sort last
+
 						];
 					} else {
 						$this->logger->warn(
