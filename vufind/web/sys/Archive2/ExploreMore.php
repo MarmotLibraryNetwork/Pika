@@ -651,14 +651,17 @@ class ExploreMore {
 			foreach ($relatedOrgs as $org) {
 				$relation = $org['relation'] ?? '';
 				if ($relation === 'relators:own') {
-					$prefix = 'Owned by ';
+					$prefix    = 'Owned by ';
 					$sortValue = 1;
-				} elseif ($relation === 'local:ack') {
-					$prefix = '';
-					$sortValue = 3;
-				} elseif ($relation === 'relators:fnd') {
-					$prefix = 'Funded by ';
+				} elseif ($relation === 'relators:dnr') {
+					$prefix    = 'Donated by ';
 					$sortValue = 2;
+				} elseif ($relation === 'relators:fnd') {
+					$prefix    = 'Funded by ';
+					$sortValue = 3;
+				} elseif ($relation === 'local:ack') {
+					$prefix    = '';
+					$sortValue = 4;
 				} else {
 					continue;
 				}
@@ -671,7 +674,7 @@ class ExploreMore {
 					'label' => $prefix . $name,
 					'image' => $org['field_thumbnail']['url'] ?? null,
 					'link'  => '/Archive2/Organization/' . $tid,
-					'sort' => $sortValue,
+					'sort'  => $sortValue,
 				];
 			}
 		}
@@ -692,7 +695,7 @@ class ExploreMore {
 						'label' => 'Contributed by ' . $term->name,
 						'image' => $thumbnail['url'] ?? null,
 						'link'  => $term->getUrl(),
-						'sort' => 4, // Sort last
+						'sort' => 5, // Sort last
 					];
 					$addedContributingLibrary = true;
 				}
@@ -713,7 +716,7 @@ class ExploreMore {
 							'label' => 'Contributed by ' . ($org['name'] ?? ''),
 							'image' => $org['thumbnail'] ?? null,
 							'link'  => $org['url'] ?? '#',
-							'sort' => 4, // Sort last
+							'sort' => 5, // Sort last
 
 						];
 					} else {
