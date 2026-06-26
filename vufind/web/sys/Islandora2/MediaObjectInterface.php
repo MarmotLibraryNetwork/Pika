@@ -72,6 +72,34 @@ interface MediaObjectInterface
     public function getOriginalMedia(): ?I2Media;
 
     /**
+     * Return the node payload with the "field_" prefix stripped from all keys.
+     *
+     * @return array
+     */
+    public function getNodeWithoutFieldPrefix(): array;
+
+    /**
+     * Return the display title for the object, or null when none is set.
+     *
+     * @return string|null
+     */
+    public function getTitle(): ?string;
+
+    /**
+     * Return the most recently created thumbnail media for the object.
+     *
+     * @return I2Media|null
+     */
+    public function getThumbnail();
+
+    /**
+     * Return the object's children as media objects.
+     *
+     * @return array Empty array when the object has no children.
+     */
+    public function getChildObjects(): array;
+
+    /**
      * Optional hook for classes to report whether they are able to represent
      * the provided node. The factory uses this to select the most appropriate
      * media object implementation.
