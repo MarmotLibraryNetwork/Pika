@@ -60,8 +60,6 @@ class Video extends ArchiveObject
         $transcripts = $this->mediaObject->getTranscripts();
         $interface->assign('transcripts', $transcripts ?? []);
 
-        parent::launch();
-
         $interface->assign('viewer', 'video');
 
         $title = $this->mediaObject->getTitle();
