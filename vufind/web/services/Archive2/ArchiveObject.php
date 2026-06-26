@@ -57,6 +57,9 @@ class ArchiveObject extends \Action
 		'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
 		'spouse', 'pictured', 'student',
 
+		'photographer', // on postcards, this related person would end up in acknowledgments section
+		// linked agents will display in Details section.
+
 	]; //TODO replace use with one the arrays below
 
 	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
@@ -74,6 +77,7 @@ class ArchiveObject extends \Action
 		//		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
 
 		//TODO: populate with all codes
+
 	];
 	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
 	private const NON_PRODUCTION_RELATOR_CODES = [
@@ -559,6 +563,14 @@ class ArchiveObject extends \Action
             $link['uri'] = $this->rewriteCatalogLinkUri($link['uri']);
         }
         unset($link);
+        global $library;
+				if ($library && $library->archiveOnlyInterface) {
+            // GroupedWork is a Pika concept; non-Pika catalogs cannot resolve those URLs.
+            $rawCatalogLinks = array_values(array_filter(
+                $rawCatalogLinks,
+                fn($link) => !str_contains($link['uri'], '/GroupedWork/')
+            ));
+        }
         $interface->assign('catalogLinks', $rawCatalogLinks ?: null);
 
         // Staff role flag consumed by staffViewSection.tpl
@@ -1372,6 +1384,11 @@ class ArchiveObject extends \Action
         $parts    = parse_url($uri);
         $linkHost = $parts['host'] ?? null;
         if ($linkHost === null || !$library || empty($library->catalogUrl)) {
+            return $uri;
+        }
+
+        // Archive-only libraries point to a non-Pika catalog; preserve the stored host.
+        if ($library->archiveOnlyInterface) {
             return $uri;
         }
 
