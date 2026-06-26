@@ -27,6 +27,8 @@ use Islandora2\TaxonomyObjectInterface;
 /**
  * Maps Islandora 2 display model names (lower-cased) to their Archive2 URL action segments.
  * Used by getObjRelativeUrl() and any controller that builds object links.
+ * 
+ * Items that are commented out will fall back to the Isalndora model for display
  */
 const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'audio'            => 'Audio',
