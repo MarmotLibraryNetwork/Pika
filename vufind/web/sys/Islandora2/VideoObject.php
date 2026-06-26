@@ -53,43 +53,20 @@ class VideoObject extends I2Object
 
         // prefer service file over original video
         // orginal can be of a format incompatible with browsers
-        $video_return = null;
         foreach ($media as $m) {
             if ($m->bundle === 'video' && $m->use === 'Service File') {
-                $video_return = $m;
+                return $m;
             }
         }
+        
         // fallback to original media of service file can't be found
-        if ($video_return === null) {
-            foreach ($media as $m) {
-                if ($m->bundle === 'video' && $m->use === 'Original File') {
-                    return $m;
-                }
-            }
-        }
-        return $video_return;
-    }
-
-    public function getVideoPoster()
-    {
-        $media = $this->getMedia();
-        // Possible to have more than one "poster" image attached
-        $images = [];
         foreach ($media as $m) {
-            if ($m->bundle === 'image' && $m->use === 'Thumbnail Image') {
-                $images[] = $m;
+            if ($m->bundle === 'video' && $m->use === 'Original File') {
+                return $m;
             }
         }
-        if (empty($images)) {
-            return null;
-        }
-        if (count($images) === 1) {
-            return $images[0];
-        }
-        // If more than 1 thumbnail, get the newest
-        $sorted = $this->sortMediaByCreatedDate($images);
-        // Return the newest image
-        return $sorted[0];
+        
+        return null;
     }
 
 }
