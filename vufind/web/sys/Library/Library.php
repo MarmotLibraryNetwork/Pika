@@ -1614,6 +1614,7 @@ class Library extends DB_DataObject {
 		$this->showWikipediaContent                        = false;
 		$this->showFavorites                               = false;
 		$this->showRatings                                 = false;
+		$this->showComments                                = false;
 		$this->hideCommentsWithBadWords                    = false;
 		$this->restrictSearchByLibrary                     = false;
 		$this->repeatSearchOption                          = 'none';
@@ -1626,7 +1627,7 @@ class Library extends DB_DataObject {
 		$this->repeatInProspector                          = false;
 		$this->publicListsToInclude                        = 0;
 		$this->systemsToRepeatIn                           = '';
-		//TODO: reset catalog search facets
+		// TODO: clear catalog search facets from DB (saveFacets equivalent for archive-only reset)
 	}
 
 	/**

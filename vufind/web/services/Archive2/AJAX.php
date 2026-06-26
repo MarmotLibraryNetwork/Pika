@@ -400,7 +400,11 @@ class Archive2_AJAX extends AJAXHandler {
 	 * @return array
 	 */
 	function showSaveToListForm(){
-		global $interface;
+		global $interface, $library;
+
+		if ($library && $library->archiveOnlyInterface) {
+			return ['success' => false, 'message' => 'Lists are not available for this interface.'];
+		}
 
 		$nid = (int)($_REQUEST['id'] ?? 0);
 		if ($nid <= 0) {
@@ -463,7 +467,12 @@ class Archive2_AJAX extends AJAXHandler {
 	}
 
 	function saveToList(){
+		global $library;
 		$result = [];
+
+		if ($library && $library->archiveOnlyInterface) {
+			return ['success' => false, 'message' => 'Lists are not available for this interface.'];
+		}
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
