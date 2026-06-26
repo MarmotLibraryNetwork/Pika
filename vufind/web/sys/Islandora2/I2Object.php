@@ -821,24 +821,4 @@ abstract class I2Object implements MediaObjectInterface
         return $media;
     }
 
-    /**
-     * Resolve the Islandora media type from the raw node.
-     *
-     * @param array $node
-     * @return string|null Lower-cased model value or null when unavailable.
-     */
-    protected static function getObjectModelFromNode(array $node): ?string
-    {
-        $fieldModel = $node['field_model'] ?? null;
-        if (!is_array($fieldModel)) {
-            return null;
-        }
-        if (array_key_exists('tid', $fieldModel)) {
-            return isset($fieldModel['name']) ? strtolower($fieldModel['name']) : null;
-        } elseif (isset($fieldModel[0]) && is_array($fieldModel[0]) && array_key_exists('tid', $fieldModel[0])) {
-            return isset($fieldModel[0]['name']) ? strtolower($fieldModel[0]['name']) : null;
-        }
-        return null;
-    }
-
 }
