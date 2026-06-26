@@ -57,6 +57,9 @@ class ArchiveObject extends \Action
 		'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
 		'spouse', 'pictured', 'student',
 
+		'photographer', // on postcards, this related person would end up in acknowledgments section
+		// linked agents will display in Details section.
+
 	]; //TODO replace use with one the arrays below
 
 	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
@@ -74,6 +77,7 @@ class ArchiveObject extends \Action
 		//		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
 
 		//TODO: populate with all codes
+
 	];
 	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
 	private const NON_PRODUCTION_RELATOR_CODES = [
@@ -121,8 +125,12 @@ class ArchiveObject extends \Action
         global $configArray;
 
         if ($this->mediaObject === null) {
-            $this->logger->error('Attempted to launch with null mediaObject.');
-            return;
+            $this->logger->error('Attempted to launch Archive2 page with null mediaObject; archive may be unreachable.', [
+                'nid'   => $_GET['id'] ?? null,
+                'class' => static::class,
+            ]);
+            parent::display('unavailable.tpl', 'Archive Object Unavailable');
+            die();
         }
 
         $interface->assign('showExploreMore', true);
@@ -319,15 +327,10 @@ class ArchiveObject extends \Action
 				$interface->assign('physical_condition', $condition);
 
 
-        // Library
+        // Contributing Library
         // Get the Corporate Body associated with the library
         $libraryTerm = $this->mediaObject->getLibraryOrganization();
-        // If corporte body term isn't found use the Library vocab term
-        if ($libraryTerm === null) {
-            $interface->assign('library_name', $this->mediaObject->library['name'] ?? null);
-            $interface->assign('library_tid', $this->mediaObject->library['tid'] ?? null);
-            $interface->assign('library_url', null);
-        } else {
+				if (!empty($libraryTerm)) {
             $interface->assign('library_name', $libraryTerm->name ?? null);
             $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
             $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
@@ -340,7 +343,7 @@ class ArchiveObject extends \Action
         // Use $nodeData (field_ prefix already stripped recursively) so sub-keys like
         // city/state/street match what the mapping below expects.
         $rawInterviewLocations = $nodeData['location'] ?? [];
-        $interviewLocations = [];
+        $interviewLocations    = [];
         // A single location arrives as an associative array; multiple locations arrive as
         // a sequential (list) array. Wrap the single-location case so the foreach below
         // always iterates over an array of location entries.
@@ -359,7 +362,12 @@ class ArchiveObject extends \Action
                 'address2' => $rawInterviewLocation['address_2'] ?? '',
                 'id'       => $rawInterviewLocation['id'],
             ];
-            $interviewLocations[] = $interviewLocation;
+            // Skip paragraph entries where every address sub-field is empty (e.g. a
+            // freshly-created paragraph node with no data filled in yet).
+            $addressFields = array_diff_key($interviewLocation, ['id' => true]);
+            if (array_filter($addressFields)) {
+                $interviewLocations[] = $interviewLocation;
+            }
         }
         $interface->assign('interview_locations', $interviewLocations);
 
@@ -555,6 +563,14 @@ class ArchiveObject extends \Action
             $link['uri'] = $this->rewriteCatalogLinkUri($link['uri']);
         }
         unset($link);
+        global $library;
+				if ($library && $library->archiveOnlyInterface) {
+            // GroupedWork is a Pika concept; non-Pika catalogs cannot resolve those URLs.
+            $rawCatalogLinks = array_values(array_filter(
+                $rawCatalogLinks,
+                fn($link) => !str_contains($link['uri'], '/GroupedWork/')
+            ));
+        }
         $interface->assign('catalogLinks', $rawCatalogLinks ?: null);
 
         // Staff role flag consumed by staffViewSection.tpl
@@ -716,6 +732,7 @@ class ArchiveObject extends \Action
             $place['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($place);
+        usort($places, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $places;
     }
 
@@ -740,6 +757,7 @@ class ArchiveObject extends \Action
             $event['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($event);
+        usort($events, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $events;
     }
 
@@ -764,6 +782,7 @@ class ArchiveObject extends \Action
             $org['thumbnail']  = $thumb['url'] ?? null;
         }
         unset($org);
+        usort($orgs, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $orgs;
     }
 
@@ -788,6 +807,7 @@ class ArchiveObject extends \Action
             $person['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($person);
+        usort($people, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $people;
     }
 
@@ -1364,6 +1384,11 @@ class ArchiveObject extends \Action
         $parts    = parse_url($uri);
         $linkHost = $parts['host'] ?? null;
         if ($linkHost === null || !$library || empty($library->catalogUrl)) {
+            return $uri;
+        }
+
+        // Archive-only libraries point to a non-Pika catalog; preserve the stored host.
+        if ($library->archiveOnlyInterface) {
             return $uri;
         }
 

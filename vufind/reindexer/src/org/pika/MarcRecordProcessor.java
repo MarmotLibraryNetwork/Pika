@@ -932,7 +932,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, RecordIdentifier identifier) {
-		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
+		// Note: ilsRecords variable has alternate manifestations for the same record, like for an order record or ILS econtent items
 
 		HashSet<String> languageNames        = new HashSet<>();
 		HashSet<String> translationsNames    = new HashSet<>();
@@ -964,7 +964,7 @@ abstract class MarcRecordProcessor {
 				if (firstIndicator == '0') {
 					// Languages in title
 					for (char subfield : Arrays.asList('a', 'b', 'd')) {
-						// 041a Language code of text/sound track or separate title
+						// 041a Language code of text/soundtrack or separate title
 						// 041b Language code of summary or abstract
 						// 041d Language code of sung or spoken text
 
@@ -973,7 +973,7 @@ abstract class MarcRecordProcessor {
 							int round = 1;
 							do {
 								// Multiple language codes can be smashed together in a single subfield,
-								// so we need to parse each three letter code and process it.
+								// so we need to parse each three-letter code and process it.
 								// (Note: this loop also has to handle for single entry language codes that
 								// are less than three letters.[probably incorrect codes])
 
@@ -984,7 +984,7 @@ abstract class MarcRecordProcessor {
 								String    languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
 									// Don't allow untranslated language codes into the facet but do allow codes
-									// that have been translated to "Unknown",etc
+									// that have been translated to "Unknown", etc.
 									languageNames.add(languageName);
 
 									if (primaryLanguage == null && subfield == 'a' && round == 1) {
@@ -995,7 +995,7 @@ abstract class MarcRecordProcessor {
 								}
 								if (length >= 3) {
 									languageCode = languageCode.substring(3);
-									// truncate the subfield data for the next round
+									// truncate the subfield data for the next round.
 									// the last round with multiple language codes will be exactly 3 long,
 									// so need to cut to 0-length to break out of loop.
 								}
@@ -1007,7 +1007,7 @@ abstract class MarcRecordProcessor {
 					// Translations
 					for (char subfield : Arrays.asList('b', 'd', 'j')) {
 						// Multiple language codes can be smashed together in a single subfield,
-						// so we need to parse each three letter code and process it.
+						// so we need to parse each three-letter code and process it.
 						// (Note: this loop also has to handle for single entry language codes that
 						// are less than three letters.[probably incorrect codes])
 
@@ -1023,7 +1023,7 @@ abstract class MarcRecordProcessor {
 								}
 								if (length >= 3) {
 									languageCode = languageCode.substring(3);
-									// truncate the subfield data for the next round
+									// truncate the subfield data for the next round.
 									// the last round with multiple language codes will be exactly 3 long,
 									// so need to cut to 0-length to break out of loop.
 								}

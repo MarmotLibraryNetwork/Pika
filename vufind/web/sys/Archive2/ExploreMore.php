@@ -74,6 +74,15 @@ class ExploreMore {
 		'acknowledgement' => '',   // shown without prefix
 	];
 
+	/** Sort priority for linked_agent branding roles — mirrors field_related_org sort values. */
+	private const BRANDING_ROLE_SORT = [
+		'owner'           => 1,
+		'donor'           => 2,
+		'funder'          => 3,
+		'sponsor'         => 3,
+		'acknowledgement' => 4,
+	];
+
 	private Logger $logger;
 
 	public function __construct() {
@@ -595,11 +604,13 @@ class ExploreMore {
 	}
 
 	/**
-	 * Donor, funder, owner, and contributing-library acknowledgements for this object.
+	 * Owner, donor, funder, acknowledgement, and contributing-library tiles for this object.
 	 *
-	 * Reads branding-role linked_agent entries and the object's contributing library
-	 * field. Each entry is shown as an image tile (Corporate Body taxonomy thumbnail)
-	 * linking to its /Archive2/Organization?tid=N page.
+	 * Sources: branding-role linked_agent entries (owner, donor, funder, sponsor,
+	 * acknowledgement), field_related_org entries with relations relators:own,
+	 * relators:dnr, relators:fnd, or local:ack, and the object's contributing library.
+	 * Each entry is shown as an image tile (Corporate Body taxonomy thumbnail)
+	 * linking to its /Archive2/Organization page.
 	 *
 	 * @param I2Object $obj
 	 * @return array|null
@@ -613,7 +624,7 @@ class ExploreMore {
 		// Branding agents from linked_agent
 		$linkedAgents = $obj->linked_agent;
 		if (!empty($linkedAgents) && is_array($linkedAgents)) {
-			if (isset($linkedAgents['name'])) {
+			if (array_key_exists('name', $linkedAgents)) {
 				$linkedAgents = [$linkedAgents];
 			}
 			foreach ($linkedAgents as $agent) {
@@ -638,6 +649,47 @@ class ExploreMore {
 					'label' => $label,
 					'image' => $thumbnail['url'] ?? null,
 					'link'  => $term->getUrl(),
+					'sort'  => self::BRANDING_ROLE_SORT[$rel] ?? 99,
+				];
+			}
+		}
+
+		// Related organizations from field_related_org with owner (relators:own), donor (relators:dnr),
+		// funder (relators:fnd), or acknowledgement (local:ack) relations
+		$relatedOrgs = $obj->related_org;
+		if (!empty($relatedOrgs) && is_array($relatedOrgs)) {
+			if (array_key_exists('tid', $relatedOrgs)) {
+				$relatedOrgs = [$relatedOrgs];
+			}
+			foreach ($relatedOrgs as $org) {
+				$relation = $org['relation'] ?? '';
+				if ($relation === 'relators:own') {
+					$prefix    = 'Owned by ';
+					$sortValue = 1;
+				} elseif ($relation === 'relators:dnr') {
+					$prefix    = 'Donated by ';
+					$sortValue = 2;
+				} elseif ($relation === 'relators:fnd') {
+					$prefix    = 'Funded by ';
+					$sortValue = 3;
+				} elseif ($relation === 'local:ack') {
+					$prefix    = '';
+					$sortValue = 4;
+				} else {
+					continue;
+				}
+				$tid  = isset($org['tid']) ? (int)$org['tid'] : 0;
+				$name = $org['name'] ?? '';
+				if ($tid <= 0 || $name === '') {
+					continue;
+				}
+				$term      = $factory->fromTid($tid);
+				$thumbnail = $term?->getThumbnail();
+				$values[]  = [
+					'label' => $prefix . $name,
+					'image' => $thumbnail['url'] ?? null,
+					'link'  => '/Archive2/Organization/' . $tid,
+					'sort'  => $sortValue,
 				];
 			}
 		}
@@ -648,7 +700,8 @@ class ExploreMore {
 		if ($objLibraryTid > 0) {
 			$contributingLibrary             = new \Library();
 			$contributingLibrary->libraryTid = $objLibraryTid;
-			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid) && $contributingLibrary->corporateBodyTid > 0) {
+			$addedContributingLibrary        = false;
+			if ($contributingLibrary->find(true) && !empty($contributingLibrary->corporateBodyTid)) {
 				/** @var \Islandora2\Organization $term */
 				$term = $factory->fromTid((int)$contributingLibrary->corporateBodyTid);
 				if ($term !== null) {
@@ -657,25 +710,55 @@ class ExploreMore {
 						'label' => 'Contributed by ' . $term->name,
 						'image' => $thumbnail['url'] ?? null,
 						'link'  => $term->getUrl(),
+						'sort'  => 5, // Sort last
 					];
+					$addedContributingLibrary = true;
+				}
+			} else if ($contributingLibrary->N && (empty($contributingLibrary->corporateBodyTid) || $contributingLibrary->corporateBodyTid === 0)){
+				$this->logger->warn("Contributing library $contributingLibrary->subdomain does not have the Coporate Body TID set");
+			}
+			if (!$addedContributingLibrary) {
+				// Fallback for libraries with no matching Pika Library row or corporateBodyTid
+				// (e.g., partner institutions on a different Pika server).
+				// The library vocabulary term in Islandora carries a field_related_organization
+				// pointing to the equivalent Corporate Body term; use the first entry.
+				$libraryTerm = $factory->fromTid($objLibraryTid);
+				if ($libraryTerm !== null) {
+					$relatedOrgs = $libraryTerm->getRelatedOrganization();
+					if (!empty($relatedOrgs)) {
+						$org      = $relatedOrgs[0];
+						$orgTerm       = $factory->fromTid((int)($org['tid'] ?? 0));
+						$orgThumbnail  = $orgTerm?->getThumbnail();
+						$values[] = [
+							'label' => 'Contributed by ' . ($org['name'] ?? ''),
+							'image' => $orgThumbnail['url'] ?? null,
+							'link'  => $org['url'] ?? '#',
+							'sort'  => 5, // Sort last
+						];
+					} else {
+						$this->logger->warn(
+							'ExploreMore: library term ' . $objLibraryTid . ' has no related organization; cannot build contributing library tile.'
+						);
+					}
+				} else {
+					$this->logger->warn(
+						'ExploreMore: library term ' . $objLibraryTid . ' not found in Islandora; cannot build contributing library tile.'
+					);
 				}
 			}
 		}
-		// TODO: Fallback for contributing libraries not in the Pika Library table.
-		// Lafayette on MLN1 Pika server; MLN1 libraries on MLN2 Pika server
-		//   Some objects are contributed by organizations that have a Corporate Body
-		//   taxonomy term in Islandora2 but no corresponding row in the library table
-		//   (e.g. partner institutions, historical collections donors).
-		//   Fallback approach: read $obj->library (field_library on the node), which
-		//   carries the library vocabulary tid. From that tid, find the matching
-		//   archivePid via the library Solr index or a DB lookup, then resolve to a
-		//   Corporate Body tid via getLegacyEntitiesTIDs() — or alternatively, query
-		//   Solr directly for Corporate Body terms whose ss_contributing_library field
-		//   matches the library tid, if such a field is indexed.
 
 		if (empty($values)) {
 			return null;
 		}
+
+		// Sort tiles by role priority: owner=1, donor=2, funder/sponsor=3, ack=4, library=5.
+		// Applies to both field_related_org and linked_agent sources (via BRANDING_ROLE_SORT).
+		// Then alphabetically by label within each group.
+		usort($values, function ($a, $b) {
+			$sortCmp = ($a['sort'] ?? 99) <=> ($b['sort'] ?? 99);
+			return $sortCmp !== 0 ? $sortCmp : strcasecmp($a['label'] ?? '', $b['label'] ?? '');
+		});
 
 		return ['format' => 'list', 'values' => $values, 'showTitles' => true];
 	}

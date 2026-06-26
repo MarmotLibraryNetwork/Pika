@@ -51,8 +51,8 @@ class TaxonomyObject extends \Action
             return;
         }
 
-        $factory = new TaxonomyFactory();
-        $this->taxonomyObject = $factory->fromTid($this->tid);
+	    $factory              = new TaxonomyFactory();
+	    $this->taxonomyObject = $factory->fromTid($this->tid);
 
         if ($this->taxonomyObject === null) {
             $this->logger->error('Failed to create taxonomy object for tid.', ['tid' => $this->tid]);
@@ -76,8 +76,12 @@ class TaxonomyObject extends \Action
         global $configArray;
 
         if ($this->taxonomyObject === null) {
-            $this->logger->error('Attempted to launch taxonomy page with null taxonomyObject.');
-            return;
+            $this->logger->error('Attempted to launch Archive2 taxonomy page with null taxonomyObject; archive may be unreachable.', [
+                'tid'   => $this->tid,
+                'class' => static::class,
+            ]);
+            parent::display('unavailable.tpl', 'Archive Term Unavailable');
+            die();
         }
 
         // Display hints

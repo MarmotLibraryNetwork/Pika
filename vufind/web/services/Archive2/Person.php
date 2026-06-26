@@ -35,6 +35,10 @@ class Person extends TaxonomyObject
     {
         global $interface;
 
+        if ($this->taxonomyObject === null) {
+            parent::launch(); // shows error page and halts
+        }
+
         if (!($this->taxonomyObject instanceof PersonTaxonomy)) {
             $this->logger->error('Person controller received wrong taxonomy type.', [
                 'tid'      => $_GET['tid'] ?? null,
