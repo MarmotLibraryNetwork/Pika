@@ -29,6 +29,12 @@ class Video extends ArchiveObject
     {
         global $interface;
 
+        if ($this->mediaObject === null) {
+            return; // parent constructor already logged the load failure
+        }
+
+        parent::launch();
+
         $video = $this->mediaObject->getVideo();
         if ($video === null) {
             $this->logger->warning('Video media not found for node.', ['nid' => $this->mediaObject->getNodeId()]);

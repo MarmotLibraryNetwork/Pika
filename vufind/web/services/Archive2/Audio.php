@@ -28,6 +28,10 @@ class Audio extends ArchiveObject
     {
         global $interface;
 
+        if ($this->mediaObject === null) {
+            return; // parent constructor already logged the load failure
+        }
+
         parent::launch();
 
         $audio = $this->mediaObject->getAudio();
