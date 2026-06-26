@@ -52,7 +52,7 @@ class VideoObject extends I2Object
         $media = $this->getMedia();
 
         // prefer service file over original video
-        // orginal can be of a format incompatible with browsers
+        // original can be of a format incompatible with browsers
         $video_return = null;
         foreach ($media as $m) {
             if ($m->bundle === 'video' && $m->use === 'Service File') {
