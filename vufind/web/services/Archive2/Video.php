@@ -39,7 +39,7 @@ class Video extends ArchiveObject
             $interface->assign('videoMime', $video->mime);
         }
 
-        $poster = $this->mediaObject->getVideoPoster();
+        $poster = $this->mediaObject->getThumbnail();
         if ($poster === null) {
             $this->logger->warning('Video poster not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
             $interface->assign('posterUrl', null);

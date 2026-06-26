@@ -122,7 +122,7 @@ class Compound extends ArchiveObject
                     if ($video === null) {
                         $this->logger->warning('Video media not found for compound child.', ['nid' => $childObject->getNodeId()]);
                     }
-                    $poster = $childObject->getVideoPoster();
+                    $poster = $childObject->getThumbnail();
                     $captions = $childObject->getCaptions();
 
                     // Cast captions to array
