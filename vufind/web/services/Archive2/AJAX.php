@@ -259,57 +259,11 @@ class Archive2_AJAX extends AJAXHandler {
 	}
 
 	/**
-	 * Fetch the first 20 archive objects related to a Person taxonomy term and
-	 * return rendered tile HTML for injection into the Related Objects accordion panel.
+	 * Fetch the first 20 archive objects related to a Person taxonomy term.
 	 * Called via: /Archive2/AJAX?method=getRelatedObjectsForPerson&name={person name}
 	 */
 	function getRelatedObjectsForPerson(): array {
-		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
-		if (empty($name)) {
-			return ['success' => false, 'message' => 'Person name is required.'];
-		}
-		if (str_contains($name, '/') || str_contains($name, '\\')) {
-			$this->logger->warning('getRelatedObjectsForPerson: rejected name containing slash.', ['name' => $name]);
-			return ['success' => false, 'message' => 'Invalid person name.'];
-		}
-
-		global $interface;
-
-		/** @var \SearchObject_Islandora2 $searchObject */
-		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
-		$searchObject->init();
-		$searchObject->addFilter('sm_related_person:"' . $name . '"');
-		$searchObject->setSort('sm_field_edtf_date_created desc');
-		$searchObject->setLimit(20);
-		$result = $searchObject->processSearch(true, false);
-
-		$total = (int)($result['response']['numFound'] ?? 0);
-		if ($total === 0) {
-			return ['success' => true, 'hasResults' => false, 'html' => ''];
-		}
-
-		$tiles = [];
-		foreach ($result['response']['docs'] as $doc) {
-			/** @var \Islandora2Driver $driver */
-			$driver  = \RecordDriverFactory::initRecordDriver($doc);
-			$tiles[] = [
-				'title' => $driver->getTitle(),
-				'image' => $driver->getBookcoverUrl('medium'),
-				'link'  => $driver->getRecordUrl(),
-			];
-		}
-
-		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_person:' . urlencode('"' . $name . '"');
-
-		$interface->assign('relatedObjects',          $tiles);
-		$interface->assign('relatedObjectsTotal',     $total);
-		$interface->assign('relatedObjectsSearchUrl', $searchUrl);
-
-		return [
-			'success'    => true,
-			'hasResults' => true,
-			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
-		];
+		return $this->fetchRelatedObjects('sm_related_person', 'Person');
 	}
 
 	/**
@@ -317,52 +271,7 @@ class Archive2_AJAX extends AJAXHandler {
 	 * Called via: /Archive2/AJAX?method=getRelatedObjectsForEvent&name={event name}
 	 */
 	function getRelatedObjectsForEvent(): array {
-		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
-		if (empty($name)) {
-			return ['success' => false, 'message' => 'Event name is required.'];
-		}
-		if (str_contains($name, '/') || str_contains($name, '\\')) {
-			$this->logger->warning('getRelatedObjectsForEvent: rejected name containing slash.', ['name' => $name]);
-			return ['success' => false, 'message' => 'Invalid event name.'];
-		}
-
-		global $interface;
-
-		/** @var \SearchObject_Islandora2 $searchObject */
-		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
-		$searchObject->init();
-		$searchObject->addFilter('sm_related_event:"' . $name . '"');
-		$searchObject->setSort('sm_field_edtf_date_created desc');
-		$searchObject->setLimit(20);
-		$result = $searchObject->processSearch(true, false);
-
-		$total = (int)($result['response']['numFound'] ?? 0);
-		if ($total === 0) {
-			return ['success' => true, 'hasResults' => false, 'html' => ''];
-		}
-
-		$tiles = [];
-		foreach ($result['response']['docs'] as $doc) {
-			/** @var \Islandora2Driver $driver */
-			$driver  = \RecordDriverFactory::initRecordDriver($doc);
-			$tiles[] = [
-				'title' => $driver->getTitle(),
-				'image' => $driver->getBookcoverUrl('medium'),
-				'link'  => $driver->getRecordUrl(),
-			];
-		}
-
-		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_event:' . urlencode('"' . $name . '"');
-
-		$interface->assign('relatedObjects',          $tiles);
-		$interface->assign('relatedObjectsTotal',     $total);
-		$interface->assign('relatedObjectsSearchUrl', $searchUrl);
-
-		return [
-			'success'    => true,
-			'hasResults' => true,
-			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
-		];
+		return $this->fetchRelatedObjects('sm_related_event', 'Event');
 	}
 
 	/**
@@ -370,52 +279,7 @@ class Archive2_AJAX extends AJAXHandler {
 	 * Called via: /Archive2/AJAX?method=getRelatedObjectsForPlace&name={place name}
 	 */
 	function getRelatedObjectsForPlace(): array {
-		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
-		if (empty($name)) {
-			return ['success' => false, 'message' => 'Place name is required.'];
-		}
-		if (str_contains($name, '/') || str_contains($name, '\\')) {
-			$this->logger->warning('getRelatedObjectsForPlace: rejected name containing slash.', ['name' => $name]);
-			return ['success' => false, 'message' => 'Invalid place name.'];
-		}
-
-		global $interface;
-
-		/** @var \SearchObject_Islandora2 $searchObject */
-		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
-		$searchObject->init();
-		$searchObject->addFilter('sm_related_place:"' . $name . '"');
-		$searchObject->setSort('sm_field_edtf_date_created desc');
-		$searchObject->setLimit(20);
-		$result = $searchObject->processSearch(true, false);
-
-		$total = (int)($result['response']['numFound'] ?? 0);
-		if ($total === 0) {
-			return ['success' => true, 'hasResults' => false, 'html' => ''];
-		}
-
-		$tiles = [];
-		foreach ($result['response']['docs'] as $doc) {
-			/** @var \Islandora2Driver $driver */
-			$driver  = \RecordDriverFactory::initRecordDriver($doc);
-			$tiles[] = [
-				'title' => $driver->getTitle(),
-				'image' => $driver->getBookcoverUrl('medium'),
-				'link'  => $driver->getRecordUrl(),
-			];
-		}
-
-		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_place:' . urlencode('"' . $name . '"');
-
-		$interface->assign('relatedObjects',          $tiles);
-		$interface->assign('relatedObjectsTotal',     $total);
-		$interface->assign('relatedObjectsSearchUrl', $searchUrl);
-
-		return [
-			'success'    => true,
-			'hasResults' => true,
-			'html'       => $interface->fetch('Archive2/panels/relatedObjectsContent.tpl'),
-		];
+		return $this->fetchRelatedObjects('sm_related_place', 'Place');
 	}
 
 	/**
@@ -423,13 +287,24 @@ class Archive2_AJAX extends AJAXHandler {
 	 * Called via: /Archive2/AJAX?method=getRelatedObjectsForOrganization&name={org name}
 	 */
 	function getRelatedObjectsForOrganization(): array {
+		return $this->fetchRelatedObjects('sm_related_organization', 'Organization');
+	}
+
+	/**
+	 * Search for archive objects matching a Solr filter field/value pair and return
+	 * rendered tile HTML. Shared by all getRelatedObjectsFor*() public methods.
+	 *
+	 * @param string $filterField  Solr field name (e.g. 'sm_related_person')
+	 * @param string $noun         Human-readable label for error messages (e.g. 'Person')
+	 */
+	private function fetchRelatedObjects(string $filterField, string $noun): array {
 		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
 		if (empty($name)) {
-			return ['success' => false, 'message' => 'Organization name is required.'];
+			return ['success' => false, 'message' => "$noun name is required."];
 		}
 		if (str_contains($name, '/') || str_contains($name, '\\')) {
-			$this->logger->warning('getRelatedObjectsForOrganization: rejected name containing slash.', ['name' => $name]);
-			return ['success' => false, 'message' => 'Invalid organization name.'];
+			$this->logger->warning("getRelatedObjectsFor$noun: rejected name containing slash.", ['name' => $name]);
+			return ['success' => false, 'message' => "Invalid $noun name."];
 		}
 
 		global $interface;
@@ -437,7 +312,7 @@ class Archive2_AJAX extends AJAXHandler {
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
-		$searchObject->addFilter('sm_related_organization:"' . $name . '"');
+		$searchObject->addFilter($filterField . ':"' . $name . '"');
 		$searchObject->setSort('sm_field_edtf_date_created desc');
 		$searchObject->setLimit(20);
 		$result = $searchObject->processSearch(true, false);
@@ -458,7 +333,7 @@ class Archive2_AJAX extends AJAXHandler {
 			];
 		}
 
-		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=sm_related_organization:' . urlencode('"' . $name . '"');
+		$searchUrl = '/Archive2/Results?' . urlencode('filter[]') . '=' . $filterField . ':' . urlencode('"' . $name . '"');
 
 		$interface->assign('relatedObjects',          $tiles);
 		$interface->assign('relatedObjectsTotal',     $total);
