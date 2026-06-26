@@ -56,9 +56,9 @@ class Archive_RequestCopy extends Action{
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
         if (isset($_REQUEST['submit'])) {
-            if (isset($configArray['ReCaptcha']['privateKey'])){
+            if (isset($configArray['ReCaptcha']['secretKey'])){
                 try {
-                    $recaptchaValid = recaptchaCheckAnswer();
+                    $recaptchaValid = recaptchaCheckAnswer(false, 'requestcopy');
                 } catch (Exception $e) {
                     $recaptchaValid = false;
                 }
@@ -135,9 +135,9 @@ class Archive_RequestCopy extends Action{
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
-		// Set up captcha to limit spam self registrations
-        if (isset($configArray['ReCaptcha']['publicKey'])) {
-            $captchaCode        = recaptchaGetQuestion();
+		// Set up captcha to limit spam self-registrations
+        if (isset($configArray['ReCaptcha']['siteKey'])) {
+            $captchaCode = recaptchaGetQuestion('requestcopy');
             $interface->assign('captcha', $captchaCode);
         }
 

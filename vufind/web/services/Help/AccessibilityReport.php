@@ -27,8 +27,8 @@ class AccessibilityReport extends Action {
 	function launch(){
 		global $configArray;
 		global $interface;
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$captchaCode        = recaptchaGetQuestion();
+		if (isset($configArray['ReCaptcha']['siteKey'])) {
+			$captchaCode = recaptchaGetQuestion('accessibilityReport');
 			$interface->assign('captcha', $captchaCode);
 		}
 		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');

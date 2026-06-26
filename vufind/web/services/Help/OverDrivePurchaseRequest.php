@@ -27,8 +27,8 @@ class OverDrivePurchaseRequest extends Action {
 	function launch(){
 		global $configArray;
 		global $interface;
-		if (isset($configArray['ReCaptcha']['publicKey'])){
-			$captchaCode = recaptchaGetQuestion();
+		if (isset($configArray['ReCaptcha']['siteKey'])){
+			$captchaCode = recaptchaGetQuestion('support');
 			$interface->assign('captcha', $captchaCode);
 		}
 		$this->display('overdrivePurchaseRequest.tpl', 'Request OverDrive Purchase');

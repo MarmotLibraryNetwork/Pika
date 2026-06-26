@@ -60,9 +60,9 @@ class SelfReg extends Action {
 
 		if (isset($_REQUEST['submit'])){
 
-			if (!empty($configArray['ReCaptcha']['privateKey'])){
+			if (!empty($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer();
+					$recaptchaValid = recaptchaCheckAnswer(false, 'selfreg');
 				} catch (Exception $e){
 					$recaptchaValid = false;
 				}
@@ -87,7 +87,7 @@ class SelfReg extends Action {
 				$interface->assign('selfRegResult', $result);
 			}
 
-			// Pre-fill form with user supplied data
+			// Pre-fill form with user-supplied data
 			foreach ($selfRegFields as &$property){
 				if (!empty($property['property']) && $property['type'] !== 'header' && isset($_REQUEST[$property['property']])){
 					$userValue           = $_REQUEST[$property['property']];
@@ -101,9 +101,9 @@ class SelfReg extends Action {
 		$interface->assign('structure', $selfRegFields);
 		$interface->assign('saveButtonText', 'Register');
 
-		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey']) && $configArray['ReCaptcha']['publicKey'] !== ''){
-			$captchaCode = recaptchaGetQuestion();
+		// Set up captcha to limit spam self-registrations
+		if (!empty($configArray['ReCaptcha']['siteKey'])){
+			$captchaCode = recaptchaGetQuestion('selfreg');
 			$interface->assign('captcha', $captchaCode);
 		}
 
