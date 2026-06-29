@@ -208,24 +208,7 @@
 				</div>
 			{/if}
 
-			{if $links}
-				<div class="panel" id="personLinksPanel">
-					<a data-toggle="collapse" href="#personLinksPanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Links</h2>
-						</div>
-					</a>
-					<div id="personLinksPanelBody" class="panel-collapse collapse">
-						<div class="panel-body">
-							<ul class="list-unstyled">
-								{foreach from=$links item=link}
-									<li><a href="{$link.uri|escape}">{$link.title|escape}</a></li>
-								{/foreach}
-							</ul>
-						</div>
-					</div>
-				</div>
-			{/if}
+			{include file="Archive2/taxonomy_external_links.tpl"}
 
 			{include file="Archive2/panels/sharedRelatedPanels.tpl"}
 

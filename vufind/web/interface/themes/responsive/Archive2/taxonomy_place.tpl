@@ -147,6 +147,7 @@
 					</div>
 				</div>
 			{/if}
+			{include file="Archive2/taxonomy_external_links.tpl"}
 			{include file="Archive2/panels/sharedRelatedPanels.tpl"}
 			{include file="Archive2/panels/subjectsPanel.tpl"}
 		</div>
