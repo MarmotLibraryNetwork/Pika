@@ -55,7 +55,9 @@ class Term extends TaxonomyObject
             parent::launch(); // TaxonomyObject::launch() handles null → shows unavailable.tpl and dies
         }
 
-        // Term exists, but its vocabulary is not displayed as a standalone page in Pika
+        // Term exists, but its vocabulary is not displayed as a standalone page in Pika.
+        // 410 Gone signals to crawlers that this URL will never resolve to a display page.
+        http_response_code(410);
         parent::display('term-not-displayed.tpl', 'Archive Term Not Available');
         //die();
     }
