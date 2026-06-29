@@ -36,7 +36,9 @@ class Term extends TaxonomyObject
     {
         parent::__construct();
 
-        if ($this->taxonomyObject !== null) {
+        // getTid() > 0 guards against getTaxonomyAbsoluteUrl() returning baseUrl.'#'
+        // when the API response omits the tid field on an otherwise valid term object.
+        if ($this->taxonomyObject !== null && $this->taxonomyObject->getTid() > 0) {
             $vocab = strtolower($this->taxonomyObject->getVocabularyMachineName() ?? '');
             if (isset(ISLANDORA2_VOCAB_URL_MAP[$vocab])) {
                 $absoluteUrl = getTaxonomyAbsoluteUrl($this->taxonomyObject);
@@ -50,12 +52,11 @@ class Term extends TaxonomyObject
     {
         if ($this->taxonomyObject === null) {
             parent::launch(); // TaxonomyObject::launch() handles null → shows unavailable.tpl and dies
-            return;
         }
 
-        // Term exists but its vocabulary is not displayed as a standalone page in Pika
+        // Term exists, but its vocabulary is not displayed as a standalone page in Pika
         parent::display('term-not-displayed.tpl', 'Archive Term Not Available');
-        die();
+        //die();
     }
 
 }
