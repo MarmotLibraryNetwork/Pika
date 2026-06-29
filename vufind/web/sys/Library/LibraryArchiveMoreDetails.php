@@ -46,9 +46,9 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		'academicResearch'     => 'Academic Research Information',
 		'artworkDetails'       => 'Art Information',
 		'musicDetails'         => 'Music Information',
-		//'relatedObjects'       => 'Related Objects', // Taxonomy only
 		//'obituaries'           => 'Obituaries',
 		//'burialDetails'        => 'Burial Details',  // Taxonomy only
+		'relatedObjects'       => 'Directly Related Objects', // Both Object and Taxonomy
 		'relatedPeople'        => 'Related People',
 		'relatedOrganizations' => 'Related Organizations',
 		'relatedPlaces'        => 'Related Places',
@@ -181,12 +181,12 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
 
-//		$defaultOption                    = new LibraryArchiveMoreDetails();
-//		$defaultOption->libraryId         = $libraryId;
-//		$defaultOption->section           = 'relatedObjects';
-//		$defaultOption->collapseByDefault = false;
-//		$defaultOption->weight            = count($defaultOptions) + 101;
-//		$defaultOptions[]                 = $defaultOption;
+		$defaultOption                    = new LibraryArchiveMoreDetails();
+		$defaultOption->libraryId         = $libraryId;
+		$defaultOption->section           = 'relatedObjects';
+		$defaultOption->collapseByDefault = false;
+		$defaultOption->weight            = count($defaultOptions) + 101;
+		$defaultOptions[]                 = $defaultOption;
 
 //		$defaultOption                    = new LibraryArchiveMoreDetails();
 //		$defaultOption->libraryId         = $libraryId;
