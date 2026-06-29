@@ -601,6 +601,9 @@ function convertListPidToNid():bool {
 		if (count($parts) > 1){
 			if (in_array($parts[0], $nameSpace)){
 				if ($nids = $islandora2Search->getNodeIdsbyLegacyPIDs([$pid])){
+					if (count($nids) > 1){
+						$pikaLogger->error("Multiple NIDs found for PID $pid: " . implode(', ', $nids));
+					}
 					foreach ($nids as $nid){
 						$userListEntry->groupedWorkPermanentId = $nid;
 						$userListEntry->hidden                 = false;
@@ -610,8 +613,14 @@ function convertListPidToNid():bool {
 						}
 					}
 				}else{
-					$pikaLogger->error("There was an error processing the record", $parts);
-					$success = false;
+					// PID is from a known namespace but has no match in Islandora2 Solr.
+					// Hide the entry so it does not appear in the patron's list and log for manual follow-up.
+					$pikaLogger->warning("PID $pid not found in Islandora2; entry hidden, requires manual investigation.", $parts);
+					$userListEntry->hidden = true;
+					if ($userListEntry->update() === false) {
+						$pikaLogger->error("Failed to hide list entry for PID $pid.");
+						$success = false;
+					}
 				}
 			}else{
 				$pikaLogger->warning("The object may be a taxonomy", $parts);
