@@ -28,6 +28,7 @@ class Node extends ArchiveObject
     {
         parent::__construct();
         $absolute_url = getObjAbsoluteUrl($this->mediaObject);
+        http_response_code(301); // Issue it as a permanent redirect
         header("Location: {$absolute_url}");
         exit();
     }
