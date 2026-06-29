@@ -14,11 +14,14 @@
 {foreach from=$titles item=title}
 
 {if $title.title_display}{$title.title_display}
-{$title.author_display}
-{$url}/GroupedWork/{$title.id}/Home
-{elseif $field_display_title}{$field_display_title}
-{$title.format}
-{if $title.url}{$url}{$title.url}{/if}{/if}
+	{$title.author_display}
+	{$url}/GroupedWork/{$title.id}/Home
+	{elseif $title.its_node_id}{$twm_X3b_en_title_ws_token[0]}
+		{$title.format}
+		{if $title.url}
+			{$url}{$title.url}
+		{/if}
+{/if}
 
 {section name=listEntry loop=$listEntries}
 {*If the listEntry has a note see if it is the same work*}
