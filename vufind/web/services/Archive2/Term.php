@@ -42,6 +42,7 @@ class Term extends TaxonomyObject
             $vocab = strtolower($this->taxonomyObject->getVocabularyMachineName() ?? '');
             if (isset(ISLANDORA2_VOCAB_URL_MAP[$vocab])) {
                 $absoluteUrl = getTaxonomyAbsoluteUrl($this->taxonomyObject);
+                http_response_code(301);  // Issue it as a permanent redirect
                 header("Location: {$absoluteUrl}");
                 exit();
             }
