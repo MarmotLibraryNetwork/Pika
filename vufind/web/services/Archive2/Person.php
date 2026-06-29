@@ -94,24 +94,13 @@ class Person extends TaxonomyObject
 
         $interface->assign('related_place', $person->getRelatedPlace());
 
-        // Links section
-        $links = [];
+        // Genealogy link is Person-specific; prepend it to the external links
+        // already normalized and assigned by parent::launch().
         $genealogyLink = $person->getGenealogyLink();
         if ($genealogyLink) {
-            $links[] = $genealogyLink;
+            $existingLinks = $interface->getTemplateVars('links') ?? [];
+            $interface->assign('links', array_merge([$genealogyLink], $existingLinks) ?: null);
         }
-        $externalLinks = $person->getExternalLink();
-        if (is_array($externalLinks)) {
-            foreach ($externalLinks as $raw) {
-                if (!empty($raw['uri'])) {
-                    $links[] = [
-                        'uri'   => $raw['uri'],
-                        'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
-                    ];
-                }
-            }
-        }
-        $interface->assign('links', $links ?: null);
 
         // Genealogy database data, linked via field_genealogy_link
         $genealogyPerson = $this->loadGenealogyPerson($person);

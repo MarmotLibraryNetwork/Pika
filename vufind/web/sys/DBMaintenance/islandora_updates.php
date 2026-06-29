@@ -208,7 +208,7 @@ function getIslandoraUpdates(): array{
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'obituaries'",
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'burialDetails'",
 				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'demographics'",
-				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'relatedObjects'",
+				//"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'relatedObjects'",
 			]
 		],
 
