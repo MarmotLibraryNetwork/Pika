@@ -115,7 +115,9 @@ class MyAccount_MyList extends MyAccount {
 							if (isset($_REQUEST['myListActionData'])){
 								$itemsToRemove = explode(',', $_REQUEST['myListActionData']);
 								foreach ($itemsToRemove as $id){
-									//add back the leading . to get the full bib record
+									// make sure that, if archive item contains islandora2- before the id, that it is removed
+									$id = !str_contains($id,"islandora2-") ? $id : str_replace('islandora2-', '', $id);
+									// add back the leading . to get the full bib record
 									$list->removeListEntry($id);
 									$list->update();
 								}
@@ -132,6 +134,8 @@ class MyAccount_MyList extends MyAccount {
 					}
 				}elseif (isset($_REQUEST['delete'])){
 					$recordToDelete = $_REQUEST['delete'];
+					// make sure that, if archive item contains islandora2- before the id, that it is removed
+					$recordToDelete = !str_contains($recordToDelete,"islandora2-") ? $recordToDelete : str_replace('islandora2-', '', $recordToDelete);
 					$list->removeListEntry($recordToDelete);
 					$list->update();
 				}
