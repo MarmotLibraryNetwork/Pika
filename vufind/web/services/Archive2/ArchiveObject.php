@@ -1251,7 +1251,22 @@ class ArchiveObject extends \Action
     {
         $depth = 0;
         while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
-            $value = trim((string)($node->pika_access_limits ?? ''));
+            $raw = $node->pika_access_limits ?? '';
+            if (is_array($raw)) {
+                // The Islandora editing interface only ever lets staff set a single string
+                // value for pika_access_limits, so this shouldn't normally happen. But if a
+                // malformed/legacy node hands back an array anyway, warn so it gets noticed
+                // and use the first entry, rather than letting (string) cast the whole array
+                // to the literal "Array" -- which would match no restriction and silently
+                // lock the object for every patron.
+                (new Logger(self::class))->warning('pika_access_limits arrived as an array; expected a single string value. Using the first element.', [
+                    'nid' => $node->getNodeId(),
+                    'raw' => $raw,
+                ]);
+                $raw = reset($raw) ?: '';
+            }
+
+            $value = trim((string)$raw);
             if ($value === '' || strcasecmp($value, 'default') === 0) {
                 $node = $node->getParentCollection();
                 $depth++;
