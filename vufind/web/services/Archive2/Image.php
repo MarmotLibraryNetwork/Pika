@@ -28,22 +28,33 @@ class Image extends ArchiveObject
         global $interface;
         global $configArray;
 
-        $serviceFile = $this->mediaObject->getServiceFile();
         $serviceFileUrl = null;
 
-        # if CORS becomes an issue, see vufind/web/services/Archive2/AJAX.php fetchCantaloupeManifest()
-        if ($serviceFile && !empty($serviceFile->fileUrl)) {
-            $baseUrl = $configArray['Islandora2']['url'] ?? '';
-            if (empty($baseUrl)) {
-                $this->logger->error('Islandora2 URL not configured; cannot build image viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
-            } else {
-                $baseUrl = rtrim($baseUrl, '/');
-                $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl) . "/info.json";
-            }
+        // The Cantaloupe image server has no access control of its own: anyone who has
+        // this URL can fetch the full image directly, forever, regardless of Pika's own
+        // viewing-restriction check (and regardless of whether wrapper.tpl later decides
+        // not to render the viewer markup that would have embedded it). So only build and
+        // expose the URL when the current patron is actually allowed to view this object;
+        // otherwise leave service_file_url null so nothing restricted ever reaches the page.
+        if (!$this->canCurrentUserView()) {
+            $this->logger->info('Skipping service_file_url construction; a viewing restriction is in effect.', ['nid' => $this->mediaObject->getNodeId()]);
         } else {
-            $this->logger->warning('Service file not found for image node.', ['nid' => $this->mediaObject->getNodeId()]);
+            $serviceFile = $this->mediaObject->getServiceFile();
+
+            # if CORS becomes an issue, see vufind/web/services/Archive2/AJAX.php fetchCantaloupeManifest()
+            if ($serviceFile && !empty($serviceFile->fileUrl)) {
+                $baseUrl = $configArray['Islandora2']['url'] ?? '';
+                if (empty($baseUrl)) {
+                    $this->logger->error('Islandora2 URL not configured; cannot build image viewer URL.', ['nid' => $this->mediaObject->getNodeId()]);
+                } else {
+                    $baseUrl = rtrim($baseUrl, '/');
+                    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl) . "/info.json";
+                }
+            } else {
+                $this->logger->warning('Service file not found for image node.', ['nid' => $this->mediaObject->getNodeId()]);
+            }
         }
-        
+
         $interface->assign('service_file_url', $serviceFileUrl);
         parent::launch();
 

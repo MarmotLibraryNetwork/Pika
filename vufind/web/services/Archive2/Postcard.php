@@ -35,31 +35,41 @@ class Postcard extends ArchiveObject
         // Get manifests for child objects
         $serviceFileUrls = [];
 
-        $childObjects = $this->mediaObject->getChildObjects();
-        foreach ($childObjects as $childObject) {
-            $modelName = $childObject->model['name'] ?? null;
-            if ($modelName === null || strtolower($modelName) !== 'image') {
-                continue;
-            }
-
-            $serviceFile = $childObject->getServiceFile();
-            $serviceFileUrl = null;
-
-            if ($serviceFile && isset($serviceFile->fileUrl)) {
-                $baseUrl = $configArray['Islandora2']['url'] ?? '';
-                if (empty($baseUrl)) {
-                    $this->logger->error('Islandora2 URL not configured; cannot build postcard image URL.', ['nid' => $childObject->getNodeId()]);
-                } else {
-                    $baseUrl = rtrim($baseUrl, '/');
-                    $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+        // The Cantaloupe image server has no access control of its own: anyone who has
+        // one of these URLs can fetch the full-resolution image directly, forever,
+        // regardless of Pika's own viewing-restriction check (and regardless of whether
+        // wrapper.tpl later decides not to render the viewer markup that would have
+        // embedded them). So only build URLs for the postcard's child images when the
+        // current patron is actually allowed to view the postcard itself; otherwise leave
+        // service_file_url empty so nothing restricted ever reaches the page.
+        if (!$this->canCurrentUserView()) {
+            $this->logger->info('Skipping postcard service_file_url construction; a viewing restriction is in effect.', ['nid' => $this->mediaObject->getNodeId()]);
+        } else {
+            $childObjects = $this->mediaObject->getChildObjects();
+            foreach ($childObjects as $childObject) {
+                $modelName = $childObject->model['name'] ?? null;
+                if ($modelName === null || strtolower($modelName) !== 'image') {
+                    continue;
                 }
-            } else {
-                $this->logger->warning('Service file not found for postcard child.', ['nid' => $childObject->getNodeId()]);
+
+                $serviceFile = $childObject->getServiceFile();
+                $serviceFileUrl = null;
+
+                if ($serviceFile && isset($serviceFile->fileUrl)) {
+                    $baseUrl = $configArray['Islandora2']['url'] ?? '';
+                    if (empty($baseUrl)) {
+                        $this->logger->error('Islandora2 URL not configured; cannot build postcard image URL.', ['nid' => $childObject->getNodeId()]);
+                    } else {
+                        $baseUrl = rtrim($baseUrl, '/');
+                        $serviceFileUrl = $baseUrl . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+                    }
+                } else {
+                    $this->logger->warning('Service file not found for postcard child.', ['nid' => $childObject->getNodeId()]);
+                }
+
+                $serviceFileUrls[] = $serviceFileUrl;
             }
-
-            $serviceFileUrls[] = $serviceFileUrl;
         }
-
 
         $interface->assign('service_file_url', $serviceFileUrls);
         $interface->assign('viewer', 'open_seadragon_multi');

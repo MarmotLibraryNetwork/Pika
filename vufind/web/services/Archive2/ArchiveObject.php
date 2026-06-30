@@ -1157,15 +1157,21 @@ class ArchiveObject extends \Action
 		return false;
 	}
 
+    private ?bool $canCurrentUserViewResolved = null;
+
     /**
-     * Determine if the current patron can view the object.
+     * Determine if the current patron can view the object. Memoized: subclasses
+     * (e.g. Image, Postcard) that need to gate their own restricted-content URLs
+     * call this before parent::launch() runs the same check again, so caching the
+     * result avoids repeating the user/library lookups inside userSatisfiesRestriction().
      */
     protected function canCurrentUserView(): bool
     {
-        if ($this->mediaObject->pika_usage === 'no') {
-            return false;
+        if ($this->canCurrentUserViewResolved === null) {
+            $this->canCurrentUserViewResolved = $this->mediaObject->pika_usage !== 'no'
+                && self::userSatisfiesRestriction($this->resolveViewingRestrictions());
         }
-        return self::userSatisfiesRestriction($this->resolveViewingRestrictions());
+        return $this->canCurrentUserViewResolved;
     }
 
     /**
