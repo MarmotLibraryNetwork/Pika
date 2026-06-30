@@ -424,6 +424,9 @@ function convertArchivePidToCorporateBodyTid(): bool {
 				$success = false;
 				continue;
 			}
+			if (count($TIDs) > 1){
+				$pikaLogger->warning("Multiple Corporate Body TIDs found for library $library->subdomain archivePID $library->archivePid; using first. TIDs: " . implode(', ', $TIDs));
+			}
 			$library->corporateBodyTid = (int) reset($TIDs);
 			if ($library->update() === false){
 				$pikaLogger->error("Failed to update Library Corporate Body TID for library $library->subdomain.");

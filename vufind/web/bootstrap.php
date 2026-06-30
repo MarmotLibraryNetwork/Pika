@@ -513,7 +513,6 @@ function vufind_autoloader($class) {
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Archive2/' . $class . '.php')){
-			//TODO: these two blocks probably conflict with each other
 			$className = ROOT_DIR . '/sys/Archive2/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
@@ -528,12 +527,13 @@ function vufind_autoloader($class) {
 			// Appears to be for root directory classes: Action, AJAXHandler,
 			// CatalogConnection, CatalogFactory
 			@include_once $nameSpaceClass;
-			if (!class_exists($class, false)){
-				global $pikaLogger;
-				if ($pikaLogger){
-					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
-				}
-			}
+			// Ignore failures, presuming we are loading classes for other auto-loaders after thism
+//			if (!class_exists($class, false)){
+//				global $pikaLogger;
+//				if ($pikaLogger){
+//					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
+//				}
+//			}
 //			else {
 //				global $pikaLogger;
 //				if ($pikaLogger){

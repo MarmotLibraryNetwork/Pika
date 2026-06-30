@@ -59,6 +59,7 @@ class Place extends TaxonomyObject
         $interface->assign('geolocation',         $place->getGeolocation());
         $interface->assign('related_place',       $place->getRelatedPlace());
         $interface->assign('address',             $place->getAddress());
+        $interface->assign('place_addresses',     $place->getAddresses());
         
         $interface->assign('taxonomy_type_template', 'taxonomy_geographic_location');
 
