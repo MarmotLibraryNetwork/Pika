@@ -131,6 +131,21 @@
 					</div>
 				</div>
 			{/if}
+			{if $place_addresses}
+				<div class="panel" id="geoAddressesPanel">
+					<a data-toggle="collapse" href="#geoAddressesPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Addresses</h2>
+						</div>
+					</a>
+					<div id="geoAddressesPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							{include file="Archive2/sections/addressesSection.tpl" interview_locations=$place_addresses}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{if $notes}
 				<div class="panel active" id="geoNotesPanel">
 					<a data-toggle="collapse" href="#geoNotesPanelBody">
