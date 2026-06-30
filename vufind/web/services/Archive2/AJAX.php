@@ -31,10 +31,12 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
+require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 
 use Islandora2\I2ObjectFactory;
 use Archive2\ExploreMore;
 use Archive2\CollectionTimelineData;
+use Archive2\ArchiveObject;
 
 class Archive2_AJAX extends AJAXHandler {
 
@@ -70,16 +72,59 @@ class Archive2_AJAX extends AJAXHandler {
 	];
 
 	/**
+	 * Verifies the current user/session may view the given node before a proxy
+	 * method serves its (potentially restricted) content. Always logs a warning
+	 * when a viewing restriction is in effect for the node, regardless of whether
+	 * the request is ultimately allowed through, so restricted-content access via
+	 * these proxy endpoints stays auditable.
+	 */
+	private function enforceViewingRestriction(string $methodName, int $nid): bool {
+		if ($nid <= 0) {
+			$this->logger->error("$methodName called without a valid nid; denying.", ['method' => $methodName]);
+			return false;
+		}
+
+		$node = (new I2ObjectFactory())->fromNodeId($nid);
+		if ($node === null) {
+			$this->logger->error("$methodName: unable to load node for viewing-restriction check; denying.", [
+				'method' => $methodName,
+				'nid'    => $nid,
+			]);
+			return false;
+		}
+
+		$restriction         = ArchiveObject::resolveViewingRestrictionForNode($node);
+		$restrictionInEffect = $restriction !== null && strcasecmp($restriction, 'all') !== 0;
+		$canView             = ArchiveObject::canUserViewNode($node);
+
+		if ($restrictionInEffect) {
+			$this->logger->warning("$methodName called for a node with a viewing restriction in effect.", [
+				'method'      => $methodName,
+				'nid'         => $nid,
+				'restriction' => $restriction,
+				'allowed'     => $canView,
+			]);
+		}
+
+		return $canView;
+	}
+
+	/**
 	 * Proxy a WebVTT caption file from the Islandora2 server to avoid CORS issues.
-	 * Called via: /Archive2/AJAX?method=fetchVtt&path={encoded_path}
+	 * Called via: /Archive2/AJAX?method=fetchVtt&path={encoded_path}&nid={nid}
 	 */
 	function fetchVtt(): void {
 		global $configArray;
 		$baseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
 		$path    = urldecode($_REQUEST['path'] ?? '');
+		$nid     = (int)($_REQUEST['nid'] ?? 0);
 
 		if (!$path) {
 			$this->logger->error('fetchVtt called without a path parameter.');
+			return;
+		}
+		if (!$this->enforceViewingRestriction('fetchVtt', $nid)) {
+			http_response_code(403);
 			return;
 		}
 
@@ -103,6 +148,10 @@ class Archive2_AJAX extends AJAXHandler {
 			$this->logger->error('fetchManifest called without a valid nid.');
 			return;
 		}
+		if (!$this->enforceViewingRestriction('fetchManifest', $nid)) {
+			http_response_code(403);
+			return;
+		}
 
 		$response = $this->proxyCurl($baseUrl . '/node/' . $nid . '/manifest');
 		if ($response !== null) {
@@ -113,12 +162,18 @@ class Archive2_AJAX extends AJAXHandler {
 
 	/**
 	 * Proxy a IIIF image manifest from the Cantaloupe image server.
-	 * Called via: /Archive2/AJAX?method=fetchCantaloupeManifest&sf={encoded_service_file_url}
+	 * Called via: /Archive2/AJAX?method=fetchCantaloupeManifest&sf={encoded_service_file_url}&nid={nid}
 	 */
 	function fetchCantaloupeManifest(): void {
 		global $configArray;
 		$baseUrl        = rtrim($configArray['Islandora2']['url'] ?? '', '/');
 		$serviceFileUrl = urlencode(urldecode($_REQUEST['sf'] ?? ''));
+		$nid            = (int)($_REQUEST['nid'] ?? 0);
+
+		if (!$this->enforceViewingRestriction('fetchCantaloupeManifest', $nid)) {
+			http_response_code(403);
+			return;
+		}
 
 		$response = $this->proxyCurl($baseUrl . '/cantaloupe/iiif/2/' . $serviceFileUrl);
 		if ($response !== null) {
@@ -129,9 +184,16 @@ class Archive2_AJAX extends AJAXHandler {
 
 	/**
 	 * Proxy a PDF file to avoid pdfjs hardcoded CORS.
+	 * Called via: /Archive2/AJAX?method=fetchPDFFile&pdf_file={url}&nid={nid}
 	 */
 	function fetchPDFFile(): void {
 		$file = $_REQUEST['pdf_file'];
+		$nid  = (int)($_REQUEST['nid'] ?? 0);
+
+		if (!$this->enforceViewingRestriction('fetchPDFFile', $nid)) {
+			http_response_code(403);
+			return;
+		}
 
 		$response = $this->proxyCurl($file);
 		if ($response !== null) {

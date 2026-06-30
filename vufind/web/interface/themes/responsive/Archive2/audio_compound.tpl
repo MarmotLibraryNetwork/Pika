@@ -19,6 +19,7 @@
              data-audio-title="{$child.title|escape}"
              data-captions='{if $child.captions}{$child.captions|@json_encode}{else}[]{/if}'
              data-index="{$smarty.foreach.audioLoop.index}"
+             data-nid="{$nid|intval}"
              style="cursor: pointer; border: 2px solid #ddd; border-radius: 6px; padding: 15px; transition: all 0.3s ease; background: #fff;">
 
             {* Thumbnail *}
@@ -62,6 +63,7 @@
     function loadAudioTrack(item, index) {
         const audioUrl = item.dataset.audioUrl;
         const audioMime = item.dataset.audioMime;
+        const nid = item.dataset.nid;
         const captions = JSON.parse(item.dataset.captions || '[]');
 
         // Store current playback position if switching tracks
@@ -81,7 +83,7 @@
             captions.forEach((caption, idx) => {
                 const track = document.createElement('track');
                 track.kind = 'captions';
-                track.src = '/Archive2/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath);
+                track.src = '/Archive2/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath) + '&nid=' + encodeURIComponent(nid);
                 track.label = caption.langName || 'Captions';
                 track.srclang = caption.langCode || 'en';
                 if (idx === 0) {

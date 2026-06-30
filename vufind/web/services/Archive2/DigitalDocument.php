@@ -46,7 +46,7 @@ class DigitalDocument extends ArchiveObject
             $interface->assign('pdf_url', $pdf->fileUrl);
             $libraryUrl = rtrim($library->catalogUrl, "/");
             $protocol = $_SERVER['HTTPS'] ? 'https://' : 'http://';
-            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode($protocol . $libraryUrl . "/Archive2/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl);
+            $iframeSrc = "/js/pdfjs/web/viewer.html?file=" . urlencode($protocol . $libraryUrl . "/Archive2/AJAX?method=fetchPDFFile&pdf_file=" . $pdf->fileUrl . "&nid=" . $this->mediaObject->getNodeId());
             $interface->assign('iframe_src', $iframeSrc);
         }
         

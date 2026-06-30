@@ -1165,8 +1165,25 @@ class ArchiveObject extends \Action
         if ($this->mediaObject->pika_usage === 'no') {
             return false;
         }
+        return self::userSatisfiesRestriction($this->resolveViewingRestrictions());
+    }
 
-        $restriction = $this->resolveViewingRestrictions();
+    /**
+     * Static entry point for callers that only have a node (e.g. the Archive2 AJAX
+     * proxy endpoints), not a fully constructed ArchiveObject instance. Mirrors
+     * canCurrentUserView() exactly, without per-instance memoization.
+     */
+    public static function canUserViewNode(MediaObjectInterface $node): bool
+    {
+        if ($node->pika_usage === 'no') {
+            return false;
+        }
+        return self::userSatisfiesRestriction(self::resolveViewingRestrictionForNode($node));
+    }
+
+    /** Given a resolved restriction value (null/'all'/subdomain), does the current user/session satisfy it? */
+    private static function userSatisfiesRestriction(?string $restriction): bool
+    {
         if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
             return true;
         }
@@ -1204,19 +1221,28 @@ class ArchiveObject extends \Action
     private bool    $viewingRestrictionResolved = false;
 
     /**
-     * Resolves the effective pika_access_limits value, walking up parent collections
-     * when the node's own value is empty/'default'. Returns null for no restriction,
-     * or the literal restriction value (a library subdomain, or 'all'). Memoized since
-     * both canCurrentUserView() and getViewingRestrictionLibraryName() need it.
+     * Resolves the effective pika_access_limits value for this object, walking up
+     * parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or
+     * 'all'). Memoized since both canCurrentUserView() and getViewingRestrictionLibraryName()
+     * need it.
      */
     protected function resolveViewingRestrictions(): ?string
     {
-        if ($this->viewingRestrictionResolved) {
-            return $this->viewingRestriction;
+        if (!$this->viewingRestrictionResolved) {
+            $this->viewingRestriction         = self::resolveViewingRestrictionForNode($this->mediaObject);
+            $this->viewingRestrictionResolved = true;
         }
-        $this->viewingRestrictionResolved = true;
+        return $this->viewingRestriction;
+    }
 
-        $node  = $this->mediaObject;
+    /**
+     * Resolves the effective pika_access_limits value for an arbitrary node, walking
+     * up parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or 'all').
+     */
+    public static function resolveViewingRestrictionForNode(MediaObjectInterface $node): ?string
+    {
         $depth = 0;
         while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
             $value = trim((string)($node->pika_access_limits ?? ''));
@@ -1225,8 +1251,7 @@ class ArchiveObject extends \Action
                 $depth++;
                 continue;
             }
-            $this->viewingRestriction = $value;
-            return $this->viewingRestriction;
+            return $value;
         }
         return null;
     }
