@@ -62,15 +62,15 @@ class Collection extends ArchiveObject
         // it is camel case, but the value is all lower. 
         switch ($displayType) {
             case 'timeline':
-                $this->loadTimelineData($nid, true, true);
+                $this->loadTimelineData([$nid], true, true);
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
-                $this->loadTimelineData($nid, true);
-                $this->loadMapData();
+                $this->loadTimelineData([$nid], true);
+                $this->loadMapData([$nid]);
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapnotimeline':
-                $this->loadTimelineData($nid, false);
-                $this->loadMapData();
+                $this->loadTimelineData([$nid], false);
+                $this->loadMapData([$nid]);
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'custom':
                 $this->loadCustomComponents($nid);
@@ -87,16 +87,17 @@ class Collection extends ArchiveObject
      * Subsequent filter/place/page changes are AJAX reloads of the same
      * templates via Archive2_AJAX::getCollectionTimelineObjects().
      *
-     * @param int  $nid          Node ID of the parent collection.
-     * @param bool $showTimeline Whether the decade date-filter buttons are shown.
-     * @param bool $groupByYear  Whether the grid groups items under year headings.
+     * @param int[] $collectionNids Node ids whose children populate the grid (one for the
+     *                              top-level displays; several for an aggregated custom map).
+     * @param bool  $showTimeline   Whether the decade date-filter buttons are shown.
+     * @param bool  $groupByYear    Whether the grid groups items under year headings.
      */
-    private function loadTimelineData(int $nid, bool $showTimeline, bool $groupByYear = false): void
+    private function loadTimelineData(array $collectionNids, bool $showTimeline, bool $groupByYear = false): void
     {
         global $interface;
         $page = max(1, (int)($_REQUEST['page'] ?? 1));
-        $data = CollectionTimelineData::load($nid, null, null, $page);
-        CollectionTimelineData::assignToInterface($data, $nid, $showTimeline);
+        $data = CollectionTimelineData::load($collectionNids, null, null, $page);
+        CollectionTimelineData::assignToInterface($data, $collectionNids, $showTimeline);
         $interface->assign('groupByYear', $groupByYear);
     }
 
