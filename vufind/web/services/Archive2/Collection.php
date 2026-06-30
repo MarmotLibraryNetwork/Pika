@@ -145,16 +145,50 @@ class Collection extends ArchiveObject
     }
 
     /**
-     * Resolves geolocation data for all places related to the collection and
-     * assigns mapped/unmapped place lists, bounding-box coordinates, and the
+     * Resolves geolocation data for the places related to one or more collections
+     * and assigns mapped/unmapped place lists, bounding-box coordinates, and the
      * configured map zoom level to the template.
+     *
+     * @param int[] $collectionNids Node ids whose children's places/markers populate
+     *                              the map (one for the top-level map displays; several
+     *                              for a custom `map|a,b,c` option).
      */
-    private function loadMapData(): void
+    private function loadMapData(array $collectionNids): void
     {
         global $interface, $configArray;
         /** @var CollectionObject $collection */
-        $collection     = $this->mediaObject;
-        $places         = $collection->getCollectionRelatedPlaces();
+        $collection = $this->mediaObject;
+
+        // Aggregate related places (deduped by tid, counts summed) and geocoded child
+        // markers (deduped by nid) across every listed collection.
+        $factory       = new I2ObjectFactory();
+        $places        = [];
+        $childMarkers  = [];
+        $seenMarkerNid = [];
+        foreach ($collectionNids as $cnid) {
+            $source = ($cnid === $collection->getNodeId())
+                ? $collection
+                : $factory->fromNodeId((int)$cnid);
+            if (!($source instanceof CollectionObject)) {
+                continue;
+            }
+            foreach ($source->getCollectionRelatedPlaces() as $place) {
+                $tid = $place['tid'];
+                if (isset($places[$tid])) {
+                    $places[$tid]['count'] += $place['count'];
+                } else {
+                    $places[$tid] = $place;
+                }
+            }
+            foreach ($source->getChildMarkers() as $marker) {
+                if (!isset($seenMarkerNid[$marker['nid']])) {
+                    $seenMarkerNid[$marker['nid']] = true;
+                    $childMarkers[] = $marker;
+                }
+            }
+        }
+        $places = array_values($places);
+
         $mappedPlaces   = [];
         $unmappedPlaces = [];
         $latSum = $lngSum = $n = 0;
@@ -182,9 +216,7 @@ class Collection extends ArchiveObject
             }
         }
 
-        // Lightweight marker rows fetched via a filtered JSON:API query, so this
-        // scales with the number of geocoded children, not the whole collection.
-        $childMarkers = $collection->getChildMarkers();
+        // Extend the bounds/center with the geocoded child markers aggregated above.
         foreach ($childMarkers as $child) {
             $lat = $child['latitude'];
             $lng = $child['longitude'];
