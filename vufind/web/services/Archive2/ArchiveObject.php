@@ -1158,138 +1158,63 @@ class ArchiveObject extends \Action
      */
     protected function canCurrentUserView(): bool
     {
-        return true;
         if ($this->mediaObject->pika_usage === 'no') {
             return false;
         }
 
-        return true;
-
-        $viewingRestrictions = $this->resolveViewingRestrictions();
-        if (count($viewingRestrictions) === 0) {
+        $restriction = $this->resolveViewingRestrictions();
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
             return true;
         }
 
-        $canView            = false;
-        $validHomeLibraries = [];
-        $userPTypes         = [];
-
         $user = \UserAccount::getLoggedInUser();
-        if ($user && $user->getHomeLibrary()) {
-            $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
-            $userPTypes           = $user->getRelatedPTypes();
-            $linkedAccounts       = $user->getLinkedUsers();
-            foreach ($linkedAccounts as $linkedAccount) {
-                $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+        if ($user) {
+            $validHomeLibraries = [];
+            if ($user->getHomeLibrary()) {
+                $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
+            }
+            foreach ($user->getLinkedUsers() as $linkedAccount) {
+                if ($linkedAccount->getHomeLibrary()) {
+                    $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+                }
+            }
+            if (in_array($restriction, $validHomeLibraries, true)) {
+                return true;
             }
         }
 
         global $locationSingleton;
-        $physicalLocation         = $locationSingleton->getPhysicalLocation();
-        $physicalLibrarySubdomain = null;
+        $physicalLocation = $locationSingleton->getPhysicalLocation();
         if ($physicalLocation) {
             $physicalLibrary            = new \Library();
             $physicalLibrary->libraryId = $physicalLocation->libraryId;
-            if ($physicalLibrary->find(true)) {
-                $physicalLibrarySubdomain = $physicalLibrary->subdomain;
+            if ($physicalLibrary->find(true) && $physicalLibrary->subdomain === $restriction) {
+                return true;
             }
         }
 
-        foreach ($viewingRestrictions as $restriction) {
-            $restrictionType = 'homeLibraryOrIP';
-            if (strpos($restriction, ':') !== false) {
-                [$restrictionType, $restriction] = explode(':', $restriction, 2);
-            }
-            $restrictionType  = strtolower(trim($restrictionType));
-            $restrictionType  = str_replace(' ', '', $restrictionType);
-            $restriction      = trim($restriction);
-            $restrictionLower = strtolower($restriction);
-            if ($restrictionLower === 'anonymousmasterdownload' || $restrictionLower === 'verifiedmasterdownload') {
-                continue;
-            }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'patronsfrom') {
-                $libraryDomain = trim($restriction);
-                if ($restrictionLower === 'default' || array_search($libraryDomain, $validHomeLibraries, true) !== false) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'withinlibrary') {
-                $libraryDomain = trim($restriction);
-                if ($libraryDomain === $physicalLibrarySubdomain) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'ptypes' || $restrictionType === 'ptype') {
-                $validPTypes = array_map('trim', explode(',', $restriction));
-                foreach ($validPTypes as $pType) {
-                    if (array_search($pType, $userPTypes, true) !== false) {
-                        $canView = true;
-                        break 2;
-                    }
-                }
-            }
-        }
-
-        return $canView;
-    }
-
-    /** Parses the raw `pika_access_limits` field into an array of restriction strings. */
-    protected function resolveViewingRestrictions(): array
-    {
-        $raw = $this->mediaObject->pika_access_limits ?? null;
-        if ($raw === null) {
-            return [];
-        }
-
-        if (is_string($raw)) {
-            $rawArray = preg_split('/[\r\n;]+/', $raw);
-        } elseif (is_array($raw)) {
-            $rawArray = $raw;
-        } else {
-            $this->logger->warning('Unexpected type for pika_access_limits.', ['type' => gettype($raw)]);
-            return [];
-        }
-
-        return array_values(array_filter($rawArray));
+        return false;
     }
 
     /**
-     * Parses a single restriction string into a keyed array.
-     *
-     * Supports `key:value` and `key:val1,val2` forms; bare keys map to `1`.
-     *
-     * @param string $restriction
-     * @return array<string, int|string[]>
+     * Resolves the effective pika_access_limits value, walking up parent collections
+     * when the node's own value is empty/'default'. Returns null for no restriction,
+     * or the literal restriction value (a library subdomain, or 'all').
      */
-    protected function parseRestriction($restriction)
+    protected function resolveViewingRestrictions(): ?string
     {
-        // has paramaters
-        if (strstr($restriction, ':')) {
-            $pieces = explode(':', $restriction);
-            $k = trim($pieces[0]);
-            // has multipule parameters
-            if (strstr($pieces[1], ',')) {
-                $subs = explode(',', $pieces[1]);
-                foreach ($subs as $key => $val) {
-                    $subs[$key] = trim($val);
-                }
-                // has single parameter
-            } else {
-                $v = trim($pieces[1]);
-                $restrictions[$k] = [$v];
-                return $restrictions;
+        $node  = $this->mediaObject;
+        $depth = 0;
+        while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
+            $value = trim((string)($node->pika_access_limits ?? ''));
+            if ($value === '' || strcasecmp($value, 'default') === 0) {
+                $node = $node->getParentCollection();
+                $depth++;
+                continue;
             }
-            $restrictions[$k] = $subs;
-            return $restrictions;
+            return $value;
         }
-        $k = trim($restriction);
-        $restrictions[$k] = 1;
-        return $restrictions;
+        return null;
     }
 
     /**
