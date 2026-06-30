@@ -7,18 +7,7 @@
 		</a>
 		<div id="taxonomyMapPanelBody" class="panel-collapse collapse in">
 			<div class="panel-body">
-				{if is_array($geolocation)}
-					{include file="Archive2/partials/fieldRow.tpl" label="Latitude"  value=$geolocation.lat}
-					{include file="Archive2/partials/fieldRow.tpl" label="Longitude" value=$geolocation.lng}
-					<div class="row">
-						<div class="col-sm-12">
-							<iframe title="Google map for {$term_title|escape}" width="100%" height="300px" class="taxonomy-map-embed"
-								src="https://www.google.com/maps/embed/v1/place?q={$geolocation.lat|escape}%2C%20{$geolocation.lng|escape}&key={$maps_key|escape}" allowfullscreen></iframe>
-						</div>
-					</div>
-				{else}
-					{include file="Archive2/partials/fieldRow.tpl" label="Coordinates" value=$geolocation}
-				{/if}
+				{include file="Archive2/sections/mapSection.tpl" coordinates=$geolocation title=$term_title}
 			</div>
 		</div>
 	</div>

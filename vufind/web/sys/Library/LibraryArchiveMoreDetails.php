@@ -39,6 +39,7 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		//'bio'                  => 'Biographical Information', // Taxonomy Section
 		'wikipedia'            => 'From Wikipedia', //TODO: rebuild once connections to wikipedia can be fixed
 		'addresses'            => 'Addresses',
+		'map'                  => 'Map',
 		'details'              => 'Details',
 		//'militaryService'      => 'Military Service', // Taxonomy only
 		'transcription'        => 'Transcription',
@@ -128,6 +129,13 @@ class LibraryArchiveMoreDetails extends DB_DataObject {
 		$defaultOption                    = new LibraryArchiveMoreDetails();
 		$defaultOption->libraryId         = $libraryId;
 		$defaultOption->section           = 'addresses';
+		$defaultOption->collapseByDefault = false;
+		$defaultOption->weight            = count($defaultOptions) + 101;
+		$defaultOptions[]                 = $defaultOption;
+
+		$defaultOption                    = new LibraryArchiveMoreDetails();
+		$defaultOption->libraryId         = $libraryId;
+		$defaultOption->section           = 'map';
 		$defaultOption->collapseByDefault = false;
 		$defaultOption->weight            = count($defaultOptions) + 101;
 		$defaultOptions[]                 = $defaultOption;
