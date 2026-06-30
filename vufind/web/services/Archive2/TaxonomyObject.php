@@ -135,8 +135,20 @@ class TaxonomyObject extends \Action
             $interface->assign('subjects',               $this->taxonomyObject->getSubjects());
         }
 
-        // Wikipedia data from external links
+        // External links — normalize and assign for all taxonomy types
         $externalLinks = $this->taxonomyObject->getExternalLink();
+        $links = [];
+        if (is_array($externalLinks)) {
+            foreach ($externalLinks as $raw) {
+                if (!empty($raw['uri'])) {
+                    $links[] = [
+                        'uri'   => $raw['uri'],
+                        'title' => (isset($raw['title']) && $raw['title'] !== '') ? $raw['title'] : $raw['uri'],
+                    ];
+                }
+            }
+        }
+        $interface->assign('links', $links ?: null);
         $this->loadWikipediaData(is_array($externalLinks) ? $externalLinks : []);
 
         // Staff view
