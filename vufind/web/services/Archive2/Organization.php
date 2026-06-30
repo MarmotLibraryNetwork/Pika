@@ -57,6 +57,7 @@ class Organization extends TaxonomyObject
         $interface->assign('notes',                $org->getNotes());
         $interface->assign('organization_type',    $org->getOrganizationType());
         $interface->assign('organization_url',     $org->getOrganizationUrl());
+        $interface->assign('org_addresses',        $org->getAddresses());
 
         $interface->assign('taxonomy_type_template', 'taxonomy_corporate_body');
 

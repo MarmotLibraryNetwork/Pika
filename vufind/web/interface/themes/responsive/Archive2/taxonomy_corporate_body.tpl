@@ -72,6 +72,21 @@
 				</div>
 			</div>
 
+			{if $org_addresses}
+				<div class="panel" id="corpBodyAddressesPanel">
+					<a data-toggle="collapse" href="#corpBodyAddressesPanelBody">
+						<div class="panel-heading">
+							<h2 class="panel-title">Addresses</h2>
+						</div>
+					</a>
+					<div id="corpBodyAddressesPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							{include file="Archive2/sections/addressesSection.tpl" interview_locations=$org_addresses}
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{if $notes}
 				<div class="panel" id="corpBodyNotesPanel">
 					<a data-toggle="collapse" href="#corpBodyNotesPanelBody">

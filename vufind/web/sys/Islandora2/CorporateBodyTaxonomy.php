@@ -93,4 +93,57 @@ class CorporateBodyTaxonomy extends I2Taxonomy
         return null;
     }
 
+    /**
+     * Address(es) for this organization (field_related_place_addl_info).
+     *
+     * Entries where every meaningful field is empty and the country is "USA" (or
+     * absent) are skipped — a country-only USA entry conveys no useful address.
+     *
+     * Each returned entry has keys: street, address2, city, state, zip, county, country.
+     *
+     * @return array[]|null
+     */
+    public function getAddresses(): ?array
+    {
+        $addlInfo = $this->termWithoutFieldPrefix['related_place_addl_info'] ?? null;
+
+        if (empty($addlInfo)) {
+            return null;
+        }
+
+        // Normalize a single paragraph entry to a list.
+        if (isset($addlInfo['id'])) {
+            $addlInfo = [$addlInfo];
+        }
+
+        $result = [];
+        foreach ($addlInfo as $raw) {
+            $street   = $raw['street_number_and_name_rp'] ?? null;
+            $address2 = $raw['address_2_rel_place']       ?? null;
+            $city     = $raw['city_rel_place']            ?? null;
+            $state    = $raw['state_rel_place']           ?? null;
+            $zip      = $raw['zip_code_rel_place']        ?? null;
+            $county   = $raw['county_rel_place']          ?? null;
+            $country  = $raw['country_rel_place']         ?? null;
+
+            // Skip entries that are empty except for country = "USA".
+            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county]);
+            if (empty($hasContent) && (empty($country) || strtoupper(trim($country)) === 'USA')) {
+                continue;
+            }
+
+            $result[] = [
+                'street'   => $street,
+                'address2' => $address2,
+                'city'     => $city,
+                'state'    => $state,
+                'zip'      => $zip,
+                'county'   => $county,
+                'country'  => $country,
+            ];
+        }
+
+        return $result ?: null;
+    }
+
 }
