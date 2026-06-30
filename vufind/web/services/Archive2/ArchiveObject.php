@@ -165,7 +165,14 @@ class ArchiveObject extends \Action
         $canView = $this->canCurrentUserView();
         $interface->assign('can_view', $canView);
         if (!$canView) {
-            $interface->assign('access_restricted_library_name', $this->getViewingRestrictionLibraryName());
+            if ($this->isContentUnavailable()) {
+                // Denied because of pika_usage ('no', or 'testonly' on production), not a
+                // pika_access_limits library restriction -- logging in or visiting a
+                // particular library would never grant access, so don't show that messaging.
+                $interface->assign('content_unavailable', true);
+            } else {
+                $interface->assign('access_restricted_library_name', $this->getViewingRestrictionLibraryName());
+            }
         }
 
         // Parent collection
@@ -1168,10 +1175,21 @@ class ArchiveObject extends \Action
     protected function canCurrentUserView(): bool
     {
         if ($this->canCurrentUserViewResolved === null) {
-            $this->canCurrentUserViewResolved = $this->mediaObject->pika_usage !== 'no'
+            $this->canCurrentUserViewResolved = !$this->isContentUnavailable()
                 && self::userSatisfiesRestriction($this->resolveViewingRestrictions());
         }
         return $this->canCurrentUserViewResolved;
+    }
+
+    /**
+     * True when pika_usage itself takes the object out of circulation, independent of
+     * any pika_access_limits library restriction. Used by launch() to choose a
+     * "this content isn't available" message instead of the library-restriction
+     * messaging, since logging in or visiting a particular library never helps here.
+     */
+    protected function isContentUnavailable(): bool
+    {
+        return self::isNodeUnavailableByUsage($this->mediaObject);
     }
 
     /**
@@ -1181,10 +1199,33 @@ class ArchiveObject extends \Action
      */
     public static function canUserViewNode(MediaObjectInterface $node): bool
     {
-        if ($node->pika_usage === 'no') {
+        if (self::isNodeUnavailableByUsage($node)) {
             return false;
         }
         return self::userSatisfiesRestriction(self::resolveViewingRestrictionForNode($node));
+    }
+
+    /**
+     * pika_usage of 'no' takes an object out of circulation everywhere. pika_usage of
+     * 'testonly' is meant to be visible only on test/non-production Pika servers, mirroring
+     * the Solr search filter in SearchObject_Islandora2::getStandardFilters() (Pika Usage
+     * filter, ~line 1407: 'ss_pika_usage:yes' on production, '!ss_pika_usage:no' otherwise)
+     * so an object can't be browsed to directly on production even though it's excluded
+     * from production search results.
+     */
+    private static function isNodeUnavailableByUsage(MediaObjectInterface $node): bool
+    {
+        global $configArray;
+        $usage = $node->pika_usage;
+        if ($usage === 'no') {
+            return true;
+        }
+        // Casing of this field's stored values is inconsistent elsewhere in the codebase
+        // ('testOnly' vs 'testonly'), so compare case-insensitively.
+        if (is_string($usage) && strcasecmp($usage, 'testonly') === 0 && $configArray['Site']['isProduction']) {
+            return true;
+        }
+        return false;
     }
 
     /** Given a resolved restriction value (null/'all'/subdomain), does the current user/session satisfy it? */
