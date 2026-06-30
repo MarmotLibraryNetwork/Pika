@@ -106,6 +106,59 @@ class GeographicLocationTaxonomy extends I2Taxonomy
     public function getAddress(): ?array
     {
         return $this->termWithoutFieldPrefix['location_taxonomy'] ?? null;
-    } 
+    }
+
+    /**
+     * Address(es) for this place (field_location_taxonomy), normalized for addressesSection.tpl.
+     *
+     * Entries where every meaningful field is empty and the country is "USA" (or
+     * absent) are skipped — a country-only USA entry conveys no useful address.
+     *
+     * Each returned entry has keys: street, address2, city, state, zip, county, country.
+     *
+     * @return array[]|null
+     */
+    public function getAddresses(): ?array
+    {
+        $locationTaxonomy = $this->termWithoutFieldPrefix['location_taxonomy'] ?? null;
+
+        if (empty($locationTaxonomy)) {
+            return null;
+        }
+
+        // Normalize a single paragraph entry to a list.
+        if (isset($locationTaxonomy['id'])) {
+            $locationTaxonomy = [$locationTaxonomy];
+        }
+
+        $result = [];
+        foreach ($locationTaxonomy as $raw) {
+            $street   = $raw['street']    ?? null;
+            $address2 = $raw['address_2'] ?? null;
+            $city     = $raw['city']      ?? null;
+            $state    = $raw['state']     ?? null;
+            $zip      = $raw['zip_code']  ?? null;
+            $county   = $raw['county']    ?? null;
+            $country  = $raw['country']   ?? null;
+
+            // Skip entries that are empty except for country = "USA".
+            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county]);
+            if (empty($hasContent) && (empty($country) || strtoupper(trim($country)) === 'USA')) {
+                continue;
+            }
+
+            $result[] = [
+                'street'   => $street,
+                'address2' => $address2,
+                'city'     => $city,
+                'state'    => $state,
+                'zip'      => $zip,
+                'county'   => $county,
+                'country'  => $country,
+            ];
+        }
+
+        return $result ?: null;
+    }
 
 }
