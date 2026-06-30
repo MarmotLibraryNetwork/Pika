@@ -579,6 +579,23 @@ class Collection extends ArchiveObject
      * @param int|null         $cap    Maximum items to return, or null for all.
      * @return array Ordered I2Object instances.
      */
+    /**
+     * Parse a comma-separated list of collection node ids from a map option,
+     * falling back to the current collection when the list is empty.
+     *
+     * @param string $csv        The text after the pipe (e.g. "100,101,120").
+     * @param int    $defaultNid Current collection nid, used when no list is given.
+     * @return int[] Positive collection node ids.
+     */
+    private function parseCollectionNids(string $csv, int $defaultNid): array
+    {
+        $nids = array_values(array_filter(
+            array_map('intval', explode(',', $csv)),
+            fn($n) => $n > 0
+        ));
+        return empty($nids) ? [$defaultNid] : $nids;
+    }
+
     private function resolveOrderedChildren(CollectionObject $source, ?int $cap): array
     {
         $members = [];
