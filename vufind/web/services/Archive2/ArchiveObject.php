@@ -1194,6 +1194,10 @@ class ArchiveObject extends \Action
             return true;
         }
 
+        // pika_access_limits is a free-text field staff type a library subdomain into, so
+        // matching it against actual subdomains must be case-insensitive -- otherwise a
+        // casing mismatch (e.g. "Adams" vs. "adams") would silently deny legitimate
+        // patrons of that library even though the restriction was clearly meant for them.
         $user = \UserAccount::getLoggedInUser();
         if ($user) {
             $validHomeLibraries = [];
@@ -1205,8 +1209,10 @@ class ArchiveObject extends \Action
                     $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
                 }
             }
-            if (in_array($restriction, $validHomeLibraries, true)) {
-                return true;
+            foreach ($validHomeLibraries as $homeLibrarySubdomain) {
+                if (strcasecmp($homeLibrarySubdomain, $restriction) === 0) {
+                    return true;
+                }
             }
         }
 
@@ -1215,7 +1221,7 @@ class ArchiveObject extends \Action
         if ($physicalLocation) {
             $physicalLibrary            = new \Library();
             $physicalLibrary->libraryId = $physicalLocation->libraryId;
-            if ($physicalLibrary->find(true) && $physicalLibrary->subdomain === $restriction) {
+            if ($physicalLibrary->find(true) && strcasecmp($physicalLibrary->subdomain, $restriction) === 0) {
                 return true;
             }
         }
