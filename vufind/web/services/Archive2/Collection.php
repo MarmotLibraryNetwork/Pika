@@ -293,11 +293,14 @@ class Collection extends ArchiveObject
                 $showSearchComponent = true;
 
             } elseif ($type === 'googleMap' || $type === 'map') {
-                $interface->assign('additionalMapCollections', $parts[1] ?? '');
-                $this->loadMapData();
+                // The list after the pipe names collections whose children populate
+                // the map; no list → the current collection's own children.
+                $mapNids = $this->parseCollectionNids($parts[1] ?? '', $nid);
+                $this->loadMapData($mapNids);
                 // Filterable child grid below the map: marker clicks filter it by
-                // place and the decade date-filter buttons filter it by time.
-                $this->loadTimelineData($nid, true);
+                // place and the decade date-filter buttons filter it by time. It
+                // aggregates the same collections as the map.
+                $this->loadTimelineData($mapNids, true);
                 $showMapComponent = true;
 
             } elseif ($type === 'scroller') {
