@@ -356,8 +356,14 @@ class Archive2_AJAX extends AJAXHandler {
 	 * page, showTimeline (0/1), includeFilters (0/1).
 	 */
 	function getCollectionTimelineObjects(): array {
-		$nid = (int)($_REQUEST['nid'] ?? 0);
-		if ($nid <= 0) {
+		// The grid may aggregate several collections (a custom `map|a,b,c` option),
+		// so accept a comma-separated list; cap it since it is client-supplied.
+		$nids = array_values(array_filter(
+			array_map('intval', explode(',', (string)($_REQUEST['nids'] ?? ''))),
+			fn($n) => $n > 0
+		));
+		$nids = array_slice($nids, 0, 50);
+		if (empty($nids)) {
 			return ['success' => false, 'message' => 'A valid collection node id is required.'];
 		}
 
@@ -380,8 +386,8 @@ class Archive2_AJAX extends AJAXHandler {
 		$groupByYear    = !empty($_REQUEST['groupByYear']);
 
 		global $interface;
-		$data = CollectionTimelineData::load($nid, $placeName, $dateFilter, $page);
-		CollectionTimelineData::assignToInterface($data, $nid, $showTimeline, $placeName, $dateFilter);
+		$data = CollectionTimelineData::load($nids, $placeName, $dateFilter, $page);
+		CollectionTimelineData::assignToInterface($data, $nids, $showTimeline, $placeName, $dateFilter);
 		$interface->assign('groupByYear', $groupByYear);
 
 		$response = [
