@@ -375,7 +375,7 @@ div.striped {
   outline:none;
 }
 
-.browse-thumbnail a:focus img, a:focus img.listResultImage {
+.browse-thumbnail a:focus img, a:focus img.listResultImage, .browse-thumbnail-sorted:focus-within {
   outline: 2px solid @focus-ring-color!important;
 }
 
@@ -434,6 +434,9 @@ table.dataTable.display tbody tr.odd, table.dataTable.order-column.stripe tbody 
       color: @darkened-link-color-resp;
     }
   }
+}
+.jcarousel-control-prev:focus, .jcarousel-control-next:focus{
+  outline: 2px solid @focus-ring-color;
 }
 
 // Third party imports
