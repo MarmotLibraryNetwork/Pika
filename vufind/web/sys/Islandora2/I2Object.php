@@ -348,6 +348,19 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return the curator-set ordering weight for this node (field_weight).
+     *
+     * Comes back as a string via pika-json and as an int via JSON:API; unset
+     * nodes have no weight. Normalized to an int defaulting to 0.
+     *
+     * @return int
+     */
+    public function getWeight(): int
+    {
+        return (int)($this->rawNode['field_weight'] ?? 0);
+    }
+
+    /**
      * Return the geographic coordinates for this node from field_coordinates.
      *
      * @return array|null Associative array with 'lat' and 'lng' floats, or null when not set.
