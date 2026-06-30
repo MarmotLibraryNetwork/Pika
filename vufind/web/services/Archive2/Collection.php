@@ -58,6 +58,8 @@ class Collection extends ArchiveObject
         $interface->assign('thumbnail_link', $collection->getCollectionThumbnailLink());
         $interface->assign('nid',            $nid);
 
+        // $displayType will be all lower case. In the Islandora admin interface 
+        // it is camel case, but the value is all lower. 
         switch ($displayType) {
             case 'timeline':
                 $this->loadTimelineData($nid, true, true);
