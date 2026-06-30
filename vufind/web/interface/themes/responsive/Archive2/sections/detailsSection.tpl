@@ -50,4 +50,25 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Condition" value=$physical_condition}
 	{include file="Archive2/partials/fieldRow.tpl" label="Statement of Responsibility" value=$statement_of_responsibility}
 	{include file="Archive2/partials/fieldRow.tpl" label="Publisher" value=$publisher}
+	{if ($display_model ne 'Art') && !$map_section_enabled && ($coordinates.lat || $coordinates.lng)}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">{if $coordinates_text}{$coordinates_text|escape}{else}Location{/if}:</div>
+			<div class="result-value col-sm-8">
+				<dl class="archive-field-values list-unstyled">
+					{if $coordinates.lat}
+						<dt>Latitude:</dt>
+						<dd>{$coordinates.lat|escape}</dd>
+					{/if}
+					{if $coordinates.lng}
+						<dt>Longitude:</dt>
+						<dd>{$coordinates.lng|escape}</dd>
+					{/if}
+					{if $coordinates.lat && $coordinates.lng}
+						<dt>Coordinates:</dt>
+						<dd>({$coordinates.lat|escape}, {$coordinates.lng|escape})</dd>
+					{/if}
+				</dl>
+			</div>
+		</div>
+	{/if}
 {/strip}

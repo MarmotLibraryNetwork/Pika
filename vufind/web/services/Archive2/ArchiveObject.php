@@ -581,6 +581,22 @@ class ArchiveObject extends \Action
             || \UserAccount::userHasRole('libraryAdmin');
         $interface->assign('isStaffUser', $isStaffUser);
 
+        // Pre-compute whether the map section is enabled for this library. Must be assigned
+        // before getBaseMoreDetailsOptions() renders section templates so that detailsSection.tpl
+        // can suppress coordinates already covered by the map section.
+        $enabledSectionKeys = [];
+        if ($library && count($library->archiveMoreDetailsOptions) > 0) {
+            foreach ($library->archiveMoreDetailsOptions as $option) {
+                $enabledSectionKeys[] = $option->section;
+            }
+        } else {
+            $libraryId = $library ? (int)$library->libraryId : -1;
+            foreach (\LibraryArchiveMoreDetails::getDefaultOptions($libraryId) as $option) {
+                $enabledSectionKeys[] = $option->section;
+            }
+        }
+        $interface->assign('map_section_enabled', in_array('map', $enabledSectionKeys));
+
         $moreDetailsOptions = $this->filterAndSortMoreDetailsOptions($this->getBaseMoreDetailsOptions());
         $interface->assign('moreDetailsOptions', $moreDetailsOptions);
 

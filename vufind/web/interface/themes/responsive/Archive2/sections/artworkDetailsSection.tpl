@@ -88,7 +88,7 @@
 			</div>
 		</div>
 	{/if}
-	{if $coordinates.lat || $coordinates.lng}
+	{if ($display_model eq 'Art') && ($coordinates.lat || $coordinates.lng)}
 		<div class="row archive-field-row">
 			<div class="result-label col-sm-4">Installation Location:</div>
 			<div class="result-value col-sm-8">
