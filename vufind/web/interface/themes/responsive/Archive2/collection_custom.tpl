@@ -53,6 +53,16 @@
 		</div>
 	{/if}
 
+	{if $browseTitleComponents}
+		<div class="row">
+			{foreach from=$browseTitleComponents item=browseTitle}
+				{include file="Archive2/components/browse_titles_component.tpl"
+					browseCollectionTitle=$browseTitle.title
+					browseCollectionItems=$browseTitle.items}
+			{/foreach}
+		</div>
+	{/if}
+
 	{if $showMapComponent}
 		<div class="row">
 			{include file="Archive2/components/map_component.tpl"}
@@ -60,13 +70,11 @@
 		</div>
 	{/if}
 
-	{if $showSearchComponent}
-		<div class="row">
-			{include file="Archive2/components/search_component.tpl"}
-		</div>
-	{/if}
+	
 
-	{if $browseFilterComponents}
+	{* These sections are not currently supported *}
+	{*if $browseFilterComponents}
+		
 		<div class="row">
 			{foreach from=$browseFilterComponents item=filter}
 				{if $filter.entity}
@@ -82,7 +90,7 @@
 				{/if}
 			{/foreach}
 		</div>
-	{/if}
+	{/if*}
 
 	{if $browseSubjectComponents}
 		<div class="row">
@@ -104,20 +112,6 @@
 					browseRelatedImage=$relatedBox.image
 					browseRelatedItems=$relatedBox.items
 					browseRelatedId=$relatedBox.id}
-			{/foreach}
-		</div>
-	{/if}
-
-	{if $browseTitleComponents || $randomImageComponents}
-		<div class="row">
-			{foreach from=$browseTitleComponents item=browseTitle}
-				{include file="Archive2/components/browse_titles_component.tpl"
-					browseCollectionTitle=$browseTitle.title
-					browseCollectionItems=$browseTitle.items}
-			{/foreach}
-			{foreach from=$randomImageComponents item=random}
-				{include file="Archive2/components/random_image_component.tpl"
-					randomObject=$random.object}
 			{/foreach}
 		</div>
 	{/if}
