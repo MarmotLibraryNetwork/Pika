@@ -162,7 +162,11 @@ class ArchiveObject extends \Action
         }
 
         // Viewing permissions (true or false)
-        $interface->assign('can_view', $this->canCurrentUserView());
+        $canView = $this->canCurrentUserView();
+        $interface->assign('can_view', $canView);
+        if (!$canView) {
+            $interface->assign('access_restricted_library_name', $this->getViewingRestrictionLibraryName());
+        }
 
         // Parent collection
         // bread crumbs, other parent links
@@ -1196,13 +1200,22 @@ class ArchiveObject extends \Action
         return false;
     }
 
+    private ?string $viewingRestriction         = null;
+    private bool    $viewingRestrictionResolved = false;
+
     /**
      * Resolves the effective pika_access_limits value, walking up parent collections
      * when the node's own value is empty/'default'. Returns null for no restriction,
-     * or the literal restriction value (a library subdomain, or 'all').
+     * or the literal restriction value (a library subdomain, or 'all'). Memoized since
+     * both canCurrentUserView() and getViewingRestrictionLibraryName() need it.
      */
     protected function resolveViewingRestrictions(): ?string
     {
+        if ($this->viewingRestrictionResolved) {
+            return $this->viewingRestriction;
+        }
+        $this->viewingRestrictionResolved = true;
+
         $node  = $this->mediaObject;
         $depth = 0;
         while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
@@ -1212,7 +1225,29 @@ class ArchiveObject extends \Action
                 $depth++;
                 continue;
             }
-            return $value;
+            $this->viewingRestriction = $value;
+            return $this->viewingRestriction;
+        }
+        return null;
+    }
+
+    /**
+     * Display name of the library a viewing restriction is scoped to, for use in
+     * access-denied messaging. Null when there's no restriction, the restriction is
+     * 'all' (no specific library), or the restriction's subdomain doesn't match a
+     * known library.
+     */
+    protected function getViewingRestrictionLibraryName(): ?string
+    {
+        $restriction = $this->resolveViewingRestrictions();
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
+            return null;
+        }
+
+        $library            = new \Library();
+        $library->subdomain = $restriction;
+        if ($library->find(true)) {
+            return $library->displayName;
         }
         return null;
     }
