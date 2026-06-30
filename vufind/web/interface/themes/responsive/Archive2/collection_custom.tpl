@@ -8,13 +8,22 @@
 	{else}
 
 	<div class="row">
-		<div class="col-xs-12" style="text-align: center;">
-			{if $thumbnail}
-			<img src="{$thumbnail}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto" alt="{$title|escape}">
-			{/if}
+	{if $thumbnail}
+		<div {if $randomImageComponents}class="col-xs-6"{else}class="col-xs-12"{/if} style="text-align: center;">
+			
+			<img src="{$thumbnail}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto; max-width: 250px; max-height: 250px;" alt="{$title|escape}">
+			
 		</div>
+	{/if}
+	{if $randomImageComponents}
+		<div {if $thumbnail}class="col-xs-6"{else}class="col-xs-12"{/if} style="text-align: center;">
+		{foreach from=$randomImageComponents item=random}
+			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object}
+		{/foreach}
+		</div>
+	{/if}
 		<div class="col-xs-12" class="lead">
-		{$description}
+			{$description}
 		</div>
 	</div>
 
@@ -28,6 +37,11 @@
 		reused without variable collisions. Rearrange / regroup the blocks below to
 		change the layout; group components of the same width in a row to avoid gaps.
 	*}
+	{if $showSearchComponent}
+		<div class="row">
+			{include file="Archive2/components/search_component.tpl"}
+		</div>
+	{/if}
 	{if $scrollerComponents}
 		<div class="row">
 			{foreach from=$scrollerComponents item=scroller}
