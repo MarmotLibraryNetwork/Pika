@@ -68,7 +68,7 @@ class Collection extends ArchiveObject
                 $this->loadTimelineData($nid, true);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
-            case 'mapNoTimeline':
+            case 'mapnotimeline':
                 $this->loadTimelineData($nid, false);
                 $this->loadMapData();
                 return parent::display('collection_map.tpl', $collection->getTitle());
