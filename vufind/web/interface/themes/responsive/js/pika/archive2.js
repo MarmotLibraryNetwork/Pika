@@ -154,7 +154,7 @@ Pika.Archive2 = (function(){
 		 * server-side; filter/place/page changes reload it via AJAX.
 		 */
 		timeline: {
-			nid: null,
+			collectionNids: '',
 			showTimeline: false,
 			groupByYear: false,
 			placeName: '',
@@ -166,17 +166,17 @@ Pika.Archive2 = (function(){
 		 * Record the timeline state for the current collection page.
 		 * Called from timeline_component.tpl on page load.
 		 *
-		 * @param {number}  nid          Node ID of the collection
-		 * @param {boolean} showTimeline Whether the decade date-filter buttons are shown
-		 * @param {boolean} groupByYear  Whether items are grouped under year headings
+		 * @param {string}  collectionNids Comma-separated collection node id(s) the grid covers
+		 * @param {boolean} showTimeline   Whether the decade date-filter buttons are shown
+		 * @param {boolean} groupByYear    Whether items are grouped under year headings
 		 */
-		initCollectionTimeline: function(nid, showTimeline, groupByYear) {
-			this.timeline.nid          = nid;
-			this.timeline.showTimeline = showTimeline;
-			this.timeline.groupByYear  = groupByYear;
-			this.timeline.placeName    = '';
-			this.timeline.dateFilter   = '';
-			this.timeline.page         = 1;
+		initCollectionTimeline: function(collectionNids, showTimeline, groupByYear) {
+			this.timeline.collectionNids = String(collectionNids);
+			this.timeline.showTimeline   = showTimeline;
+			this.timeline.groupByYear    = groupByYear;
+			this.timeline.placeName      = '';
+			this.timeline.dateFilter     = '';
+			this.timeline.page           = 1;
 		},
 
 		/**
@@ -188,12 +188,12 @@ Pika.Archive2 = (function(){
 		 */
 		loadTimelineObjects: function(includeFilters) {
 			var state = this.timeline;
-			if (!state.nid) return;
+			if (!state.collectionNids) return;
 			var objectsContainer = $('#timeline-objects');
 			objectsContainer.css('opacity', 0.5);
 			$.getJSON('/Archive2/AJAX', {
 				method: 'getCollectionTimelineObjects',
-				nid: state.nid,
+				nids: state.collectionNids,
 				placeName: state.placeName,
 				dateFilter: state.dateFilter,
 				page: state.page,

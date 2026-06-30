@@ -29,6 +29,6 @@
 {/strip}
 <script>
 	$(function() {ldelim}
-		Pika.Archive2.initCollectionTimeline({$nid}, {if $showTimeline}true{else}false{/if}, {if $groupByYear}true{else}false{/if});
+		Pika.Archive2.initCollectionTimeline('{$collectionNids}', {if $showTimeline}true{else}false{/if}, {if $groupByYear}true{else}false{/if});
 	{rdelim});
 </script>
