@@ -35,19 +35,24 @@ class CollectionTimelineData {
 	const PAGE_SIZE = 24;
 
 	/**
-	 * Run the child-object search for a collection.
+	 * Run the child-object search across one or more parent collections.
 	 *
-	 * @param int         $nid        Node ID of the parent collection.
-	 * @param string|null $placeName  Optional place term name to restrict results to (sm_related_place).
-	 * @param string|null $dateFilter Optional decade start year (e.g. '1920') or 'unknown'.
-	 * @param int         $page       1-indexed result page.
+	 * @param int|int[]   $collectionNids Node id (or list of node ids) whose children to load.
+	 * @param string|null $placeName      Optional place term name to restrict results to (sm_related_place).
+	 * @param string|null $dateFilter     Optional decade start year (e.g. '1920') or 'unknown'.
+	 * @param int         $page           1-indexed result page.
 	 * @return array{items: array, total: int, startRecord: int, endRecord: int,
 	 *               page: int, pageCount: int, dateFacetInfo: array|null, unknownCount: int}
 	 *         dateFacetInfo is only populated when no date filter is applied
 	 *         (the filter buttons are only re-rendered then); null otherwise.
 	 */
-	public static function load(int $nid, ?string $placeName = null, ?string $dateFilter = null, int $page = 1): array {
+	public static function load($collectionNids, ?string $placeName = null, ?string $dateFilter = null, int $page = 1): array {
 		$page = max(1, $page);
+
+		$nids = array_values(array_filter(array_map('intval', (array)$collectionNids), fn($n) => $n > 0));
+		if (empty($nids)){
+			return self::emptyResult($page, $dateFilter);
+		}
 
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
@@ -56,7 +61,13 @@ class CollectionTimelineData {
 		// each doc carries its year (used for the grid's date display and the
 		// year-grouping headings — otherwise every item groups under "Unknown").
 		$searchObject->addFieldsToReturn(['its_edtf_year', 'sm_field_edtf_date_created']);
-		$searchObject->addFilter('itm_field_member_of:' . $nid);
+		// One collection → plain field:value; several → a complex OR filter passed
+		// raw (Base::parseFilter treats any value containing " OR " as a full filter).
+		if (count($nids) === 1){
+			$searchObject->addFilter('itm_field_member_of:' . $nids[0]);
+		}else{
+			$searchObject->addFilter('itm_field_member_of:(' . implode(' OR ', $nids) . ')');
+		}
 		if (!empty($placeName)){
 			$searchObject->addFilter('sm_related_place:"' . str_replace('"', '\\"', $placeName) . '"');
 		}
@@ -84,16 +95,7 @@ class CollectionTimelineData {
 
 		$result = $searchObject->processSearch(true, false);
 		if (\PEAR_Singleton::isError($result)){
-			return [
-				'items'         => [],
-				'total'         => 0,
-				'startRecord'   => 0,
-				'endRecord'     => 0,
-				'page'          => $page,
-				'pageCount'     => 0,
-				'dateFacetInfo' => $dateFilter === null ? [] : null,
-				'unknownCount'  => 0,
-			];
+			return self::emptyResult($page, $dateFilter);
 		}
 		$summary = $searchObject->getResultSummary();
 		$total   = (int)($result['response']['numFound'] ?? 0);
@@ -143,18 +145,42 @@ class CollectionTimelineData {
 	}
 
 	/**
+	 * Build the empty-result shape returned when there are no valid collections
+	 * or the Solr query errors.
+	 *
+	 * @param int         $page
+	 * @param string|null $dateFilter
+	 * @return array
+	 */
+	private static function emptyResult(int $page, ?string $dateFilter): array {
+		return [
+			'items'         => [],
+			'total'         => 0,
+			'startRecord'   => 0,
+			'endRecord'     => 0,
+			'page'          => $page,
+			'pageCount'     => 0,
+			'dateFacetInfo' => ($dateFilter === null || $dateFilter === '' || $dateFilter === 'all') ? [] : null,
+			'unknownCount'  => 0,
+		];
+	}
+
+	/**
 	 * Assign a load() result to the Smarty interface using the variable names
 	 * the timeline component templates expect.
 	 *
-	 * @param array       $data        Result of load().
-	 * @param int         $nid         Node ID of the parent collection.
-	 * @param bool        $showTimeline Whether the decade date-filter buttons are shown.
-	 * @param string|null $placeName   Currently selected place name, if any.
-	 * @param string|null $dateFilter  Currently selected date filter, if any.
+	 * @param array       $data           Result of load().
+	 * @param int|int[]   $collectionNids Node id (or list) the grid is scoped to; serialized
+	 *                                    to a comma string for the client so AJAX reloads
+	 *                                    cover the same set.
+	 * @param bool        $showTimeline   Whether the decade date-filter buttons are shown.
+	 * @param string|null $placeName      Currently selected place name, if any.
+	 * @param string|null $dateFilter     Currently selected date filter, if any.
 	 */
-	public static function assignToInterface(array $data, int $nid, bool $showTimeline, ?string $placeName = null, ?string $dateFilter = null): void {
+	public static function assignToInterface(array $data, $collectionNids, bool $showTimeline, ?string $placeName = null, ?string $dateFilter = null): void {
 		global $interface;
-		$interface->assign('nid',                 $nid);
+		$nids = array_values(array_filter(array_map('intval', (array)$collectionNids), fn($n) => $n > 0));
+		$interface->assign('collectionNids',      implode(',', $nids));
 		$interface->assign('showTimeline',        $showTimeline);
 		$interface->assign('timelineItems',       $data['items']);
 		$interface->assign('recordCount',         $data['total']);
