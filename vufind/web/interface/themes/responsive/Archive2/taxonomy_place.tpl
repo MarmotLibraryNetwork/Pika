@@ -36,11 +36,12 @@
 				{/if}
 			{/if}
 			{if $address}
+				{*TODO: only show Address in Address section? *}
 				<div class="row taxonomy-address">
 					<div class="col-xs-4 result-label">Address</div>
 					<div class="col-xs-8">
 						{if $address.street}
-							{$address.street}<br />
+							{$address.street}<br>
 						{/if}
 						{if $address.city}{$address.city}{if $address.state},&nbsp;{/if}{/if}{if $address.state}{$address.state}&nbsp;{/if}
 						{if $address.zip_code}{$address.zip_code}{/if}
@@ -105,32 +106,7 @@
 				</div>
 			</div>
 
-			{if $geolocation}
-				<div class="panel active" id="geoCoordinatesPanel">
-					<a data-toggle="collapse" href="#geoCoordinatesPanelBody">
-						<div class="panel-heading">
-							<h2 class="panel-title">Map</h2>
-						</div>
-					</a>
-					<div id="geoCoordinatesPanelBody" class="panel-collapse collapse in">
-						<div class="panel-body">
-							{if is_array($geolocation)}
-								{include file="Archive2/partials/fieldRow.tpl" label="Latitude"  value=$geolocation.lat}
-								{include file="Archive2/partials/fieldRow.tpl" label="Longitude" value=$geolocation.lng}
-								<div class="row">
-									<div class="col-sm-12">
-										
-										<iframe title="Google map for {$title}" width="100%" height="300px" class="taxonomy-map-embed"
-											src="https://www.google.com/maps/embed/v1/place?q={$geolocation.lat|escape}%2C%20{$geolocation.lng|escape}&key={$mapsKey}" allowfullscreen></iframe>
-									</div>
-								</div>
-							{else}
-								{include file="Archive2/partials/fieldRow.tpl" label="Coordinates" value=$geolocation}
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
+			{include file="Archive2/panels/mapPanel.tpl"}
 			{if $place_addresses}
 				<div class="panel" id="geoAddressesPanel">
 					<a data-toggle="collapse" href="#geoAddressesPanelBody">

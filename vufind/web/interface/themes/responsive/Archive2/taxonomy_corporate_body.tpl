@@ -72,6 +72,8 @@
 				</div>
 			</div>
 
+			{include file="Archive2/panels/mapPanel.tpl"}
+
 			{if $org_addresses}
 				<div class="panel" id="corpBodyAddressesPanel">
 					<a data-toggle="collapse" href="#corpBodyAddressesPanelBody">
