@@ -346,7 +346,11 @@ class Collection extends ArchiveObject
                 if ($childNid > 0) {
                     $childCollection = $factory->fromNodeId($childNid);
                     if ($childCollection instanceof CollectionObject) {
-                        $children  = $this->resolveOrderedChildren($childCollection, null);
+                        // Titles are ordered by each child's field_weight (the
+                        // per-item ordering set in the Islandora admin). usort is
+                        // stable on PHP 8, so equal/zero weights keep API order.
+                        $children = $childCollection->getChildObjects();
+                        usort($children, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
                         $childItems = [];
                         foreach ($children as $obj) {
                             $childItems[] = [
