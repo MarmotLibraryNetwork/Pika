@@ -1249,7 +1249,8 @@ class ArchiveObject extends \Action
      */
     public static function resolveViewingRestrictionForNode(MediaObjectInterface $node): ?string
     {
-        $depth = 0;
+        $startingNid = $node->getNodeId();
+        $depth       = 0;
         while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
             $raw = $node->pika_access_limits ?? '';
             if (is_array($raw)) {
@@ -1274,6 +1275,20 @@ class ArchiveObject extends \Action
             }
             return $value;
         }
+
+        if ($node !== null) {
+            // The walk hit the depth guard without ever resolving a restriction (a cyclic
+            // field_member_of relationship, or collection nesting deeper than we expect).
+            // Fail open -- allow viewing -- rather than denying access for a node whose
+            // restriction can never actually be resolved; log so staff can investigate and
+            // fix the underlying collection structure.
+            (new Logger(self::class))->error('Viewing-restriction resolution hit the parent-collection depth guard; allowing access.', [
+                'nid'          => $startingNid,
+                'stoppedAtNid' => $node->getNodeId(),
+                'depth'        => $depth,
+            ]);
+        }
+
         return null;
     }
 
