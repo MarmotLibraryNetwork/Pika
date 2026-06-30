@@ -1233,9 +1233,10 @@ class ArchiveObject extends \Action
 
     /**
      * Display name of the library a viewing restriction is scoped to, for use in
-     * access-denied messaging. Null when there's no restriction, the restriction is
-     * 'all' (no specific library), or the restriction's subdomain doesn't match a
-     * known library.
+     * access-denied messaging. Null when there's no restriction or the restriction
+     * is 'all' (no specific library). Falls back to "contributing library" when the
+     * restriction's subdomain doesn't match a library on this site (e.g. a
+     * restriction for Lafayette on the MLN1 server, or an MLN1 library on MLN2).
      */
     protected function getViewingRestrictionLibraryName(): ?string
     {
@@ -1249,7 +1250,7 @@ class ArchiveObject extends \Action
         if ($library->find(true)) {
             return $library->displayName;
         }
-        return null;
+        return 'contributing library';
     }
 
     /**
