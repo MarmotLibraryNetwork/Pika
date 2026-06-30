@@ -188,7 +188,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getDisplayModel(): ?string
     {
-        $displayModel = in_array($this->legacy_resource_type['name'], ISLANDORA2_DISPLAY_MODEL_URL_MAP) ? $this->legacy_resource_type['name'] : null;
+        $displayModel = array_key_exists($this->legacy_resource_type['name'], ISLANDORA2_DISPLAY_MODEL_URL_MAP) ? $this->legacy_resource_type['name'] : null;
         
         if ($displayModel === null) {
             $displayModel = $this->getObjectModel();
