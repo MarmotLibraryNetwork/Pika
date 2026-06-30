@@ -1317,7 +1317,7 @@ class ArchiveObject extends \Action
         if ($library->find(true)) {
             return $library->displayName;
         }
-        return 'contributing library';
+        return 'the contributing library';
     }
 
     /**
