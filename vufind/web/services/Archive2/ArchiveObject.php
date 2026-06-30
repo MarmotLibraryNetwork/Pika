@@ -511,6 +511,8 @@ class ArchiveObject extends \Action
 	      //TODO: coordinates will display as the Artwork section Installation Location.
 	      // we will need a guard for non-art objects; and alternate place to display the coordinates.
 
+        $interface->assign('maps_key', $configArray['Maps']['apiKey'] ?? '');
+
         // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
         $transcriptMedia = array_values(array_filter(
             $this->mediaObject->getMedia(),
