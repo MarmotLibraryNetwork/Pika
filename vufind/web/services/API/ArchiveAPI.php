@@ -18,9 +18,11 @@
 
 /**
  * APIs related to Digital Archive functionality
- * User: mnoble
- * Date: 6/29/2017
- * Time: 11:00 AM
+ *
+ * Migrated from the Islandora 1 (Fedora/MODS) stack to Islandora 2
+ * (SearchObject_Islandora2 + Islandora2Driver). See
+ * documentation/dpla-feed-islandora2-migration.md for the migration plan.
+ *
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -55,28 +57,37 @@ class API_ArchiveAPI extends AJAXHandler {
 
 		foreach ($searchResult['response']['docs'] as $doc){
 			$dplaDoc = [];
-			/** @var IslandoraDriver $record */
-			$record                   = RecordDriverFactory::initRecordDriver($doc);
-			if (null == $record->getArchiveObject()){
-				// Quick hack to skip islandora object with Unauthorized access
-				$this->logger->error('DPLA Feed: Failed to fetch archive object via Fedora for pid '. $doc['PID']);
+			/** @var Islandora2Driver $record */
+			$record   = RecordDriverFactory::initRecordDriver($doc);
+			$nodeData = $record->getNodeData();
+			if (null == $nodeData){
+				// Skip objects whose Islandora2 node can't be fetched (e.g. unauthorized / missing)
+				$this->logger->error('DPLA Feed: Failed to fetch Islandora2 node for node id ' . ($doc['its_node_id'] ?? 'unknown'));
 				continue;
 			}
-			$dplaDoc['identifier']    = $record->getUniqueID();
+
+			// Identifier: the archive migration to Islandora 2 breaks PID continuity, so the DPLA
+			// identifier is now node-based. The legacy PID is retained separately for traceability.
+			$dplaDoc['identifier'] = $record->getUniqueID();
+			$legacyPid             = $doc['ss_legacy_pid'] ?? null;
+			if (is_array($legacyPid)){
+				$legacyPid = reset($legacyPid);
+			}
+			if (!empty($legacyPid)){
+				$dplaDoc['legacyIdentifier'] = $legacyPid;
+			}
+
 			$dplaDoc['title']         = $record->getTitle();
 			$dplaDoc['description']   = $record->getDescription();
 			$dplaDoc['type']          = $record->getFormat();
 			$dplaDoc['format']        = $this->mapFormat($record->getFormat());
 			$dplaDoc['preview']       = $record->getBookcoverUrl('small');
-			$dplaDoc['includeInDPLA'] = $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] ?? 'default';
+			$dplaDoc['includeInDPLA'] = $doc['ss_field_pika_dpla'] ?? 'default';
 
-			$dateCreated = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
-			if ($dateCreated == 'Date Unknown'){
-				$dateCreated = null;
-			}
-			$dplaDoc['dateCreated'] = $dateCreated ? $dateCreated : null;
+			$dateCreated            = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
+			$dplaDoc['dateCreated'] = !empty($dateCreated) ? $dateCreated : null;
 
-			$language = $record->getModsValue('languageTerm');
+			$language = $record->getLanguage();
 			if (strlen($language)){
 				$dplaDoc['language'] = $language;
 			}
@@ -86,45 +97,46 @@ class API_ArchiveAPI extends AJAXHandler {
 				$dplaDoc['alternativeTitle'] = $subTitle;
 			}
 
-			// Extent (What the digital object is a representation of)
-			if (isset($doc['mods_physicalDescription_extent_s'])){
-				$dplaDoc['extent'] = $doc['mods_physicalDescription_extent_s'];
+			// Extent (physical description of the digital object)
+			// Drupal escapes commas as "\," in some text fields; restore plain commas.
+			$extent = $nodeData['extent'] ?? null;
+			if (!empty($extent)){
+				$dplaDoc['extent'] = is_string($extent) ? str_replace('\\,', ',', $extent) : $extent;
 			}
 
 			// Creator
-			if (isset($doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'])){
-				$dplaDoc['creator'] = $doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'];
+			$creators = $this->extractTermNames($nodeData['rights_creator'] ?? null);
+			if (!empty($creators)){
+				$dplaDoc['creator'] = $creators;
 			}
 
 			// Marmot Contributor
-			$contributingLibrary = $record->getContributingLibrary();
-			if ($contributingLibrary == null){
-				[$namespace] = explode(':', $record->getUniqueID());
-				global $configArray;
-				$dplaDoc['dataProvider'] = $namespace;
+			$contributingLibrary = $record->getContributingLibraryInfo();
+			global $configArray;
+			if ($contributingLibrary == null || empty($contributingLibrary['baseUrl'])){
+				// When the contributing Library (or its base URL) isn't available, we don't have an
+				// ideal base URL — fall back to the site URL and the best available provider name.
+				$dplaDoc['dataProvider'] = $contributingLibrary['libraryName'] ?? ($namespace ?: 'Marmot');
 				$dplaDoc['isShownAt']    = $configArray['Site']['url'] . $record->getLinkUrl();
-				// When the contributing Library isn't provided we don't have an ideal base URL
 			}else{
 				$dplaDoc['dataProvider'] = $contributingLibrary['libraryName'];
 				$dplaDoc['isShownAt']    = $contributingLibrary['baseUrl'] . $record->getLinkUrl();
 			}
+			$contributingLibraryOrgTid = $contributingLibrary['orgTid'] ?? null;
 
-			// Partner Contributors
-			$additionalContributors    = $record->getBrandingInformation();
+			// Partner Contributors — related organizations with specific roles that aren't the library itself
 			$institutionalContributors = [];
-			foreach ($additionalContributors as $pid => $contributor){
-				if ($pid != $contributingLibrary['pid'] && strpos($pid, 'organization') === 0 && (!empty($contributor['role']) && in_array($contributor['role'], $this->organizationRolesToIncludeInDPLA))){
-					// Include only organizations with specific roles that aren't the library itself
-					if (empty($contributor['label'])){
-						/** @var OrganizationDriver $islandoraObject */
-						$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($pid);
-						$title           = $islandoraObject->getTitle();
-						if (!empty($title)){
-							$institutionalContributors[] = $title;
-						}
-					}else{
-						$institutionalContributors[] = $contributor['label'];
-					}
+			foreach ($record->getRelatedOrganizations() as $organization){
+				$role = $organization['role'] ?? '';
+				if (empty($role) || !in_array($role, $this->organizationRolesToIncludeInDPLA)){
+					continue;
+				}
+				// Exclude the contributing library's own organization
+				if ($contributingLibraryOrgTid !== null && ($organization['tid'] ?? null) == $contributingLibraryOrgTid){
+					continue;
+				}
+				if (!empty($organization['label'])){
+					$institutionalContributors[] = $organization['label'];
 				}
 			}
 			if (!empty($institutionalContributors)){
@@ -142,52 +154,15 @@ class API_ArchiveAPI extends AJAXHandler {
 			}
 			$dplaDoc['relation'] = $dplaRelations;
 
-			// Parent Collection
-			$parentCollectionPid = null;
-//			if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
-//				if (is_array($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
-//					if (count($doc['RELS_EXT_isMemberOfCollection_uri_mt']) == 1) {
-//						$parentCollectionPid = str_replace('info:fedora/', '', reset($doc['RELS_EXT_isMemberOfCollection_uri_mt']));
-//					} else {
-//						// More than one parent collection?  Shouldn't be an issue
-//					}
-//				}
-////				else {
-////					$parentCollectionPid = str_replace('info:fedora/', '', $doc['RELS_EXT_isMemberOfCollection_uri_mt']);
-////				}
-//			}
-
-			// Rights.org statement
-			$rightsStatement = '';
-			if (isset($doc['mods_accessCondition_marmot_rightsStatementOrg_t'])){
-				$rightsStatement = $doc['mods_accessCondition_marmot_rightsStatementOrg_t'];
-			}else{
-				if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])){
-					foreach ($doc['RELS_EXT_isMemberOfCollection_uri_mt'] as $parentCollectionURI){
-						$parentCollectionPid = str_replace('info:fedora/', '', $parentCollectionURI);
-						if (!empty($parentCollectionPid)){
-							/** @var CollectionDriver $collectionDriver */
-							$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($parentCollectionPid);
-							if (!empty($collectionDriver) && !PEAR_Singleton::isError($collectionDriver)){
-								$rightsStatement = $collectionDriver->getModsValue('rightsStatementOrg', 'marmot');
-								if ($rightsStatement){
-									break;
-								}
-							}
-						}
-					}
-				}
-
-			}
-			if (empty($rightsStatement)){
-				$rightsStatement = 'http://rightsstatements.org/page/CNE/1.0/?language=en';
-			}
+			// Rights.org statement (object field, with a Pika default when unset)
+			$rightsStatement   = $record->getRightsStatement();
 			$rightsStatement   = str_replace('?language=en', '', $rightsStatement); // Our DPLA hub requested removal of language parameter
 			$dplaDoc['rights'] = $rightsStatement;
 
 			// Rights holder
-			if (isset($doc['mods_accessCondition_rightsHolder_entityTitle_ms'])){
-				$dplaDoc['rightsHolder'] = $doc['mods_accessCondition_rightsHolder_entityTitle_ms'];
+			$rightsHolders = $this->extractTermNames($nodeData['rights_holder'] ?? null);
+			if (!empty($rightsHolders)){
+				$dplaDoc['rightsHolder'] = $rightsHolders;
 			}
 
 			// Places
@@ -201,12 +176,11 @@ class API_ArchiveAPI extends AJAXHandler {
 			}
 
 			// Primary Subjects
-			$subjects = $record->getAllSubjectHeadings(false, 0); // DPLA does not want the title included as a subject
+			$subjects = $record->getSubjectLabels(); // DPLA does not want the title included as a subject
 			// Marmot wants related Collections included in the subjects
 			if (empty($subjects)){
 				$subjects = $dplaRelations;
 			}else{
-				$subjects = array_keys($subjects);
 				$subjects = array_merge($subjects, $dplaRelations);
 			}
 
@@ -214,7 +188,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			$publishers    = [];
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
-				if ($relatedPerson['role'] == 'publisher'){
+				if (($relatedPerson['role'] ?? '') == 'publisher'){
 					$publishers[] = $relatedPerson['label'];
 				} else {
 					// Include related Entities as Subjects
@@ -222,10 +196,10 @@ class API_ArchiveAPI extends AJAXHandler {
 				}
 			}
 
-			// Add organizations that are Publishes & related organizations as DPLA Subjects
+			// Add organizations that are Publishers & related organizations as DPLA Subjects
 			$relatedOrganizations = $record->getRelatedOrganizations();
 			foreach ($relatedOrganizations as $relatedOrganization){
-				if ($relatedOrganization['role'] == 'publisher'){
+				if (($relatedOrganization['role'] ?? '') == 'publisher'){
 					$publishers[] = $relatedOrganization['label'];
 				} else {
 					// Include related Entities as Subjects
@@ -247,13 +221,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			$dplaDocs[] = $dplaDoc;
 		}
 
-		$recordsByLibrary = [];
-		if (isset($searchResult['facet_counts'])){
-			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
-			foreach ($namespaceFacet as $facetInfo){
-				$recordsByLibrary[$facetInfo[0]] = $facetInfo[1];
-			}
-		}
+		$recordsByLibrary = $this->extractRecordsByLibrary($searchResult);
 
 		$summary = $searchObject->getResultSummary();
 		$results = [
@@ -268,102 +236,145 @@ class API_ArchiveAPI extends AJAXHandler {
 	}
 
 	private $formatMap = [
-		"Academic Paper"  => "Text",
-		"Art"             => "Image",
-		"Article"         => "Text",
-		"Book"            => "Text",
-		"Document"        => "Text",
-		"Image"           => "Still Image",
-		"Magazine"        => "Text",
-		"Music Recording" => "Sound",
-		"Newspaper"       => "Text",
-		"Page"            => "Text",
-		"Postcard"        => "Still Image",
-		"Video"           => "Moving Image",
-		"Voice Recording" => "Sound",
+		'Academic Paper'  => 'Text',
+		'Art'             => 'Image',
+		'Article'         => 'Text',
+		'Book'            => 'Text',
+		'Document'        => 'Text',
+		'Image'           => 'Still Image',
+		'Magazine'        => 'Text',
+		'Music Recording' => 'Sound',
+		'Newspaper'       => 'Text',
+		'Page'            => 'Text',
+		'Paged content'   => 'Text',
+		'Paged Content'   => 'Text',
+		'Postcard'        => 'Still Image',
+		'Video'           => 'Moving Image',
+		'Voice Recording' => 'Sound',
 	];
 
 	private function mapFormat($format){
 		if (array_key_exists($format, $this->formatMap)){
 			return $this->formatMap[$format];
 		}else{
-			return "Unknown";
+			$this->logger->error("Unknown format: $format");
+			return 'Unknown';
 		}
 	}
 
 	/**
-	 * @param $namespace
-	 * @param $changesSince
-	 * @param $curPage
-	 * @param $pageSize
+	 * Extract taxonomy term name(s) from a node field that may hold a single term
+	 * (associative array with a 'name'/'tid') or a list of such terms.
+	 *
+	 * @param mixed $raw
+	 * @return string[]
+	 */
+	private function extractTermNames($raw): array{
+		if (empty($raw)){
+			return [];
+		}
+		// A single taxonomy term arrives as an associative array; multiple terms as a list.
+		$items = (isset($raw['name']) || isset($raw['tid'])) ? [$raw] : (array)$raw;
+		$names = [];
+		foreach ($items as $item){
+			if (is_array($item) && !empty($item['name'])){
+				$names[] = $item['name'];
+			}elseif (is_string($item) && $item !== ''){
+				$names[] = $item;
+			}
+		}
+		return $names;
+	}
+
+	/**
+	 * Build the per-library record counts from the ss_library facet on a search result.
+	 *
+	 * @param array $searchResult
+	 * @return array  [libraryName => count]
+	 */
+	private function extractRecordsByLibrary($searchResult): array{
+		$recordsByLibrary = [];
+		if (isset($searchResult['facet_counts'])){
+			$libraryFacet = $searchResult['facet_counts']['facet_fields']['ss_library'] ?? [];
+			foreach ($libraryFacet as $facetInfo){
+				$recordsByLibrary[$facetInfo[0]] = $facetInfo[1];
+			}
+		}
+		return $recordsByLibrary;
+	}
+
+	/**
+	 * Run the two Solr queries backing the DPLA feed: first the collections that have
+	 * opted into DPLA, then the objects eligible for export.
+	 *
+	 * DPLA eligibility is driven by the Islandora 2 field ss_field_pika_dpla
+	 * (_none | no | yes | collection):
+	 *   - yes        → always included
+	 *   - collection → included when a parent collection is flagged yes
+	 *   - no / _none → excluded
+	 *
+	 * itm_field_member_of holds the full ancestor node-ID chain, so a single
+	 * membership filter covers nested collections.
+	 *
+	 * @param string|null $namespace     Contributing-library facet value (ss_library) to limit to
+	 * @param string|null $changesSince   Only export records changed since this timestamp
+	 * @param int         $curPage
+	 * @param int         $pageSize
 	 * @return array
 	 */
 	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize){
-		//TODO: update for Islandora2
-//Query for collections that should not be exported to DPLA
-		/** @var SearchObject_Islandora $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+		// --- Query 1: collections that have opted into DPLA (ss_field_pika_dpla:yes) ---
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(false);
-		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-		$searchObject->addHiddenFilter('RELS_EXT_hasModel_uri_ms', '"info:fedora/islandora:collectionCModel"');
-		$searchObject->addHiddenFilter('mods_extension_marmotLocal_pikaOptions_dpla_s', "yes");
+		$searchObject->addHiddenFilter('ss_model', 'Collection');
+		$searchObject->addHiddenFilter('ss_field_pika_dpla', 'yes');
 		$searchObject->setPage(1);
-		$searchObject->setLimit(100);
+		$searchObject->setLimit(1000);
 		$searchCollectionsResult = $searchObject->processSearch(true, false);
-		$collectionsToInclude    = [];
-		$ancestors               = '';
 
-		foreach ($searchCollectionsResult['response']['docs'] as $doc){
-			$collectionsToInclude[] = $doc['PID'];
-			if (strlen($ancestors) > 0){
-				$ancestors .= ' OR ';
+		$collectionsToInclude = [];
+		foreach ($searchCollectionsResult['response']['docs'] ?? [] as $doc){
+			$nid = $doc['its_node_id'] ?? null;
+			if ($nid !== null){
+				$collectionsToInclude[] = $nid;
 			}
-			$ancestors .= 'ancestors_ms:"' . $doc['PID'] . '"';
 		}
 
-
-		//Query Solr for the records to export
-		// Initialize from the current search globals
-		/** @var SearchObject_Islandora $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+		// --- Query 2: objects to export ---
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
-		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-		if ($ancestors){
-			$searchObject->addFilter("mods_extension_marmotLocal_pikaOptions_dpla_s:yes OR (!mods_extension_marmotLocal_pikaOptions_dpla_s:no AND ($ancestors))");
+
+		if (!empty($collectionsToInclude)){
+			$ancestors = 'itm_field_member_of:(' . implode(' OR ', $collectionsToInclude) . ')';
+			$searchObject->addFilter("ss_field_pika_dpla:yes OR (ss_field_pika_dpla:collection AND ($ancestors))");
 		}else{
-			$searchObject->addFilter("mods_extension_marmotLocal_pikaOptions_dpla_s:yes");
-		}
-		$searchObject->addHiddenFilter('!PID', "person*");
-		$searchObject->addHiddenFilter('!PID', "event*");
-		$searchObject->addHiddenFilter('!PID', "organization*");
-		$searchObject->addHiddenFilter('!PID', "place*");
-		$searchObject->addHiddenFilter('!RELS_EXT_hasModel_uri_ms', '"info:fedora/islandora:collectionCModel"');
-		$searchObject->addHiddenFilter('!RELS_EXT_hasModel_uri_ms', '"info:fedora/islandora:pageCModel"');
-		if ($namespace != null){
-			$searchObject->addHiddenFilter('namespace_ms', $namespace);
+			$searchObject->addFilter('ss_field_pika_dpla:yes');
 		}
 
-		//Filter to only see DPLA records
-		if ($changesSince != null){
-			$searchObject->addHiddenFilter('fgs_lastModifiedDate_dt', "[$changesSince TO *]");
+		if ($namespace != null){
+			// Contributing-library facet value (replaces the Islandora 1 namespace_ms filter)
+			$searchObject->addHiddenFilter('ss_library', $namespace);
 		}
+
+		// Filter to only records changed since the given timestamp
+		if ($changesSince != null){
+			$searchObject->addHiddenFilter('ds_changed', "[$changesSince TO *]");
+		}
+
 		$searchObject->addFieldsToReturn([
-			'mods_accessCondition_marmot_rightsStatementOrg_t',
-			'mods_accessCondition_rightsHolder_entityTitle_ms',
-			'mods_extension_marmotLocal_hasCreator_entityTitle_ms',
-			'mods_physicalDescription_extent_s',
-			'mods_extension_marmotLocal_pikaOptions_dpla_s',
-			'RELS_EXT_isMemberOfCollection_uri_mt',
+			'ss_field_pika_dpla',
+			'ss_legacy_pid',
+			'itm_field_member_of',
 		]);
 		$searchObject->setPage($curPage);
 		$searchObject->setLimit($pageSize);
 		$searchObject->clearFacets();
-		$searchObject->addFacet('namespace_ms');
-		$searchObject->setSort("fgs_lastModifiedDate_dt asc");
+		$searchObject->addFacet('ss_library');
+		$searchObject->setSort('ds_changed asc');
 
 		$searchResult = $searchObject->processSearch(true, false);
 		return [$searchObject, $collectionsToInclude, $searchResult];
@@ -376,14 +387,6 @@ class API_ArchiveAPI extends AJAXHandler {
 		$namespace    = $_REQUEST['namespace'] ?? null;
 		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
-		$recordsByLibrary = [];
-		if (isset($searchResult['facet_counts'])){
-			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
-			foreach ($namespaceFacet as $facetInfo){
-				$recordsByLibrary[$facetInfo[0]] = $facetInfo[1];
-			}
-		}
-
-		return $recordsByLibrary;
+		return $this->extractRecordsByLibrary($searchResult);
 	}
 }

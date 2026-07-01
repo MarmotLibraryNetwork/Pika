@@ -682,4 +682,213 @@ class Islandora2Driver extends RecordInterface
 		return $works;
 	}
 
+	// -------------------------------------------------------------------------
+	// DPLA feed support
+	//
+	// Thin adapters that expose I2Object data in the flat shape the DPLA export
+	// (services/API/ArchiveAPI.php) consumes. Kept on the driver — rather than in
+	// the API class — so ArchiveAPI stays driver-facing, mirroring how the legacy
+	// IslandoraDriver exposed these same methods.
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Subtitle for the object, or '' when none is set.
+	 */
+	public function getSubTitle(): string {
+		$obj = $this->ensureI2Object();
+		if (!$obj) {
+			return '';
+		}
+		$subtitle = $obj->subtitle; // magic __get → field_subtitle
+		return (is_string($subtitle) && $subtitle !== '') ? $subtitle : '';
+	}
+
+	/**
+	 * Human-readable language name, or '' when unavailable.
+	 */
+	public function getLanguage(): string {
+		$obj = $this->ensureI2Object();
+		return $obj ? ($obj->getLanguage() ?? '') : '';
+	}
+
+	/**
+	 * Subject heading labels as a plain list of strings.
+	 *
+	 * Replaces the legacy getAllSubjectHeadings() associative shape; the DPLA feed
+	 * only ever consumed the subject strings (via array_keys) anyway.
+	 *
+	 * @return string[]
+	 */
+	public function getSubjectLabels(): array {
+		$obj = $this->ensureI2Object();
+		if (!$obj) {
+			return [];
+		}
+		$labels = [];
+		foreach ($obj->getSubjects() ?? [] as $subject) {
+			$name = $subject['name'] ?? '';
+			if ($name !== '') {
+				$labels[] = $name;
+			}
+		}
+		return $labels;
+	}
+
+	/**
+	 * Related places as [['label' => name, 'tid' => tid], ...].
+	 * @return array[]
+	 */
+	public function getRelatedPlaces(): array {
+		return $this->relatedTermLabels($this->ensureI2Object()?->getRelatedPlace());
+	}
+
+	/**
+	 * Related events as [['label' => name, 'tid' => tid], ...].
+	 * @return array[]
+	 */
+	public function getRelatedEvents(): array {
+		return $this->relatedTermLabels($this->ensureI2Object()?->getRelatedEvent());
+	}
+
+	/**
+	 * Related people as [['label' => name, 'tid' => tid, 'role' => relation], ...].
+	 * @return array[]
+	 */
+	public function getRelatedPeople(): array {
+		return $this->relatedTermLabels($this->ensureI2Object()?->getRelatedPerson(), true);
+	}
+
+	/**
+	 * Related organizations as [['label' => name, 'tid' => tid, 'role' => relation], ...].
+	 * @return array[]
+	 */
+	public function getRelatedOrganizations(): array {
+		return $this->relatedTermLabels($this->ensureI2Object()?->getRelatedOrganization(), true);
+	}
+
+	/**
+	 * Normalize an I2Object related-term list (name/relation/…) into the flat
+	 * label/role shape the DPLA feed consumes.
+	 *
+	 * @param array|null $entries  Raw related-term entries from I2Object
+	 * @param bool       $withRole Include the 'role' key (relation machine value)
+	 * @return array[]
+	 */
+	private function relatedTermLabels(?array $entries, bool $withRole = false): array {
+		if (empty($entries)) {
+			return [];
+		}
+		$out = [];
+		foreach ($entries as $entry) {
+			$label = $entry['name'] ?? '';
+			if ($label === '') {
+				continue;
+			}
+			$item = [
+				'label' => $label,
+				'tid'   => $entry['tid'] ?? null,
+			];
+			if ($withRole) {
+				// I2 stores the relator as the machine value in 'relation' (e.g. 'local:pbl');
+				// the DPLA feed compares against role names like 'publisher'.
+				// TODO: confirm the relation vocabulary values against production data so the
+				//       DPLA role comparisons (publisher / owner / donor / acknowledgement) match.
+				$item['role'] = $entry['relation'] ?? ($entry['relation_label'] ?? null);
+			}
+			$out[] = $item;
+		}
+		return $out;
+	}
+
+	/**
+	 * Parent collections as [['label' => title, 'nid' => nid], ...], walking the
+	 * full member_of ancestor chain (nearest parent first).
+	 *
+	 * @return array[]
+	 */
+	public function getRelatedCollections(): array {
+		$obj = $this->ensureI2Object();
+		if (!$obj) {
+			return [];
+		}
+		$collections = [];
+		$visited     = [];
+		$parent      = $obj->getParentCollection();
+		while ($parent !== null) {
+			$nid = $parent->getNodeId();
+			if ($nid !== null && in_array($nid, $visited, true)) {
+				break; // cycle guard
+			}
+			if ($nid !== null) {
+				$visited[] = $nid;
+			}
+			$title = $parent->getTitle();
+			if (!empty($title)) {
+				$collections[] = ['label' => $title, 'nid' => $nid];
+			}
+			$parent = $parent->getParentCollection();
+		}
+		return $collections;
+	}
+
+	/**
+	 * rightsstatements.org URI from field_rights_org_statement, or the Pika default
+	 * when unset.
+	 *
+	 * The '?language=en' query param is left intact here; the DPLA feed strips it
+	 * (the DPLA hub requested its removal).
+	 */
+	public function getRightsStatement(): string {
+		$default = 'http://rightsstatements.org/page/CNE/1.0/?language=en';
+		$obj     = $this->ensureI2Object();
+		if (!$obj) {
+			return $default;
+		}
+		$rights = $obj->rights_org_statement; // magic __get → field_rights_org_statement
+		if (is_array($rights) && !empty($rights['uri'])) {
+			return $rights['uri'];
+		}
+		return $default;
+	}
+
+	/**
+	 * Contributing-library info for the DPLA feed: display name, catalog base URL,
+	 * and the Corporate Body term id (used to de-dupe against partner organizations).
+	 *
+	 * Mirrors the legacy IslandoraDriver::getContributingLibrary() shape, but sources
+	 * the name/tid from the library's Corporate Body taxonomy term and the base URL
+	 * from the matching Pika Library row (keyed by libraryTid rather than namespace).
+	 *
+	 * @return array{libraryName:string, baseUrl:?string, orgTid:?int}|null
+	 */
+	public function getContributingLibraryInfo(): ?array {
+		$obj = $this->ensureI2Object();
+		if (!$obj) {
+			return null;
+		}
+
+		$orgTerm    = $obj->getLibraryOrganization();
+		$libraryTid = isset($obj->library['tid']) ? (int)$obj->library['tid'] : 0;
+
+		$baseUrl = null;
+		if ($libraryTid > 0) {
+			$pikaLibrary             = new Library();
+			$pikaLibrary->libraryTid = $libraryTid;
+			if ($pikaLibrary->find(true) && !empty($pikaLibrary->catalogUrl)) {
+				$scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+				$baseUrl = $scheme . '://' . $pikaLibrary->catalogUrl;
+			}
+		}
+
+		$libraryName = ($orgTerm && !empty($orgTerm->name)) ? $orgTerm->name : '';
+		if ($libraryName === '' && $baseUrl === null) {
+			return null; // nothing useful to report
+		}
+		return [
+			'libraryName' => $libraryName,
+			'baseUrl'     => $baseUrl,
+			'orgTid'      => $orgTerm ? $orgTerm->getTid() : null,
+		];
+	}
+
 }
