@@ -28,7 +28,7 @@
 		{include file="Archive2/components/search_component.tpl"}
 		{* Child objects grid *}
 		{if $collectionChildren}
-		<div class="row" style="margin-top: 1em;">
+		<div class="row collection-row-spacer">
 			<div class="col-xs-12">
 				{if $recordCount}
 				<p>{$recordCount} items in this collection.</p>
