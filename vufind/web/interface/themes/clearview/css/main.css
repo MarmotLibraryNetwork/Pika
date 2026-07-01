@@ -10412,6 +10412,9 @@ img.x-twit {
 .taxonomy-map-embed {
   border: 0;
 }
+.related-objects-tiles .browse-thumbnail-sorted {
+  text-align: center;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
