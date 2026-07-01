@@ -98,7 +98,7 @@ class Person extends TaxonomyObject
         // already normalized and assigned by parent::launch().
         $genealogyLink = $person->getGenealogyLink();
         if ($genealogyLink) {
-            $existingLinks = $interface->getTemplateVars('links') ?? [];
+            $existingLinks = $interface->getVariable('links') ?? [];
             $interface->assign('links', array_merge([$genealogyLink], $existingLinks) ?: null);
         }
 
