@@ -10,7 +10,7 @@
 		{if $thumbnail}
 		<div class="row">
 			<div class="col-xs-12">
-				<img src="{$thumbnail}" class="img-responsive thumbnail" style="max-width:300px; float:left; margin: 0 1em 1em 0;" alt="{$title|escape}">
+				<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
 				{$description}
 				<div class="clearfix"></div>
 			</div>
