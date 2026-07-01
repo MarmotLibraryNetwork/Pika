@@ -9,14 +9,14 @@
 
 	<div class="row">
 	{if $thumbnail}
-		<div {if $randomImageComponents}class="col-xs-6"{else}class="col-xs-12"{/if} style="text-align: center;">
-			
-			<img src="{$thumbnail}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto; max-width: 250px; max-height: 250px;" alt="{$title|escape}">
-			
+		<div {if $randomImageComponents}class="col-xs-6 text-center"{else}class="col-xs-12 text-center"{/if}>
+
+			<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-fit" alt="{$title|escape}">
+
 		</div>
 	{/if}
 	{if $randomImageComponents}
-		<div {if $thumbnail}class="col-xs-6"{else}class="col-xs-12"{/if} style="text-align: center;">
+		<div {if $thumbnail}class="col-xs-6 text-center"{else}class="col-xs-12 text-center"{/if}>
 		{foreach from=$randomImageComponents item=random}
 			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object}
 		{/foreach}
