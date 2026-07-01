@@ -10474,6 +10474,16 @@ img.x-twit {
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentBody.browse-by-component-body {
   min-height: 14px;
 }
+.collection-thumbnail-fit {
+  -o-object-fit: contain;
+     object-fit: contain;
+  margin: 0 auto;
+  max-width: 250px;
+  max-height: 250px;
+}
+.random-image-figure .explore-more-category-title {
+  text-align: center;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
