@@ -61,10 +61,19 @@ class PersonTaxonomy extends I2Taxonomy
         return $this->termWithoutFieldPrefix['maiden_name'] ?? null;
     }
 
-    /** Alternate or variant name (field_alternate_name). */
-    public function getAlternateName(): ?string
+    /** Alternate or variant name(s) (field_alternate_name). May contain multiple values. */
+    public function getAlternateName(): ?array
     {
-        return $this->termWithoutFieldPrefix['alternate_name'] ?? null;
+        $altNames = $this->termWithoutFieldPrefix['alternate_name'] ?? null;
+
+        if ($altNames === null)
+            return null;
+
+        if (is_string($altNames)) {
+            $altNames = [$altNames];
+        }
+
+        return $altNames;
     }
 
     /**
