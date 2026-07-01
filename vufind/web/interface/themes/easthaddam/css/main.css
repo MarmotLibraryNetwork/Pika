@@ -10400,6 +10400,9 @@ img.x-twit {
 .related-objects-tiles .browse-thumbnail-sorted {
   text-align: center;
 }
+.collection-row-spacer {
+  margin-top: 1em;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
