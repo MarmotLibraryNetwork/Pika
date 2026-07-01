@@ -1358,6 +1358,15 @@ class ArchiveObject extends \Action
         if ($library->find(true)) {
             return $library->displayName;
         }
+
+        // The restriction doesn't correspond to any library on this site -- either a typo,
+        // or (per the docblock above) a subdomain only known to a different Pika
+        // instance. Either way it silently locks the object out for everyone, so log it
+        // rather than leaving no trail for staff to notice and fix the underlying value.
+        (new Logger(self::class))->notice('pika_access_limits restriction does not match any library on this site.', [
+            'nid'         => $this->mediaObject->getNodeId(),
+            'restriction' => $restriction,
+        ]);
         return 'the contributing library';
     }
 
