@@ -40,11 +40,7 @@ class Person extends TaxonomyObject
         }
 
         if (!($this->taxonomyObject instanceof PersonTaxonomy)) {
-            $this->logger->error('Person controller received wrong taxonomy type.', [
-                'tid'      => $_GET['id'] ?? null,
-                'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
-            ]);
-            return;
+            $this->handleTaxonomyTypeMismatch();
         }
 
         parent::launch();
