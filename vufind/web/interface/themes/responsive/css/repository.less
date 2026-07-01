@@ -701,6 +701,20 @@
   min-height: 14px;
 }
 
+// Archive2 — Thumbnail image scaled to fit within a fixed box, centered
+// (components/random_image_component.tpl)
+.collection-thumbnail-fit {
+  object-fit: contain;
+  margin: 0 auto;
+  max-width: 250px;
+  max-height: 250px;
+}
+
+// Archive2 — Center the caption under the random image thumbnail (components/random_image_component.tpl)
+.random-image-figure .explore-more-category-title {
+  text-align: center;
+}
+
 // Archive2 — Audio poster wrapper, centers the poster image (audio.tpl)
 .archive-audio-poster-wrapper {
   display: flex;
