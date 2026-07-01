@@ -1,3 +1,7 @@
+{* TODO: Migrate inline styling (and the embedded <style> block below) to
+   repository.less once the leaflet maps feature is implemented; see the
+   equivalent migration already done for collection_map.tpl and
+   components/map_component.tpl. *}
 {strip}
 <div class="col-sm-12">
 	<div class="archiveComponent">
