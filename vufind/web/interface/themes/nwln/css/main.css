@@ -10404,6 +10404,10 @@ img.x-twit {
 .collection-row-spacer {
   margin-top: 1em;
 }
+.mirador-viewer-container {
+  position: relative;
+  height: 1000px;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
