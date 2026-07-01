@@ -960,7 +960,7 @@ class ArchiveObject extends \Action
             $tid = isset($agent['tid']) ? (int)$agent['tid'] : null;
 
             // Prefer an explicit vocabulary key; fall back to rel-field heuristic.
-            $vocabulary = $agent['vid'] ?? null;
+            $vocabulary = $agent['vocabulary'] ?? null;
             if ($vocabulary === null) {
                 $rel = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
                 $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
@@ -1015,7 +1015,7 @@ class ArchiveObject extends \Action
                     continue;
                 }
                 $tid        = isset($agent['tid']) ? (int)$agent['tid'] : null;
-                $vocabulary = $agent['vid'] ?? null;
+                $vocabulary = $agent['vocabulary'] ?? null;
                 if ($vocabulary === null) {
                     $rel        = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
                     $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
