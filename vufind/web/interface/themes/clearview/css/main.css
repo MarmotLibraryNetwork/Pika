@@ -10422,6 +10422,15 @@ img.x-twit {
   position: relative;
   height: 1000px;
 }
+.collection-thumbnail-float-left {
+  max-width: 300px;
+  float: left;
+  margin: 0 1em 1em 0;
+}
+.timeline-year-heading {
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.25em;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
