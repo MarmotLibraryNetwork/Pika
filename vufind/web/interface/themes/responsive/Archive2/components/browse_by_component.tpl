@@ -1,7 +1,7 @@
 {strip}
 <div class="archiveComponentContainer nopadding col-sm-12">
 	<div class="archiveComponent horizontalComponent">
-		<div class="archiveComponentBody" style="min-height: 14px;">
+		<div class="archiveComponentBody browse-by-component-body">
 			<div class="archiveComponentBox">
 				<div class="archiveComponentHeader">{$browseByTitle}</div>
 				<div class="archiveComponentLinks row">
