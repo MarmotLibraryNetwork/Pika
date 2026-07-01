@@ -1,32 +1,31 @@
 {* Compound Video Viewer - Multiple video objects with single player *}
 
 {* Video Player *}
-<div style="margin-bottom: 30px;">
-    <video width="100%" controls controlslist="nodownload" id="compound-video-player" crossorigin="anonymous" style="background: #000;">
+<div class="archive-compound-player-wrapper">
+    <video width="100%" controls controlslist="nodownload" id="compound-video-player" crossorigin="anonymous" class="archive-video-player">
         {* Source and tracks will be dynamically loaded via JavaScript *}
     </video>
 </div>
 
 {* Grid of Video Items *}
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-top: 20px;">
+<div class="archive-compound-grid">
     {foreach from=$children item=child name=videoLoop}
-        <div class="video-item"
+        <div class="video-item archive-compound-item"
              data-video-url="{$child.videoUrl}"
              data-video-mime="{$child.videoMime}"
              data-video-title="{$child.title|escape}"
              data-poster-url="{$child.posterUrl}"
              data-captions='{if $child.captions}{$child.captions|@json_encode}{else}[]{/if}'
-             data-index="{$smarty.foreach.videoLoop.index}"
-             style="cursor: pointer; border: 2px solid #ddd; border-radius: 6px; padding: 15px; transition: all 0.3s ease; background: #fff;">
+             data-index="{$smarty.foreach.videoLoop.index}">
 
             {* Thumbnail/Poster *}
             {if $child.posterUrl}
-                <div style="margin-bottom: 10px; text-align: center; overflow: hidden; border-radius: 4px; background: #000; position: relative;">
+                <div class="archive-video-item-thumbnail">
                     <img src="{$child.posterUrl}"
                          alt="{$child.title|escape}"
-                         style="width: 100%; height: 180px; object-fit: cover; display: block;">
+                         class="archive-video-item-thumbnail-image">
                     {* Play icon overlay *}
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
+                    <div class="archive-video-item-play-icon">
                         <svg width="60" height="60" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
                             <circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.6)"/>
                             <path d="M8 5v14l11-7z" fill="rgba(255,255,255,0.9)"/>
@@ -34,7 +33,7 @@
                     </div>
                 </div>
             {else}
-                <div style="margin-bottom: 10px; text-align: center; overflow: hidden; border-radius: 4px; background: #000; height: 180px; display: flex; align-items: center; justify-content: center; position: relative;">
+                <div class="archive-video-item-thumbnail-placeholder">
                     <svg width="80" height="80" viewBox="0 0 24 24" fill="#666">
                         <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
                     </svg>
@@ -42,12 +41,12 @@
             {/if}
 
             {* Title *}
-            <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #333; line-height: 1.4; min-height: 44px;">
+            <h4 class="archive-compound-item-title">
                 {$child.title}
             </h4>
 
             {* Active indicator *}
-            <div class="active-indicator" style="margin-top: 10px; padding: 5px 10px; background: #666; color: #f1f1f1; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; display: none;">
+            <div class="active-indicator">
                 ▶ Now Playing
             </div>
         </div>

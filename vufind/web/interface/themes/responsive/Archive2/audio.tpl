@@ -1,11 +1,11 @@
 {if $videoThumbnailUrl}
-    <div style="display: flex; justify-content: center">
+    <div class="archive-audio-poster-wrapper">
     <div>
-        <img src={$videoThumbnailUrl} style="object-fit: contain; max-width: 600px; max-height: 600px;" alt="Audio poster image for {$title}">
+        <img src={$videoThumbnailUrl} class="archive-audio-poster-image" alt="Audio poster image for {$title}">
     </div>
     </div>
 {/if}
-<audio src="{$audioUrl}" type="{$audioMime}" controls controlslist="nodownload" style="width:100%;" id="archive-audio-player" controls>
+<audio src="{$audioUrl}" type="{$audioMime}" controls controlslist="nodownload" class="archive-audio-player" id="archive-audio-player" controls>
     {if count($captions) >= 1}
         {foreach from=$captions item=i}
             <track kind="captions" src="/Archive2/AJAX?method=fetchVtt&path={$i.filePath|escape:'url'}&nid={$nid|intval}" label="{$i.langName}"
@@ -13,8 +13,7 @@
         {/foreach}
     {/if}
 </audio>
-<div id="vtt-text" class="archive-caption"
-    style="height: 60px; background: #333; color: #fff; display:none; text-align:center; font-family:Helvetica, Arial, sans-serif; font-weight:bold; text-wrap:balance">
+<div id="vtt-text" class="archive-caption">
 </div>
 {literal}
     <script>
