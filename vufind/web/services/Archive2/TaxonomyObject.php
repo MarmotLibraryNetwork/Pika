@@ -47,7 +47,7 @@ class TaxonomyObject extends \Action
         $this->tid    = (int)($_GET['id'] ?? 0);
 
         if ($this->tid <= 0) {
-            $this->logger->warning('Invalid or missing tid in request.', ['tid' => $_GET['tid'] ?? null]);
+            $this->logger->warning('Invalid or missing tid in request.', ['tid' => $_GET['id'] ?? null]);
             return;
         }
 
@@ -85,7 +85,6 @@ class TaxonomyObject extends \Action
         }
 
         // Display hints
-         // Display hints
         $interface->assign('is_object_display', false);
         $interface->assign('is_taxonomy_display', true);
 

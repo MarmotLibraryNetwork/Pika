@@ -41,7 +41,7 @@ class Organization extends TaxonomyObject
 
         if (!($this->taxonomyObject instanceof CorporateBodyTaxonomy)) {
             $this->logger->error('Organization controller received wrong taxonomy type.', [
-                'tid'      => $_GET['tid'] ?? null,
+                'tid'      => $_GET['id'] ?? null,
                 'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
             ]);
             return;
