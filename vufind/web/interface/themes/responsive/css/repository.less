@@ -603,3 +603,61 @@
 .taxonomy-map-embed {
   border: 0;
 }
+
+// Collection pages — grid view card (collection-item.tpl)
+.collection-item-grid-thumbnail {
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+  height: 300px;
+  display: block;
+  overflow: hidden;
+}
+
+// Collection pages — grid view thumbnail image (collection-item.tpl)
+.collection-item-grid-image {
+  max-height: 160px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+// Collection pages — grid view caption (collection-item.tpl)
+.collection-item-grid-caption {
+  padding: 9px 0;
+}
+
+// Collection pages — list view date, tucked under the title (collection-item.tpl)
+.collection-item-list-date {
+  margin-top: -0.5em;
+}
+
+// Collection pages — list view row: thumbnail left, description right (collection-item.tpl)
+.collection-item-list-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+// Collection pages — list view thumbnail link (collection-item.tpl)
+.collection-item-list-thumbnail {
+  flex-shrink: 0;
+}
+
+// Collection pages — list view thumbnail image (collection-item.tpl)
+.collection-item-list-image {
+  max-width: 150px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+}
+
+// Collection pages — list view description, clamped to 6 lines (collection-item.tpl)
+.collection-item-list-description {
+  max-height: 150px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
