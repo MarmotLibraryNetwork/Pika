@@ -636,6 +636,64 @@
   padding-bottom: 0.25em;
 }
 
+// Archive2 — Small spacing above a row separating map sections (collection_map.tpl, components/map_component.tpl)
+.collection-row-spacer-sm {
+  margin-top: 0.5em;
+}
+
+// Archive2 — Full-page Google Map container (collection_map.tpl)
+.collection-map-container {
+  height: 450px;
+}
+
+// Archive2 — Embedded component Google Map container (components/map_component.tpl)
+.collection-map-component-container {
+  height: 500px;
+  margin-top: 0.5em;
+}
+
+// Archive2 — Hidden list of places without coordinates, shown via a popup instead
+// (collection_map.tpl, components/map_component.tpl)
+.archive-map-unmapped-locations {
+  display: none;
+}
+
+// Archive2 — Numbered pin marker on the Google Map (collection_map.tpl, components/map_component.tpl)
+.map-count-marker {
+  background: #2980b9;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  line-height: 32px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+
+  // Smaller marker used in the embedded map component (components/map_component.tpl)
+  &.map-count-marker--compact {
+    width: 32px;
+    height: 32px;
+    line-height: 28px;
+  }
+}
+
+// Archive2 — Google Map InfoWindow popup content for a child object marker
+// (collection_map.tpl, components/map_component.tpl)
+.archive-map-popup {
+  max-width: 220px;
+  text-align: center;
+}
+
+// Archive2 — Thumbnail inside the map popup (collection_map.tpl, components/map_component.tpl)
+.archive-map-popup-thumbnail {
+  max-width: 200px;
+  margin-bottom: 6px;
+}
+
 // Archive2 — Audio poster wrapper, centers the poster image (audio.tpl)
 .archive-audio-poster-wrapper {
   display: flex;
