@@ -10459,6 +10459,9 @@ img.x-twit {
   max-width: 200px;
   margin-bottom: 6px;
 }
+.archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentBody.browse-by-component-body {
+  min-height: 14px;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
