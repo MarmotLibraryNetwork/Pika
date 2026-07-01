@@ -3,7 +3,11 @@
 	{* Grid view: restore original card styling — fixed height, plain caption *}
 	<a href="{$collectionChild.url}" class="thumbnail grid-view-item collection-item-grid-thumbnail">
 		{if $collectionChild.thumbnail}
-		<img src="{$collectionChild.thumbnail}" alt="{$collectionChild.title|escape}" class="collection-item-grid-image">
+		{* alt is intentionally empty: the caption div below is inside this same <a> and
+		   already renders the title as visible text, so a non-empty alt here would make
+		   screen readers announce the title twice (e.g. "Jim Nimon: Jim Nimon"). Do not
+		   restore alt="{$collectionChild.title}" here. *}
+		<img src="{$collectionChild.thumbnail}" alt="" class="collection-item-grid-image">
 		{/if}
 		<div class="caption collection-item-grid-caption">{$collectionChild.title}{if $showItemDates && $collectionChild.date}<br><small class="text-muted">{$collectionChild.date}</small>{/if}</div>
 	</a>
