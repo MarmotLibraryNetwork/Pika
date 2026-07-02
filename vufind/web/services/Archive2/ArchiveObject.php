@@ -39,50 +39,50 @@ class ArchiveObject extends \Action
     protected int $nid;
     protected Logger $logger;
 
-	protected const MODEL_VIEWER_MAP = [
-		'audio'            => 'audio',
-		'book'             => 'mirador',
-		'compound object'  => 'compound',
-		'digital document' => 'pdfjs',
-		'image'            => 'open_seadragon',
-		'paged content'    => 'mirador',
-		'postcard'         => 'open_seadragon_multi',
-		'video'            => 'video',
-	];
+    protected const MODEL_VIEWER_MAP = [
+        'audio'            => 'audio',
+        'book'             => 'mirador',
+        'compound object'  => 'compound',
+        'digital document' => 'pdfjs',
+        'image'            => 'open_seadragon',
+        'paged content'    => 'mirador',
+        'postcard'         => 'open_seadragon_multi',
+        'video'            => 'video',
+    ];
 
-	/** Roles that identify subjects/participants rather than production staff. */
-	private const NON_PRODUCTION_TEAM_ROLES = [
-		'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
-		'interviewee', 'member', 'parade marshal', 'parent', 'participant',
-		'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
-		'spouse', 'pictured', 'student',
+    /** Roles that identify subjects/participants rather than production staff. */
+    private const NON_PRODUCTION_TEAM_ROLES = [
+        'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
+        'interviewee', 'member', 'parade marshal', 'parent', 'participant',
+        'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
+        'spouse', 'pictured', 'student',
 
-		'photographer', // on postcards, this related person would end up in acknowledgments section
-		// linked agents will display in Details section.
+        'photographer', // on postcards, this related person would end up in acknowledgments section
+        // linked agents will display in Details section.
 
-	]; //TODO replace use with one the arrays below
+    ]; //TODO replace use with one the arrays below
 
-	private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
-		'ack', // Acknowledgement
-		'dpr', // Digital Production team
-		'edt', // Editor
-		'ivr', // Interviewer
-		'pda', // Production Assistant
-		'pro', // Producer
-		'sen', // Sound Engineer
-		'trc', // Transcriber
+    private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
+        'ack', // Acknowledgement
+        'dpr', // Digital Production team
+        'edt', // Editor
+        'ivr', // Interviewer
+        'pda', // Production Assistant
+        'pro', // Producer
+        'sen', // Sound Engineer
+        'trc', // Transcriber
 
-		//		'cmp', // Composer
-		//		'lyr', // Lyricist
-		//		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
+        //		'cmp', // Composer
+        //		'lyr', // Lyricist
+        //		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
 
-		//TODO: populate with all codes
+        //TODO: populate with all codes
 
-	];
-	/** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
-	private const NON_PRODUCTION_RELATOR_CODES = [
+    ];
+    /** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
+    private const NON_PRODUCTION_RELATOR_CODES = [
 
-	];
+    ];
 
     /** Loads the media object from the `id` query parameter. */
     public function __construct()
@@ -99,7 +99,7 @@ class ArchiveObject extends \Action
         if ($this->mediaObject === null) {
             $this->logger->error('Failed to create media object for nid.', ['nid' => $nid]);
         }
-				$this->logger->debug("Constructed Archive Object $nid");
+        $this->logger->debug("Constructed Archive Object $nid");
     }
 
     /**
@@ -177,6 +177,7 @@ class ArchiveObject extends \Action
 
         // Parent collection
         // bread crumbs, other parent links
+
 	    if($parent = $this->mediaObject->getParentCollection()){
 		    $parent_title = $parent->getTitle();
 		    $interface->assign('parent_title', $parent_title);
@@ -195,7 +196,7 @@ class ArchiveObject extends \Action
         // Can download intermediate file
         $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
         $interface->assign('can_request_copy', $this->canCurrentUserRequestCopy());
-				$interface->assign('can_claim_authorship', $this->canCurrentUserClaimAuthorship());
+        $interface->assign('can_claim_authorship', $this->canCurrentUserClaimAuthorship());
         // Download files
         $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
         if ($orignal_media) {
@@ -205,7 +206,7 @@ class ArchiveObject extends \Action
             $interface->assign('orignal_media_file', false);
         }
 
-        $intermeidate_media = $this->mediaObject->getIntermediateFile() ?? null;
+        $intermeidate_media = $this->mediaObject->getServiceFile() ?? null;
         if ($intermeidate_media) {
             $intermeidate_media_file = $intermeidate_media->fileUrl;
             $interface->assign('intermediate_media_file', $intermeidate_media_file);
@@ -221,7 +222,7 @@ class ArchiveObject extends \Action
         $interface->assign('languageName', $languageName);
 
         // Research Level arrives as a taxonomy term array; only the name is needed for display.
-	      // Note that: Research Type arrives as a simple string, not as a taxonomy term array.
+        // Note that: Research Type arrives as a simple string, not as a taxonomy term array.
         if (isset($nodeData['research_level']['name'])) {
             $interface->assign('research_level', $nodeData['research_level']['name']);
         }
@@ -339,15 +340,15 @@ class ArchiveObject extends \Action
         $interface->assign('extent', $extent);
         $interface->assign('physical_description', $extent);
 
-				// Condition (physical description)
-				$condition = ($this->mediaObject->condition !== null) ? $this->mediaObject->condition : null;
-				$interface->assign('physical_condition', $condition);
+        // Condition (physical description)
+        $condition = ($this->mediaObject->condition !== null) ? $this->mediaObject->condition : null;
+        $interface->assign('physical_condition', $condition);
 
 
         // Contributing Library
         // Get the Corporate Body associated with the library
         $libraryTerm = $this->mediaObject->getLibraryOrganization();
-				if (!empty($libraryTerm)) {
+        if (!empty($libraryTerm)) {
             $interface->assign('library_name', $libraryTerm->name ?? null);
             $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
             $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
@@ -401,7 +402,7 @@ class ArchiveObject extends \Action
         $productionTeamNames = array_column($productionTeam, 'name');
         $linkedAgentsDisplay = array_values(array_filter(
             $this->normalizeLinkedAgents(),
-            fn($agent) => !in_array($agent['name'], $productionTeamNames, true)
+            fn ($agent) => !in_array($agent['name'], $productionTeamNames, true)
         ));
         $interface->assign('linked_agents_display', $linkedAgentsDisplay ?: null);
 
@@ -410,7 +411,7 @@ class ArchiveObject extends \Action
         $interface->assign('related_organization', $enrichedOrgs);
         $supportingDepts = array_values(array_filter(
             $enrichedOrgs ?? [],
-            fn($org) => ($org['relation'] ?? '') === 'local:sup'
+            fn ($org) => ($org['relation'] ?? '') === 'local:sup'
         ));
         $interface->assign('supporting_departments', $supportingDepts ?: null);
         $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
@@ -427,10 +428,10 @@ class ArchiveObject extends \Action
         $interface->assign('cache_reload_url', $cacheReloadUrl);
         // Link to Islandora node; Link to Islandora Pika JSON for opac Admins
         $islandoraUrl         = rtrim($configArray['Islandora2']['url'], '/') . '/node/' . $this->mediaObject->getNodeId();
-				$islandoraPikaJsonUrl = rtrim($configArray['Islandora2']['url'], '/') . '/pika-json/node/' . $this->mediaObject->getNodeId();
+        $islandoraPikaJsonUrl = rtrim($configArray['Islandora2']['url'], '/') . '/pika-json/node/' . $this->mediaObject->getNodeId();
         $interface->assign([
-	        'islandora_url'           => $islandoraUrl,
-	        'islandora_pika_json_url' => $islandoraPikaJsonUrl,
+            'islandora_url'           => $islandoraUrl,
+            'islandora_pika_json_url' => $islandoraPikaJsonUrl,
         ]);
 
 
@@ -523,25 +524,25 @@ class ArchiveObject extends \Action
         }
         $interface->assign('installationDates', $installationDates ?: null);
         $interface->assign('installationLabel', count($installationDates) > 1 ? 'Installations' : 'Installation');
-				// Do label assignment here to avoid SMARTY deprecation of |@count modifier structure
+        // Do label assignment here to avoid SMARTY deprecation of |@count modifier structure
 
-	      //TODO: coordinates will display as the Artwork section Installation Location.
-	      // we will need a guard for non-art objects; and alternate place to display the coordinates.
+        //TODO: coordinates will display as the Artwork section Installation Location.
+        // we will need a guard for non-art objects; and alternate place to display the coordinates.
 
         $interface->assign('maps_key', $configArray['Maps']['apiKey'] ?? '');
 
         // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
         $transcriptMedia = array_values(array_filter(
             $this->mediaObject->getMedia(),
-            fn($m) => $m->use === 'Transcript' && $m->mime === 'text/plain'
+            fn ($m) => $m->use === 'Transcript' && $m->mime === 'text/plain'
         ));
-        usort($transcriptMedia, fn($a, $b) => $a->created <=> $b->created);
+        usort($transcriptMedia, fn ($a, $b) => $a->created <=> $b->created);
 
         $rawLoc    = $nodeData['transcription_loc'] ?? '';
         $rawLang   = $nodeData['transcription_lang']['name'] ?? '';
         // Split on commas not preceded by a backslash; then unescape \, → ,
         $locations = $rawLoc !== ''
-            ? array_map(fn($s) => str_replace('\\,', ',', trim($s)), preg_split('/(?<!\\\\),/', $rawLoc))
+            ? array_map(fn ($s) => str_replace('\\,', ',', trim($s)), preg_split('/(?<!\\\\),/', $rawLoc))
             : [];
         $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
 
@@ -565,9 +566,9 @@ class ArchiveObject extends \Action
 
         // Normalize Drupal link fields for externalLinksSection.tpl.
         $externalLinks = $this->normalizeLinkField($nodeData['external_link'] ?? null);
-        $interface->assign('externalLinks',   $externalLinks ?: null);
+        $interface->assign('externalLinks', $externalLinks ?: null);
         $this->loadWikipediaData($externalLinks);
-        $interface->assign('furtherSiteLinks',$this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
+        $interface->assign('furtherSiteLinks', $this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
         $rawGenealogyLinks = $this->normalizeLinkField($nodeData['genealogy_link'] ?? null);
         foreach ($rawGenealogyLinks as &$link) {
             $link['uri'] = $this->rewriteGenealogyLinkUri($link['uri']);
@@ -583,11 +584,11 @@ class ArchiveObject extends \Action
         }
         unset($link);
         global $library;
-				if ($library && $library->archiveOnlyInterface) {
+        if ($library && $library->archiveOnlyInterface) {
             // GroupedWork is a Pika concept; non-Pika catalogs cannot resolve those URLs.
             $rawCatalogLinks = array_values(array_filter(
                 $rawCatalogLinks,
-                fn($link) => !str_contains($link['uri'], '/GroupedWork/')
+                fn ($link) => !str_contains($link['uri'], '/GroupedWork/')
             ));
         }
         $interface->assign('catalogLinks', $rawCatalogLinks ?: null);
@@ -767,7 +768,7 @@ class ArchiveObject extends \Action
             $place['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($place);
-        usort($places, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        usort($places, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $places;
     }
 
@@ -792,7 +793,7 @@ class ArchiveObject extends \Action
             $event['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($event);
-        usort($events, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        usort($events, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $events;
     }
 
@@ -817,7 +818,7 @@ class ArchiveObject extends \Action
             $org['thumbnail']  = $thumb['url'] ?? null;
         }
         unset($org);
-        usort($orgs, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        usort($orgs, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $orgs;
     }
 
@@ -842,7 +843,7 @@ class ArchiveObject extends \Action
             $person['thumbnail'] = $thumb['url'] ?? null;
         }
         unset($person);
-        usort($people, fn($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        usort($people, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
         return $people;
     }
 
@@ -1000,7 +1001,7 @@ class ArchiveObject extends \Action
      */
     private function buildProductionTeam(array &$relatedPeople): array
     {
-				//$this->logger->debug("Building Production Team");
+        //$this->logger->debug("Building Production Team");
         $team   = [];
         $byName = []; // name → index in $team for dedup
 
@@ -1033,20 +1034,20 @@ class ArchiveObject extends \Action
         }
 
         // --- Pass 2: related_person — relator-code based filter ---
-	      // Entries added to the team are removed from $relatedPeople to prevent duplication.
-	      foreach ($relatedPeople as $key => $person) {
-	        $name = $person['name'] ?? null;
-          if (empty($name)) {
-              continue;
-          }
-          [$roleLabel, $code] = $this->parseRoleLabel($person['relation_label'] ?? '');
-          if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)){
-	          continue;
-          }
-          $tid        = isset($person['tid']) ? (int)$person['tid'] : null;
-          $vocabulary = $person['vid'] ?? 'person';
-          $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
-					unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
+        // Entries added to the team are removed from $relatedPeople to prevent duplication.
+        foreach ($relatedPeople as $key => $person) {
+            $name = $person['name'] ?? null;
+            if (empty($name)) {
+                continue;
+            }
+            [$roleLabel, $code] = $this->parseRoleLabel($person['relation_label'] ?? '');
+            if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)) {
+                continue;
+            }
+            $tid        = isset($person['tid']) ? (int)$person['tid'] : null;
+            $vocabulary = $person['vid'] ?? 'person';
+            $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
+            unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
         }
         return $team;
     }
@@ -1162,13 +1163,13 @@ class ArchiveObject extends \Action
         return false;
     }
 
-	protected function canCurrentUserClaimAuthorship(): bool
-	{
-		if ($this->mediaObject->__get('pika_claim_authorship')) {
-			return true;
-		}
-		return false;
-	}
+    protected function canCurrentUserClaimAuthorship(): bool
+    {
+        if ($this->mediaObject->__get('pika_claim_authorship')) {
+            return true;
+        }
+        return false;
+    }
 
     private ?bool $canCurrentUserViewResolved = null;
 
@@ -1381,7 +1382,8 @@ class ArchiveObject extends \Action
      * the Wikipedia article via the API and assigns `wikipediaData` and `wiki_lang`
      * to the template. Mirrors IslandoraDriver::loadLinkedData() for the wikipedia case.
      */
-    private function loadWikipediaData(array $externalLinks): void {
+    private function loadWikipediaData(array $externalLinks): void
+    {
         global $interface, $configArray;
         foreach ($externalLinks as $link) {
             $uri = $link['uri'] ?? '';
@@ -1530,7 +1532,8 @@ class ArchiveObject extends \Action
         return $uri;
     }
 
-    private function fetchTranscriptText(string $url): ?string {
+    private function fetchTranscriptText(string $url): ?string
+    {
         global $configArray;
         $ch = curl_init($url);
         curl_setopt_array($ch, [
