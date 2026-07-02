@@ -45,6 +45,7 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'image'            => 'Image',
     //'art'              => 'Image',
     //'article'          => 'Image',
+    'page'             => 'DigitalDocument',
     'paged content'    => 'PagedContent',
     //'magazine'         => 'PagedContent',
     'postcard'         => 'Postcard',
