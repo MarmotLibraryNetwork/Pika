@@ -12,14 +12,11 @@
 		{* Thumbnail and description *}
 		<div class="row">
 			{if $thumbnail}
-			<div class="col-xs-4">
+			<div class="col-xs-12">
 				{if $thumbnail_link}<a href="{$thumbnail_link}">{/if}
 				<img src="{$thumbnail}" class="img-responsive" alt="{$title|escape}">
 				{if $thumbnail_link}</a>{/if}
-			</div>
-			<div class="col-xs-8">
-			{else}
-			<div class="col-xs-12">
+			
 			{/if}
 				{$description}
 			</div>
