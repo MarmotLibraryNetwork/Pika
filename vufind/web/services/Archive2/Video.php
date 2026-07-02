@@ -29,10 +29,8 @@ class Video extends ArchiveObject
     {
         global $interface;
 
-        if ($this->mediaObject === null) {
-            return; // parent constructor already logged the load failure
-        }
-
+        // parent::launch() checks for a null mediaObject (e.g. missing/invalid id in the
+        // URL) and shows the unavailable page before this method touches $this->mediaObject.
         parent::launch();
 
         $video = $this->mediaObject->getVideo();

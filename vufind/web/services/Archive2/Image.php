@@ -28,6 +28,10 @@ class Image extends ArchiveObject
         global $interface;
         global $configArray;
 
+        // parent::launch() checks for a null mediaObject (e.g. missing/invalid id in the
+        // URL) and shows the unavailable page before this method touches $this->mediaObject.
+        parent::launch();
+
         $serviceFileUrl = null;
 
         // The Cantaloupe image server has no access control of its own: anyone who has
@@ -56,8 +60,6 @@ class Image extends ArchiveObject
         }
 
         $interface->assign('service_file_url', $serviceFileUrl);
-        parent::launch();
-
         $interface->assign('viewer', 'open_seadragon');
 
         $title = $this->mediaObject->getTitle();
