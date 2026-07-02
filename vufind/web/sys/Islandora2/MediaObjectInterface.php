@@ -65,11 +65,25 @@ interface MediaObjectInterface
     public function getMedia(): array;
 
     /**
+     * Return the description of the object
+     *
+     * @return string|null
+     */
+    public function getDescription(): ?string;
+
+    /**
      * Convenience accessor for the primary derivative or file.
      *
      * @return array|null
      */
     public function getOriginalMedia(): ?I2Media;
+
+    /**
+     * Convenience accessor for the service file.
+     *
+     * @return array|null
+     */
+    public function getServiceFile();
 
     /**
      * Return the node payload with the "field_" prefix stripped from all keys.
