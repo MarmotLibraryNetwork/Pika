@@ -7108,7 +7108,7 @@ a:focus img.listResultImage,
   outline: 2px solid white;
 }
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #A3A510 !important;
+  border: 2px solid #677000 !important;
   outline: 2px solid white;
 }
 a:focus > .header-button {
@@ -8197,7 +8197,7 @@ a .header-button:visited {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #A3A510;
+  background-color: #677000;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8240,7 +8240,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #A3A510;
+  background-color: #677000;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -9805,7 +9805,7 @@ img.x-twit {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #A3A510;
+  border-top: 5px solid #677000;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -9820,8 +9820,8 @@ img.x-twit {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #A3A510;
-  border-color: #A3A510;
+  background-color: #677000;
+  border-color: #677000;
 }
 #bookshelfContainer {
   max-height: 400px;
@@ -10387,7 +10387,7 @@ img.x-twit {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #A3A510;
+  background-color: #677000;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -11029,8 +11029,7 @@ a.btn.btn-sm.btn-default {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody a,
 .archiveComponentContainer .archiveComponent .archiveComponentBody a:visited {
-  background: #A3A510;
-  color: #FFFFFF;
+  color: #4273AC;
 }
 .archiveComponentContainer .archiveComponent {
   color: #FFFFFF;
