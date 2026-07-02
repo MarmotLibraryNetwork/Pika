@@ -197,7 +197,7 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Attempt to return the orignial media file.
+     * Attempt to return the original media file.
      *
      * @return I2Media|null
      */
