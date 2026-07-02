@@ -179,9 +179,15 @@ class ArchiveObject extends \Action
         // bread crumbs, other parent links
 	    if($parent = $this->mediaObject->getParentCollection()){
 		    $parent_title = $parent->getTitle();
-		    $parent_url   = getObjRelativeUrl($parent);
 		    $interface->assign('parent_title', $parent_title);
-		    $interface->assign('parent_rel_url', $parent_url);
+		    // Only link to the parent collection when its own pika_usage allows it to be
+		    // viewed. If the parent is set to 'no' (or 'testonly' on production) the object
+		    // page isn't reachable, so display the collection name as plain text (no link)
+		    // rather than linking to an unavailable page.
+		    if (!self::isNodeUnavailableByUsage($parent)) {
+			    $parent_url = getObjRelativeUrl($parent);
+			    $interface->assign('parent_rel_url', $parent_url);
+		    }
 	    }
         // Download & Request permissions
         // Can download master file
