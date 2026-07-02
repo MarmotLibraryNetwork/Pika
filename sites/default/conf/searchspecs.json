@@ -789,14 +789,30 @@
         ["proximal", 800],
         ["and", 500]
       ],
+      "tm_X3b_en_title": [ /* This field doesn't have punctuation characters like ":", "'" */
+        ["exact", 1800], /*TODO: does exact work on text fields? */
+        ["onePhrase", 1200],
+        ["and", 500]
+      ],
+      "tm_X3b_en_field_full_title": [
+        ["exact", 1800], /*TODO: does exact work on this text field? */
+        ["onePhrase", 1200],
+        ["and", 500]
+      ],
       "tm_X3b_en_field_subtitle": [
         ["onePhrase", 1200],
         ["and", 700]
       ],
-      "tm_X3b_en_album_title": [
-        ["onePhrase", 1100]
+      "tm_X3b_en_field_alternative_title": [
+        ["onePhrase", 1100],
+        ["and", 600]
       ],
-/*
+
+      "tm_X3b_en_album_title": [
+        ["onePhrase", 1100],
+        ["and", 500]
+      ],
+/* Can only match on complete phrase with single strings
       "ss_field_album_title": [
         ["onePhrase", 1100]
       ],
@@ -966,6 +982,10 @@
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200]
        ],
+      "tm_X3b_en_field_full_title": [
+        ["exact", 1800],
+        ["onePhrase", 1200]
+      ],
       "tm_X3b_en_title": [ /* This field doesn't have punctuation characters like ":", "'" */
         ["exact", 1800], /*TODO: does exact work on text fields? */
         ["onePhrase", 1200]
@@ -974,9 +994,20 @@
         ["onePhrase", 1200],
         ["exact", 700]
       ],
-      "ss_field_album_title": [ /*TODO: needs a text field */
+      "tm_X3b_en_field_alternative_title": [
+        ["exact", 1100],
+        ["onePhrase", 600]
+      ],
+
+      "tm_X3b_en_album_title": [
+        ["exact", 1100],
+        ["onePhrase", 1100]
+      ],
+/*
+      "ss_field_album_title": [
         ["exact", 1100]
       ],
+*/
       "sm_collection": [/* collection string */
         ["exact", 800]
       ],
@@ -1155,9 +1186,13 @@
       "sm_collection": [ /* collection string  TODO: text field? */
         ["onePhrase", 1200]
       ],
-      "ss_field_album_title": [ /*TODO: needs a text field */
+      "tm_X3b_en_album_title": [
+        ["exact", 1100],
         ["onePhrase", 1100]
       ],
+/*      "ss_field_album_title": [
+        ["onePhrase", 1100]
+      ],*/
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
@@ -1192,10 +1227,16 @@
       "sm_collection": [ /* collection string */
         ["exact", 1200]
       ],
-      "ss_field_album_title": [ /*TODO: needs a text field */
+      "tm_X3b_en_album_title": [
         ["exact", 1100],
-        ["onePhrase", 600]  /*Added this while it's a string field */
+        ["onePhrase", 1100]
       ],
+/*
+      "ss_field_album_title": [
+        ["exact", 1100],
+        ["onePhrase", 600]  *//*Added this while it's a string field *//*
+      ],
+*/
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
