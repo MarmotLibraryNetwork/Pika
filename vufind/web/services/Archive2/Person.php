@@ -40,11 +40,7 @@ class Person extends TaxonomyObject
         }
 
         if (!($this->taxonomyObject instanceof PersonTaxonomy)) {
-            $this->logger->error('Person controller received wrong taxonomy type.', [
-                'tid'      => $_GET['tid'] ?? null,
-                'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
-            ]);
-            return;
+            $this->handleTaxonomyTypeMismatch();
         }
 
         parent::launch();
@@ -98,7 +94,7 @@ class Person extends TaxonomyObject
         // already normalized and assigned by parent::launch().
         $genealogyLink = $person->getGenealogyLink();
         if ($genealogyLink) {
-            $existingLinks = $interface->getTemplateVars('links') ?? [];
+            $existingLinks = $interface->getVariable('links') ?? [];
             $interface->assign('links', array_merge([$genealogyLink], $existingLinks) ?: null);
         }
 

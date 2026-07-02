@@ -6,12 +6,12 @@
 				<div class="archiveComponentHeader">Random Image</div>
 				<div class="archiveComponentRandomImage row">*}
 					{if $randomObject}
-					<figure>
+					<figure class="random-image-figure">
 						<a href="{$randomObject.url}">
 							{if $randomObject.thumbnail}
-							<img src="{$randomObject.thumbnail}" alt="{$randomObject.title|escape}" class="img-responsive thumbnail" style="object-fit: contain; margin: 0 auto; max-width: 250px; max-height: 250px;">
+							<img src="{$randomObject.thumbnail}" alt="{$randomObject.title|escape}" class="img-responsive thumbnail collection-thumbnail-fit">
 							{/if}
-							<figcaption class="explore-more-category-title" style="text-align: center">
+							<figcaption class="explore-more-category-title">
 								<strong>{$randomObject.title|truncate:120}</strong>
 							</figcaption>
 						</a>

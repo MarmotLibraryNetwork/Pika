@@ -40,11 +40,7 @@ class Place extends TaxonomyObject
         }
 
         if (!($this->taxonomyObject instanceof GeographicLocationTaxonomy)) {
-            $this->logger->error('Place controller received wrong taxonomy type.', [
-                'tid'      => $_GET['tid'] ?? null,
-                'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
-            ]);
-            return;
+            $this->handleTaxonomyTypeMismatch();
         }
 
         parent::launch();

@@ -48,8 +48,9 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			$homeLibrary         = $user->getHomeLibrary();
-			$libraryTid          = $homeLibrary->libraryTid;
-			$object->$libraryTid = $libraryTid;
+			// If home library doesn't have a TID set it to a non-existent TID
+			$libraryTid          = $homeLibrary->libraryTid ?? 28561;
+			$object->whereAdd("libraryTid = $libraryTid");
 		}
 		if ($object->find()){
 			while ($object->fetch()){

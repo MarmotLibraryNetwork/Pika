@@ -3,7 +3,7 @@
 	{foreach from=$relatedObjects item=obj}
 		<div class="related-objects-tiles">
 			<a href="{$obj.link}">
-				<figure class="browse-thumbnail-sorted" style="text-align:center;">
+				<figure class="browse-thumbnail-sorted">
 					<img src="{$obj.image}" alt="{$obj.title|escape}" class="img-responsive">
 					<figcaption class="explore-more-category-title">{$obj.title|removeTrailingPunctuation|truncate:30:"..."}</figcaption>
 				</figure>

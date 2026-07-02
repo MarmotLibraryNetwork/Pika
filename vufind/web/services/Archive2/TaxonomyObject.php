@@ -47,7 +47,7 @@ class TaxonomyObject extends \Action
         $this->tid    = (int)($_GET['id'] ?? 0);
 
         if ($this->tid <= 0) {
-            $this->logger->warning('Invalid or missing tid in request.', ['tid' => $_GET['tid'] ?? null]);
+            $this->logger->warning('Invalid or missing tid in request.', ['tid' => $_GET['id'] ?? null]);
             return;
         }
 
@@ -85,7 +85,6 @@ class TaxonomyObject extends \Action
         }
 
         // Display hints
-         // Display hints
         $interface->assign('is_object_display', false);
         $interface->assign('is_taxonomy_display', true);
 
@@ -161,6 +160,34 @@ class TaxonomyObject extends \Action
         $interface->assign('islandora_taxonomy_url',          $islandoraBaseUrl . '/taxonomy/term/' . $this->tid);
         $interface->assign('islandora_taxonomy_pika_json_url', $islandoraBaseUrl . '/pika-json/taxonomy/' . $this->tid);
 
+    }
+
+    /**
+     * Called by typed subclasses (Person, Organization, Place, Event) when the
+     * resolved taxonomyObject's type does not match the controller's expected type.
+     *
+     * Redirects to the correct controller when the term's vocabulary maps to a
+     * displayable URL segment (mirrors Term::__construct()); otherwise falls back
+     * to the unavailable.tpl error page instead of leaving the response blank.
+     */
+    protected function handleTaxonomyTypeMismatch(): void
+    {
+        if ($this->taxonomyObject !== null) {
+            $vocab = strtolower($this->taxonomyObject->getVocabularyMachineName() ?? '');
+            if (isset(ISLANDORA2_VOCAB_URL_MAP[$vocab])) {
+                http_response_code(301);
+                header('Location: ' . getTaxonomyAbsoluteUrl($this->taxonomyObject));
+                exit();
+            }
+        }
+
+        $this->logger->error(static::class . ' controller received wrong taxonomy type.', [
+            'tid'      => $this->tid,
+            'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
+        ]);
+        http_response_code(404);
+        parent::display('unavailable.tpl', 'Archive Term Unavailable');
+        die();
     }
 
     /**

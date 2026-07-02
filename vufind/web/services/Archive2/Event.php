@@ -40,11 +40,7 @@ class Event extends TaxonomyObject
         }
 
         if (!($this->taxonomyObject instanceof EventTaxonomy)) {
-            $this->logger->error('Event controller received wrong taxonomy type.', [
-                'tid'      => $_GET['tid'] ?? null,
-                'received' => $this->taxonomyObject ? get_class($this->taxonomyObject) : 'null',
-            ]);
-            return;
+            $this->handleTaxonomyTypeMismatch();
         }
 
         parent::launch();

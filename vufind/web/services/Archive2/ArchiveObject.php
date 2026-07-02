@@ -162,7 +162,18 @@ class ArchiveObject extends \Action
         }
 
         // Viewing permissions (true or false)
-        $interface->assign('can_view', $this->canCurrentUserView());
+        $canView = $this->canCurrentUserView();
+        $interface->assign('can_view', $canView);
+        if (!$canView) {
+            if ($this->isContentUnavailable()) {
+                // Denied because of pika_usage ('no', or 'testonly' on production), not a
+                // pika_access_limits library restriction -- logging in or visiting a
+                // particular library would never grant access, so don't show that messaging.
+                $interface->assign('content_unavailable', true);
+            } else {
+                $interface->assign('access_restricted_library_name', $this->getViewingRestrictionLibraryName());
+            }
+        }
 
         // Parent collection
         // bread crumbs, other parent links
@@ -949,7 +960,7 @@ class ArchiveObject extends \Action
             $tid = isset($agent['tid']) ? (int)$agent['tid'] : null;
 
             // Prefer an explicit vocabulary key; fall back to rel-field heuristic.
-            $vocabulary = $agent['vid'] ?? null;
+            $vocabulary = $agent['vocabulary'] ?? null;
             if ($vocabulary === null) {
                 $rel = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
                 $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
@@ -1004,7 +1015,7 @@ class ArchiveObject extends \Action
                     continue;
                 }
                 $tid        = isset($agent['tid']) ? (int)$agent['tid'] : null;
-                $vocabulary = $agent['vid'] ?? null;
+                $vocabulary = $agent['vocabulary'] ?? null;
                 if ($vocabulary === null) {
                     $rel        = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
                     $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
@@ -1153,143 +1164,210 @@ class ArchiveObject extends \Action
 		return false;
 	}
 
+    private ?bool $canCurrentUserViewResolved = null;
+
     /**
-     * Determine if the current patron can view the object.
+     * Determine if the current patron can view the object. Memoized: subclasses
+     * (e.g. Image, Postcard) that need to gate their own restricted-content URLs
+     * call this before parent::launch() runs the same check again, so caching the
+     * result avoids repeating the user/library lookups inside userSatisfiesRestriction().
      */
     protected function canCurrentUserView(): bool
     {
-        return true;
-        if ($this->mediaObject->pika_usage === 'no') {
+        if ($this->canCurrentUserViewResolved === null) {
+            $this->canCurrentUserViewResolved = !$this->isContentUnavailable()
+                && self::userSatisfiesRestriction($this->resolveViewingRestrictions());
+        }
+        return $this->canCurrentUserViewResolved;
+    }
+
+    /**
+     * True when pika_usage itself takes the object out of circulation, independent of
+     * any pika_access_limits library restriction. Used by launch() to choose a
+     * "this content isn't available" message instead of the library-restriction
+     * messaging, since logging in or visiting a particular library never helps here.
+     */
+    protected function isContentUnavailable(): bool
+    {
+        return self::isNodeUnavailableByUsage($this->mediaObject);
+    }
+
+    /**
+     * Static entry point for callers that only have a node (e.g. the Archive2 AJAX
+     * proxy endpoints), not a fully constructed ArchiveObject instance. Mirrors
+     * canCurrentUserView() exactly, without per-instance memoization.
+     */
+    public static function canUserViewNode(MediaObjectInterface $node): bool
+    {
+        if (self::isNodeUnavailableByUsage($node)) {
             return false;
         }
+        return self::userSatisfiesRestriction(self::resolveViewingRestrictionForNode($node));
+    }
 
-        return true;
+    /**
+     * pika_usage of 'no' takes an object out of circulation everywhere. pika_usage of
+     * 'testonly' is meant to be visible only on test/non-production Pika servers, mirroring
+     * the Solr search filter in SearchObject_Islandora2::getStandardFilters() (Pika Usage
+     * filter, ~line 1407: 'ss_pika_usage:yes' on production, '!ss_pika_usage:no' otherwise)
+     * so an object can't be browsed to directly on production even though it's excluded
+     * from production search results.
+     */
+    private static function isNodeUnavailableByUsage(MediaObjectInterface $node): bool
+    {
+        global $configArray;
+        $usage = $node->pika_usage;
+        if ($usage === 'no') {
+            return true;
+        }
+        // Casing of this field's stored values is inconsistent elsewhere in the codebase
+        // ('testOnly' vs 'testonly'), so compare case-insensitively.
+        if (is_string($usage) && strcasecmp($usage, 'testonly') === 0 && $configArray['Site']['isProduction']) {
+            return true;
+        }
+        return false;
+    }
 
-        $viewingRestrictions = $this->resolveViewingRestrictions();
-        if (count($viewingRestrictions) === 0) {
+    /** Given a resolved restriction value (null/'all'/subdomain), does the current user/session satisfy it? */
+    private static function userSatisfiesRestriction(?string $restriction): bool
+    {
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
             return true;
         }
 
-        $canView            = false;
-        $validHomeLibraries = [];
-        $userPTypes         = [];
-
+        // pika_access_limits is a free-text field staff type a library subdomain into, so
+        // matching it against actual subdomains must be case-insensitive -- otherwise a
+        // casing mismatch (e.g. "Adams" vs. "adams") would silently deny legitimate
+        // patrons of that library even though the restriction was clearly meant for them.
         $user = \UserAccount::getLoggedInUser();
-        if ($user && $user->getHomeLibrary()) {
-            $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
-            $userPTypes           = $user->getRelatedPTypes();
-            $linkedAccounts       = $user->getLinkedUsers();
-            foreach ($linkedAccounts as $linkedAccount) {
-                $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+        if ($user) {
+            $validHomeLibraries = [];
+            if ($user->getHomeLibrary()) {
+                $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
+            }
+            foreach ($user->getLinkedUsers() as $linkedAccount) {
+                if ($linkedAccount->getHomeLibrary()) {
+                    $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+                }
+            }
+            foreach ($validHomeLibraries as $homeLibrarySubdomain) {
+                if (strcasecmp($homeLibrarySubdomain, $restriction) === 0) {
+                    return true;
+                }
             }
         }
 
         global $locationSingleton;
-        $physicalLocation         = $locationSingleton->getPhysicalLocation();
-        $physicalLibrarySubdomain = null;
+        $physicalLocation = $locationSingleton->getPhysicalLocation();
         if ($physicalLocation) {
             $physicalLibrary            = new \Library();
             $physicalLibrary->libraryId = $physicalLocation->libraryId;
-            if ($physicalLibrary->find(true)) {
-                $physicalLibrarySubdomain = $physicalLibrary->subdomain;
+            if ($physicalLibrary->find(true) && strcasecmp($physicalLibrary->subdomain, $restriction) === 0) {
+                return true;
             }
         }
 
-        foreach ($viewingRestrictions as $restriction) {
-            $restrictionType = 'homeLibraryOrIP';
-            if (strpos($restriction, ':') !== false) {
-                [$restrictionType, $restriction] = explode(':', $restriction, 2);
-            }
-            $restrictionType  = strtolower(trim($restrictionType));
-            $restrictionType  = str_replace(' ', '', $restrictionType);
-            $restriction      = trim($restriction);
-            $restrictionLower = strtolower($restriction);
-            if ($restrictionLower === 'anonymousmasterdownload' || $restrictionLower === 'verifiedmasterdownload') {
-                continue;
-            }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'patronsfrom') {
-                $libraryDomain = trim($restriction);
-                if ($restrictionLower === 'default' || array_search($libraryDomain, $validHomeLibraries, true) !== false) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'withinlibrary') {
-                $libraryDomain = trim($restriction);
-                if ($libraryDomain === $physicalLibrarySubdomain) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'ptypes' || $restrictionType === 'ptype') {
-                $validPTypes = array_map('trim', explode(',', $restriction));
-                foreach ($validPTypes as $pType) {
-                    if (array_search($pType, $userPTypes, true) !== false) {
-                        $canView = true;
-                        break 2;
-                    }
-                }
-            }
-        }
-
-        return $canView;
+        return false;
     }
 
-    /** Parses the raw `pika_access_limits` field into an array of restriction strings. */
-    protected function resolveViewingRestrictions(): array
+    private ?string $viewingRestriction         = null;
+    private bool    $viewingRestrictionResolved = false;
+
+    /**
+     * Resolves the effective pika_access_limits value for this object, walking up
+     * parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or
+     * 'all'). Memoized since both canCurrentUserView() and getViewingRestrictionLibraryName()
+     * need it.
+     */
+    protected function resolveViewingRestrictions(): ?string
     {
-        $raw = $this->mediaObject->pika_access_limits ?? null;
-        if ($raw === null) {
-            return [];
+        if (!$this->viewingRestrictionResolved) {
+            $this->viewingRestriction         = self::resolveViewingRestrictionForNode($this->mediaObject);
+            $this->viewingRestrictionResolved = true;
         }
-
-        if (is_string($raw)) {
-            $rawArray = preg_split('/[\r\n;]+/', $raw);
-        } elseif (is_array($raw)) {
-            $rawArray = $raw;
-        } else {
-            $this->logger->warning('Unexpected type for pika_access_limits.', ['type' => gettype($raw)]);
-            return [];
-        }
-
-        return array_values(array_filter($rawArray));
+        return $this->viewingRestriction;
     }
 
     /**
-     * Parses a single restriction string into a keyed array.
-     *
-     * Supports `key:value` and `key:val1,val2` forms; bare keys map to `1`.
-     *
-     * @param string $restriction
-     * @return array<string, int|string[]>
+     * Resolves the effective pika_access_limits value for an arbitrary node, walking
+     * up parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or 'all').
      */
-    protected function parseRestriction($restriction)
+    public static function resolveViewingRestrictionForNode(MediaObjectInterface $node): ?string
     {
-        // has paramaters
-        if (strstr($restriction, ':')) {
-            $pieces = explode(':', $restriction);
-            $k = trim($pieces[0]);
-            // has multipule parameters
-            if (strstr($pieces[1], ',')) {
-                $subs = explode(',', $pieces[1]);
-                foreach ($subs as $key => $val) {
-                    $subs[$key] = trim($val);
-                }
-                // has single parameter
-            } else {
-                $v = trim($pieces[1]);
-                $restrictions[$k] = [$v];
-                return $restrictions;
+        $startingNid = $node->getNodeId();
+        $depth       = 0;
+        while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
+            $raw = $node->pika_access_limits ?? '';
+            if (is_array($raw)) {
+                // The Islandora editing interface only ever lets staff set a single string
+                // value for pika_access_limits, so this shouldn't normally happen. But if a
+                // malformed/legacy node hands back an array anyway, warn so it gets noticed
+                // and use the first entry, rather than letting (string) cast the whole array
+                // to the literal "Array" -- which would match no restriction and silently
+                // lock the object for every patron.
+                (new Logger(self::class))->warning('pika_access_limits arrived as an array; expected a single string value. Using the first element.', [
+                    'nid' => $node->getNodeId(),
+                    'raw' => $raw,
+                ]);
+                $raw = reset($raw) ?: '';
             }
-            $restrictions[$k] = $subs;
-            return $restrictions;
+
+            $value = trim((string)$raw);
+            if ($value === '' || strcasecmp($value, 'default') === 0) {
+                $node = $node->getParentCollection();
+                $depth++;
+                continue;
+            }
+            return $value;
         }
-        $k = trim($restriction);
-        $restrictions[$k] = 1;
-        return $restrictions;
+
+        if ($node !== null) {
+            // The walk hit the depth guard without ever resolving a restriction (a cyclic
+            // field_member_of relationship, or collection nesting deeper than we expect).
+            // Fail open -- allow viewing -- rather than denying access for a node whose
+            // restriction can never actually be resolved; log so staff can investigate and
+            // fix the underlying collection structure.
+            (new Logger(self::class))->error('Viewing-restriction resolution hit the parent-collection depth guard; allowing access.', [
+                'nid'          => $startingNid,
+                'stoppedAtNid' => $node->getNodeId(),
+                'depth'        => $depth,
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Display name of the library a viewing restriction is scoped to, for use in
+     * access-denied messaging. Null when there's no restriction or the restriction
+     * is 'all' (no specific library). Falls back to "contributing library" when the
+     * restriction's subdomain doesn't match a library on this site (e.g. a
+     * restriction for Lafayette on the MLN1 server, or an MLN1 library on MLN2).
+     */
+    protected function getViewingRestrictionLibraryName(): ?string
+    {
+        $restriction = $this->resolveViewingRestrictions();
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
+            return null;
+        }
+
+        $library            = new \Library();
+        $library->subdomain = $restriction;
+        if ($library->find(true)) {
+            return $library->displayName;
+        }
+
+        // The restriction doesn't correspond to any library on this site -- either a typo,
+        // or (per the docblock above) a subdomain only known to a different Pika
+        // instance. Either way it silently locks the object out for everyone, so log it
+        // rather than leaving no trail for staff to notice and fix the underlying value.
+        (new Logger(self::class))->notice('pika_access_limits restriction does not match any library on this site.', [
+            'nid'         => $this->mediaObject->getNodeId(),
+            'restriction' => $restriction,
+        ]);
+        return 'the contributing library';
     }
 
     /**

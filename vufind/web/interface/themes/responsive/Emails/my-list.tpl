@@ -16,7 +16,7 @@
 {if $title.title_display}{$title.title_display}
 	{$title.author_display}
 	{$url}/GroupedWork/{$title.id}/Home
-	{elseif $title.its_node_id}{$twm_X3b_en_title_ws_token[0]}
+	{elseif $title.its_node_id}{$title.twm_X3b_en_title_ws_token[0]}
 		{$title.format}
 		{if $title.url}
 			{$url}{$title.url}

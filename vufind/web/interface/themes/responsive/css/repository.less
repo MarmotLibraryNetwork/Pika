@@ -603,3 +603,330 @@
 .taxonomy-map-embed {
   border: 0;
 }
+
+// Archive2 — Center the thumbnail/caption in the related-objects tile (panels/relatedObjectsContent.tpl)
+.related-objects-tiles .browse-thumbnail-sorted {
+  text-align: center;
+}
+
+// Archive2 — Spacing above a row separating collection page sections
+// (collection_basic.tpl, collection_map.tpl, components/browse_all_component.tpl)
+.collection-row-spacer {
+  margin-top: 1em;
+}
+
+// Archive2 — Mirador viewer container; position and height must be set for the
+// viewer to display properly, see
+// https://github.com/ProjectMirador/mirador/wiki/Embedding-in-Another-Environment#styling-issues
+// (mirador.tpl)
+.mirador-viewer-container {
+  position: relative;
+  height: 1000px;
+}
+
+// Archive2 — Collection thumbnail floated left of the description text (collection_timeline.tpl)
+.collection-thumbnail-float-left {
+  max-width: 300px;
+  float: left;
+  margin: 0 1em 1em 0;
+}
+
+// Archive2 — Year heading above each year group in the timeline grid (components/timeline_objects_grid.tpl)
+.timeline-year-heading {
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.25em;
+}
+
+// Archive2 — Small spacing above a row separating map sections (collection_map.tpl, components/map_component.tpl)
+.collection-row-spacer-sm {
+  margin-top: 0.5em;
+}
+
+// Archive2 — Full-page Google Map container (collection_map.tpl)
+.collection-map-container {
+  height: 450px;
+}
+
+// Archive2 — Embedded component Google Map container (components/map_component.tpl)
+.collection-map-component-container {
+  height: 500px;
+  margin-top: 0.5em;
+}
+
+// Archive2 — Hidden list of places without coordinates, shown via a popup instead
+// (collection_map.tpl, components/map_component.tpl)
+.archive-map-unmapped-locations {
+  display: none;
+}
+
+// Archive2 — Numbered pin marker on the Google Map (collection_map.tpl, components/map_component.tpl)
+.map-count-marker {
+  background: #2980b9;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  line-height: 32px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+
+  // Smaller marker used in the embedded map component (components/map_component.tpl)
+  &.map-count-marker--compact {
+    width: 32px;
+    height: 32px;
+    line-height: 28px;
+  }
+}
+
+// Archive2 — Google Map InfoWindow popup content for a child object marker
+// (collection_map.tpl, components/map_component.tpl)
+.archive-map-popup {
+  max-width: 220px;
+  text-align: center;
+}
+
+// Archive2 — Thumbnail inside the map popup (collection_map.tpl, components/map_component.tpl)
+.archive-map-popup-thumbnail {
+  max-width: 200px;
+  margin-bottom: 6px;
+}
+
+// Archive2 — Browse By body is shorter than the standard horizontal component
+// (overrides the 250px .archiveComponentBody min-height above) (components/browse_by_component.tpl)
+.archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentBody.browse-by-component-body {
+  min-height: 14px;
+}
+
+// Archive2 — Thumbnail image scaled to fit within a fixed box, centered
+// (components/random_image_component.tpl, collection_custom.tpl)
+.collection-thumbnail-fit {
+  object-fit: contain;
+  margin: 0 auto;
+  max-width: 250px;
+  max-height: 250px;
+}
+
+// Archive2 — Center the caption under the random image thumbnail (components/random_image_component.tpl)
+.random-image-figure .explore-more-category-title {
+  text-align: center;
+}
+
+// Archive2 — Audio poster wrapper, centers the poster image (audio.tpl)
+.archive-audio-poster-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+// Archive2 — Audio poster image (audio.tpl)
+.archive-audio-poster-image {
+  object-fit: contain;
+  max-width: 600px;
+  max-height: 600px;
+}
+
+// Archive2 — Audio player element, full width (audio.tpl, audio_compound.tpl)
+.archive-audio-player {
+  width: 100%;
+}
+
+// Archive2 — Video player element (video_compound.tpl)
+.archive-video-player {
+  background: #000;
+}
+
+// Archive2 — Caption/VTT text box shown under the player (audio.tpl, audio_compound.tpl)
+.archive-caption {
+  height: 60px;
+  background: #333;
+  color: #fff;
+  display: none;
+  text-align: center;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  text-wrap: balance;
+
+  // Compound player variant adds inner padding (audio_compound.tpl)
+  &.archive-caption--compound {
+    padding: 10px;
+    box-sizing: border-box;
+  }
+}
+
+// Archive2 — Wrapper around the compound player, above the item grid (audio_compound.tpl, video_compound.tpl)
+.archive-compound-player-wrapper {
+  margin-bottom: 30px;
+}
+
+// Archive2 — Grid of selectable audio/video items (audio_compound.tpl, video_compound.tpl)
+.archive-compound-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+// Archive2 — Selectable item card in the compound grid (audio_compound.tpl, video_compound.tpl)
+.archive-compound-item {
+  cursor: pointer;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+// Archive2 — Item title in the compound grid (audio_compound.tpl, video_compound.tpl)
+.archive-compound-item-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+  min-height: 44px;
+}
+
+// Archive2 — "Now Playing" indicator on the active item, toggled via JS (audio_compound.tpl, video_compound.tpl)
+.active-indicator {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #666;
+  color: #f1f1f1;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  display: none;
+}
+
+// Archive2 — Audio item thumbnail wrapper (audio_compound.tpl)
+.archive-audio-item-thumbnail {
+  margin-bottom: 10px;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+// Archive2 — Audio item thumbnail image (audio_compound.tpl)
+.archive-audio-item-thumbnail-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+// Archive2 — Audio item placeholder when no thumbnail is available (audio_compound.tpl)
+.archive-audio-item-thumbnail-placeholder {
+  margin-bottom: 10px;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #f5f5f5;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Archive2 — Video item thumbnail/poster wrapper (video_compound.tpl)
+.archive-video-item-thumbnail {
+  margin-bottom: 10px;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #000;
+  position: relative;
+}
+
+// Archive2 — Video item thumbnail/poster image (video_compound.tpl)
+.archive-video-item-thumbnail-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+// Archive2 — Play icon overlay centered on the video poster (video_compound.tpl)
+.archive-video-item-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+// Archive2 — Video item placeholder when no poster is available (video_compound.tpl)
+.archive-video-item-thumbnail-placeholder {
+  margin-bottom: 10px;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #000;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+// Collection pages — grid view card (collection-item.tpl)
+.collection-item-grid-thumbnail {
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+  height: 300px;
+  display: block;
+  overflow: hidden;
+}
+
+// Collection pages — grid view thumbnail image (collection-item.tpl)
+.collection-item-grid-image {
+  max-height: 160px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+// Collection pages — grid view caption (collection-item.tpl)
+.collection-item-grid-caption {
+  padding: 9px 0;
+}
+
+// Collection pages — list view date, tucked under the title (collection-item.tpl)
+.collection-item-list-date {
+  margin-top: -0.5em;
+}
+
+// Collection pages — list view row: thumbnail left, description right (collection-item.tpl)
+.collection-item-list-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+// Collection pages — list view thumbnail link (collection-item.tpl)
+.collection-item-list-thumbnail {
+  flex-shrink: 0;
+}
+
+// Collection pages — list view thumbnail image (collection-item.tpl)
+.collection-item-list-image {
+  max-width: 150px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+}
+
+// Collection pages — list view description, clamped to 6 lines (collection-item.tpl)
+.collection-item-list-description {
+  max-height: 150px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}

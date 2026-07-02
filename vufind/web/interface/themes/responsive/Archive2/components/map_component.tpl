@@ -2,13 +2,13 @@
 <div class="col-sm-12">
 	<div class="archiveComponent">
 		<div class="archiveComponentHeader">Browse by Location</div>
-		<div id="collection-map-component" style="height:500px; margin-top:0.5em;"></div>
+		<div id="collection-map-component" class="collection-map-component-container"></div>
 		{if $unmappedPlaces}
-		<div style="margin-top:0.5em;">
+		<div class="collection-row-spacer-sm">
 			<button class="btn btn-info btn-xs" onclick="Pika.showElementInPopup('Unmapped Locations', '#unmappedLocationsComponent');">
 				Show Unmapped Locations
 			</button>
-			<div id="unmappedLocationsComponent" style="display:none;">
+			<div id="unmappedLocationsComponent" class="archive-map-unmapped-locations">
 				<ol>
 					{foreach from=$unmappedPlaces item=place}
 					<li><a href="{$place.url}">{$place.label}</a></li>
@@ -22,21 +22,6 @@
 {/strip}
 
 {if $mapsKey && ($mappedPlaces || $childMarkers)}
-<style>
-.map-count-marker {ldelim}
-	background: #2980b9;
-	color: #fff;
-	border: 2px solid #fff;
-	border-radius: 50%;
-	width: 32px;
-	height: 32px;
-	line-height: 28px;
-	text-align: center;
-	font-size: 11px;
-	font-weight: bold;
-	box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-{rdelim}
-</style>
 <script>
 function initCollectionMapComponent() {ldelim}
 	var mapEl = document.getElementById('collection-map-component');
@@ -62,7 +47,7 @@ function initCollectionMapComponent() {ldelim}
 	(function() {ldelim}
 		var count = {$place.count|default:0};
 		var pin = document.createElement('div');
-		pin.className = 'map-count-marker';
+		pin.className = 'map-count-marker map-count-marker--compact';
 		pin.textContent = count;
 		var marker = new google.maps.marker.AdvancedMarkerElement({ldelim}
 			position: {ldelim}lat: {$place.latitude}, lng: {$place.longitude}{rdelim},
@@ -89,8 +74,8 @@ function initCollectionMapComponent() {ldelim}
 		{rdelim});
 		marker.addListener('gmp-click', function() {ldelim}
 			infoWindow.close();
-			var html = '<div style="max-width:220px;text-align:center">';
-			{if $child.thumbnail}html += '<a href="{$child.url|escape:javascript}"><img src="{$child.thumbnail|escape:javascript}" style="max-width:200px;margin-bottom:6px" /></a><br>';{/if}
+			var html = '<div class="archive-map-popup">';
+			{if $child.thumbnail}html += '<a href="{$child.url|escape:javascript}"><img src="{$child.thumbnail|escape:javascript}" class="archive-map-popup-thumbnail" /></a><br>';{/if}
 			html += '<a href="{$child.url|escape:javascript}">{$child.title|escape:javascript}</a></div>';
 			infoWindow.setContent(html);
 			infoWindow.open({ldelim}anchor: marker, map: map{rdelim});

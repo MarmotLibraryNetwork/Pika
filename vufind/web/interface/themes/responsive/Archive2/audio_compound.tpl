@@ -1,35 +1,34 @@
 {* Compound Audio Viewer - Multiple audio objects with single player *}
 
 {* Audio Player *}
-<div style="margin-bottom: 30px;">
-    <audio style="width:100%;" id="compound-audio-player" controls crossorigin="">
+<div class="archive-compound-player-wrapper">
+    <audio class="archive-audio-player" id="compound-audio-player" controls crossorigin="">
         {* Tracks will be dynamically loaded via JavaScript *}
     </audio>
-    <div id="compound-vtt-text" class="archive-caption"
-        style="height: 60px; background: #333; color: #fff; display:none; text-align:center; font-family:Helvetica, Arial, sans-serif; font-weight:bold; text-wrap:balance; padding: 10px; box-sizing: border-box;">
+    <div id="compound-vtt-text" class="archive-caption archive-caption--compound">
     </div>
 </div>
 
 {* Grid of Audio Items *}
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-top: 20px;">
+<div class="archive-compound-grid">
     {foreach from=$children item=child name=audioLoop}
-        <div class="audio-item"
+        <div class="audio-item archive-compound-item"
              data-audio-url="{$child.audioUrl}"
              data-audio-mime="{$child.audioMime}"
              data-audio-title="{$child.title|escape}"
              data-captions='{if $child.captions}{$child.captions|@json_encode}{else}[]{/if}'
              data-index="{$smarty.foreach.audioLoop.index}"
-             style="cursor: pointer; border: 2px solid #ddd; border-radius: 6px; padding: 15px; transition: all 0.3s ease; background: #fff;">
+             data-nid="{$nid|intval}">
 
             {* Thumbnail *}
             {if $child.thumbnailUrl}
-                <div style="margin-bottom: 10px; text-align: center; overflow: hidden; border-radius: 4px; background: #f5f5f5;">
+                <div class="archive-audio-item-thumbnail">
                     <img src="{$child.thumbnailUrl}"
                          alt="{$child.title|escape}"
-                         style="width: 100%; height: 150px; object-fit: cover; display: block;">
+                         class="archive-audio-item-thumbnail-image">
                 </div>
             {else}
-                <div style="margin-bottom: 10px; text-align: center; overflow: hidden; border-radius: 4px; background: #f5f5f5; height: 150px; display: flex; align-items: center; justify-content: center;">
+                <div class="archive-audio-item-thumbnail-placeholder">
                     <svg width="80" height="80" viewBox="0 0 24 24" fill="#ccc">
                         <path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>
                     </svg>
@@ -37,12 +36,12 @@
             {/if}
 
             {* Title *}
-            <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #333; line-height: 1.4; min-height: 44px;">
+            <h4 class="archive-compound-item-title">
                 {$child.title}
             </h4>
 
             {* Active indicator *}
-            <div class="active-indicator" style="margin-top: 10px; padding: 5px 10px; background: #666; color: #f1f1f1; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; display: none;">
+            <div class="active-indicator">
                 ▶ Now Playing
             </div>
         </div>
@@ -62,6 +61,7 @@
     function loadAudioTrack(item, index) {
         const audioUrl = item.dataset.audioUrl;
         const audioMime = item.dataset.audioMime;
+        const nid = item.dataset.nid;
         const captions = JSON.parse(item.dataset.captions || '[]');
 
         // Store current playback position if switching tracks
@@ -81,7 +81,7 @@
             captions.forEach((caption, idx) => {
                 const track = document.createElement('track');
                 track.kind = 'captions';
-                track.src = '/Archive2/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath);
+                track.src = '/Archive2/AJAX?method=fetchVtt&path=' + encodeURIComponent(caption.filePath) + '&nid=' + encodeURIComponent(nid);
                 track.label = caption.langName || 'Captions';
                 track.srclang = caption.langCode || 'en';
                 if (idx === 0) {
