@@ -10398,6 +10398,9 @@ img.x-twit {
 .related-objects-tiles .browse-thumbnail-sorted {
   text-align: center;
 }
+.related-taxonomy-tiles.results-covers {
+  border-bottom: none;
+}
 .collection-row-spacer {
   margin-top: 1em;
 }
