@@ -41,7 +41,7 @@ class ExploreMore {
 
 	/** Section keys and their default display names. Order determines sidebar order. */
 	const SECTIONS = [
-		// TODO: 'parentBook'           => 'Entire Book',        // For page objects that belong to a book/paged-content parent
+		//'parentBook'           => 'Entire Book',        // For page objects that belong to a book/paged-content parent
 		// TODO: 'tableOfContents'      => 'Table of Contents',  // For book/paged-content objects; requires child-page enumeration
 		'relatedCollections'   => 'Related Archive Collections',
 		'linkedCatalogRecords' => 'Librarian Picks',    // Catalog items manually linked to this archive object, or parent collection
@@ -50,9 +50,9 @@ class ExploreMore {
 		'relatedOrganizations' => 'Associated Organizations',
 		'relatedPlaces'        => 'Associated Places',
 		'relatedEvents'        => 'Associated Events',
-		'relatedArchiveData'    => 'From the Archive',
-		'relatedCatalog'        => 'More From the Catalog', // Catalog Solr search by subject terms
-		'relatedSubjects'       => 'Related Subjects',
+		'relatedArchiveData'   => 'From the Archive',
+		'relatedCatalog'       => 'More From the Catalog', // Catalog Solr search by subject terms
+		'relatedSubjects'      => 'Related Subjects',
 		'dpla'                 => 'Digital Public Library of America', // For Taxonomy Terms Only
 		'acknowledgements'     => 'Acknowledgements', // For Archive Objects Only
 	];
@@ -850,7 +850,7 @@ class ExploreMore {
 		/** @var \SearchObject_Islandora2 $searchObject */
 		$searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
-		//$searchObject->setDebugging(false, false);
+		$searchObject->setDebugging(false, false);
 		$searchObject->setSearchTerms(['lookfor' => implode(' OR ', $terms)]);
 		$searchObject->setLimit(12);
 

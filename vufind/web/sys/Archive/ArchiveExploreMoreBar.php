@@ -38,8 +38,8 @@ class ArchiveExploreMoreBar extends DB_DataObject {
 	public $weight;
 
 	static public $archiveSections = [
-		'parentBook'           => 'Entire Book',
-		'tableOfContents'      => 'Table of Contents',
+		'parentBook'           => 'Entire Book', // TODO: Used for page Views
+		//'tableOfContents'      => 'Table of Contents',
 		'relatedCollections'   => 'Related Archive Collections',
 		'linkedCatalogRecords' => 'Librarian Picks',
 		//'exactEntityMatches'   => 'Related People, Places &amp; Events', // No longer applicable for Islandora2
