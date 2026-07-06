@@ -176,7 +176,8 @@
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}
-				newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>";
+				/* newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>"; */
+				newRow += "<td>"; /* hide the sort column icon for newly added rows */
 				newRow += "<input type='hidden' id='{$propName}Weight_" + numAdditional{$propName} +"' name='{$propName}Weight[" + numAdditional{$propName} +"]' value='" + (100 - numAdditional{$propName})  +"'>";
 				newRow += "</td>";
 			{/if}
