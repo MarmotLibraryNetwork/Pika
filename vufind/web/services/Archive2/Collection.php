@@ -45,6 +45,7 @@ class Collection extends ArchiveObject
         global $interface;
 
         parent::launch();
+        self::assignCollectionDisplayMode();
 
         /** @var CollectionObject $collection */
         $collection  = $this->mediaObject;
