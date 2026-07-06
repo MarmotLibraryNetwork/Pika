@@ -195,9 +195,20 @@ function getIslandoraUpdates(): array{
 			]
 		],
 
-		'Islandora2_remove_more_details_sections' => [
+		'Islandora2_convert_list_sort_fgs_label' => [
 			'release'         => '2026.02.0',
 			'releaseStep'     => 13,
+			'title'           => 'Convert legacy archive list sort to Islandora2',
+			'description'     => 'Replaces the obsolete Islandora1 fgs_label_s sort stored on user lists with the Islandora2 ss_title_sort equivalent so archive list sorting no longer errors',
+			'continueOnError' => true,
+			'sql'             => [
+				"UPDATE user_list SET defaultSort = 'ss_title_sort' WHERE defaultSort = 'fgs_label_s'",
+			]
+		],
+
+		'Islandora2_remove_more_details_sections' => [
+			'release'         => '2026.02.0',
+			'releaseStep'     => 14,
 			'title'           => 'Remove Archive More Details sections',
 			'description'     => 'Remove settings for sections related to taxonomies',
 			'continueOnError' => true,
@@ -213,7 +224,7 @@ function getIslandoraUpdates(): array{
 
 		'Islandora2_remove_explore_more_bar_sections' => [
 			'release'         => '2026.02.0',
-			'releaseStep'     => 14,
+			'releaseStep'     => 15,
 			'title'           => 'Remove Archive Explore More sidebar section setting',
 			'descriptions'    => 'Remove obsolete explore more sections',
 			'continueOnError' => true,
