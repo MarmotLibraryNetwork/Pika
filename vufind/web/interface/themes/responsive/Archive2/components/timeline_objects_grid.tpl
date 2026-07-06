@@ -13,7 +13,7 @@
 	{/if}
 
 	{if $timelineItems}
-		<div class="row collection-grid" id="collection-display-container">
+		<div class="row {$collectionDisplayModeClass}" id="collection-display-container">
 			{if $groupByYear}
 				{assign var="current_year" value="__none__"}
 				{foreach from=$timelineItems item=collectionChild}

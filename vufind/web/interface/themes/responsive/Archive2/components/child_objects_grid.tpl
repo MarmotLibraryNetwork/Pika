@@ -9,7 +9,7 @@
 	</div>
 </div>
 
-<div class="row collection-grid" id="collection-display-container">
+<div class="row {$collectionDisplayModeClass}" id="collection-display-container">
 	{foreach from=$collectionChildren item=collectionChild}
 	{include file="Archive2/partials/collection-item.tpl"}
 	{/foreach}
