@@ -202,26 +202,16 @@ function getIslandoraUpdates(): array{
 			'description'     => 'Remove settings for sections related to taxonomies',
 			'continueOnError' => true,
 			'sql'             => [
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'bio'",
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'militaryService'",
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'familyDetails'",
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'obituaries'",
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'burialDetails'",
-				"DELETE FROM `library_archive_more_details` WHERE `section` = 'demographics'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'bio'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'militaryService'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'familyDetails'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'obituaries'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'burialDetails'",
+				"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'demographics'",
+				//"DELETE FROM pika.`library_archive_more_details` WHERE `section` = 'relatedObjects'",
 			]
 		],
 
-		'Islandora2_remove_explore_more_bar_sections' => [
-			'release'         => '2026.02.0',
-			'releaseStep'     => 14,
-			'title'           => 'Remove Archive Explore More sidebar section setting',
-			'descriptions'    => 'Remove obsolete explore more sections',
-			'continueOnError' => true,
-			'sql'             => [
-				"DELETE FROM `library_archive_explore_more_bar` WHERE `section` = 'exactEntityMatches'",
-				"DELETE FROM `library_archive_explore_more_bar` WHERE `section` = 'tableOfContents'",
-			]
-		],
 	]; // End of main array
 }
 
