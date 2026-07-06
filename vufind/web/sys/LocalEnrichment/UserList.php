@@ -187,7 +187,9 @@ class UserList extends DB_DataObject {
 			if($listEntry->find()){
 				while ($listEntry->fetch()){
 					if (!str_contains($listEntry->groupedWorkPermanentId, '-') && ctype_digit($listEntry->groupedWorkPermanentId)){
-						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
+						if (!$listEntry->hidden){
+							$archiveIDs[] = $listEntry->groupedWorkPermanentId;
+						}
 					}else{
 						if (!$listEntry->hidden){
 							$catalogIDs[] = $listEntry->groupedWorkPermanentId;
