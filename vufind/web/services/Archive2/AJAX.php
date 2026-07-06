@@ -451,6 +451,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$data = CollectionTimelineData::load($nids, $placeName, $dateFilter, $page);
 		CollectionTimelineData::assignToInterface($data, $nids, $showTimeline, $placeName, $dateFilter);
 		$interface->assign('groupByYear', $groupByYear);
+		ArchiveObject::assignCollectionDisplayMode();
 
 		$response = [
 			'success'    => true,
