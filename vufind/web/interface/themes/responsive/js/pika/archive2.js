@@ -23,22 +23,27 @@ Pika.Archive2 = (function(){
 
 	return {
 
-		collectionDisplayMode: 'grid',
+		collectionDisplayMode: 'covers',
 
+		/**
+		 * Syncs the in-memory display mode with what the server already rendered
+		 * (the toggle button PHP marked "active", per the archive2CollectionDisplayMode
+		 * cookie / library defaultArchiveCollectionBrowseMode setting), so later AJAX
+		 * grid reloads (e.g. loadTimelineObjects) keep applying the right one.
+		 */
 		initCollectionDisplayMode: function() {
-			if (!Globals.opac && Pika.hasLocalStorage()) {
-				var stored = window.localStorage.getItem('archive2CollectionDisplayMode');
-				if (stored === 'list' || stored === 'grid') {
-					this.collectionDisplayMode = stored;
-				}
-			}
+			this.collectionDisplayMode = $('#collectionModeList').hasClass('active') ? 'list' : 'covers';
 			this.applyCollectionDisplayMode();
 		},
 
 		toggleCollectionDisplayMode: function(mode) {
-			this.collectionDisplayMode = (mode === 'list') ? 'list' : 'grid';
-			if (!Globals.opac && Pika.hasLocalStorage()) {
-				window.localStorage.setItem('archive2CollectionDisplayMode', this.collectionDisplayMode);
+			this.collectionDisplayMode = (mode === 'list') ? 'list' : 'covers';
+			// Don't persist a preference on shared OPAC terminals, same as other per-patron settings.
+			if (!Globals.opac) {
+				var date = new Date();
+				date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000);
+				document.cookie = encodeURIComponent('archive2CollectionDisplayMode') + '=' + encodeURIComponent(this.collectionDisplayMode)
+					+ '; expires=' + date.toGMTString() + '; path=/';
 			}
 			this.applyCollectionDisplayMode();
 		},
