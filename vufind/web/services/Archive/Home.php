@@ -32,6 +32,16 @@ class Archive_Home extends Action{
 		global $interface;
 		global $timer;
 		global $library;
+		global $configArray;
+
+		// When the legacy redirect is enabled, the Islandora 1 archive is being retired in
+		// favor of Islandora 2, so send the archive home page to its Archive2 equivalent
+		// before doing any Islandora 1 search work (which Fedora may no longer be up for).
+		if (!empty($configArray['Islandora2']['legacyRedirect'])){
+			header('HTTP/1.1 301 Moved Permanently');
+			header('Location: /Archive2/Home', true, 301);
+			exit();
+		}
 
 		$relatedProjects = $this->loadRelatedProjects(true);
 		$interface->assign('relatedProjectsLibrary', $relatedProjects);

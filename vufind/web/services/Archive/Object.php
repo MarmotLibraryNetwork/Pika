@@ -26,6 +26,7 @@
  */
 
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+require_once ROOT_DIR . '/services/Archive/LegacyRedirect.php';
 abstract class Archive_Object extends Action {
 	protected $pid;
 	/** @var  FedoraObject $archiveObject */
@@ -41,7 +42,22 @@ abstract class Archive_Object extends Action {
 	protected $formattedSubjects;
 	protected $links;
 
-
+	/**
+	 * When [Islandora2] legacyRedirect is enabled in config.ini, every legacy Archive
+	 * (Islandora 1) object view — images, books, compounds, postcards, audio, video,
+	 * entities, downloads, etc. — 301-redirects to its Archive2 (Islandora 2) equivalent
+	 * instead of rendering. This runs in the constructor, so it fires before any subclass
+	 * launch() touches Fedora via loadArchiveObjectData(); the redirect resolves the PID
+	 * through the Islandora 2 JSON:API, so it works even when the Islandora 1 integration
+	 * ([Islandora] enabled) is turned off and Fedora is unreachable.
+	 */
+	function __construct(){
+		global $configArray;
+		if (!empty($configArray['Islandora2']['legacyRedirect'])){
+			(new Archive_LegacyRedirect())->launch();
+			exit();
+		}
+	}
 
 	/**
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
