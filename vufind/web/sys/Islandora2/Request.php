@@ -279,7 +279,6 @@ class Request extends AbstractApiClient
 
 			$statusCode = $curl->getHttpStatusCode();
 			if ($statusCode === 404) {
-				$this->cache->set($cacheKey, [], $this->resourceTtl);
 				return [];
 			}
 
@@ -299,8 +298,8 @@ class Request extends AbstractApiClient
 				return null;
 			}
 
+			// Empty body
 			if (!is_string($body) || trim($body) === '') {
-				$this->cache->set($cacheKey, [], $this->resourceTtl);
 				return [];
 			}
 
