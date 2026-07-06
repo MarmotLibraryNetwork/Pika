@@ -118,6 +118,44 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
+    /** Values accepted for defaultArchiveCollectionBrowseMode and the archive2CollectionDisplayMode cookie. */
+    public const COLLECTION_DISPLAY_MODES = ['covers', 'list'];
+
+    /**
+     * Resolves how collection child-object grids should be displayed: the user's
+     * saved archive2CollectionDisplayMode cookie if set, else the library's
+     * configured defaultArchiveCollectionBrowseMode, else 'covers'.
+     */
+    public static function resolveCollectionDisplayMode(): string
+    {
+        global $library;
+
+        if (!empty($_COOKIE['archive2CollectionDisplayMode'])) {
+            $displayMode = $_COOKIE['archive2CollectionDisplayMode'];
+        } elseif (!empty($library->defaultArchiveCollectionBrowseMode)) {
+            $displayMode = $library->defaultArchiveCollectionBrowseMode;
+        } else {
+            $displayMode = 'covers';
+        }
+
+        return in_array($displayMode, self::COLLECTION_DISPLAY_MODES, true) ? $displayMode : 'covers';
+    }
+
+    /**
+     * Assigns 'collectionDisplayMode' (raw mode) and 'collectionDisplayModeClass'
+     * (the #collection-display-container CSS class) from resolveCollectionDisplayMode(),
+     * so the initial server render already matches the user's chosen/default view
+     * instead of always rendering covers and having client-side JS flip it afterward.
+     */
+    public static function assignCollectionDisplayMode(): string
+    {
+        global $interface;
+        $displayMode = self::resolveCollectionDisplayMode();
+        $interface->assign('collectionDisplayMode', $displayMode);
+        $interface->assign('collectionDisplayModeClass', $displayMode === 'list' ? 'collection-list' : 'collection-grid');
+        return $displayMode;
+    }
+
     /** Assigns all template variables for the archive object detail page. */
     public function launch()
     {
