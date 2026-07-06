@@ -179,7 +179,7 @@
 							{include file="Archive2/partials/fieldRow.tpl" label="Service End"     value=$military.svc_end   isDate=true}
 							{if $military.is_pow}
 								<div class="row archive-field-row">
-									<div class="result-label col-sm-4">POW:</div>
+									<div class="result-label col-sm-4">Prisoner Of War:</div>
 									<div class="result-value col-sm-8">Yes</div>
 								</div>
 							{/if}
