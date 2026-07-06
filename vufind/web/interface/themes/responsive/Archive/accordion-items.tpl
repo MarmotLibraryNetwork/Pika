@@ -14,7 +14,7 @@
 			<br>
 		{/foreach}
 	{else}
-		<div class="related-objects results-covers home-page-browse-thumbnails">
+		<div class="related-objects{if empty($isRelatedObjects)} related-taxonomy-tiles{/if} results-covers home-page-browse-thumbnails">
 			{foreach from=$relatedItems item=image}
 				<figure class="browse-thumbnail-sorted">
 					<a href="{$image.link}" {if $image.label}data-title="{$image.label|urlencode}"{/if}>
