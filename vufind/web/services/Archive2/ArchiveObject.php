@@ -285,8 +285,7 @@ class ArchiveObject extends \Action
                     $rightsHolderData[] = [
                         'name'       => $item['name'],
                         'tid'        => $item['tid'] ?? null,
-                        'vocabulary' => $item['vocabulary'] ?? $item['vid'] ?? null,
-                        //TODO: is vid numeric? or is it a term? Does it occur here ever?
+                        'vocabulary' => $item['vocabulary'] ?? null,
                     ];
                 }
             }
@@ -303,8 +302,7 @@ class ArchiveObject extends \Action
                     $rightsCreatorData[] = [
                         'name'       => $item['name'],
                         'tid'        => $item['tid'] ?? null,
-                        'vocabulary' => $item['vocabulary'] ?? $item['vid'] ?? null,
-                        //TODO: is vid numeric? or is it a term? Does it occur here ever?
+                        'vocabulary' => $item['vocabulary'] ?? null,
                     ];
                 }
             }
