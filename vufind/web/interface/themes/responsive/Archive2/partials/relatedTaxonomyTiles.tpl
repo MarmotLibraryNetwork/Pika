@@ -1,4 +1,4 @@
-<div class="related-objects results-covers home-page-browse-thumbnails">
+<div class="related-objects related-taxonomy-tiles results-covers home-page-browse-thumbnails">
 	{foreach from=$items item=item}
 		<figure class="browse-thumbnail-sorted">
 			<a href="{$item.url|escape}"{if $item.name} data-title="{$item.name|escape}"{/if}>
