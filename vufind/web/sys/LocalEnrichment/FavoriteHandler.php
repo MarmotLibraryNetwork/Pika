@@ -46,6 +46,19 @@ class FavoriteHandler {
 			// Note these values need to match options found in islandoraSearches.ini Sorting section
 
 	/**
+	 * Determine whether a sort value is one of the sort options this handler supports:
+	 * a catalog Solr sort, a database-handled user list sort, or an archive Islandora sort.
+	 *
+	 * @param string $sort  The sort value to validate
+	 * @return bool
+	 */
+	private function isValidSortOption($sort){
+		return in_array($sort, $this->solrSortOptions) ||
+			in_array($sort, array_keys($this->userListSortOptions)) ||
+			in_array($sort, $this->islandoraSortOptions);
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * @access  public
@@ -60,14 +73,14 @@ class FavoriteHandler {
 
 
 		// Determine Sorting Option //
-		if (isset($list->defaultSort)){
-			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
+		if (isset($list->defaultSort) && $this->isValidSortOption($list->defaultSort)){
+			// when the list has a stored sort setting, use it only if it is still a supported sort
+			// option. This guards against stale values persisted before the Islandora2 migration (eg. the
+			// legacy fgs_label_s archive sort), which would otherwise be passed to the archive Solr engine
+			// and error out. Rejecting it falls back to the safe default user list sort below.
+			$this->defaultSort = $list->defaultSort;
 		}
-		if (isset($_REQUEST['sort']) && (
-			in_array($_REQUEST['sort'], $this->solrSortOptions) ||
-			in_array($_REQUEST['sort'], array_keys($this->userListSortOptions)) ||
-			in_array($_REQUEST['sort'], $this->islandoraSortOptions))
-		){
+		if (isset($_REQUEST['sort']) && $this->isValidSortOption($_REQUEST['sort'])){
 			// if URL variable is a valid sort option, set the list's sort setting
 			$this->sort           = $_REQUEST['sort'];
 			$userSpecifiedTheSort = true;
@@ -521,7 +534,7 @@ class FavoriteHandler {
 					}
 				}
 				$this->archiveIds = array_slice($this->archiveIds, 0, $recordsPerPage);
-				//TODO: can not sort till after search filtering occurs now
+				//TODO: cannot sort till after search filtering occurs now
 
 				if (!empty($this->archiveIds)){
 					$archiveSearchObject->setPage(1); // set to the first page for the search only
