@@ -549,6 +549,20 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Get time after the query
 		$this->stopQueryTimer();
 
+		// Solr can return an error as a decoded JSON array (eg. a query parse error or exceeding
+		// maxBooleanClauses on a large user-list ID search). Because the client decodes JSON
+		// automatically, Solr::_process() does not catch that case and the result has no 'response'
+		// block, which later causes count(null) fatals when building the list HTML. Log it here so the
+		// underlying Solr error is visible for the user-list archive case rather than silently swallowed.
+		if (!isset($this->indexResult['response'])){
+			$solrError = $this->indexResult['error'] ?? null;
+			$errorMsg  = is_array($solrError) ? ($solrError['msg'] ?? json_encode($solrError)) : ($solrError ?? 'unknown Solr error');
+			$this->getLogger()->error('Islandora2 Solr search returned no response block', [
+				'error' => $errorMsg,
+				'query' => $this->query,
+			]);
+		}
+
 		// How many results were there?
 		$this->resultsTotal = $this->indexResult['response']['numFound'] ?? 0;
 
@@ -806,10 +820,11 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				}
 			}
 		}else{
-			for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$docs = $this->indexResult['response']['docs'] ?? [];
+			for ($x = 0;$x < count($docs);$x++){
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				$current = &$this->indexResult['response']['docs'][$x];
+				$current = &$docs[$x];
 				$record  = RecordDriverFactory::initRecordDriver($current);
 				$html[]  = $interface->fetch($record->getListEntry($listId, $allowEdit));
 			}
@@ -823,8 +838,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	public function getCitations($citationFormat){
 		global $interface;
 		$html = [];
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		$docs = $this->indexResult['response']['docs'] ?? [];
+		for ($x = 0; $x < count($docs); $x++) {
+			$current = & $docs[$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
@@ -840,7 +856,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 * @return  array   Return the record set from the search results.
 	 */
 	public function getResultRecordSet(){
-		$recordSet = $this->indexResult['response']['docs'];
+		$recordSet = $this->indexResult['response']['docs'] ?? [];
 		foreach ($recordSet as $key => $solrDocument){
 			// Include Additional Information for Emailing a list of Archive (islandora2) Objects
 			$recordDriver           = RecordDriverFactory::initRecordDriver($solrDocument);
@@ -859,7 +875,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function getListWidgetTitles($orderedListOfIDs = []){
 		$widgetTitles = [];
-			foreach ($this->indexResult['response']['docs'] as $solrDoc){
+			foreach (($this->indexResult['response']['docs'] ?? []) as $solrDoc){
 			$archiveObjectDriver  = RecordDriverFactory::initRecordDriver($solrDoc);
 			if (!PEAR_Singleton::isError($archiveObjectDriver)){
 				if (method_exists($archiveObjectDriver, 'getListWidgetTitle')){
@@ -906,7 +922,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	private function getResultHTML($getCombinedResult = false):array{
 		global $interface;
 		$html = [];
-		foreach ($this->indexResult['response']['docs'] as $x => $doc){
+		foreach (($this->indexResult['response']['docs'] ?? []) as $x => $doc){
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
