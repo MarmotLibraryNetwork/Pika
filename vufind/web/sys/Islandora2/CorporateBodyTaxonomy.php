@@ -99,7 +99,8 @@ class CorporateBodyTaxonomy extends I2Taxonomy
      * Entries where every meaningful field is empty and the country is "USA" (or
      * absent) are skipped — a country-only USA entry conveys no useful address.
      *
-     * Each returned entry has keys: street, address2, city, state, zip, county, country.
+     * Each returned entry has keys: street, address2, city, state, zip, county,
+     * otherRegion, country, startDate, endDate.
      *
      * @return array[]|null
      */
@@ -118,28 +119,34 @@ class CorporateBodyTaxonomy extends I2Taxonomy
 
         $result = [];
         foreach ($addlInfo as $raw) {
-            $street   = $raw['street_number_and_name_rp'] ?? null;
-            $address2 = $raw['address_2_rel_place']       ?? null;
-            $city     = $raw['city_rel_place']            ?? null;
-            $state    = $raw['state_rel_place']           ?? null;
-            $zip      = $raw['zip_code_rel_place']        ?? null;
-            $county   = $raw['county_rel_place']          ?? null;
-            $country  = $raw['country_rel_place']         ?? null;
+            $street      = $raw['street_number_and_name_rp'] ?? null;
+            $address2    = $raw['address_2_rel_place']       ?? null;
+            $city        = $raw['city_rel_place']            ?? null;
+            $state       = $raw['state_rel_place']           ?? null;
+            $zip         = $raw['zip_code_rel_place']        ?? null;
+            $county      = $raw['county_rel_place']          ?? null;
+            $otherRegion = $raw['other_region_rel_place']    ?? null;
+            $country     = $raw['country_rel_place']         ?? null;
+            $startDate   = $raw['start_date_rel_place']      ?? null;
+            $endDate     = $raw['end_date_rel_place']        ?? null;
 
             // Skip entries that are empty except for country = "USA".
-            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county]);
+            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county, $otherRegion, $startDate, $endDate]);
             if (empty($hasContent) && (empty($country) || strtoupper(trim($country)) === 'USA')) {
                 continue;
             }
 
             $result[] = [
-                'street'   => $street,
-                'address2' => $address2,
-                'city'     => $city,
-                'state'    => $state,
-                'zip'      => $zip,
-                'county'   => $county,
-                'country'  => $country,
+                'street'      => $street,
+                'address2'    => $address2,
+                'city'        => $city,
+                'state'       => $state,
+                'zip'         => $zip,
+                'county'      => $county,
+                'otherRegion' => $otherRegion,
+                'country'     => $country,
+                'startDate'   => $startDate,
+                'endDate'     => $endDate,
             ];
         }
 
