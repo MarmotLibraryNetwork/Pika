@@ -152,7 +152,7 @@
 						<div class="panel-body">
 							{if $military.branch}
 								<div class="row archive-field-row">
-									<div class="result-label col-xs-4">Branch: </div>
+									<div class="result-label col-xs-4">Service Branch: </div>
 									<div class="result-value col-xs-8">
 										{if $military.branch_url}
 											<a href="{$military.branch_url|escape}">{$military.branch|escape}</a>
