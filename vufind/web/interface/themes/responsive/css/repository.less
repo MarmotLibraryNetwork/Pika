@@ -609,6 +609,15 @@
   text-align: center;
 }
 
+// Archive2 — .results-covers' border-bottom exists to separate the Related Objects
+// tiles from their right-floated search link (panels/relatedObjectsContent.tpl). The
+// Related People/Place/Event/Organization panels (partials/relatedTaxonomyTiles.tpl)
+// share the .results-covers class for layout but have no trailing link, so the border
+// just looks like a stray line there.
+.related-taxonomy-tiles.results-covers {
+  border-bottom: none;
+}
+
 // Archive2 — Spacing above a row separating collection page sections
 // (collection_basic.tpl, collection_map.tpl, components/browse_all_component.tpl)
 .collection-row-spacer {
