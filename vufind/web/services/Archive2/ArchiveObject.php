@@ -1256,7 +1256,7 @@ class ArchiveObject extends \Action
                 }
             }
             foreach ($validHomeLibraries as $homeLibrarySubdomain) {
-                if (strcasecmp($homeLibrarySubdomain, $restriction) === 0) {
+                if (strcasecmp(self::stripArchiveSuffix($homeLibrarySubdomain), $restriction) === 0) {
                     return true;
                 }
             }
@@ -1267,12 +1267,28 @@ class ArchiveObject extends \Action
         if ($physicalLocation) {
             $physicalLibrary            = new \Library();
             $physicalLibrary->libraryId = $physicalLocation->libraryId;
-            if ($physicalLibrary->find(true) && strcasecmp($physicalLibrary->subdomain, $restriction) === 0) {
+            if ($physicalLibrary->find(true) && strcasecmp(self::stripArchiveSuffix($physicalLibrary->subdomain), $restriction) === 0) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Archive-only interfaces follow the convention of the library's traditional
+     * subdomain with an "archive" suffix (e.g. "adams" => "adamsarchive"), while
+     * pika_access_limits restrictions are keyed off the traditional subdomain. Strip
+     * a trailing "archive" from a library subdomain so "adamsarchive" matches an
+     * "adams" restriction. Subdomains without the suffix are returned unchanged.
+     */
+    private static function stripArchiveSuffix(?string $subdomain): string
+    {
+        $subdomain = (string)$subdomain;
+        if (strcasecmp(substr($subdomain, -strlen('archive')), 'archive') === 0) {
+            return substr($subdomain, 0, -strlen('archive'));
+        }
+        return $subdomain;
     }
 
     private ?string $viewingRestriction         = null;
