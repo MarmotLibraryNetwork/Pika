@@ -24,7 +24,7 @@
 					{/if}
 					{include file="Archive2/partials/fieldRow.tpl" label="Term ID"         value=$tid}
 					{include file="Archive2/partials/fieldRow.tpl" label="Vocabulary"      value=$vocabulary_name}
-					{include file="Archive2/partials/fieldRow.tpl" label="Owner"           value=$owner_id}
+					{include file="Archive2/partials/fieldRow.tpl" label="Owner ID"           value=$owner_id}
 					{include file="Archive2/partials/fieldRow.tpl" label="Language Code"   value=$langcode}
 {*					{include file="Archive2/partials/fieldRow.tpl" label="Published"       value=$status}*}
 					{include file="Archive2/partials/fieldRow.tpl" label="Legacy PID"      value=$pid}
