@@ -235,7 +235,7 @@ class FavoriteHandler {
 				if (!$this->isMixedUserList){
 					// User Sorted Archive Only Searches
 					if ($this->isUserListSort){
-						$idsToFetch = array_slice($this->archiveIds, $page, $recordsPerPage);
+						$idsToFetch = array_slice($this->archiveIds, $startRecord, $recordsPerPage);
 						if (count($idsToFetch)){
 							$archiveSearchObject->setPage(1);              // set to the first page for the search only
 							$archiveSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
