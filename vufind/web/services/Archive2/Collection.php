@@ -153,6 +153,11 @@ class Collection extends ArchiveObject
      * and assigns mapped/unmapped place lists, bounding-box coordinates, and the
      * configured map zoom level to the template.
      *
+     * Collections nested inside the listed ones are expanded first, so a
+     * "collection of collections" (e.g. nid 684) draws its markers from the
+     * sub-collections' children rather than the marker-less sub-collection
+     * nodes themselves.
+     *
      * @param int[] $collectionNids Node ids whose children's places/markers populate
      *                              the map (one for the top-level map displays; several
      *                              for a custom `map|a,b,c` option).
