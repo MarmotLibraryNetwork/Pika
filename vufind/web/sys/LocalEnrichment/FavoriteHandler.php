@@ -27,6 +27,9 @@
  * @access      public
  */
 class FavoriteHandler {
+	// Solr field holding the Islandora2 node id; used to match returned archive docs back to the requested ids.
+	protected const ISLANDORA_ID_FIELD = 'its_node_id';
+
 	/** @var UserList */
 	private $list;
 	private $listId;
@@ -240,7 +243,7 @@ class FavoriteHandler {
 							foreach ($archiveResult['response']['docs'] as $result){
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search($result['PID'], $idsToFetch);
+								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $idsToFetch);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -282,7 +285,7 @@ class FavoriteHandler {
 							try {
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search($result['PID'], $this->archiveIds);
+								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $this->archiveIds);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -705,7 +708,7 @@ class FavoriteHandler {
 				if(!empty($archiveResults['response']['docs'])){
 					foreach ($archiveResults['response']['docs'] as $archiveResult){
 						$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
-						$key         = array_search($archiveResult['PID'], $this->favorites);
+						$key         = array_search((string)$archiveResult[self::ISLANDORA_ID_FIELD], $this->favorites);
 						if ($key !== false){
 							$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
 						}
