@@ -168,6 +168,8 @@ class Collection extends ArchiveObject
         /** @var CollectionObject $collection */
         $collection = $this->mediaObject;
 
+        $collectionNids = $this->expandWithDescendantCollections($collectionNids);
+
         // Aggregate related places (deduped by tid, counts summed) and geocoded child
         // markers (deduped by nid) across every listed collection.
         $factory       = new I2ObjectFactory();
@@ -597,8 +599,64 @@ class Collection extends ArchiveObject
      * @return array Ordered I2Object instances.
      */
     /**
+     * Expand a list of collection nids with every collection nested inside them,
+     * so maps aggregate markers from the nested collections' children too.
+     *
+     * The Solr index writes a node's full ancestor chain to itm_field_member_of,
+     * so a single query scoped to the listed collections finds descendant
+     * collections at every depth — matching how the timeline grid under the map
+     * already includes all descendant objects. The search applies the standard
+     * visibility filters, so collections hidden from search don't contribute
+     * markers (consistent with the grid). When Solr is unreachable or errors,
+     * the input list is returned unchanged and the map falls back to the
+     * direct-children markers.
+     *
+     * @param int[] $nids Collection node ids.
+     * @return int[] Input nids plus descendant collection nids, deduplicated,
+     *               capped at MAX_MAP_COLLECTIONS.
+     */
+    private function expandWithDescendantCollections(array $nids): array
+    {
+        if (empty($nids)) {
+            return $nids;
+        }
+        /** @var \SearchObject_Islandora2 $searchObject */
+        $searchObject = \SearchObjectFactory::initSearchObject('Islandora2');
+        $searchObject->init();
+        $searchObject->setDebugging(false, false);
+        if (!$searchObject->pingServer(false)) {
+            return $nids;
+        }
+        if (count($nids) === 1) {
+            $searchObject->addFilter('itm_field_member_of:' . $nids[0]);
+        } else {
+            // Complex OR filters are passed through raw by Base::parseFilter.
+            $searchObject->addFilter('itm_field_member_of:(' . implode(' OR ', $nids) . ')');
+        }
+        $searchObject->addFilter('ss_model:"Collection"');
+        $searchObject->addFieldsToReturn(['its_node_id']);
+        $searchObject->setLimit(self::MAX_MAP_COLLECTIONS);
+
+        $response = $searchObject->processSearch(true, false);
+        if (\PEAR_Singleton::isError($response) || !empty($response['error'])) {
+            return $nids;
+        }
+        foreach ($response['response']['docs'] ?? [] as $doc) {
+            $childNid = (int)($doc['its_node_id'] ?? 0);
+            if ($childNid > 0) {
+                $nids[] = $childNid;
+            }
+        }
+        return array_slice(array_values(array_unique($nids)), 0, self::MAX_MAP_COLLECTIONS);
+    }
+
+    /**
      * Parse a comma-separated list of collection node ids from a map option,
      * falling back to the current collection when the list is empty.
+     *
+     * Collections nested inside the listed ones are pulled in later by
+     * expandWithDescendantCollections(), which loadMapData() applies to
+     * this list.
      *
      * @param string $csv        The text after the pipe (e.g. "100,101,120").
      * @param int    $defaultNid Current collection nid, used when no list is given.
