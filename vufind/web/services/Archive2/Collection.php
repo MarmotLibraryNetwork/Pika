@@ -69,11 +69,11 @@ class Collection extends ArchiveObject
                 $this->loadTimelineData([$nid], true, true);
                 return parent::display('collection_timeline.tpl', $collection->getTitle());
             case 'map':
-                $this->loadTimelineData([$nid], true);
+                $this->loadTimelineData([$nid], true, true);
                 $this->loadMapData([$nid]);
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'mapnotimeline':
-                $this->loadTimelineData([$nid], false);
+                $this->loadTimelineData([$nid], true, true);
                 $this->loadMapData([$nid]);
                 return parent::display('collection_map.tpl', $collection->getTitle());
             case 'custom':
@@ -303,8 +303,9 @@ class Collection extends ArchiveObject
                 $this->loadMapData($mapNids);
                 // Filterable child grid below the map: marker clicks filter it by
                 // place and the decade date-filter buttons filter it by time. It
-                // aggregates the same collections as the map.
-                $this->loadTimelineData($mapNids, true);
+                // aggregates the same collections as the map, grouped under year
+                // headings like the timeline display.
+                $this->loadTimelineData($mapNids, true, true);
                 $showMapComponent = true;
 
             } elseif ($type === 'scroller') {
