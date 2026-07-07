@@ -169,7 +169,6 @@ class Archive2_Home extends Action {
 		if ($libraryProjects) {
 			$searchObject->addFilter("itm_field_library:{$library->libraryTid}");
 			$searchObject->setSort('sm_collection asc'); // Set sort by collection name
-			//$searchObject->setSort('sm_title_2 asc'); // Set sort by collection name //TODO: remove
 		} else {
 			$searchObject->addFilter("!itm_field_library:{$library->libraryTid}");
 			$searchObject->setSort('ds_created desc');

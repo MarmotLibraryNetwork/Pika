@@ -97,7 +97,8 @@ class CorporateBodyTaxonomy extends I2Taxonomy
      * Address(es) for this organization (field_related_place_addl_info).
      *
      * Entries where every meaningful field is empty and the country is "USA" (or
-     * absent) are skipped — a country-only USA entry conveys no useful address.
+     * absent) are skipped — a country-only USA entry (with or without dates) conveys
+     * no useful address.
      *
      * Each returned entry has keys: street, address2, city, state, zip, county,
      * otherRegion, country, startDate, endDate.
@@ -130,8 +131,9 @@ class CorporateBodyTaxonomy extends I2Taxonomy
             $startDate   = $raw['start_date_rel_place']      ?? null;
             $endDate     = $raw['end_date_rel_place']        ?? null;
 
-            // Skip entries that are empty except for country = "USA".
-            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county, $otherRegion, $startDate, $endDate]);
+            // Skip entries that are empty except for country = "USA" and/or dates -- dates
+            // alone convey no useful address when there's nothing else to attach them to.
+            $hasContent = array_filter([$street, $address2, $city, $state, $zip, $county, $otherRegion]);
             if (empty($hasContent) && (empty($country) || strtoupper(trim($country)) === 'USA')) {
                 continue;
             }
