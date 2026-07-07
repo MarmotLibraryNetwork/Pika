@@ -36,6 +36,9 @@ class Collection extends ArchiveObject
     /** Maximum number of items rendered into a single scroller carousel. */
     private const SCROLLER_ITEM_LIMIT = 24;
 
+    /** Maximum number of collections a map may aggregate markers from. */
+    private const MAX_MAP_COLLECTIONS = 100;
+
     /**
      * Dispatches to the appropriate collection display template based on the
      * collection's configured display type (basic, timeline, map, or custom).
