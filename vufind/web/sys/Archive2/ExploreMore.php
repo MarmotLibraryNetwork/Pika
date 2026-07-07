@@ -262,7 +262,6 @@ class ExploreMore {
 
 		$formatFacetField     = 'sm_format';
 		$collectionFacetField = 'sm_collection';
-		//$collectionFacetField = 'sm_title_2'; //TODO: remove
 		$searchObject->addFacet($formatFacetField, 'Format'); // Related Formats
 		$searchObject->addFacet($collectionFacetField, 'Collection'); // Related Collections
 		$searchObject->setLimit(1);
@@ -1008,8 +1007,8 @@ class ExploreMore {
 	 * section (up to 3 collections).
 	 *
 	 * Two facets are requested in one search:
-	 *   sm_title_2  — collection display labels
-	 *   its_nid_1   — corresponding collection node IDs (same order as sm_title_2)
+	 *   sm_collection  — collection display labels
+	 *   its_nid_1      — corresponding collection node IDs (same order as sm_collection)
 	 * The nid facet allows direct linking to /Archive2/Collection/{nid} without
 	 * sub-searches. Facet counts are compared as a sanity check that title and nid
 	 * entries are aligned before pairing them.
@@ -1025,7 +1024,6 @@ class ExploreMore {
 		}
 
 		$collectionTitleField = 'sm_collection';
-		//$collectionTitleField = 'sm_title_2';
 		$collectionNidField   = 'its_nid_1';
 
 		/** @var \SearchObject_Islandora2 $searchObject */
@@ -1058,7 +1056,7 @@ class ExploreMore {
 		}
 		$archiveSection = empty($archiveValues) ? null : ['format' => 'scroller', 'values' => $archiveValues];
 
-		// Collections list — pair sm_title_2 and its_nid_1 facets by position (same order),
+		// Collections list — pair sm_collection and its_nid_1 facets by position (same order),
 		// verifying counts match before pairing. Up to 3 collections; each links directly
 		// to the collection page via Islandora2Driver::getRecordUrl().
 		$titleFacets = $response['facet_counts']['facet_fields'][$collectionTitleField] ?? [];
