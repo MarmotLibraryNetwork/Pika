@@ -357,6 +357,9 @@ class ExploreMore {
 		//TODO: Related People
 		//TODO: Related Places
 		//TODO: Related Events
+		//TODO: Related Organizations
+		// (Requires taxonomy searching)
+
 
 		return $exploreMoreOptions;
 	}
