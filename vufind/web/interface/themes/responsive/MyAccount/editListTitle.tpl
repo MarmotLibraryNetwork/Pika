@@ -18,7 +18,10 @@
 					<input type="hidden" id="myListPage" name="page" value="{$pageNum}">
 					<input type="hidden" id="myListPageSize" name="pagesize" value="{$pageSize}">
 					<input type="hidden" id="myListSort" name="sort" value="{$listSort}">
-					<div>
+					<div class = "col-sm-2">
+						<img src="{$recordDriver->getBookcoverUrl('medium')}" class="img-thumbnail img-responsive" alt="Thumbnail for {$recordDriver->getTitle()|escape:"html"}">
+					</div>
+						<div class="col-sm-10">
 						<div class="form-group">
 							<label for="listName" class="col-xs-2">{translate text='List'}: </label>
 							<div class="col-xs-10">{$list->title|escape:"html"}</div>

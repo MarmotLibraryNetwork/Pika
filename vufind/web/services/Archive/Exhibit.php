@@ -41,9 +41,6 @@ class Archive_Exhibit extends Archive_Object {
 
 		$this->loadArchiveObjectData();
 		$timer->logTime('Loaded Archive Object Data');
-		//$this->loadExploreMoreContent();
-		//$timer->logTime('Loaded Explore More Content');
-
 		if (isset($_REQUEST['style'])){
 			$pikaCollectionDisplay = $_REQUEST['style'];
 		}else{

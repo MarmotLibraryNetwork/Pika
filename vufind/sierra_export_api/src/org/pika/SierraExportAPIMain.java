@@ -284,12 +284,7 @@ public class SierraExportAPIMain {
 		// Initialize Reindexer (used in deleteRecord() )
 //		groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, ini, false, false, logger);
 
-		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
-		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
-		updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
-		// Including the reindexer.jar in the IntelliJ module build and configuration appears to be necessary for the updateServer to initiate correctly.
-		// (Otherwise an java.lang.NoClassDefFoundError error is triggered.)
-//		updateServer.setRequestWriter(new BinaryRequestWriter());
+		initializeSolrUpdateServer();
 
 
 		initializeExportLogEntry(pikaConn);
@@ -338,6 +333,15 @@ public class SierraExportAPIMain {
 
 		closeDBConnections(pikaConn);
 		logger.info("{} : Finished Sierra Extract", new Date());
+	}
+
+	private static void initializeSolrUpdateServer() {
+		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
+		String solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
+		updateServer = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped").withQueueSize(500).withThreadCount(8).build();
+		// Including the reindexer.jar in the IntelliJ module build and configuration appears to be necessary for the updateServer to initiate correctly.
+		// (Otherwise an java.lang.NoClassDefFoundError error is triggered.)
+//		updateServer.setRequestWriter(new BinaryRequestWriter());
 	}
 
 	private static void initializeExportLogEntry(Connection pikaConn) {
@@ -1008,10 +1012,16 @@ public class SierraExportAPIMain {
 	private static void deleteGroupedWorkFromSolr(String id) {
 		logger.info("Clearing existing work from index {}", id);
 		try {
+			if (updateServer == null){
+				initializeSolrUpdateServer();
+				if (updateServer == null){
+					throw new RuntimeException("Unable to initialize Solr update server");
+				}
+			}
 			updateServer.deleteById(id);
-			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
-			//Allow auto commit functionality to handle this
 			//updateServer.commit(true, false, false);
+			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
+			//Allow auto-commit functionality to handle this
 		} catch (Exception e) {
 			logger.error("Error deleting work from index", e);
 		}

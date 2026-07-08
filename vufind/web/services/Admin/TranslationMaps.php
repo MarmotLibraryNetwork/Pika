@@ -30,6 +30,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+require_once ROOT_DIR . '/sys/Indexing/TranslationMapPreset.php';
 
 class Admin_TranslationMaps extends ObjectEditor {
 	function launch(){
@@ -129,6 +130,13 @@ class Admin_TranslationMaps extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
+		$id = $_REQUEST['id'] ?? null;
+		if ($id){
+			$translationMap = new TranslationMap();
+			if ($translationMap->get($id) && TranslationMapPresetValue::hasPreset($translationMap->name)){
+				return TranslationMapPreset::getObjectStructureForMap($translationMap->name);
+			}
+		}
 		return TranslationMap::getObjectStructure();
 	}
 

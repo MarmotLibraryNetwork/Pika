@@ -270,7 +270,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers', 'NovelistInfo'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers', 'NovelistInfo', 'ActiveOrders'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -293,6 +293,10 @@
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="/Admin/AuthorEnrichment">Author Enrichment</a></div>
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
 							<div class="adminMenuLink{if $action == "NovelistInfo"} active{/if}"><a href="/Admin/NovelistInfo">NoveList Information</a></div>
+							{if $ils == 'Sierra'}
+								<hr class="menu">
+								<div class="adminMenuLink{if $action == "ActiveOrders"} active{/if}"><a href="/Admin/ActiveOrders">Sierra Active Orders</a></div>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -376,7 +380,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('archives', $userRoles))}
-				{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsageByNamespace', 'ArchiveUsageByContentType'))}
+				{if in_array($action, array('ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsageByNamespace', 'ArchiveUsageByContentType'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -393,14 +397,15 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "ArchiveRequests"} active{/if}"><a href="/Admin/ArchiveRequests">Archive Material Requests</a></div>
 							<div class="adminMenuLink{if $action == "AuthorshipClaims"} active{/if}"><a href="/Admin/AuthorshipClaims">Archive Authorship Claims</a></div>
-							<div class="adminMenuLink{if $action == "ArchiveSubjects"} active{/if}"><a href="/Admin/ArchiveSubjects">Archive Subject Control</a></div>
+{* Hide till Islandora2 equivalent is created; or these pages are removed. pascal 6/15/2026
 							<hr class="menu">
 							<div class="adminMenuLink{if $action == "ArchiveUsage"} active{/if}"><a href="/Admin/ArchiveUsageByNamespace">Archive Usage by Namespace</a></div>
 							<div class="adminMenuLink{if $action == "ArchiveUsageByContentType"} active{/if}"><a href="/Admin/ArchiveUsageByContentType">Archive Usage by Content Type</a></div>
+*}
 							{if in_array('archives', $userRoles) && in_array('opacAdmin', $userRoles)}
 								<hr class="menu">
-								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="/Admin/ArchivePrivateCollections">Archive Private Collections</a></div>
-								<div class="adminMenuLink{if $action == "ClearArchiveCache"} active{/if}"><a href="/Admin/ClearArchiveCache">Clear Cache</a></div>
+								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="/Admin/ArchivePrivateCollections">Archive Private Collections and Objects</a></div>
+{*								<div class="adminMenuLink{if $action == "ClearArchiveCache"} active{/if}"><a href="/Admin/ClearArchiveCache">Clear Cache</a></div>*}
 							{/if}
 						</div>
 					</div>

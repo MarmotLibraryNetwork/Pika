@@ -31,24 +31,19 @@ class DefaultMediaObject extends I2Object
         return true;
     }
 
-    public function getObjectType(): string
+    public function getObjectModelLabel(): string
     {
-        return 'generic';
-    }
-
-    public function getObjectTypeLabel(): string
-    {
-        $type = $this->getObjectType();
-        if ($type === '' || $type === 'generic') {
+        $model = $this->getObjectModel();
+        if ($model === '' || $model === 'generic') {
             return 'Item';
         }
 
-        return ucfirst($type);
+        return ucfirst($model);
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
-        return '';
+        return null;
     }
 
     

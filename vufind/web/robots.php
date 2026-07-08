@@ -26,11 +26,13 @@
  * Time: 11:19 AM
  */
 
+// Note that Cloudflare proxy prepends its own rules ahead of ours when serving a robots.txt response
+
 require_once 'bootstrap.php';
 global $configArray;
-global $library;
-if ($configArray['Site']['isProduction']){
+if (!empty($configArray['Site']['isProduction'])){
 	echo @file_get_contents('robots.txt');
+	global $library;
 	$url  = empty($library->catalogUrl) ? $configArray['Site']['url'] : $_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl;
 
 	if (!empty($library->subdomain)){
@@ -43,11 +45,14 @@ if ($configArray['Site']['isProduction']){
 
 		echo <<<BLOCK
 
+
 Sitemap: $url/sitemaps/$fileName
 sitemap: $url/sitemaps/$fileName
 
 
 BLOCK;
+
+		// Two empty lines to get a single line when served by Cloudflare
 		//Google may want this with a lower case sitemap even though they specify capitalized.  Provide both.
 
 	}

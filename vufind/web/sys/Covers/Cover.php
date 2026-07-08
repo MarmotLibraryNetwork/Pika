@@ -28,11 +28,17 @@ class Cover extends DB_DataObject {
 
 	protected $data;
 	private $logger;
-	private $cache;
+	//private $cache;
+	private $storagePath;
 
 	public function __construct(){
-		$this->cache  = new Pika\Cache();
-		$this->logger = new Pika\Logger('Cover');
+		global $configArray;
+		//$this->cache       = new Pika\Cache();
+		$this->logger      = new Pika\Logger(__CLASS__);
+		if (empty($configArray['Site']['coverPath'])){
+			$this->logger->error('Fatal: no coverPath set in config.ini settings. Can\'t access custom cover directory');
+		}
+		$this->storagePath = $configArray['Site']['coverPath'] . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR;
 	}
 
 	function keys(){
@@ -61,28 +67,23 @@ class Cover extends DB_DataObject {
 
 	function delete($useWhere = false, $noDelete = false){
 		if (!$noDelete){
-			global
-			$configArray;
-			$storagePath = $configArray['Site']['coverPath'];
-			$coverPath   = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+			$coverPath = $this->storagePath . $this->cover;
 			unlink($coverPath);
 		}
 		parent::delete($useWhere);
 	}
 
 	function update($dataObject = false){
-		global $configArray;
-		$storagePath = $configArray['Site']['coverPath'];
-		$coverPath   = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+		$coverPath = $this->storagePath . $this->cover;
 		if (isset($_REQUEST['fileName'])){
-			$extension = pathinfo($this->cover, PATHINFO_EXTENSION);
-
+			$extension   = pathinfo($this->cover, PATHINFO_EXTENSION);
 			$newFileName = trim($_REQUEST['fileName']);
-			if (strpos($newFileName, $extension) == false){
-				$newFileName = $newFileName . "." . $extension;
+			if (!strpos($newFileName, $extension)){
+				// Add extension to file name if not present
+				$newFileName = $newFileName . '.' . $extension;
 			}
 			if ($newFileName != $this->cover){
-				rename($coverPath, $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $newFileName);
+				rename($coverPath, $this->storagePath . $newFileName);
 			}
 			$this->cover = $newFileName;
 		}
@@ -92,9 +93,7 @@ class Cover extends DB_DataObject {
 	}
 
 	function insert(){
-		global $configArray;
-		$storagePath    = $configArray['Site']['coverPath'];
-		$coverPath      = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+		$coverPath      = $this->storagePath . $this->cover;
 		$this->modified = time();
 		if (file_exists($coverPath)){
 			$newCover       = clone $this;
@@ -106,16 +105,15 @@ class Cover extends DB_DataObject {
 		return parent::insert();
 	}
 
+	// Used to populate table during database update process See 2026.01.0_update_covers_table
 	function setModifiedDate(){
-		global $configArray;
-		$storagePath = $configArray['Site']['coverPath'];
-		$fullPath = $storagePath . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . $this->cover;
+		$fullPath = $this->storagePath . $this->cover;
 		if (file_exists($fullPath) && !empty($this->cover)){
-			$modified = filemtime($fullPath);
+			$modified       = filemtime($fullPath);
 			$this->modified = $modified;
 			$this->update();
-			$verifyTime = new Cover();
-			$verifyTime->coverId = $this->coverId;
+			$verifyTime           = new Cover();
+			$verifyTime->coverId  = $this->coverId;
 			$verifyTime->modified = $modified;
 			if ($verifyTime->find()){
 				return true;

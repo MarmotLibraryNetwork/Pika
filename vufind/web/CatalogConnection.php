@@ -219,6 +219,24 @@ class CatalogConnection
 	}
 
 	/**
+	 * If $name looks like "FirstName LastName" (no comma, at least two words),
+	 * return the library-convention form "LastName, FirstName [MiddleName]".
+	 * Returns null when the name already contains a comma or is a single word.
+	 */
+	private function reverseAuthorNameForSearch(string $name): ?string {
+		if (str_contains($name, ',')){
+			return null; // Already in "Lastname, Firstname" format — no reversal needed
+		}
+		$words = preg_split('/\s+/', trim($name));
+		if (count($words) < 2){
+			return null; // Single word — no reversal possible
+		}
+		$lastName  = array_pop($words);
+		$firstName = implode(' ', $words);
+		return $lastName . ', ' . $firstName;
+	}
+
+	/**
 	 * The method to call to get the DBObject set up so that the code isn't repeated in multiple place
 	 * and doesn't diverge in those additional places
 	 * @param User $patron
@@ -228,6 +246,7 @@ class CatalogConnection
 	require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 	// Reading History entries with groupedWorkIds
 
+	$searchTermEscaped = false;
 	$readingHistoryDB          = new ReadingHistoryEntry();
 	$readingHistoryDB->whereAdd('userId = ' . $patron->id);
 	$readingHistoryDB->whereAdd('deleted = 0'); //Only show titles that have not been deleted
@@ -237,11 +256,19 @@ class CatalogConnection
 	$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
 	$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
 	$readingHistoryDB->groupBy('groupedWorkPermanentId');
-	if($this->search == true) {
-		if($this->searchField == 'title') {
+	if ($this->search == true){
+		$this->searchTerm  = $readingHistoryDB->escape($this->searchTerm, true);
+		$searchTermEscaped = true;
+		// Prevent SQL injection attacks in search Terms
+		if ($this->searchField == 'title') {
 			$readingHistoryDB->whereAdd('title like "%' . $this->searchTerm . '%"');
-		} elseif($this->searchField == 'author') {
-			$readingHistoryDB->whereAdd('author like "%' . $this->searchTerm . '%"');
+		} elseif ($this->searchField == 'author') {
+			$reversedAuthor = $this->reverseAuthorNameForSearch($this->searchTerm);
+			if ($reversedAuthor !== null) {
+				$readingHistoryDB->whereAdd('(author LIKE "%' . $reversedAuthor . '%" OR author LIKE "%' . $this->searchTerm . '%")');
+			} else {
+				$readingHistoryDB->whereAdd('author LIKE "%' . $this->searchTerm . '%"');
+			}
 		}
 	}
 
@@ -259,17 +286,26 @@ class CatalogConnection
 	$readingHistoryILL->whereAdd('userId = ' . $patron->id);
 	$readingHistoryILL->whereAdd('deleted = 0');
 	$readingHistoryILL->whereAdd('groupedWorkPermanentId = ""'); // Include only entries with out a grouped work (typically ILL items
-		if($this->search == true) {
+		if ($this->search == true) {
+			// SQL Escaping happens in the first if ($this->search == true) block above,
+			// which is needed here to protect these clauses from SQL injection.
+			if (!$searchTermEscaped){
+				$this->searchTerm  = $readingHistoryDB->escape($this->searchTerm, true);
+			}
 			if ($this->searchField == 'title') {
 				$readingHistoryILL->whereAdd('title like "%' . $this->searchTerm . '%"');
 			} elseif ($this->searchField == 'author') {
-				$readingHistoryILL->whereAdd('author like "%' . $this->searchTerm . '%"');
+				$reversedAuthor = $this->reverseAuthorNameForSearch($this->searchTerm);
+				if ($reversedAuthor !== null) {
+					$readingHistoryILL->whereAdd('(author LIKE "%' . $reversedAuthor . '%" OR author LIKE "%' . $this->searchTerm . '%")');
+				} else {
+					$readingHistoryILL->whereAdd('author LIKE "%' . $this->searchTerm . '%"');
+				}
 			}
 		}
 			// Add both entries together with an SQL union
 	$readingHistoryDB->unionAdd($readingHistoryILL);
 	return $readingHistoryDB;
-
 }
 
 	/**
@@ -472,10 +508,10 @@ class CatalogConnection
 
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 
-				// Set search query if one
+				// Set a search query if a search phrase is present
 				if($searchTerm != false) {
 					$this->search      = true;
-					$this->searchTerm  = trim($searchTerm);
+					$this->searchTerm  = trim($searchTerm); // SQL escaping will happen in getReadingHistoryDBObject()
 					$this->searchField = $searchField;
 				}
 				$readingHistoryDB = $this->getReadingHistoryDBObject($patron);
@@ -750,7 +786,7 @@ class CatalogConnection
 		 * @return boolean
 		 */
 	public function deleteMarkedReadingHistory($patron, $selectedTitles){
-	//Remove titles from database (do not remove from ILS)
+	//Remove titles from the database (do not remove from ILS)
 		if (is_a($patron, 'User') && !empty($patron->id)){
 			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			$success = true;

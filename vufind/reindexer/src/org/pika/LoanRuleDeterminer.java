@@ -105,24 +105,24 @@ public class LoanRuleDeterminer {
 								result.add(j);
 							}
 						} else {
-							logger.error("Ending range value missing for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
+							logger.error("Ending range value missing for Loan Rule Determiner row number {} for range value : '{}'", this.rowNumber, numberRangeString);
 						}
 					} else {
-						logger.error("Beginning range value missing for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
+						logger.error("Beginning range value missing for Loan Rule Determiner row number {} for range value : '{}'", this.rowNumber, numberRangeString);
 					}
 				} else {
 					if (!iTypeValue.isEmpty()) {
 						result.add(Long.parseLong(iTypeValue));
 					} else {
-						logger.warn("Empty parsed value for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString + " (check for leading, trailing or double commas");
+						logger.warn("Empty parsed value for Loan Rule Determiner row number {} for range value : '{}' (check for leading, trailing or double commas)", this.rowNumber, numberRangeString);
 					}
 				}
 			}
 		} catch (NumberFormatException e) {
-			logger.error("Error parsing value for Loan Rule Determiner row number " + this.rowNumber, e);
+			logger.error("Error parsing value for Loan Rule Determiner row number {}", this.rowNumber, e);
 		}
 		if (result.isEmpty()) {
-			logger.warn("No value(s) set for Loan Rule Determiner row number " + this.rowNumber + " for range value : " + numberRangeString);
+			logger.warn("No value(s) set for Loan Rule Determiner row number {} for range value : {}", this.rowNumber, numberRangeString);
 		}
 		return result;
 	}

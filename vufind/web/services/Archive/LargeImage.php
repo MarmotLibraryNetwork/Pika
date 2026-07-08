@@ -34,7 +34,6 @@ class Archive_LargeImage extends Archive_Object{
 
 		$hasLargeImage = false;
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		$hasImage = false;
 		if ($this->archiveObject->getDatastream('JP2') != null) {

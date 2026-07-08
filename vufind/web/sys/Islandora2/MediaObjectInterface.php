@@ -59,10 +59,17 @@ interface MediaObjectInterface
 
     /**
      * Return media associated with media object
-     * 
-     * @return array|null
+     *
+     * @return array
      */
-    public function getMedia(): ?array;
+    public function getMedia(): array;
+
+    /**
+     * Return the description of the object
+     *
+     * @return string|null
+     */
+    public function getDescription(): ?string;
 
     /**
      * Convenience accessor for the primary derivative or file.
@@ -70,6 +77,41 @@ interface MediaObjectInterface
      * @return array|null
      */
     public function getOriginalMedia(): ?I2Media;
+
+    /**
+     * Convenience accessor for the service file.
+     *
+     * @return array|null
+     */
+    public function getServiceFile();
+
+    /**
+     * Return the node payload with the "field_" prefix stripped from all keys.
+     *
+     * @return array
+     */
+    public function getNodeWithoutFieldPrefix(): array;
+
+    /**
+     * Return the display title for the object, or null when none is set.
+     *
+     * @return string|null
+     */
+    public function getTitle(): ?string;
+
+    /**
+     * Return the most recently created thumbnail media for the object.
+     *
+     * @return I2Media|null
+     */
+    public function getThumbnail();
+
+    /**
+     * Return the object's children as media objects.
+     *
+     * @return array Empty array when the object has no children.
+     */
+    public function getChildObjects(): array;
 
     /**
      * Optional hook for classes to report whether they are able to represent

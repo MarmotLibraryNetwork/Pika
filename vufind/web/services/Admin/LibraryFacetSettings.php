@@ -34,23 +34,24 @@ class LibraryFacetSettings extends ObjectEditor {
 	}
 
 	function getAllObjects($orderBy = null){
-		$facetsList = [];
-		$library    = new LibraryFacetSetting();
-		if (isset($_REQUEST['libraryId'])){
-			$libraryId          = $_REQUEST['libraryId'];
-			$library->libraryId = $libraryId;
+		$facetsList   = [];
+		$facetSetting = new LibraryFacetSetting();
+		if (!empty($_REQUEST['libraryId']) && ctype_digit($_REQUEST['libraryId'])){
+			$facetSetting->libraryId = $_REQUEST['libraryId'];
 		}
-		$library->orderBy($orderBy ?? 'weight');
-		$library->find();
-		while ($library->fetch()){
-			$facetsList[$library->id] = clone $library;
+		$facetSetting->orderBy($orderBy ?? 'weight');
+		if($facetSetting->find()){
+			while ($facetSetting->fetch()){
+				$facetsList[$facetSetting->id] = clone $facetSetting;
+			}
 		}
-
 		return $facetsList;
 	}
 
 	function getObjectStructure(){
-		return LibraryFacetSetting::getObjectStructure();
+		$structure                      = LibraryFacetSetting::getObjectStructure();
+		$structure['libraryId']['type'] = 'label'; // Make LibraryId read-only for users
+		return $structure;
 	}
 
 	function getPrimaryKeyColumn(){
@@ -62,7 +63,7 @@ class LibraryFacetSettings extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+		return ['opacAdmin', 'libraryAdmin'];
 	}
 
 	function canAddNew(){
@@ -76,12 +77,12 @@ class LibraryFacetSettings extends ObjectEditor {
 	}
 
 	function getAdditionalObjectActions($existingObject){
-		$objectActions = array();
+		$objectActions = [];
 		if (isset($existingObject) && $existingObject != null){
-			$objectActions[] = array(
+			$objectActions[] = [
 				'text' => 'Return to Library',
 				'url'  => '/Admin/Libraries?objectAction=edit&id=' . $existingObject->libraryId,
-			);
+			];
 		}
 		return $objectActions;
 	}

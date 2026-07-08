@@ -63,7 +63,7 @@
 				{* link to delete*}
 				<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
 					{* link to delete *}
-				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required');updateDeleteNotice{$propName}(){literal}}{/literal};return false;">
 					{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
 					<span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
 				</a>
@@ -101,7 +101,15 @@
 			<tr style="display:none"><td></td></tr>
 		{/foreach}
 		</tbody>
+	{* Separate tbody for newly added rows so DataTables filtering/redraws don't hide them *}
+	<tbody id="{$propName}NewRows"></tbody>
 	</table>
+
+	{* Notice displayed when rows are marked for deletion but not yet saved *}
+	<div id="{$propName}DeleteNotice" class="alert alert-warning" role="alert" style="display:none; margin-top:5px;">
+		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp;
+		<strong><span class="warning" id="{$propName}DeleteCount"></span></strong> item(s) marked for deletion. Click <strong>Save Changes</strong> to process.
+	</div>
 
 	<div class="{$propName}Actions">
 		<button onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</button>
@@ -152,14 +160,24 @@
 		{/if}
 		{literal}$('.datepicker').datepicker({format:"yyyy-mm-dd"});{/literal}
 		{literal}});{/literal}
+		function updateDeleteNotice{$propName}{literal}(){
+			var count = $('input[name^="{/literal}{$propName}{literal}Deleted"][value="true"]').length;
+			if (count > 0) {
+				$('#{/literal}{$propName}{literal}DeleteCount').text(count);
+				$('#{/literal}{$propName}{literal}DeleteNotice').show();
+			} else {
+				$('#{/literal}{$propName}{literal}DeleteNotice').hide();
+			}
+		}{/literal}
 		var numAdditional{$propName} = 0;
 		function addNew{$propName}{literal}(){
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} -1;
-			var newRow = "<tr>";
+			var newRow = "<tr class='newRow success'>"; /*success class makes the new row visually distinct from the other rows */
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}
-				newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>";
+				/* newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>"; */
+				newRow += "<td>"; /* hide the sort column icon for newly added rows */
 				newRow += "<input type='hidden' id='{$propName}Weight_" + numAdditional{$propName} +"' name='{$propName}Weight[" + numAdditional{$propName} +"]' value='" + (100 - numAdditional{$propName})  +"'>";
 				newRow += "</td>";
 			{/if}
@@ -199,10 +217,32 @@
 			{/foreach}
 			newRow += "</tr>";
 			{literal}
-			$('#{/literal}{$propName}{literal} tr:last').after(newRow);
+			$('#{/literal}{$propName}{literal}NewRows').append(newRow);
 			$('.datepicker').datepicker({format:"yyyy-mm-dd"});
 			return false;
 		}
+		{/literal}
+	</script>
+	{* Warn the user if they try to navigate away with unsaved deletions.
+	   When a row is marked for deletion, its hidden "{$propName}Deleted" input
+	   is set to "true". The beforeunload handler checks for these and triggers
+	   the browser's native confirmation dialog. The warning is bypassed when
+	   the form is submitted (save button). *}
+	<script>
+		{literal}
+		$(function(){
+			var formSubmitting = false;
+			$('#objectEditor').on('submit', function(){
+				formSubmitting = true;
+			});
+			$(window).on('beforeunload', function(){
+				if (formSubmitting) return;
+				var hasDeleted = $('input[name^="{/literal}{$propName}{literal}Deleted"][value="true"]').length > 0;
+				if (hasDeleted) {
+					return 'You have pending deletions that have not been saved.';
+				}
+			});
+		});
 		{/literal}
 	</script>
 	{if $propName == "translationMapValues"}
@@ -210,6 +250,10 @@
 		{literal}
 		$.fn.dataTable.ext.order['dom-text'] = function( settings, col ){
 			return this.api().column( col, {order:'index'} ).nodes().map( function(td, i){
+				var select = $('select', td);
+				if (select.length) {
+					return select.find('option:selected').text();
+				}
 				return $('input', td).val();
 			});
 		}
@@ -225,10 +269,34 @@
 					{"orderDataType": "dom-text", type: 'string'},
 					null
 				],
+				// Custom filter logic for columns that contain form inputs.
+				// By default, DataTables searches the raw HTML of each cell, which
+				// for <select> elements includes the text of ALL options, not just
+				// the selected one. This render override intercepts the 'filter'
+				// data type and returns only the currently selected value, so that
+				// column search matches what the user actually sees.
+				"columnDefs": [{
+					"targets": [0, 1],
+					"render": function(data, type, row, meta){
+						// Only override for filtering; display/sort use other handlers
+						if (type === 'filter') {
+							var td = meta.settings.aoData[meta.row].anCells[meta.col];
+							var select = $('select', td);
+							if (select.length) {
+								// Dropdown: return only the selected option's text
+								return select.find('option:selected').text();
+							}
+							// Text input: return the current input value
+							return $('input', td).val();
+						}
+						return data;
+					}
+				}],
 				paging: false,
 				"dom": 'lrtip',
 				initComplete: function(){
-					this.api().columns([0, 1]).every(function(){
+					var api = this.api();
+					api.columns([0, 1]).every(function(){
 						var that = this;
 						$('input', this.header())
 							.on('keyup change clear', function(){
@@ -239,6 +307,13 @@
 							.on('click', function (e) {
 								e.stopPropagation();
 							});
+					});
+					// When a dropdown selection changes, invalidate DataTables' cached
+					// filter data so the column search reflects the new selected value.
+					// Scoped to DataTables-managed tbody only; new rows live in a
+					// separate tbody (#translationMapValuesNewRows) and are excluded.
+					$('#translationMapValues tbody:not(#translationMapValuesNewRows)').on('change', 'select', function(){
+						api.rows().invalidate().draw(false);
 					});
 				}
 			});

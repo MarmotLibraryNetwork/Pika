@@ -151,10 +151,9 @@ class Record_AJAX extends AJAXHandler {
 					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return Pika.Record.submitHoldForm();\">",
 				];
 			}
-			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstrap
+			/*if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstrap
 				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return Pika.Record.submitHoldForm();\">";
-
-			}
+			}*/
 
 		}else{
 			$results = [

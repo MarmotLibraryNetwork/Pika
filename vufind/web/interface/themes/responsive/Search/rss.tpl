@@ -5,7 +5,7 @@
 		{if $result.responseHeader.params.rows}
 			<description>Displaying the first {$result.responseHeader.params.rows} search results of {$result.response.numFound} found.</description>
 		{else}
-			<description>Displaying {$result.response.docs|count} search results.</description>
+			<description>Displaying {$result.response.docs|@count} search results.</description>
 		{/if}
 		<link>{$searchUrl|escape:'html':'UTF-8'}</link>
 

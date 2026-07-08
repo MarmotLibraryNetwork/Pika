@@ -30,10 +30,22 @@ class Postcard extends ArchiveObject
         global $interface;
         global $configArray;
 
+        parent::launch();
+
         // Get manifests for child objects
         $serviceFileUrls = [];
-        if (method_exists($this->mediaObject, 'getChildren')) {
-            $childObjects = $this->mediaObject->getChildren();
+
+        // The Cantaloupe image server has no access control of its own: anyone who has
+        // one of these URLs can fetch the full-resolution image directly, forever,
+        // regardless of Pika's own viewing-restriction check (and regardless of whether
+        // wrapper.tpl later decides not to render the viewer markup that would have
+        // embedded them). So only build URLs for the postcard's child images when the
+        // current patron is actually allowed to view the postcard itself; otherwise leave
+        // service_file_url empty so nothing restricted ever reaches the page.
+        if (!$this->canCurrentUserView()) {
+            $this->logger->info('Skipping postcard service_file_url construction; a viewing restriction is in effect.', ['nid' => $this->mediaObject->getNodeId()]);
+        } else {
+            $childObjects = $this->mediaObject->getChildObjects();
             foreach ($childObjects as $childObject) {
                 $modelName = $childObject->model['name'] ?? null;
                 if ($modelName === null || strtolower($modelName) !== 'image') {
@@ -57,18 +69,13 @@ class Postcard extends ArchiveObject
 
                 $serviceFileUrls[] = $serviceFileUrl;
             }
-        } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
 
         $interface->assign('service_file_url', $serviceFileUrls);
-
-        parent::launch();
-
         $interface->assign('viewer', 'open_seadragon_multi');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
 
 }

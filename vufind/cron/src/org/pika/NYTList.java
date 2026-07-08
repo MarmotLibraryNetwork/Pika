@@ -3,6 +3,7 @@ package org.pika;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.json.*;
@@ -11,6 +12,7 @@ import java.util.Scanner;
 
 public class NYTList implements IProcessHandler {
 	private PikaSystemVariables systemVariables;
+	private String userAgent;
 
 	@Override
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -20,8 +22,11 @@ public class NYTList implements IProcessHandler {
 		try {
 			final Boolean fullReindexRunning = systemVariables.getBooleanValuedVariable("full_reindex_running");
 			if (fullReindexRunning != null && !fullReindexRunning) {
+				userAgent = PikaConfigIni.getIniValue("Islandora2", "userAgent");
+				if (userAgent == null || userAgent.isEmpty()) {
+					userAgent = "Pika";
+				}
 				String url = PikaConfigIni.getIniValue("Index", "url") + "/admin/cores?wt=json";
-
 				if (isSolrRunning(url, logger, processEntry)) {
 					addNYTItemsToList(PikaConfigIni.getIniValue("Site", "url"), logger, processEntry, pikaConn);
 				} else {
@@ -91,7 +96,9 @@ public class NYTList implements IProcessHandler {
 		URL           apiLocation = new URL(url);
 		StringBuilder str         = new StringBuilder();
 		try {
-			try (Scanner scan = new Scanner(apiLocation.openStream())) {
+			HttpURLConnection conn = (HttpURLConnection) apiLocation.openConnection();
+			conn.setRequestProperty("User-Agent", userAgent);
+			try (Scanner scan = new Scanner(conn.getInputStream())) {
 				while (scan.hasNext()) {
 					str.append(scan.nextLine());
 				}
@@ -104,7 +111,9 @@ public class NYTList implements IProcessHandler {
 				String        encoded_list_name = newResult.get("list_name_encoded").toString();
 				String        updateUrl         = pikaSiteURL + "/API/ListAPI?method=createUserListFromNYT&listToUpdate=" + encoded_list_name;
 				URL           updateLocation    = new URL(updateUrl);
-				try (Scanner updateScan = new Scanner(updateLocation.openStream())) {
+				HttpURLConnection updateConn    = (HttpURLConnection) updateLocation.openConnection();
+				updateConn.setRequestProperty("User-Agent", userAgent);
+				try (Scanner updateScan = new Scanner(updateConn.getInputStream())) {
 					StringBuilder updateStr = new StringBuilder();
 					while (updateScan.hasNext()) {
 						updateStr.append(updateScan.nextLine());

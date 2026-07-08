@@ -83,7 +83,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	/**
 	 * Alias of deleteUserReview()
 	 *
-	 * @return string
+	 * @return array
 	 */
 	function clearUserRating(){
 		return $this->deleteUserReview();
@@ -106,6 +106,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}else{
 					$result['message'] = 'Sorry, we could not find that review in the system.';
 				}
+			} else {
+				$result['message'] = 'Invalid ID.';
 			}
 		}
 
@@ -113,7 +115,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function forceRegrouping(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
 
 		if (GroupedWork::validGroupedWorkId($id)){
@@ -136,7 +137,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 	function forceReindex(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
 			$groupedWork               = new GroupedWork();
@@ -160,7 +160,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getEnrichmentInfo(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id               = $_REQUEST['id'];
 		$enrichmentResult = [];
 		if (GroupedWork::validGroupedWorkId($id)){
@@ -319,7 +318,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
 		if (GroupedWork::validGroupedWorkId($id)){
 			// TODO: request id is not always being set by index page.
@@ -334,13 +332,14 @@ class GroupedWork_AJAX extends AJAXHandler {
 				'formattedData' => $formattedData,
 			];
 			return $return;
+		} else {
+			$this->logger->error('Invalid id for getGoDeeperData(): ' . $id, [$_SERVER['REQUEST_URI']]);
 		}
 		return ['formattedData' => ''];
 	}
 
 	function getTitles(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$ids    = $_REQUEST['ids'];
 		$titles = [];
 		foreach ($ids as $id){
@@ -473,7 +472,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function getReviewInfo(){
 		$results = [];
 		$id      = $_REQUEST['id'];
-		//require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		if (GroupedWork::validGroupedWorkId($id)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($id);
@@ -921,7 +919,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 			if ($listOk){
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				if (!GroupedWork::validGroupedWorkId($groupedWorkId)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
@@ -984,7 +981,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 				}
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				$attemptedRecords = count($ids);
 				$errors           = 0;
 				foreach ($ids as $id){
@@ -1059,13 +1055,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$novelist     = NovelistFactory::getNovelist();
 				$seriesInfo   = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 				$seriesTitle  = $seriesInfo->seriesTitle;
-				$seriesTitles = $seriesInfo->seriesTitles;
+				$seriesTitles = $seriesInfo->seriesTitles; //TODO: does this exist?
 				$i            = 0;
 				foreach($seriesTitles as $title){
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $userList->id;
 					$itemId                = $title['id'];
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($itemId)){
 						$result['success'] = false;
 						$result['message'] = 'Sorry, that is not a valid entry for the list.';
@@ -1211,7 +1206,6 @@ function createSeriesList(){
 			foreach($seriesTitles as $seriesItem){
 				if (!empty($seriesItem['id'])){
 					$recordToAdd = urldecode($seriesItem['id']);
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$e++;
@@ -1349,8 +1343,11 @@ function getSaveMultipleToListForm(){
 	}
 
 function getSaveSeriesToListForm(){
-	global $interface;
 	$id = $_REQUEST['id'];
+	if (!GroupedWork::validGroupedWorkId($id)){
+		return ['error' => true, 'message' => 'Invalid Grouped Work ID.'];
+	}
+	global $interface;
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 	require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
@@ -1415,13 +1412,18 @@ function getSaveSeriesToListForm(){
 
 
 	function sendSMS(){
+		$id = $_REQUEST['id'];
+		if (!GroupedWork::validGroupedWorkId($id)){
+			return ['result' => false, 'message' => 'Invalid Grouped Work ID.'];
+		}
+
 		global $configArray;
 		global $interface;
+
 		require_once ROOT_DIR . '/sys/Mailer.php';
 		$sms = new SMSMailer();
 
 		// Get Holdings
-		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('url', $recordDriver->getAbsoluteUrl());
@@ -1591,46 +1593,60 @@ function getSaveSeriesToListForm(){
 		return ['success' => false, 'message' => '<div class="alert alert-danger">Sorry, failed to remove tag.</div>'];
 	}
 
+	/**
+	 * Fetches ILL availability from the configured ILL driver (Prospector / AutoGraphics ShareIt)
+	 * for the grouped work identified by $_REQUEST['id'], using its title and author as search terms.
+	 *
+	 * Called via AJAX when the Prospector panel is opened on the GroupedWork full-record page.
+	 *
+	 * @return array{numTitles: int, formattedData: string}
+	 */
 	function getProspectorInfo(){
-		global $configArray;
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-
-		// Retrieve Full record from Solr
-		if (!($record = $searchObject->getRecord($id))){
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
-		}
-
-		//Load results from Prospector
-		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-		/** @var Prospector|AutoGraphicsShareIt $prospector */
-		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
-		$prospector = new $ILLDriver();
-
-		$searchTerms =
-			[[
-				 'lookfor' => $record['title_short'],
-				 'index'   => 'Title',
-			 ],];
-		if (isset($record['author'])){
-			$searchTerms[] = [
-				'lookfor' => $record['author'],
-				'index'   => 'Author',
-			];
-		}
-
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
-
 		$result = [
-			'numTitles'     => $prospectorResults ? count($prospectorResults) : 0,
-			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
+			'numTitles'     => 0,
+			'formattedData' => '',
 		];
+		$id = $_REQUEST['id'];
+		if (GroupedWork::validGroupedWorkId($id)){
+			global $configArray;
+			global $interface;
+			$interface->assign('id', $id);
+
+			// Retrieve Full record from Solr
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			if (!($record = $searchObject->getRecord($id))){
+				$this->logger->warning("Failed to retrieve record {$id} from Solr");
+				return $result;
+			}
+			// Load results from Prospector (or alternate ILL service)
+			$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+			/** @var Prospector|AutoGraphicsShareIt $prospector */
+			require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+			$prospector  = new $ILLDriver();
+			$searchTerms =
+				[[
+					 'lookfor' => $record['title_short'],
+					 'index'   => 'Title',
+				 ],];
+			if (isset($record['author'])){
+				$searchTerms[] = [
+					'lookfor' => $record['author'],
+					'index'   => 'Author',
+				];
+			}
+			$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
+			if (!empty($prospectorResults['records'])){
+				$interface->assign('prospectorResults', $prospectorResults['records']);
+			}
+			$result = [
+				'numTitles'     => $prospectorResults ? count($prospectorResults['records']) : 0,
+				'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl'),
+			];
+		} else {
+			$this->logger->error("Invalid Grouped Work ID: {$id}");
+		}
 		return $result;
 	}
 
@@ -1773,7 +1789,7 @@ function getSaveSeriesToListForm(){
 			'success' => true,
 			'title'   => $title,
 			'message' => $message,
-			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList(' . $idString . ')" class="tool btn btn-primary">Add All To List</button>'
+			'buttons' => '<button id="addItemsToList" onclick="Pika.GroupedWork.addSelectedToList([' . $idString . '])" class="tool btn btn-primary">Add All To List</button>'
 		];
 	}
 

@@ -11,7 +11,7 @@
     $interface->assign('videoMime', $video->mime);
 
     // Get poster
-    $poster = $childMediaObject->getVideoPoster();
+    $poster = $childMediaObject->getThumbnail();
     $interface->assign('posterUrl', $poster->fileUrl);
 
     // Get captions

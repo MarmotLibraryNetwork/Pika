@@ -10,6 +10,7 @@
 					<tr>
 						<th><input type="checkbox" aria-label="Select or Unselect All" id="selectAll" onclick="Pika.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
 						<th>Release</th>
+						<th>Step</th>
 						<th>Name</th>
 						<th>Description</th>
 						<th>Already Run?</th>
@@ -25,6 +26,7 @@
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
 						<td>{$update.release}</td>
+						<td>{if isset($update.releaseStep)}{$update.releaseStep}{/if}</td>
 						<td>{$update.title}</td>
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>

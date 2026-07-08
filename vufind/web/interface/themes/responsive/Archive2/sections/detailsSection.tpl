@@ -1,0 +1,74 @@
+{strip}
+	{if $linked_agents_display || $debugDetails}
+		{if $linked_agents_display}
+			{foreach from=$linked_agents_display item=agent}
+				<div class="row archive-field-row">
+					<div class="result-label col-sm-4">{$agent.label|escape}: </div>
+					<div class="result-value col-sm-8">
+						{if $agent.vocabulary eq 'corporate_body' && $agent.tid}
+							<a href="/Archive2/Organization/{$agent.tid}">{$agent.name|escape}</a>
+						{elseif $agent.vocabulary eq 'person' && $agent.tid}
+							<a href="/Archive2/Person/{$agent.tid}">{$agent.name|escape}</a>
+						{else}
+							{$agent.name|escape}
+						{/if}
+					</div>
+				</div>
+			{/foreach}
+		{else}
+			<div class="row archive-field-row">
+				<div class="result-label col-sm-4">Linked Agent: </div>
+				<div class="result-value col-sm-8"><span class="text-muted">Not provided</span></div>
+			</div>
+		{/if}
+	{/if}
+
+	{include file="Archive2/partials/fieldRow.tpl" label="Date Created" value=$edtf_date_created}
+	{include file="Archive2/partials/fieldRow.tpl" label="Date Issued" value=$edtf_date_issued}
+	{include file="Archive2/partials/fieldRow.tpl" label="Date" value=$edtf_date}
+	{include file="Archive2/partials/fieldRow.tpl" label="Date Captured" value=$date_captured}
+	{include file="Archive2/partials/fieldRow.tpl" label="Copyright Date" value=$copyright_date}
+	{include file="Archive2/partials/fieldRow.tpl" label="Date (Text)" value=$date_text}
+	{include file="Archive2/partials/fieldRow.tpl" label="Physical Form" value=$physical_form}
+	{include file="Archive2/partials/fieldRow.tpl" label="Extent" value=$extent}
+	{if $display_model eq 'Postcard' && $material}
+		{if $material}
+			<div class="row archive-field-row">
+				<div class="result-label col-sm-4">Material:</div>
+				<div class="result-value col-sm-8">
+					{if is_array($material)}
+						{foreach from=$material item=materialLine}
+							<div>{$materialLine|escape}</div>
+						{/foreach}
+					{else}
+						{$material|escape}
+					{/if}
+				</div>
+			</div>
+		{/if}
+	{/if}
+	{include file="Archive2/partials/fieldRow.tpl" label="Condition" value=$physical_condition}
+	{include file="Archive2/partials/fieldRow.tpl" label="Statement of Responsibility" value=$statement_of_responsibility}
+	{include file="Archive2/partials/fieldRow.tpl" label="Publisher" value=$publisher}
+	{if ($display_model ne 'Art') && !$map_section_enabled && ($coordinates.lat || $coordinates.lng)}
+		<div class="row archive-field-row">
+			<div class="result-label col-sm-4">{if $coordinates_text}{$coordinates_text|escape}{else}Location{/if}:</div>
+			<div class="result-value col-sm-8">
+				<dl class="archive-field-values list-unstyled">
+					{if $coordinates.lat}
+						<dt>Latitude:</dt>
+						<dd>{$coordinates.lat|escape}</dd>
+					{/if}
+					{if $coordinates.lng}
+						<dt>Longitude:</dt>
+						<dd>{$coordinates.lng|escape}</dd>
+					{/if}
+					{if $coordinates.lat && $coordinates.lng}
+						<dt>Coordinates:</dt>
+						<dd>({$coordinates.lat|escape}, {$coordinates.lng|escape})</dd>
+					{/if}
+				</dl>
+			</div>
+		</div>
+	{/if}
+{/strip}

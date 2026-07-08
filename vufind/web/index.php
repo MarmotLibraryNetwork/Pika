@@ -348,8 +348,9 @@ function loadModuleActionId(){
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
-	if (preg_match('/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/', $requestURI, $matches)){
+	if (preg_match('/(MyAccount|Archive2)\/([^\/?]+)\/([^\/?]+)(\?.+)?/', $requestURI, $matches)){
 		// things like /MyAccount/MyList/19141
+		// Archive2 has the same structure where the Action is the second part and id is the third
 		$module     = $matches[1];
 		$id         = $matches[3];
 		$action     = $matches[2];
@@ -363,6 +364,7 @@ function loadModuleActionId(){
 		$action     = 'Home';
 		$id     = '';
 	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
+		// ?2 should allow this block to load Archive2 module and actions
 		$module     = $matches[1];
 		$id         = urldecode($matches[2]); // Decodes colons % codes back into colons.
 		$action     = $matches[3];
@@ -413,7 +415,7 @@ function loadModuleActionId(){
 	if ($module == null && $action == null){
 		global $library;
 		if ($library->archiveOnlyInterface ?? false){
-				$module = 'Archive';
+				$module = 'Archive2';
 		}else{
 			//We have no information about where to go, go to the default location from config
 			global $configArray;
@@ -657,13 +659,6 @@ function setUpSearchDisplayOptions($module, $action){
 		$interface->assign('basicSearchIndex', $_REQUEST['basicType'] ?? 'Keyword');
 	}
 
-	if (isset($_REQUEST['genealogyType'])){
-		//TODO: validate $_REQUEST['genealogyType'] is one of the valid types
-		$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
-	}else{
-		$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
-	}
-
 	global $searchSource;
 	$interface->assign('searchSource', $searchSource);
 	// Set $_REQUEST['type']
@@ -674,7 +669,11 @@ function setUpSearchDisplayOptions($module, $action){
 			break;
 		case 'islandora':
 			//TODO: validate $_REQUEST['islandoraType'] is one of the valid types
-		$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'IslandoraKeyword';
+			$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'IslandoraKeyword';
+			break;
+		case 'islandora2':
+			//TODO: validate $_REQUEST['islandoraType'] is one of the valid types
+			$_REQUEST['type'] = $_REQUEST['islandoraType'] ?? 'Islandora2Keyword';
 			break;
 		case 'ebsco':
 			//TODO: validate $_REQUEST['ebscoType'] is one of the valid types
@@ -692,9 +691,9 @@ function setUpSearchDisplayOptions($module, $action){
 	//Load basic search types for use in the interface.
 	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
 	$searchObject = SearchObjectFactory::initSearchObject();
-	$timer->logTime('Create Search Object');
+	$timer->logTime('Create Catalog Search Object');
 	$searchObject->init();
-	$timer->logTime('Init Search Object');
+	$timer->logTime('Init Catalog Search Object');
 	$basicSearchTypes = is_object($searchObject) ? $searchObject->getBasicTypes() : [];
 	$interface->assign('basicSearchTypes', $basicSearchTypes);
 
@@ -710,14 +709,24 @@ function setUpSearchDisplayOptions($module, $action){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		if ($genealogySearchObject != false){
 			$interface->assign('genealogySearchTypes', $genealogySearchObject->getBasicTypes() ?? []);
+			if (isset($_REQUEST['genealogyType']) && in_array($_REQUEST['genealogyType'], $genealogySearchObject->getBasicTypes())){
+				$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
+			}else{
+				$interface->assign('genealogySearchIndex', $genealogySearchObject->getDefaultIndex());
+			}
 		}
 	}
 
-	if (!empty($configArray['Islandora']['enabled']) && $library->enableArchive){
-		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+	if (!empty($configArray['Islandora2']['enabled']) && $library->enableArchive){
+		// Since Islandora1 only had the keyword type,
+		// we will use this exclusively for islandora2 types.
+		// (I want two basic types, keyword and title)
+		/** @var SearchObject_Islandora2 $islandoraSearchObject */
+		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 		if ($islandoraSearchObject != false){
 			$interface->assign('islandoraSearchTypes', $islandoraSearchObject->getBasicTypes() ?? []);
 			$interface->assign('enableArchive', true);
+			$interface->assign('islandoraSearchIndex', $_REQUEST['islandoraType'] ?? $islandoraSearchObject->getDefaultIndex());
 		}
 	}
 

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +27,8 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyRatings extends MyAccount {
+	const int MAXIMUM_TO_FETCH = 1000;
+
 	public function launch(){
 		global $interface;
 		global $timer;
@@ -40,34 +41,38 @@ class MyRatings extends MyAccount {
 		$rating         = new UserWorkReview();
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
-		$rating->find();
+		$rating->limit(self::MAXIMUM_TO_FETCH);
 		$ratings  = [];
 		$ratedIds = [];
-		while ($rating->fetch()){
-			$ratedIds[$rating->groupedWorkPermanentId] = clone($rating);
-		}
-		$timer->logTime('Loaded ids of titles the user has rated');
+		if ($rating->find()){
+			while ($rating->fetch()){
+				$ratedIds[$rating->groupedWorkPermanentId] = clone($rating);
+			}
+			$timer->logTime('Loaded ids of titles the user has rated');
 
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$records      = $searchObject->getRecords(array_keys($ratedIds));
-		foreach ($records as $record){
-			$groupedWorkDriver = new GroupedWorkDriver($record);
-			if ($groupedWorkDriver->isValid){
-				$rating    = $ratedIds[$groupedWorkDriver->getPermanentId()];
-				$ratings[] = [
-					'id'            => $rating->id,
-					'groupedWorkId' => $rating->groupedWorkPermanentId,
-					'title'         => $groupedWorkDriver->getTitle(),
-					'author'        => $groupedWorkDriver->getPrimaryAuthor(),
-					'rating'        => $rating->rating,
-					'review'        => $rating->review,
-					'link'          => $groupedWorkDriver->getLinkUrl(),
-					'dateRated'     => $rating->dateRated,
-					'ratingData'    => $groupedWorkDriver->getRatingData(),
-				];
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$records      = $searchObject->getRecords(array_keys($ratedIds));
+			foreach ($records as $record){
+				$groupedWorkDriver = new GroupedWorkDriver($record);
+				if ($groupedWorkDriver->isValid){
+					$rating    = $ratedIds[$groupedWorkDriver->getPermanentId()];
+					$ratings[] = [
+						'id'            => $rating->id,
+						'groupedWorkId' => $rating->groupedWorkPermanentId,
+						'title'         => $groupedWorkDriver->getTitle(),
+						'author'        => $groupedWorkDriver->getPrimaryAuthor(),
+						'rating'        => $rating->rating,
+						'review'        => $rating->review,
+						'link'          => $groupedWorkDriver->getLinkUrl(),
+						'dateRated'     => $rating->dateRated,
+						'ratingData'    => $groupedWorkDriver->getRatingData(),
+					];
+				}
 			}
 		}
+		$maxRatings = $rating->N >= self::MAXIMUM_TO_FETCH;
+
 
 
 		//Load titles the user is not interested in
@@ -77,35 +82,42 @@ class MyRatings extends MyAccount {
 		$notInterestedObj         = new NotInterested();
 		$notInterestedObj->userId = UserAccount::getActiveUserId();
 		$notInterestedObj->orderBy('dateMarked DESC');
-		$notInterestedObj->find();
+		$notInterestedObj->limit(self::MAXIMUM_TO_FETCH);
 		$notInterestedIds = [];
-		while ($notInterestedObj->fetch()){
-			$notInterestedIds[$notInterestedObj->groupedWorkPermanentId] = clone $notInterestedObj;
-		}
-		$timer->logTime('Loaded ids of titles the user is not interested in');
-
-		/** @var SearchObject_Solr $searchObject */
-//		$searchObject = SearchObjectFactory::initSearchObject();
-		$records      = $searchObject->getRecords(array_keys($notInterestedIds));
-		foreach ($records as $record){
-			$groupedWorkDriver = new GroupedWorkDriver($record);
-			$groupedWorkId     = $groupedWorkDriver->getPermanentId();
-			$notInterestedObj  = $notInterestedIds[$groupedWorkId];
-			if ($groupedWorkDriver->isValid){
-
-				$notInterested[] = [
-					'id'         => $notInterestedObj->id,
-					'title'      => $groupedWorkDriver->getTitle(),
-					'author'     => $groupedWorkDriver->getPrimaryAuthor(),
-					'dateMarked' => $notInterestedObj->dateMarked,
-					'link'       => $groupedWorkDriver->getLinkUrl()
-				];
+		if ($notInterestedObj->find()){
+			while ($notInterestedObj->fetch()){
+				$notInterestedIds[$notInterestedObj->groupedWorkPermanentId] = clone $notInterestedObj;
 			}
+			$timer->logTime('Loaded ids of titles the user is not interested in');
+
+			/** @var SearchObject_Solr $searchObject */
+//		$searchObject = SearchObjectFactory::initSearchObject();
+			$records = $searchObject->getRecords(array_keys($notInterestedIds));
+			foreach ($records as $record){
+				$groupedWorkDriver = new GroupedWorkDriver($record);
+				$groupedWorkId     = $groupedWorkDriver->getPermanentId();
+				$notInterestedObj  = $notInterestedIds[$groupedWorkId];
+				if ($groupedWorkDriver->isValid){
+
+					$notInterested[] = [
+						'id'         => $notInterestedObj->id,
+						'title'      => $groupedWorkDriver->getTitle(),
+						'author'     => $groupedWorkDriver->getPrimaryAuthor(),
+						'dateMarked' => $notInterestedObj->dateMarked,
+						'link'       => $groupedWorkDriver->getLinkUrl()
+					];
+				}
+			}
+			$timer->logTime('Loaded grouped works for titles user is not interested in');
 		}
-		$timer->logTime('Loaded grouped works for titles user is not interested in');
+		$maxNotInterested = $notInterestedObj->N >= self::MAXIMUM_TO_FETCH;
+
 
 		$interface->assign('ratings', $ratings);
 		$interface->assign('notInterested', $notInterested);
+		$interface->assign('maxRatings', $maxRatings);
+		$interface->assign('maxNotInterested', $maxNotInterested);
+
 		//$interface->assign('showNotInterested', false);
 
 		$this->display('myRatings.tpl', 'My Ratings');

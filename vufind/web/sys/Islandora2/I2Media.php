@@ -45,7 +45,7 @@ class I2Media
     public string $thumbnailMime = '';
     public string $langName = '';
     public string $langCode = '';
-    public int $created;
+    public int $created = 0;
 
     /**
       * @param array       $media   Islandora media extracted from JSON.
@@ -75,7 +75,10 @@ class I2Media
     {
         if (array_key_exists($name, $this->rawMedia)) {
             return $this->rawMedia[$name];
+        } elseif (array_key_exists('field_' . $name, $this->rawMedia)) {
+            return $this->rawMedia['field_' . $name];
         }
+
         return null;
     }
 

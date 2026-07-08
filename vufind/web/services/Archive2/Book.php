@@ -19,22 +19,12 @@
 
 namespace Archive2;
 
-//require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
-require_once ROOT_DIR . '/services/Archive2/PagedContent.php';
+require_once ROOT_DIR . '/services/Archive2/DigitalDocument.php';
 
-class Book extends PagedContent
+class Book extends DigitalDocument
 {
-
-    public function launch()
-    {
-        global $interface;
-        
-        parent::launch();
-
-        $interface->assign('viewer', 'mirador');
-
-        $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
-    }
+    // don't call launch() or display()
+    // if launch or display methods are required in the future
+    // create a new class that extends ArchiveObject
    
 }

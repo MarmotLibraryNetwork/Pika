@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,7 +36,7 @@ class Genealogy_Results extends Union_Results {
 
 //		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Genealogy $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
 		$searchObject->init();

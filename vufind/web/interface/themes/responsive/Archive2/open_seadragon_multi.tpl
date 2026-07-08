@@ -38,7 +38,7 @@
       display: inline-block !important;
       vertical-align: middle;
     }
-  </style>
+</style>
 {/literal}
   <div class="osd-multi-wrap">
     <div id="openseadragon-viewer"></div>
@@ -55,11 +55,8 @@
           var stripContainer = document.getElementById('openseadragon-strip');
           var viewer = OpenSeadragon({
             id: "openseadragon-viewer",
-            //prefixUrl: "https://cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/",
             preserveViewport: true,
             visibilityRatio: 1,
-            minZoomLevel: 1,
-            defaultZoomLevel: 1,
             sequenceMode: true,
             showReferenceStrip: true,
             autoHideControls: false,

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -116,7 +115,9 @@ class MyAccount_MyList extends MyAccount {
 							if (isset($_REQUEST['myListActionData'])){
 								$itemsToRemove = explode(',', $_REQUEST['myListActionData']);
 								foreach ($itemsToRemove as $id){
-									//add back the leading . to get the full bib record
+									// make sure that, if archive item contains islandora2- before the id, that it is removed
+									$id = !str_contains($id,"islandora2-") ? $id : str_replace('islandora2-', '', $id);
+									// add back the leading . to get the full bib record
 									$list->removeListEntry($id);
 									$list->update();
 								}
@@ -133,6 +134,8 @@ class MyAccount_MyList extends MyAccount {
 					}
 				}elseif (isset($_REQUEST['delete'])){
 					$recordToDelete = $_REQUEST['delete'];
+					// make sure that, if archive item contains islandora2- before the id, that it is removed
+					$recordToDelete = !str_contains($recordToDelete,"islandora2-") ? $recordToDelete : str_replace('islandora2-', '', $recordToDelete);
 					$list->removeListEntry($recordToDelete);
 					$list->update();
 				}
@@ -212,15 +215,12 @@ class MyAccount_MyList extends MyAccount {
 		$listItems       = $list->numValidListItems();
 		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
-		$archiveEnabled  = $interface->getVariable('enableArchive') ?? false;
 
 		foreach ($titleSearches[0] as $titleSearch){
 			$titleSearch = trim($titleSearch);
 			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
-				$isArchiveId         = $archiveEnabled && strpos($titleSearch, ':') !== false; // Only check for archive pids if the archive is available.
-				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';          // Initialise from the current search globals
-				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : 'Solr');
+				$searchObject        = SearchObjectFactory::initSearchObject();
 				if (!empty($searchObject)){
 					$searchObject->setLimit(1);
 					$searchObject->init();
@@ -228,7 +228,7 @@ class MyAccount_MyList extends MyAccount {
 					$results = $searchObject->processSearch(false, false);
 					if ($results['response'] && $results['response']['numFound'] >= 1){
 						$firstDoc = $results['response']['docs'][0];
-						$id       = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id']; //Get the id of the document
+						$id       = $firstDoc['id']; //Get the id of the document
 						if (($listItems + $numAdded + 1) <= 2000){
 							$numAdded++;
 						}
@@ -316,15 +316,15 @@ class MyAccount_MyList extends MyAccount {
 		//create array including all data
 		$itemArray  = [];
 		foreach ($favorites as $listItem){
-			$recordID = $listItem['id'] ?? $listItem['PID'];
-			$isArchive = isset($listItem['PID']);
+			$recordID = $listItem['id'] ?? $listItem['its_node_id'];
+			$isArchive = isset($listItem['its_node_id']);
 			$isCatalog = isset($listItem['id']);
 
 			$title = '';
 			if ($isCatalog && !empty($listItem['title_display'])){
 				$title = $listItem['title_display'];
-			} elseif ($isArchive && !empty($listItem['fgs_label_s'])){
-				$title = $listItem['fgs_label_s'];
+			} elseif ($isArchive && !empty($listItem['twm_X3b_en_title_ws_token'][0])){
+				$title = $listItem['twm_X3b_en_title_ws_token'][0];
 			}
 			$author = '';
 			if (!empty($listItem['author_display'])){
@@ -343,8 +343,8 @@ class MyAccount_MyList extends MyAccount {
 			$typeString = 'format_category_' . $GLOBALS['solrScope'];
 			if ($isCatalog && isset($listItem[$typeString])){
 				$type = $listItem[$typeString][0];
-			} elseif ($isArchive && isset($listItem['mods_genre_s'])){
-				$type = $listItem['mods_genre_s'];
+			} elseif ($isArchive && isset($listItem['sm_format'][0])){
+				$type = $listItem['sm_format'][0];
 			}
 
 

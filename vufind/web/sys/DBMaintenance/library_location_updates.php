@@ -120,5 +120,17 @@ function getLibraryLocationUpdates(): array{
 			],
 		],
 
+		'2026.02.0_remove_show_as_drop_down_facet_setting' => [
+			'release'         => '2026.02.0',
+			'title'           => 'Remove showAsDropDown from facet setting tables',
+			'description'     => 'Drop obsolete showAsDropDown column from all facet setting tables',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library_facet_setting` DROP COLUMN IF EXISTS `showAsDropDown`;",
+				"ALTER TABLE `library_archive_search_facet_setting` DROP COLUMN IF EXISTS `showAsDropDown`;",
+				"ALTER TABLE `location_facet_setting` DROP COLUMN IF EXISTS `showAsDropDown`;",
+			],
+		],
+
 	];
 }

@@ -104,6 +104,10 @@ class AJAX extends AJAXHandler {
 	 * @return array
 	 */
 	function GetAutoSuggestList(): array{
+		global $library;
+		if ($library && $library->archiveOnlyInterface){
+			return [];
+		}
 		require_once ROOT_DIR . '/sys/Search/SearchSuggestions.php';
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -126,36 +130,54 @@ class AJAX extends AJAXHandler {
 		return $searchSuggestions;
 	}
 
+	/**
+	 * Fetches ILL availability results to append at the end of a search results page,
+	 * using the search terms from the saved search identified by $_GET['prospectorSavedSearchId'].
+	 *
+	 * Only fires when the library has both enableProspectorIntegration and
+	 * showProspectorResultsAtEndOfSearch enabled. Returns rendered HTML of the
+	 * Prospector results panel or an empty string if the search ID is invalid or
+	 * the saved search cannot be restored.
+	 *
+	 * @return string Rendered HTML from Search/ajax-prospector.tpl, or empty string
+	 */
 	function getProspectorResults(){
-		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
+		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'] ?? null;
 		if (ctype_digit($prospectorSavedSearchId)){
 			global $configArray;
-			global $interface;
-			global $library;
-			global $timer;
+			if ($configArray['Content']['Prospector']){
+				global $library;
+				if ($library && $library->enableProspectorIntegration){
+					global $interface;
+					//global $timer;
 
-			/** @var SearchObject_Solr $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
+					/** @var SearchObject_Solr $searchObject */
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject->init();
+					$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-			if (is_a($searchObject, 'SearchObject_Solr')){ //Load results from Prospector
-				$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-				/** @var Prospector|AutoGraphicsShareIt $prospector */
-				require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
-				$prospector = new $ILLDriver();// Only show prospector results within search results if enabled
-				if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-					$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-					$interface->assign('prospectorResults', $prospectorResults['records']);
+					if (is_a($searchObject, 'SearchObject_Solr')){
+						// Load results from Prospector
+						$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+						/** @var Prospector|AutoGraphicsShareIt $prospector */
+						require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+						$prospector = new $ILLDriver();
+						if ($library->showProspectorResultsAtEndOfSearch){
+							// Only show prospector results within search results if enabled
+							$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+							$interface->assign('prospectorResults', $prospectorResults['records'] ?? []);
+						}
+						$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+						$prospectorLink     = $prospector->getSearchLink($searchObject->getSearchTerms());
+						$interface->assign('innReachEncoreName', $innReachEncoreName);
+						$interface->assign('prospectorLink', $prospectorLink);
+						//$timer->logTime('load Prospector titles');
+						return $interface->fetch('Search/ajax-prospector.tpl');
+					}
 				}
-				$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
-				$interface->assign('innReachEncoreName', $innReachEncoreName);
-				$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-				$interface->assign('prospectorLink', $prospectorLink);
-				$timer->logTime('load Prospector titles');
-				return $interface->fetch('Search/ajax-prospector.tpl');
 			}
 		}
+		return '';
 	}
 
 
@@ -220,7 +242,7 @@ class AJAX extends AJAXHandler {
 //		$searchSource = isset($searchParams['searchSource']) ? $searchParams['searchSource'] : 'local';
 		$searchSource = $_REQUEST['searchSource'] ?? 'local';
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
@@ -268,7 +290,7 @@ class AJAX extends AJAXHandler {
 			'success' => $success,
 			'records' => $records,
 		];
-		// let front end know if we have reached the end of the result set
+		// let front-end know if we have reached the end of the result set
 		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
 			$result['lastPage'] = true;
 		}
@@ -278,30 +300,76 @@ class AJAX extends AJAXHandler {
 	private $validExploreMoreSections = [
 		'catalog',
 		'archive',
-		'ebsco',
+		//'ebsco',
 	];
+	/**
+	 * AJAX handler for populating the Explore More Bar on search results pages.
+	 *
+	 * Called on page 1 of any search results page. Loads cross-section tiles so
+	 * patrons can discover related content in other parts of the system:
+	 *
+	 *  - Catalog tiles  (always, unless already on the catalog section)
+	 *  - Archive tiles  (Islandora2 or legacy Islandora, unless already on the archive section)
+	 *
+	 * Request parameters:
+	 *   section    — the section the patron is currently browsing:
+	 *                'catalog' | 'archive' | 'ebsco' (defaults to 'catalog')
+	 *   searchTerm — the current search query string (URL-encoded)
+	 *   page       — current result page; bar is skipped for pages > 1
+	 *
+	 * @return array{success: bool, exploreMoreBar?: string}
+	 */
 	function loadExploreMoreBar(){
-		global $interface;
+		$result = [
+			'success' => false,
+		];
+		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
+			// Only populate Explore More Bar on the first page of any kind of results
+			return $result;
+		}
 
-		$section    = $_REQUEST['section'];
+		// $section is actually the type of Search Results the request is coming from
+		$section = $_REQUEST['section'];
 		if (!in_array($section, $this->validExploreMoreSections)){
-			$section = 'catalog'; // If not a valid section, default to catalog section
+			$section = 'catalog'; // If not a valid section, default to the catalog section
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		if (is_array($searchTerm)){
+			$this->logger->warning('loadExploreMoreBar: searchTerm is an array: ', $searchTerm);
 			$searchTerm = reset($searchTerm);
 		}
 		$searchTerm = urldecode(html_entity_decode($searchTerm));
 
-		//Load explore more data
-		require_once ROOT_DIR . '/sys/ExploreMore.php';
-		$exploreMore        = new ExploreMore();
-		$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
-		if (count($exploreMoreOptions) == 0){
-			$result = [
-				'success' => false,
-			];
-		}else{
+		$exploreMoreOptions = [];
+
+		// Catalog options are always loaded from the catalog (not when already on the catalog section)
+		if ($section != 'catalog'){
+			require_once ROOT_DIR . '/sys/ExploreMore.php';
+			$legacyExploreMore  = new ExploreMore();
+			$exploreMoreOptions = $legacyExploreMore->loadCatalogOptions($exploreMoreOptions, $searchTerm);
+		}
+
+		// Archive options: use the appropriate ExploreMore class based on which archive is enabled
+		if ($section != 'archive'){
+			global $configArray;
+			if (!empty($configArray['Islandora2']['enabled'])){
+				require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
+				$archiveExploreMore = new \Archive2\ExploreMore();
+				$exploreMoreOptions = $archiveExploreMore->loadArchiveExploreMoreBarOptions($exploreMoreOptions, $searchTerm);
+			} elseif (!empty($configArray['Islandora']['enabled'])){
+				require_once ROOT_DIR . '/sys/ExploreMore.php';
+				$legacyExploreMore  = $legacyExploreMore ?? new ExploreMore();
+				$exploreMoreOptions = $legacyExploreMore->loadLegacyArchiveOptions($exploreMoreOptions, $searchTerm);
+			}
+		}
+
+		if (count($exploreMoreOptions) > 0){
+			global $interface;
+			$interface->assign([
+				'activeSection'      => $section,
+				'exploreMoreOptions' => $exploreMoreOptions,
+			]);
+
 			$result = [
 				'success'        => true,
 				'exploreMoreBar' => $interface->fetch('Search/explore-more-bar.tpl'),

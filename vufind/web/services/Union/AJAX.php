@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -169,6 +168,7 @@ class Union_AJAX extends AJAXHandler {
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
+		//TODO: box hidden filter setting into it's own method
 		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 		$searchObject->setLimit($numberOfResults);
@@ -179,10 +179,10 @@ class Union_AJAX extends AJAXHandler {
 		}else{
 			$searchType = 'IslandoraKeyword';
 		}
-		$searchObject->setSearchTerms(array(
+		$searchObject->setSearchTerms([
 			'index'   => $searchType,
 			'lookfor' => $searchTerm,
-		));
+		]);
 		$result  = $searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultHTML();

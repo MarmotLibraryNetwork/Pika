@@ -23,6 +23,7 @@
  * @author      Demian Katz <demian.katz@villanova.edu>
  * @access      public
  */
+
 use Pika\Logger;
 
 class RecordDriverFactory {
@@ -33,119 +34,73 @@ class RecordDriverFactory {
 	 *
 	 * @access  public
 	 * @param   array|AbstractFedoraObject   $record     The fields retrieved from the Solr index.
-	 * @return PEAR_Error|RecordInterface
+	 * @return RecordInterface|PEAR_Error|null
 	 */
 	static function initRecordDriver($record){
-		global $configArray;
 		global $timer;
-
 		$timer->logTime('Starting to load record driver');
 
-		// Determine driver path based on record type:
-		if (is_object($record) && $record instanceof AbstractFedoraObject){
+		if (is_array($record)){
+			// We have a Solr Document array
+			if (array_key_exists('recordtype', $record)){
+				//Grouped Work and Genealogy Solr Documents both have solr field 'recordtype'
+
+				// for example, Load Person records (at least from buildRSS)
+				// Also SearchObject_Solr  getBrowseRecordHTML()
+				// Also load groupedwork in SuggestedTitles->launch()
+				return self::initGroupedWorkOrGenealogyDriversFromSolrDoc($record);
+			}else{
+				// Islandora Solr Documents
+				if (array_key_exists('its_node_id', $record)){
+					// Islandora 2 Solr Document
+					return self::initIslandora2DriverFromSolrDoc($record);
+				}elseif (array_key_exists('PID', $record)){
+					// Islandora 1 Solr Document
+					return self::initIslandora1DriverFromSolrDoc($record);
+				}
+			}
+		}elseif ($record instanceof AbstractFedoraObject){
 			return self::initIslandoraDriverFromObject($record);
-
-		}elseif (is_array($record) && !array_key_exists('recordtype', $record)){
-			require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-			$islandoraObjectCache      = new IslandoraObjectCache();
-			$islandoraObjectCache->pid = $record['PID'];
-			$hasExistingCache          = false;
-			$driver                    = '';
-			if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])){
-				$driver           = $islandoraObjectCache->driverName;
-				$path             = $islandoraObjectCache->driverPath;
-				$hasExistingCache = true;
-			}
-			if (empty($driver)){
-				if (!isset($record['RELS_EXT_hasModel_uri_s'])){
-					//print_r($record);
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $record['PID'] . ' ; model did not exist');
-				}
-				$recordType = $record['RELS_EXT_hasModel_uri_s'];
-				//Get rid of islandora namespace information
-				$recordType = str_replace([
-					'info:fedora/islandora:', 'sp_', 'sp-', '_cmodel', 'CModel',
-				], '', $recordType);
-
-				$driverNameParts      = explode('_', $recordType);
-				$normalizedRecordType = '';
-				foreach ($driverNameParts as $driverPart){
-					$normalizedRecordType .= (ucfirst($driverPart));
-				}
-
-				if ($normalizedRecordType == 'Compound'){
-					$genre = isset($record['mods_genre_s']) ? $record['mods_genre_s'] : null;
-					if ($genre != null){
-						$normalizedRecordType = ucfirst($genre);
-						$normalizedRecordType = str_replace(' ', '', $normalizedRecordType);
-
-						$driver = $normalizedRecordType . 'Driver';
-						$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-						if (!is_readable($path)){
-							//print_r($record);
-							$normalizedRecordType = 'Compound';
-						}
-					}
-				}
-
-				$driver = $normalizedRecordType . 'Driver';
-				$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-
-				// If we can't load the driver, fall back to the default, index-based one:
-				if (!is_readable($path)){
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
-				}else{
-					if (!$hasExistingCache){
-						$islandoraObjectCache      = new IslandoraObjectCache();
-						$islandoraObjectCache->pid = $record['PID'];
-					}
-					$islandoraObjectCache->driverName = $driver;
-					$islandoraObjectCache->driverPath = $path;
-					$islandoraObjectCache->title      = $record['fgs_label_s'];
-					if (!$hasExistingCache){
-						$islandoraObjectCache->insert();
-					}else{
-						$islandoraObjectCache->update();
-					}
-				}
-			}
-			$timer->logTime("Found Driver for archive object from solr doc {$record['PID']} " . $driver);
-		}elseif (is_array($record) && array_key_exists('recordtype', $record)){
-			// for example, Load Person records (at least from buildRSS)
-			// Also SearchObject_Solr  getBrowseRecordHTML()
-			// Also load groupedwork in SuggestedTitles->launch()
-			$driver = ucwords($record['recordtype']) . 'Record';
-			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-			// If we can't load the driver, fall back to the default, index-based one:
-			if (!is_readable($path)){
-				//Try without appending Record
-				// e.g. GroupedWorkDriver
-				$recordType      = $record['recordtype'];
-				$driverNameParts = explode('_', $recordType);
-				$recordType      = '';
-				foreach ($driverNameParts as $driverPart){
-					$recordType .= (ucfirst($driverPart));
-				}
-
-				$driver = $recordType . 'Driver';
-				$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-
-				// If we can't load the driver, fall back to the default, index-based one:
-				if (!is_readable($path)){
-
-					$driver = 'IndexRecord';
-					$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-				}
-			}
-		} else {
-			return new PEAR_Error("Problem loading record: ". $record);
 		}
-
-		return self::initAndReturnDriver($record, $driver, $path);
+		$logger = new Logger(__CLASS__);
+		$logger->error('No handling to load this record data', [$record]);
+		return new PEAR_Error('Unknown record data to initialize record driver.');
 	}
 
+	static public function initGroupedWorkOrGenealogyDriversFromSolrDoc(array $record){
+		global $configArray;
+		// Determine driver path based on record type:
+		$driver = ucwords($record['recordtype']) . 'Record';
+		$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+		if (!is_readable($path)){
+			//Try without appending Record
+			// e.g. GroupedWorkDriver from recordtype = 'grouped_work'
+			$recordType      = $record['recordtype'];
+			$driverNameParts = explode('_', $recordType);
+			$recordType      = '';
+			foreach ($driverNameParts as $driverPart){
+				$recordType .= (ucfirst($driverPart));
+			}
+
+			$driver = $recordType . 'Driver';
+			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+
+			// If we can't load the driver, fall back to the default, index-based one:
+			if (!is_readable($path)){
+				// This should never happen now. We should fix anything that resorts to this
+				$logger = new Logger(__CLASS__);
+				$logger->error('Loading obsolete Index Record for recordType ' . $recordType . ' with no known handling.');
+
+				$driver = 'IndexRecord';
+				$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+			}
+		}
+	return self::initAndReturnDriver($record, $driver, $path);
+	}
 	static $recordDrivers = [];
 	/**
+	 * Initialize a traditional Catalog record by a full Id (source and ID)
+	 *
 	 * @param string|SourceAndId $fullId
 	 * @param  GroupedWork       $groupedWork;
 	 *
@@ -219,7 +174,7 @@ class RecordDriverFactory {
 
 	/**
 	 * @param AbstractFedoraObject $record
-	 * @return PEAR_Error|RecordInterface
+	 * @return RecordInterface|null|PEAR_Error|
 	 */
 	public static function initIslandoraDriverFromObject($record){
 		if ($record == null){
@@ -237,7 +192,7 @@ class RecordDriverFactory {
 			$path   = $islandoraObjectCache->driverPath;
 		}else{
 			$models = $record->models;
-			$timer->logTime("Loaded models for object");
+			$timer->logTime('Loaded models for object');
 			foreach ($models as $model){
 				$recordType = $model;
 				//Get rid of islandora namespace information
@@ -278,7 +233,6 @@ class RecordDriverFactory {
 				}
 			}
 			$timer->logTime('Found Driver for archive object ' . $driver);
-
 		}
 		return self::initAndReturnDriver($record, $driver, $path);
 	}
@@ -301,6 +255,79 @@ class RecordDriverFactory {
 			$islandoraObject = $fedoraUtils->getObject($record);
 			return self::initIslandoraDriverFromObject($islandoraObject);
 		}
+	}
+
+	public static function initIslandora1DriverFromSolrDoc(array $record){
+		require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
+		global $configArray;
+
+		$hasExistingCache          = false;
+		$driver                    = '';
+		if (!empty($record['PID'])){
+			$islandoraObjectCache      = new IslandoraObjectCache();
+			$islandoraObjectCache->pid = $record['PID'];
+			if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])){
+				$driver           = $islandoraObjectCache->driverName;
+				$path             = $islandoraObjectCache->driverPath;
+				$hasExistingCache = true;
+			}
+		}
+		if (empty($driver)){
+			if (!isset($record['RELS_EXT_hasModel_uri_s'])){
+				//print_r($record);
+				PEAR_Singleton::raiseError('Unable to load Driver for ' . $record['PID'] . ' ; model did not exist');
+			}
+			$recordType = $record['RELS_EXT_hasModel_uri_s'];
+			//Get rid of islandora namespace information
+			$recordType = str_replace([
+				'info:fedora/islandora:', 'sp_', 'sp-', '_cmodel', 'CModel',
+			], '', $recordType);
+
+			$driverNameParts      = explode('_', $recordType);
+			$normalizedRecordType = '';
+			foreach ($driverNameParts as $driverPart){
+				$normalizedRecordType .= (ucfirst($driverPart));
+			}
+
+			if ($normalizedRecordType == 'Compound'){
+				$genre = isset($record['mods_genre_s']) ? $record['mods_genre_s'] : null;
+				if ($genre != null){
+					$normalizedRecordType = ucfirst($genre);
+					$normalizedRecordType = str_replace(' ', '', $normalizedRecordType);
+
+					$driver = $normalizedRecordType . 'Driver';
+					$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+					if (!is_readable($path)){
+						//print_r($record);
+						$normalizedRecordType = 'Compound';
+					}
+				}
+			}
+
+			$driver = $normalizedRecordType . 'Driver';
+			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+
+			// If we can't load the driver, fall back to the default, index-based one:
+			if (!is_readable($path)){
+				PEAR_Singleton::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
+			}else{
+				if (!$hasExistingCache){
+					$islandoraObjectCache      = new IslandoraObjectCache();
+					$islandoraObjectCache->pid = $record['PID'];
+				}
+				$islandoraObjectCache->driverName = $driver;
+				$islandoraObjectCache->driverPath = $path;
+				$islandoraObjectCache->title      = $record['fgs_label_s'];
+				if (!$hasExistingCache){
+					$islandoraObjectCache->insert();
+				}else{
+					$islandoraObjectCache->update();
+				}
+			}
+		}
+		global $timer;
+		$timer->logTime("Found Driver for archive object from solr doc {$record['PID']} " . $driver);
+		return self::initAndReturnDriver($record, $driver, $path);
 	}
 
 	/**
@@ -335,7 +362,19 @@ class RecordDriverFactory {
 
 		// If we got here, something went very wrong:
 		$timer->logTime('No path for record driver found');
-		return new PEAR_Error("Problem loading record driver: {$driver}");
+		$logger = new Logger(__CLASS__);
+		$msg    = "Problem loading record driver: {$driver}";
+		$logger->error($msg);
+		return new PEAR_Error($msg);
+	}
+
+	/**
+	 * @param array $record Solr Document for the Object to initialize
+	 * @return Islandora2Driver
+	 */
+	public static function initIslandora2DriverFromSolrDoc(array $record){
+		$object = new Islandora2Driver($record);
+		return $object;
 	}
 
 

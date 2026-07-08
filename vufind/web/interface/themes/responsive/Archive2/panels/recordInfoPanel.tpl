@@ -1,3 +1,4 @@
+{* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
     <div class="panel" id="recordInfoPanel"><a data-toggle="collapse" href="#recordInfoPanelBody">
             <div class="panel-heading">

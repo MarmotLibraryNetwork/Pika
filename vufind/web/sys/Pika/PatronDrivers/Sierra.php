@@ -3409,8 +3409,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				$c->get($operationUrl, $params);
 		}
 
+		//$this->logger->debug('Sierra API call: ' . $operationUrl, ['params' => $params]);
+
 		### ERROR CHECKS ###
-		// if an error does occur set the $this->apiLastError.
+		// if an error does occur, set the $this->apiLastError.
 		// get the info so we can check the headers for a good response.
 		$cInfo = $c->getInfo();
 		// first check for a curl error

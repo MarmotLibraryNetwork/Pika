@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,6 +32,16 @@ class Archive_Home extends Action{
 		global $interface;
 		global $timer;
 		global $library;
+		global $configArray;
+
+		// When the legacy redirect is enabled, the Islandora 1 archive is being retired in
+		// favor of Islandora 2, so send the archive home page to its Archive2 equivalent
+		// before doing any Islandora 1 search work (which Fedora may no longer be up for).
+		if (!empty($configArray['Islandora2']['legacyRedirect'])){
+			header('HTTP/1.1 301 Moved Permanently');
+			header('Location: /Archive2/Home', true, 301);
+			exit();
+		}
 
 		$relatedProjects = $this->loadRelatedProjects(true);
 		$interface->assign('relatedProjectsLibrary', $relatedProjects);
@@ -81,7 +90,7 @@ class Archive_Home extends Action{
 		}
 		$timer->logTime('Process Search for related content types');
 
-		$relatedContentTypes = array();
+		$relatedContentTypes = [];
 		if ($response && isset($response['response'])){
 			foreach ($response['facet_counts']['facet_fields']['mods_genre_s'] as $genre) {
 				/** @var SearchObject_Islandora $searchObject2 */
@@ -95,22 +104,22 @@ class Archive_Home extends Action{
 					$firstObject = reset($response2['response']['docs']);
 					/** @var IslandoraDriver $firstObjectDriver */
 					$firstObjectDriver = RecordDriverFactory::initRecordDriver($firstObject);
-					$numMatches = $response2['response']['numFound'];
-					$contentType = ucwords($genre[0]);
+					$numMatches        = $response2['response']['numFound'];
+					$contentType       = ucwords($genre[0]);
 					if ($numMatches == 1) {
-						$relatedContentTypes[] = array(
-								'title' => "{$contentType} ({$numMatches})",
-								'description' => "{$contentType} related to this",
-								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
-								'link' => $firstObjectDriver->getRecordUrl(),
-						);
+						$relatedContentTypes[] = [
+							'title'       => "{$contentType} ({$numMatches})",
+							'description' => "{$contentType} related to this",
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
+							'link'        => $firstObjectDriver->getRecordUrl(),
+						];
 					} else {
-						$relatedContentTypes[] = array(
-								'title' => "{$contentType}s ({$numMatches})",
-								'description' => "{$contentType}s related to this",
-								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
-								'link' => $searchObject2->renderSearchUrl(),
-						);
+						$relatedContentTypes[] = [
+							'title'       => "{$contentType}s ({$numMatches})",
+							'description' => "{$contentType}s related to this",
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
+							'link'        => $searchObject2->renderSearchUrl(),
+						];
 					}
 				}
 			}
@@ -181,14 +190,14 @@ class Archive_Home extends Action{
 
 				foreach ($response['response']['docs'] as $objectInCollection) {
 					$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
-					$relatedProjects[] = array(
-							'title' => $firstObjectDriver->getTitle(),
-							'description' => $firstObjectDriver->getDescription(),
-							'image' => $firstObjectDriver->getBookcoverUrl('small'),
-							'dateCreated' => $firstObjectDriver->getDateCreated(),
-							'link' => $firstObjectDriver->getRecordUrl(),
-							'pid' => $firstObjectDriver->getUniqueID()
-					);
+					$relatedProjects[] = [
+						'title'       => $firstObjectDriver->getTitle(),
+						'description' => $firstObjectDriver->getDescription(),
+						'image'       => $firstObjectDriver->getBookcoverUrl('small'),
+						'dateCreated' => $firstObjectDriver->getDateCreated(),
+						'link'        => $firstObjectDriver->getRecordUrl(),
+						'pid'         => $firstObjectDriver->getUniqueID()
+					];
 					$timer->logTime('Loaded related object');
 				}
 			}

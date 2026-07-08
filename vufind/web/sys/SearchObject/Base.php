@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,6 +25,8 @@ require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
  * VuFind modules (i.e. standard Solr search vs. Summon, etc.).
  */
 abstract class SearchObject_Base {
+	// INI file name to use for search object settings
+	protected string $searchIni;
 	// Parsed query
 	protected $query = null;
 
@@ -40,17 +41,12 @@ abstract class SearchObject_Base {
 	protected $defaultSort = 'relevance';
 	protected $defaultSortByType = [];
 	/** @var string */
-	protected $searchSource = 'local';
+	protected string $searchSource = 'none'; // should be overridden by all extended classes
 
-	// Filters
-	protected $filterList = [];
 	// Page number
 	protected $page = 1;
 	// Result limit
 	protected $limit = 20;
-
-	// Used to pass hidden filter queries to Solr
-	protected $hiddenFilters = [];
 
 	// STATS
 	protected $resultsTotal = 0;
@@ -61,14 +57,29 @@ abstract class SearchObject_Base {
 	// Module and Action for building search results URLs
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
+
+	// Spelling
+	protected $spellingLimit = 3;
+	protected $spellQuery    = [];
+	protected $dictionary    = 'default';
+	protected $spellSimple   = false;
+	protected $spellSkipNumeric = true;
+
 	// Facets information
+	protected $allFacetSettings = [];    // loaded from class's version of facets.ini
 	protected $facetConfig = [];    // Array of valid facet fields=>labels
 	protected $facetOptions = [];
 	protected $checkboxFacets = [];    // Boolean facets represented as checkboxes
 	protected $translatedFacets = [];  // Facets that need to be translated
-	protected $pidFacets = [];
+	// Applied Filters
+	protected $filterList = [];
+	// Used to pass hidden filter queries to Solr
+	protected $hiddenFilters = [];
+
+	const NUM_FACET_VALUES_TO_SHOW = 5;
+
 	// Default Search Handler
-	protected $defaultIndex = null;
+	protected ?string $defaultIndex = null;
 	// Available sort options
 	protected $sortOptions = [];
 	// An ID number for saving/retrieving search
@@ -93,22 +104,38 @@ abstract class SearchObject_Base {
 	protected $spellcheck = true;
 	protected $suggestions = [];
 	// Recommendation modules associated with the search:
+	// Alternate Recommendations added to a search page
+	// (Only current example is Similar Authors on catalog Author search)
 	/** @var bool|array $recommend */
 	protected $recommend = false;
 	// The INI file to load recommendations settings from:
 	protected $recommendIni = 'searches';
 
 	// STATS
-	protected $initTime = null;
-	protected $endTime = null;
-	protected $totalTime = null;
+	protected float|null $initTime = null;
+	protected float|null $endTime = null;
+	protected float|null $totalTime = null;
 
-	protected $queryStartTime = null;
-	protected $queryEndTime = null;
-	protected $queryTime = null;
+	protected float|null $queryStartTime = null;
+	protected float|null $queryEndTime = null;
+	protected float|null $queryTime = null;
+
+	// Facets
+	protected int|null $facetLimit = 30;
+
+	protected string|null $facetPrefix = null;
+
+	// Index
+	/** @var Solr */
+	protected $indexEngine = null;
+
+	// Result
+	protected $indexResult;
+
+	const string IDFIELD = 'id';
 
 	/**
-	 * Constructor. Initialise some details about the server
+	 * Constructor. Initialize some details about the server
 	 *
 	 * @access  public
 	 */
@@ -123,21 +150,40 @@ abstract class SearchObject_Base {
 		// Debugging
 		if ($configArray['System']['debugSolr']){
 			//Verify that the ip is ok
-			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
-				global $locationSingleton;
-				$activeIp     = $locationSingleton->getActiveIp();
-				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
-				if (in_array($activeIp, $allowableIps)){
+			//TODO: re-enable after development is done
+//			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
+//				global $locationSingleton;
+//				$activeIp     = $locationSingleton->getActiveIp();
+//				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
+//				if (in_array($activeIp, $allowableIps)){
 					$this->debug = true;
 					if ($configArray['System']['debugSolrQuery'] == true){
 						$this->debugSolrQuery = true;
 					}
-				}
-			}
+//				}
+//			}
 		}
 		$timer->logTime('Setup Base Search Object');
 	}
 
+	/**
+	 * Return the specified setting from the class facets INI file.
+	 *
+	 * @access  public
+	 * @param   string $section   The section of the facets.ini file to look at.
+	 * @param   string $setting   The setting within the specified file to return.
+	 * @return  string    The value of the setting (blank if none).
+	 */
+	public function getFacetSetting($section, $setting){
+		return $this->allFacetSettings[$section][$setting] ?? '';
+	}
+
+	protected function initFacetLimit($section = 'Results_Settings'){
+		$facetLimit = $this->getFacetSetting($section, 'facet_limit');
+		if (is_numeric($facetLimit)){
+			$this->facetLimit = $facetLimit;
+		}
+	}
 	public function setDebugging($enableDebug, $enableSolrQueryDebugging){
 		$this->debug          = $enableDebug;
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
@@ -151,7 +197,7 @@ abstract class SearchObject_Base {
 	 * @return  []               Array with elements 0 = field, 1 = value.
 	 */
 	protected function parseFilter($filter){
-		if ((strpos($filter, ' AND ') !== false) || (strpos($filter, ' OR ') !== false)){
+		if ((str_contains($filter, ' AND ')) || (str_contains($filter, ' OR '))){
 			// This is a complex filter that does not need parsing
 			return ['', $filter];
 		}
@@ -188,13 +234,37 @@ abstract class SearchObject_Base {
 //	}
 
 	/**
+	 * Set a limit of number of facet values returned.
+	 * Any negative number sets return limit to unlimited.
+	 *
+	 * @param $limit number of facet values to limit facet to
+	 * @return void
+	 */
+	public function setFacetLimit($limit){
+		$this->facetLimit = $limit;
+	}
+
+	/**
+	 * Add a prefix to facet requirements. Serves to
+	 *    limits facet sets to smaller subsets.
+	 *
+	 *  e.g. all facet data starting with 'R'
+	 *
+	 * @access  public
+	 * @param   string  $prefix   Data for prefix
+	 */
+	public function addFacetPrefix($prefix){
+		$this->facetPrefix = $prefix;
+	}
+
+	/**
 	 * Does the object already contain the specified filter?
 	 *
 	 * @access  public
 	 * @param   string  $filter     A filter string from url : "field:value"
 	 * @return  bool
 	 */
-	public function hasFilter($filter){
+	public function hasFilter($filter): bool{
 		// Extract field and value from URL string:
 		[$field, $value] = $this->parseFilter($filter);
 
@@ -204,7 +274,12 @@ abstract class SearchObject_Base {
 		return false;
 	}
 
-	public function clearFilters(){
+	/**
+	 * Remove any applied facets (i.e. filters)
+	 * DOES NOT APPLY TO HIDDEN FILTERS
+	 * @return void
+	 */
+	public function clearFilters(): void{
 		$this->filterList = [];
 	}
 
@@ -216,7 +291,7 @@ abstract class SearchObject_Base {
 	 * @access  public
 	 * @param   string  $newFilter   A filter string from url : "field:value"
 	 */
-	public function addFilter($newFilter){
+	public function addFilter($newFilter): void{
 		if (empty($newFilter)){
 			return;
 		}
@@ -377,7 +452,7 @@ abstract class SearchObject_Base {
 	/**
 	 * Clear all facets which will speed up searching if we won't be using the facets.
 	 */
-	public function clearFacets(){
+	public function clearFacets(): void{
 		$this->facetConfig = [];
 	}
 
@@ -408,9 +483,12 @@ abstract class SearchObject_Base {
 				// Add to the list unless it's in the list of fields to skip:
 				if (!in_array($field, $skipList)){
 					$facetLabel = $this->getFacetLabel($field);
+					// Genealogy Field veteranOf
 					if ($field == 'veteranOf' && $value == '[* TO *]'){
 						$display = 'Any War';
-					}elseif ($field == 'available_at' && $value == '*'){
+					}
+					// Catalog field
+					elseif ($field == 'available_at' && $value == '*'){
 						$anyLocationLabel = $this->getFacetSetting('Availability', 'anyLocationLabel');
 						$display          = empty($anyLocationLabel) ? 'Any Location' : $anyLocationLabel;
 					}else{
@@ -610,7 +688,29 @@ abstract class SearchObject_Base {
 		return true;
 	}
 
-	public function setSearchTerms($searchTerms){
+	/**
+	 * Replace the current search terms with a single search clause.
+	 *
+	 * $searchTerms must be an array, not a plain string. Two forms are accepted:
+	 *
+	 * Basic search:
+	 *   ['lookfor' => string, 'index' => string]
+	 *   'lookfor' is the query string; 'index' is the search handler (e.g. 'Keyword',
+	 *   'IslandoraKeyword'). 'index' may be omitted when the search object's default
+	 *   index is appropriate.
+	 *
+	 * Advanced search group:
+	 *   ['group' => [...], 'join' => 'AND'|'OR']
+	 *   See initAdvancedSearch() for the group element structure.
+	 *
+	 * Passing a plain string is not supported — Solr::buildQuery() and
+	 * SearchObject_Islandora2::processSearch() both expect array elements and will
+	 * produce an empty query or PHP warnings when given a string.
+	 * Use setBasicQuery($query, $index) as a simpler alternative for plain keyword searches.
+	 *
+	 * @param array $searchTerms  A single search clause (basic or advanced group).
+	 */
+	public function setSearchTerms(array $searchTerms){
 		$this->searchTerms   = [];
 		$this->searchTerms[] = $searchTerms;
 	}
@@ -864,7 +964,7 @@ abstract class SearchObject_Base {
 		$params = $this->getSearchParams();
 
 		// Add any filters
-		if (count($this->filterList) > 0){
+		if ($this->hasAppliedFacets()){
 			$encodedFilterArrayString = urlencode('filter[]'); // un-encoded braces technically not url allowed  (Good parsing for Accessibility 4.1.1)
 			foreach ($this->filterList as $field => $filter){
 				foreach ($filter as $value){
@@ -1068,12 +1168,14 @@ abstract class SearchObject_Base {
 	public function getQuery()          {return $this->query;}
 	public function getSearchTerms()    {return $this->searchTerms;}
 	public function getSearchType()     {return $this->searchType;}
+	public function getDefaultIndex()   {return $this->defaultIndex;}
 	public function getSort()           {return $this->sort;}
 	public function getStartTime()      {return $this->initTime;}
 	public function getTotalSpeed()     {return $this->totalTime;}
 	public function getView()           {return $this->view;}
 	public function isSavedSearch()     {return $this->savedSearch;}
-
+	public function getIndexEngine()    {return $this->indexEngine;}
+	public function setQueryString($newQuery){$this->query = $newQuery;}
 	/**
 	 * Protected 'getters' for values not intended for use outside the class.
 	 *
@@ -1202,20 +1304,20 @@ abstract class SearchObject_Base {
 	}
 
 	/**
-	 * Return an array of data summarising the results of a search.
+	 * Return an array of data summarizing the results of a search.
 	 *
 	 * @access  public
 	 * @return  array   summary of results
 	 */
-	public function getResultSummary(){
-		$summary                = array();
+	public function getResultSummary(): array{
+		$summary                = [];
 		$summary['page']        = $this->page;
 		$summary['perPage']     = $this->limit;
 		$summary['resultTotal'] = $this->resultsTotal;
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1; // 1st record is easy, work out the start of this page
 		// Last record needs more care
 		if ($this->resultsTotal < $this->limit) {
-			// There are less records returned than one page, then use total results
+			// If there are fewer records returned than one page, then use total results
 			$summary['endRecord'] = $this->resultsTotal;
 		} elseif (($this->page * $this->limit) > $this->resultsTotal) {
 			// The end of the current page runs past the last record, use total results
@@ -1260,8 +1362,8 @@ abstract class SearchObject_Base {
 	 * Returns the stored list of facets for the last search
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
-	 *                                  listing all of the desired facet fields;
+	 * @param array|null $filter         Array of field => on-screen description
+	 *                                  listing all the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @param   bool    $expandingLinks If true, we will include expanding URLs
 	 *                                  (i.e. get all matches for a facet, not
@@ -1269,7 +1371,7 @@ abstract class SearchObject_Base {
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false){
+	public function getFacetList(array|null $filter = null, bool $expandingLinks = false) :array{
 		// Assume no facets by default -- child classes can override this to extract
 		// the necessary details from the results saved by processSearch().
 		return [];
@@ -1286,6 +1388,16 @@ abstract class SearchObject_Base {
 	}
 
 	/**
+	 * Checks Search Engine Responsiveness.
+	 *
+	 * @param bool $failOnError
+	 * @return false|mixed
+	 */
+	public function pingServer(bool $failOnError = true){
+		return $this->indexEngine->pingServer($failOnError);
+	}
+
+	/**
 	 * Used during repeated deminification (such as search history).
 	 *   To scrub fields populated above.
 	 *
@@ -1298,7 +1410,7 @@ abstract class SearchObject_Base {
 		$this->filterList   = null;
 		$this->initTime     = null;
 		$this->queryTime    = null;
-		// An array so we don't have to initialise
+		// An array so we don't have to Initialize
 		//   the empty array during population.
 		$this->searchTerms = [];
 	}
@@ -1317,13 +1429,13 @@ abstract class SearchObject_Base {
 	}
 
 	/**
-	 * Initialise the object from a minified one stored in a cookie or database.
+	 * Initialize the object from a minified one stored in a cookie or database.
 	 *  Needs to be kept up-to-date with the minSO object at the end of this file.
 	 *
 	 * @access  public
-	 * @param   object  $minified     A minSO object
+	 * @param   minSO  $minified     A minSO object
 	 */
-	public function deminify($minified){
+	public function deminify(minSO $minified){
 		// Clean the object
 		$this->purge();
 
@@ -1345,30 +1457,18 @@ abstract class SearchObject_Base {
 			$newTerm = [];
 			foreach ($term as $k => $v){
 				switch ($k){
-					case 'j' :
-						$newTerm['join'] = $v;
-						break;
-					case 'i' :
-						$newTerm['index'] = $v;
-						break;
-					case 'l' :
-						$newTerm['lookfor'] = $v;
-						break;
+					case 'j' :  $newTerm['join']    = $v; break;
+					case 'i' :  $newTerm['index']   = $v; break;
+					case 'l' :  $newTerm['lookfor'] = $v; break;
 					case 'g' :
 						$newTerm['group'] = [];
 						foreach ($v as $line){
 							$search = [];
 							foreach ($line as $k2 => $v2){
 								switch ($k2){
-									case 'b' :
-										$search['bool'] = $v2;
-										break;
-									case 'f' :
-										$search['field'] = $v2;
-										break;
-									case 'l' :
-										$search['lookfor'] = $v2;
-										break;
+									case 'b' :  $search['bool']    = $v2; break;
+									case 'f' :  $search['field']   = $v2; break;
+									case 'l' :  $search['lookfor'] = $v2; break;
 								}
 							}
 							$newTerm['group'][] = $search;
@@ -1469,14 +1569,14 @@ abstract class SearchObject_Base {
 	 * unable to load a requested saved search, return a PEAR_Error object.
 	 *
 	 * @access  protected
-	 * @var     string    $searchId
-	 * @var     boolean   $redirect
-	 * @var     boolean   $forceReload
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
 	 *                              PEAR_Error object in case of trouble.
+	 *@var     boolean   $redirect
+	 * @var     boolean $forceReload
+	 * @var     string    $searchId
 	 */
-	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false){
+	public function restoreSavedSearch($searchId = null, bool $redirect = true, bool $forceReload = false){
 		// Is this is a saved search?
 		if (isset($_REQUEST['saved']) || $searchId != null){
 			// Yes, retrieve it
@@ -1510,7 +1610,10 @@ abstract class SearchObject_Base {
 					//    User is trying to view a saved search from
 					//    another session (deliberate or expired) or
 					//    associated with another user.
+					global $pikaLogger;
+					$pikaLogger->withName(__CLASS__)->info("Failed to restore search using $search->id, throwing PEAR error");
 					return new PEAR_Error('Attempt to access invalid search ID');
+					//TODO: do we need to throw an error?
 				}
 			}
 		}
@@ -1520,7 +1623,7 @@ abstract class SearchObject_Base {
 	}
 
 	/**
-	 * Initialise the object from the global
+	 * Initialize the object from the global
 	 *  search parameters in $_REQUEST.
 	 *
 	 * @access  public
@@ -1529,20 +1632,23 @@ abstract class SearchObject_Base {
 	 */
 	public function init(string $searchSource = null){
 		// Start the timer
-		$mtime          = explode(' ', microtime());
-		$this->initTime = $mtime[1] + $mtime[0];
+		$this->initTime = microtime(true);
 
-		$this->searchSource = $searchSource;
+		if (!empty($searchSource)) {
+			//TODO: document here where setting the search source is needed
+			// despite the class's default value
+			$this->searchSource = $searchSource;
+		}
 		return true;
 	}
 
 	/**
-	 * An optional de-initialise function.
+	 * An optional de-Initialize function.
 	 *
 	 *   At this stage it's used for finish of timing calculations
 	 *   and logged search history.
 	 *
-	 *   Possible future uses will including closing child resources if
+	 *   Possible future uses will include closing child resources if
 	 *     required (database connections) or finish database writes
 	 *     (audit tables). Remember the destructor() can also be used
 	 *     for mandatory stuff.
@@ -1553,8 +1659,7 @@ abstract class SearchObject_Base {
 	 */
 	public function close(){
 		// Finish timing
-		$mtime           = explode(" ", microtime());
-		$this->endTime   = $mtime[1] + $mtime[0];
+		$this->endTime   = microtime(true);
 		$this->totalTime = $this->endTime - $this->initTime;
 
 		if (!$this->disableLogging){
@@ -1614,6 +1719,13 @@ abstract class SearchObject_Base {
 		return $output;
 	}
 
+	public function getDebugTiming() {
+		if ($this->debug && isset($this->indexResult['debug'])){
+			return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
+		}
+		return null;
+	}
+
 	/**
 	 * Start the timer to figure out how long a query takes.  Complements
 	 * stopQueryTimer().
@@ -1622,8 +1734,7 @@ abstract class SearchObject_Base {
 	 */
 	protected function startQueryTimer(){
 		// Get time before the query
-		$time                 = explode(" ", microtime());
-		$this->queryStartTime = $time[1] + $time[0];
+		$this->queryStartTime = microtime(true);
 	}
 
 	/**
@@ -1633,8 +1744,7 @@ abstract class SearchObject_Base {
 	 * @access protected
 	 */
 	protected function stopQueryTimer(){
-		$time               = explode(' ', microtime());
-		$this->queryEndTime = $time[1] + $time[0];
+		$this->queryEndTime = microtime(true);
 		$this->queryTime    = $this->queryEndTime - $this->queryStartTime;
 	}
 
@@ -1768,8 +1878,8 @@ abstract class SearchObject_Base {
 	 * @access  public
 	 */
 	public function spellingTokens($input){
-		$joins = ["AND", "OR", "NOT"];
-		$paren = ["(" => "", ")" => ""];
+		$joins = ['AND', 'OR', 'NOT'];
+		$paren = ['(' => '', ')' => ''];
 
 		// Base of this algorithm comes straight from
 		// PHP doco examples & benighted at gmail dot com
@@ -1779,7 +1889,7 @@ abstract class SearchObject_Base {
 		while ($token) {
 			// find bracketed tokens
 			if ($token[0] =='(') {$token .= ' '.strtok(')').')';}
-			// find double quoted tokens
+			// find double-quoted tokens
 			if ($token[0] =='"') {$token .= ' '.strtok('"').'"';}
 			// find single quoted tokens
 			if ($token[0] =="'") {$token .= ' '.strtok("'")."'";}
@@ -1835,7 +1945,7 @@ abstract class SearchObject_Base {
 	 */
 	public function getRecommendationsTemplates($location = 'top'){
 		$returnValue = [];
-		if (isset($this->recommend[$location]) && !empty($this->recommend[$location])){
+		if (!empty($this->recommend[$location])){
 			/** @var RecommendationInterface $current */
 			foreach ($this->recommend[$location] as $current){
 				$returnValue[] = $current->getTemplate();
@@ -1854,7 +1964,7 @@ abstract class SearchObject_Base {
 	 * @return  array           associative: location (top/side) => search settings
 	 */
 	protected function getRecommendationSettings(){
-		// Load the necessary settings to determine the appropriate recommendations
+		// Load the necessary settings to determine the appropriate recommendations.
 		// module:
 		$search         = $this->searchTerms;
 		$searchSettings = getExtraConfigArray($this->recommendIni);
@@ -1865,7 +1975,7 @@ abstract class SearchObject_Base {
 
 		// Load a type-specific recommendations setting if possible, or the default
 		// otherwise:
-		$recommend = array();
+		$recommend = [];
 		if ($searchType && isset($searchSettings['TopRecommendations'][$searchType])){
 			$recommend['top'] = $searchSettings['TopRecommendations'][$searchType];
 		}else{
@@ -1930,13 +2040,13 @@ abstract class SearchObject_Base {
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
+	 * @param string|false $preferredSection Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false){
+	public function activateAllFacets(string|false $preferredSection = false){
 		// By default, there is only set of facet settings, so this function isn't
 		// really necessary.  However, in the Search History screen, we need to
 		// use this for Solr-based Search Objects, so we need this dummy method to
@@ -2172,7 +2282,7 @@ abstract class SearchObject_Base {
 	 *   query used in the search (not the filters).
 	 *
 	 * @access  public
-	 * @return  string   user friendly version of 'query'
+	 * @return  string   user-friendly version of 'query'
 	 */
 	public function displayQuery(){
 		// Advanced search?
@@ -2191,6 +2301,85 @@ abstract class SearchObject_Base {
 	 * @return  array     Spelling suggestion data arrays
 	 */
 	abstract public function getSpellingSuggestions();
+
+	/**
+	 * Adapt the search query to a spelling query
+	 *
+	 * @access  private
+	 * @return  string    Spelling query
+	 */
+	protected function buildSpellingQuery(){
+		$this->spellQuery = [];
+
+		// Basic search
+		if ($this->searchType == $this->basicSearchType){
+			return $this->query; // Just the search query is fine
+
+			// Advanced search
+		}else{
+			foreach ($this->searchTerms as $search){
+				foreach ($search['group'] as $field){
+					// Add just the search terms to the list
+					$this->spellQuery[] = $field['lookfor'];
+				}
+			}
+			// Return the list put together as a string
+			return implode(' ', $this->spellQuery);
+		}
+	}
+
+	/**
+	 * Try running spelling against the basic dictionary.
+	 *   This function should ensure it doesn't return
+	 *   single word suggestions that have been accounted
+	 *   for in the shingle suggestions above.
+	 *
+	 * Populates $this->suggestions
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
+	protected function basicSpelling(): void{
+		// TODO: There might be a way to run the search against both dictionaries from
+		//   inside solr. Investigate. Currently submitting a second search for this.
+		// Possibly spellcheck.collate
+
+		// Create a new search object
+		/** @var SearchObject_Genealogy $newSearch */
+		$newSearch = SearchObjectFactory::initSearchObject($this->searchSource);
+		$newSearch->deminify($this->minify());
+
+		// Activate the basic dictionary
+		$newSearch->useBasicDictionary();
+		// We don't want it in the search history
+		$newSearch->disableLogging();
+
+		// Run the search
+		$newSearch->processSearch();
+		// Get the spelling results
+		$newList = $newSearch->getRawSuggestions();
+
+		// If there were no shingle suggestions
+		if (count($this->suggestions) == 0){
+			// Just use the basic ones as provided
+			$this->suggestions = $newList;
+
+			// Otherwise
+		}else{
+			// For all the new suggestions
+			foreach ($newList as $word => $data){
+				// Check the old suggestions
+				$found = false;
+				foreach ($this->suggestions as $k => $v){
+					// Make sure it wasn't part of a shingle which has been suggested at a higher level.
+					$found = preg_match("/\b$word\b/", $k) ? true : $found;
+				}
+				if (!$found){
+					$this->suggestions[$word] = $data;
+				}
+			}
+		}
+	}
 
 	/**
 	 * Process one instance of a spelling replacement and modify the return
@@ -2247,22 +2436,25 @@ abstract class SearchObject_Base {
 	$recommendations = false);
 
 	/**
-	 * Get error message from index response, if any.  This will only work if
+	 * Get the error message from index response, if any.  This will only work if
 	 * processSearch was called with $returnIndexErrors set to true!
 	 *
 	 * @access  public
 	 * @return  mixed       false if no error, error string otherwise.
 	 */
-	abstract public function getIndexError();
+	public function getIndexError(){
+		return $this->indexResult['error'] ?? false;
+	}
 
 	abstract public function getNextPrevLinks();
 
 	/**
 	 * Set weather or not this is a primary search.  If it is, we will show links to it in search result debugging
-	 * @param boolean $flag
+	 * @param boolean $isPrimarySearch
 	 */
-	public function setPrimarySearch($flag){
-		$this->isPrimarySearch = $flag;
+	public function setPrimarySearch(bool $isPrimarySearch): void{
+		$this->isPrimarySearch              = $isPrimarySearch;
+		$this->indexEngine->isPrimarySearch = $isPrimarySearch;
 	}
 
 	/**

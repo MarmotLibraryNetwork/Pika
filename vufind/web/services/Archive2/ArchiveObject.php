@@ -1,8 +1,8 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,11 +19,16 @@
 
 namespace Archive2;
 
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/MediaObjectInterface.php';
+require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
+require_once ROOT_DIR . '/sys/Library/Library.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 
 use Islandora2\I2ObjectFactory;
 use Islandora2\MediaObjectInterface;
+use Islandora2\TaxonomyFactory;
 use Pika\Logger;
 
 /* responsible for displaying template */
@@ -35,23 +40,58 @@ class ArchiveObject extends \Action
     protected Logger $logger;
 
     protected const MODEL_VIEWER_MAP = [
-        'audio' => 'audio',
-        'book' => 'mirador',
-        'compound object' => 'compound',
+        'audio'            => 'audio',
+        'book'             => 'mirador',
+        'compound object'  => 'compound',
         'digital document' => 'pdfjs',
-        'image' => 'open_seadragon',
-        'paged content' => 'mirador',
-        'postcard' => 'open_seadragon_multi',
-        'video' => 'video',
+        'image'            => 'open_seadragon',
+        'paged content'    => 'mirador',
+        'postcard'         => 'open_seadragon_multi',
+        'video'            => 'video',
     ];
 
+    /** Roles that identify subjects/participants rather than production staff. */
+    private const NON_PRODUCTION_TEAM_ROLES = [
+        'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
+        'interviewee', 'member', 'parade marshal', 'parent', 'participant',
+        'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
+        'spouse', 'pictured', 'student',
+
+        'photographer', // on postcards, this related person would end up in acknowledgments section
+        // linked agents will display in Details section.
+
+    ]; //TODO replace use with one the arrays below
+
+    private const PRODUCTION_TEAM_ROLES_RELATOR_CODES = [
+        'ack', // Acknowledgement
+        'dpr', // Digital Production team
+        'edt', // Editor
+        'ivr', // Interviewer
+        'pda', // Production Assistant
+        'pro', // Producer
+        'sen', // Sound Engineer
+        'trc', // Transcriber
+
+        //		'cmp', // Composer
+        //		'lyr', // Lyricist
+        //		'prf', // Performer I think these should display in the Related People section instead of acknowledgements. pascal. 6-18-2026
+
+        //TODO: populate with all codes
+
+    ];
+    /** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
+    private const NON_PRODUCTION_RELATOR_CODES = [
+
+    ];
+
+    /** Loads the media object from the `id` query parameter. */
     public function __construct()
     {
         $this->logger = new Logger(__CLASS__);
-        $nid = (int)($_GET['nid'] ?? 0);
+        $nid = (int)($_GET['id'] ?? 0);
         if ($nid <= 0) {
-            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['nid'] ?? null]);
-            // TODO: redirect to 404;
+            $this->logger->warning('Invalid or missing nid in request.', ['nid' => $_GET['id'] ?? null]);
+            // TODO: redirect error;
             return;
         }
         $factory = new I2ObjectFactory();
@@ -59,8 +99,14 @@ class ArchiveObject extends \Action
         if ($this->mediaObject === null) {
             $this->logger->error('Failed to create media object for nid.', ['nid' => $nid]);
         }
+        $this->logger->debug("Constructed Archive Object $nid");
     }
 
+    /**
+     * @param string      $mainContentTemplate
+     * @param string|null $pageTitle           Defaults to the media object title.
+     * @param string      $sidebarTemplate
+     */
     public function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl')
     {
         if ($this->mediaObject === null) {
@@ -72,41 +118,139 @@ class ArchiveObject extends \Action
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
 
-	public function launch()
-	{
-		global $interface;
+    /** Values accepted for defaultArchiveCollectionBrowseMode and the archive2CollectionDisplayMode cookie. */
+    public const COLLECTION_DISPLAY_MODES = ['covers', 'list'];
+
+    /**
+     * Resolves how collection child-object grids should be displayed: the user's
+     * saved archive2CollectionDisplayMode cookie if set, else the library's
+     * configured defaultArchiveCollectionBrowseMode, else 'covers'.
+     */
+    public static function resolveCollectionDisplayMode(): string
+    {
+        global $library;
+
+        if (!empty($_COOKIE['archive2CollectionDisplayMode'])) {
+            $displayMode = $_COOKIE['archive2CollectionDisplayMode'];
+        } elseif (!empty($library->defaultArchiveCollectionBrowseMode)) {
+            $displayMode = $library->defaultArchiveCollectionBrowseMode;
+        } else {
+            $displayMode = 'covers';
+        }
+
+        return in_array($displayMode, self::COLLECTION_DISPLAY_MODES, true) ? $displayMode : 'covers';
+    }
+
+    /**
+     * Assigns 'collectionDisplayMode' (raw mode) and 'collectionDisplayModeClass'
+     * (the #collection-display-container CSS class) from resolveCollectionDisplayMode(),
+     * so the initial server render already matches the user's chosen/default view
+     * instead of always rendering covers and having client-side JS flip it afterward.
+     */
+    public static function assignCollectionDisplayMode(): string
+    {
+        global $interface;
+        $displayMode = self::resolveCollectionDisplayMode();
+        $interface->assign('collectionDisplayMode', $displayMode);
+        $interface->assign('collectionDisplayModeClass', $displayMode === 'list' ? 'collection-list' : 'collection-grid');
+        return $displayMode;
+    }
+
+    /** Assigns all template variables for the archive object detail page. */
+    public function launch()
+    {
+        global $interface;
+        global $configArray;
 
         if ($this->mediaObject === null) {
-            $this->logger->error('Attempted to launch with null mediaObject.');
-            return;
+            $this->logger->error('Attempted to launch Archive2 page with null mediaObject; archive may be unreachable.', [
+                'nid'   => $_GET['id'] ?? null,
+                'class' => static::class,
+            ]);
+            parent::display('unavailable.tpl', 'Archive Object Unavailable');
+            die();
         }
 
         $interface->assign('showExploreMore', true);
-        $interface->assign('debug_archive_object', true);
+        $interface->assign('debugDetails', !empty($configArray['Islandora2']['debugDetails']));
 
-		// Expose every field from the Islandora node (with "field_" removed) to the templates.
-		$nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
-		foreach ($nodeData as $field => $value){
-			$interface->assign($field, $value);
-		}
+        // Expose every field from the Islandora node (with "field_" removed) to the templates.
+        $nodeData = $this->mediaObject->getNodeWithoutFieldPrefix();
+        foreach ($nodeData as $field => $value) {
+            $interface->assign($field, $value);
+        }
 
-        // legacy ID 
-        $interface->assign('pid', $this->mediaObject->pid);
-        
-        // Media
-		//$interface->assign('media', $nodeData['media'] ?? []);
-        //$interface->assign('viewer', $this->getViewerForModel($this->mediaObject->getObjectModel()));
-        
-        // Overrides
+        /*********
+         * Overrides
+         */
+        // Display hints
+        $interface->assign('is_object_display', true);
+        $interface->assign('is_taxonomy_display', false);
+
         // Dates
-		$interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
-		$interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+        $interface->assign('created', $this->formatDisplayDate($nodeData['created'] ?? null));
+        $interface->assign('changed', $this->formatDisplayDate($nodeData['changed'] ?? null));
+
+        // EDTF date fields: reformat ISO dates to human-readable form.
+        $edtfDateFields = ['edtf_date_created', 'edtf_date_issued', 'edtf_date', 'date_captured', 'copyright_date', 'postmark'];
+        foreach ($edtfDateFields as $field) {
+            if (isset($nodeData[$field]) && is_string($nodeData[$field])) {
+                $interface->assign($field, $this->formatEdtfDate($nodeData[$field]));
+            }
+        }
 
         // Viewing permissions (true or false)
-        $interface->assign('can_view', $this->canCurrentUserView());
+        $canView = $this->canCurrentUserView();
+        $interface->assign('can_view', $canView);
+        if (!$canView) {
+            if ($this->isContentUnavailable()) {
+                // Denied because of pika_usage ('no', or 'testonly' on production), not a
+                // pika_access_limits library restriction -- logging in or visiting a
+                // particular library would never grant access, so don't show that messaging.
+                $interface->assign('content_unavailable', true);
+            } else {
+                $interface->assign('access_restricted_library_name', $this->getViewingRestrictionLibraryName());
+            }
+        }
 
-        // Download permissions
-        $interface->assign('can_download', $this->canCurrentUserDownload());
+        // Parent collection
+        // bread crumbs, other parent links
+
+	    if($parent = $this->mediaObject->getParentCollection()){
+		    $parent_title = $parent->getTitle();
+		    $interface->assign('parent_title', $parent_title);
+		    // Only link to the parent collection when its own pika_usage allows it to be
+		    // viewed. If the parent is set to 'no' (or 'testonly' on production) the object
+		    // page isn't reachable, so display the collection name as plain text (no link)
+		    // rather than linking to an unavailable page.
+		    if (!self::isNodeUnavailableByUsage($parent)) {
+			    $parent_url = getObjRelativeUrl($parent);
+			    $interface->assign('parent_rel_url', $parent_url);
+		    }
+	    }
+        // Download & Request permissions
+        // Can download master file
+        $interface->assign('can_download_orginal', $this->canCurrentUserDownloadOrignial());
+        // Can download intermediate file
+        $interface->assign('can_download_intermediate', $this->canCurrentUserDownloadIntermediate());
+        $interface->assign('can_request_copy', $this->canCurrentUserRequestCopy());
+        $interface->assign('can_claim_authorship', $this->canCurrentUserClaimAuthorship());
+        // Download files
+        $orignal_media = $this->mediaObject->getOriginalMedia() ?? null;
+        if ($orignal_media) {
+            $orignal_media_file = $orignal_media->fileUrl;
+            $interface->assign('orignal_media_file', $orignal_media_file);
+        } else {
+            $interface->assign('orignal_media_file', false);
+        }
+
+        $intermeidate_media = $this->mediaObject->getServiceFile() ?? null;
+        if ($intermeidate_media) {
+            $intermeidate_media_file = $intermeidate_media->fileUrl;
+            $interface->assign('intermediate_media_file', $intermeidate_media_file);
+        } else {
+            $interface->assign('intermediate_media_file', false);
+        }
 
         // Language
         $languageName = null;
@@ -115,102 +259,477 @@ class ArchiveObject extends \Action
         }
         $interface->assign('languageName', $languageName);
 
+        // Research Level arrives as a taxonomy term array; only the name is needed for display.
+        // Note that: Research Type arrives as a simple string, not as a taxonomy term array.
+        if (isset($nodeData['research_level']['name'])) {
+            $interface->assign('research_level', $nodeData['research_level']['name']);
+        }
+
+        // Physical Form: normalize taxonomy term(s) to name string(s) for display.
+        // A single term arrives as ['tid'=>..., 'name'=>..., 'vocabulary'=>...];
+        // multiple terms arrive as a numeric array of such objects.
+        $rawPhysicalForm = $nodeData['physical_form'] ?? null;
+        if (!empty($rawPhysicalForm)) {
+            $items = isset($rawPhysicalForm['name']) ? [$rawPhysicalForm] : (array)$rawPhysicalForm;
+            $names = array_values(array_filter(array_column($items, 'name')));
+            $interface->assign('physical_form', count($names) === 1 ? $names[0] : $names);
+        }
+
+        // Presented At: if the string matches a related event name, expose the event tid for linking.
+        $presentedAtEventTid = null;
+        $presentedAt         = $nodeData['presented_at'] ?? null;
+        if (!empty($presentedAt)) {
+            $rawRelatedEvent = $nodeData['related_event'] ?? null;
+            if (is_array($rawRelatedEvent)) {
+                $events = isset($rawRelatedEvent['tid']) ? [$rawRelatedEvent] : array_values($rawRelatedEvent);
+                foreach ($events as $event) {
+                    if (isset($event['name']) && $event['name'] === $presentedAt) {
+                        $presentedAtEventTid = (int)$event['tid'];
+                        break;
+                    }
+                }
+            }
+        }
+        $interface->assign('presented_at_event_tid', $presentedAtEventTid);
+
+        // Conference date: format YYYY-MM → "Month YYYY", YYYY-MM-DD → "Month D, YYYY", keep plain years.
+        // Values that don't match a recognized date pattern are suppressed (erroneous free-text entries).
+        $conferenceDate    = null;
+        $rawConferenceDate = $nodeData['conference_date'] ?? null;
+        if (!empty($rawConferenceDate) && is_string($rawConferenceDate)) {
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawConferenceDate)) {
+                $dt             = \DateTimeImmutable::createFromFormat('Y-m-d', $rawConferenceDate);
+                $conferenceDate = $dt !== false ? $dt->format('F j, Y') : null;
+            } elseif (preg_match('/^\d{4}-\d{2}$/', $rawConferenceDate)) {
+                $dt             = \DateTimeImmutable::createFromFormat('Y-m', $rawConferenceDate);
+                $conferenceDate = $dt !== false ? $dt->format('F Y') : null;
+            } elseif (preg_match('/^\d{4}$/', $rawConferenceDate)) {
+                $conferenceDate = $rawConferenceDate;
+            }
+            // Non-matching text: $conferenceDate remains null
+        }
+        $interface->assign('conference_date', $conferenceDate);
+
+        $rawPublishedIn = $nodeData['published_in'] ?? null;
+        $interface->assign('published_in', !empty($rawPublishedIn) ? (array)$rawPublishedIn : null);
+
+        // Rights Holder: normalize taxonomy term(s) for conditional linking.
+        $rawRightsHolder = $nodeData['rights_holder'] ?? null;
+        $rightsHolderData = [];
+        if (!empty($rawRightsHolder)) {
+            $items = isset($rawRightsHolder['tid']) ? [$rawRightsHolder] : (array)$rawRightsHolder;
+            foreach ($items as $item) {
+                if (is_array($item) && !empty($item['name'])) {
+                    $rightsHolderData[] = [
+                        'name'       => $item['name'],
+                        'tid'        => $item['tid'] ?? null,
+                        'vocabulary' => $item['vocabulary'] ?? null,
+                    ];
+                }
+            }
+        }
+        $interface->assign('rights_holder', $rightsHolderData ?: null);
+
+        // Rights Creator: normalize taxonomy term(s) for conditional linking.
+        $rawRightsCreator  = $nodeData['rights_creator'] ?? null;
+        $rightsCreatorData = [];
+        if (!empty($rawRightsCreator)) {
+            $items = isset($rawRightsCreator['tid']) ? [$rawRightsCreator] : (array)$rawRightsCreator;
+            foreach ($items as $item) {
+                if (is_array($item) && !empty($item['name'])) {
+                    $rightsCreatorData[] = [
+                        'name'       => $item['name'],
+                        'tid'        => $item['tid'] ?? null,
+                        'vocabulary' => $item['vocabulary'] ?? null,
+                    ];
+                }
+            }
+        }
+        $interface->assign('rights_creator', $rightsCreatorData ?: null);
+
         // Titles
         $title = ($this->mediaObject->getTitle() !== null) ? $this->mediaObject->getTitle() : null;
         $interface->assign('title', $title);
         // breadcrumb
         $interface->assign('breadcrumbText', $title);
+        $interface->assign('lastsearch', $_SESSION['lastArchive2SearchURL'] ?? false);
+        $displayModel = $this->mediaObject->getDisplayModel();
+        $interface->assign('display_model', $displayModel ? ucfirst($displayModel) : null);
 
         $subtitle = ($this->mediaObject->subtitle !== null) ? $this->mediaObject->subtitle : null;
         $interface->assign('subtitle', $subtitle);
 
-        // Summary
-        // TODO: Make a summary 
-        //$summary = ($this->mediaObject->library['thename'] !== null) ? $this->mediaObject->library['name'] : null;
         // Description
         $description = ($this->mediaObject->getDescription() !== null) ? $this->mediaObject->getDescription() : null;
         $interface->assign('description', $description);
 
         // Subjects
-        $subjects = $this->mediaObject->getSubjects();
-        if (is_array($subjects)) {
-            if(array_key_exists('tid', $subjects)) {
-                $subjects['url'] = "/Archive/Subject?tid=" . $subjects['tid'];
-                $subjects = [$subjects];
-            } else {
-                foreach ($subjects as $subject) {
-                    $subject['url'] = "/Archive/Subject?tid=" . $subject['tid']; # TODO: determine the correct url structure.
-                }
-            }
-        } else {
-            $subjects = [];
-        }
-        $interface->assign('subjects_urls', $subjects);
+        $subjects = $this->mediaObject->getSubjects() ?? null;
+        $interface->assign('subjects', $subjects);
 
         // Extent (physical description)
-        $extent = ($this->mediaObject->extent !== null) ? $this->mediaObject->extent : null;
+        // Drupal stores escaped commas as "\," in some text fields (e.g. "Print\, Photographic
+        // Original"); replace them with plain "," so they render correctly in the browser.
+        $extent = ($this->mediaObject->extent !== null && $this->mediaObject->extent !== false)
+            ? str_replace('\\,', ',', (string)$this->mediaObject->extent)
+            : null;
+        $interface->assign('extent', $extent);
         $interface->assign('physical_description', $extent);
 
-        // Library
-        $libraryName = $this->mediaObject->library['name'] ?? null;
-        $interface->assign('library_name', $libraryName);
-        $libraryTid = $this->mediaObject->library['tid'] ?? null;
-        $interface->assign('library_tid', $libraryTid);
-        $libraryUrl = "/Archive/Library?tid=" . $libraryTid;
-        $interface->assign('library_url', $libraryUrl);
-        $libraryNamespace = $this->mediaObject->library['namespace'] ?? null;
-        $interface->assign('library_namespace', $libraryNamespace);
+        // Condition (physical description)
+        $condition = ($this->mediaObject->condition !== null) ? $this->mediaObject->condition : null;
+        $interface->assign('physical_condition', $condition);
 
-        // Location
-        $locatedAt = ($this->mediaObject->located_at !== null) ? $this->mediaObject->located_at : null;
-        $interface->assign('located_at', $locatedAt);
-        $locationUrl = ($this->mediaObject->location_url !== null) ? $this->mediaObject->location_url : null;
-        $interface->assign('location_url', $locationUrl);
 
-        // Shelf Location
-        $shelfLocation = ($this->mediaObject->shelf_location !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('shelf_location', $shelfLocation);
+        // Contributing Library
+        // Get the Corporate Body associated with the library
+        $libraryTerm = $this->mediaObject->getLibraryOrganization();
+        if (!empty($libraryTerm)) {
+            $interface->assign('library_name', $libraryTerm->name ?? null);
+            $interface->assign('library_org_tid', $libraryTerm->tid ?? null);
+            $libraryURL = getTaxonomyAbsoluteUrl($libraryTerm);
+            $interface->assign('library_url', $libraryURL);
+        }
+
 
         // Interview Location
         // NOTE: field_location is labeled as Interview Location in UI
-        $rawInterviewLocations = ($this->mediaObject->location !== null) ? $this->mediaObject->location : [];
-        $interviewLocations = [];
-        // Determine if the location field has multipule locations
-        // Single entry, put it into an array
-        if (array_key_exists('id', $rawInterviewLocations)) {
-            $tempLoc = $rawInterviewLocations;
-            unset($rawInterviewLocations);
-            $rawInterviewLocations = [];
-            $rawInterviewLocations[] = $tempLoc;
+        // Use $nodeData (field_ prefix already stripped recursively) so sub-keys like
+        // city/state/street match what the mapping below expects.
+        $rawInterviewLocations = $nodeData['location'] ?? [];
+        $interviewLocations    = [];
+        // A single location arrives as an associative array; multiple locations arrive as
+        // a sequential (list) array. Wrap the single-location case so the foreach below
+        // always iterates over an array of location entries.
+        if (!empty($rawInterviewLocations) && !array_is_list($rawInterviewLocations)) {
+            $rawInterviewLocations = [$rawInterviewLocations];
         }
 
         foreach ($rawInterviewLocations as $rawInterviewLocation) {
             $interviewLocation = [
-                'city' => $rawInterviewLocation['city'] ?? null,
-                'state' => $rawInterviewLocation['state'] ?? '',
-                'street' => $rawInterviewLocation['street'] ?? '',
-                'county' => $rawInterviewLocation['county'] ?? '',
-                'country' => $rawInterviewLocation['country'] ?? '',
-                'zip' => $rawInterviewLocation['zip_code'] ?? '',
+                'city'     => $rawInterviewLocation['city'] ?? null,
+                'state'    => $rawInterviewLocation['state'] ?? '',
+                'street'   => $rawInterviewLocation['street'] ?? '',
+                'county'   => $rawInterviewLocation['county'] ?? '',
+                'country'  => $rawInterviewLocation['country'] ?? '',
+                'zip'      => $rawInterviewLocation['zip_code'] ?? '',
                 'address2' => $rawInterviewLocation['address_2'] ?? '',
-                'id' => $rawInterviewLocation['id'],
+                'id'       => $rawInterviewLocation['id'],
             ];
-            $interviewLocations[] = $interviewLocation;
+            // Skip paragraph entries where every address sub-field is empty (e.g. a
+            // freshly-created paragraph node with no data filled in yet).
+            $addressFields = array_diff_key($interviewLocation, ['id' => true]);
+            if (array_filter($addressFields)) {
+                $interviewLocations[] = $interviewLocation;
+            }
         }
         $interface->assign('interview_locations', $interviewLocations);
 
-        // Local identifier
-        $localIdentifier = ($this->mediaObject->local_identifier !== null) ? $this->mediaObject->shelf_location : null;
-        $interface->assign('local_identifer', $localIdentifier);
+        // Related Entity processing
+        $relatedPeople = $this->getRelatedPeople();
+
+        // Build production team first — removes matched entries from $relatedPeople
+        // so they don't also appear in the Related People section.
+        $productionTeam = $this->buildProductionTeam($relatedPeople);
+        $interface->assign('production_team', $productionTeam ?: null);
+
+        // Linked Agents (Details section): exclude names already shown in Acknowledgements
+        // to avoid showing the same person in both sections.
+        $productionTeamNames = array_column($productionTeam, 'name');
+        $linkedAgentsDisplay = array_values(array_filter(
+            $this->normalizeLinkedAgents(),
+            fn ($agent) => !in_array($agent['name'], $productionTeamNames, true)
+        ));
+        $interface->assign('linked_agents_display', $linkedAgentsDisplay ?: null);
+
+        $interface->assign('related_place', $this->enrichRelatedPlacesWithThumbnails($this->mediaObject->getRelatedPlace()));
+        $enrichedOrgs = $this->enrichRelatedOrganizationsWithThumbnails($this->mediaObject->getRelatedOrganization());
+        $interface->assign('related_organization', $enrichedOrgs);
+        $supportingDepts = array_values(array_filter(
+            $enrichedOrgs ?? [],
+            fn ($org) => ($org['relation'] ?? '') === 'local:sup'
+        ));
+        $interface->assign('supporting_departments', $supportingDepts ?: null);
+        $interface->assign('related_event', $this->enrichRelatedEventsWithThumbnails($this->mediaObject->getRelatedEvent()));
+        $interface->assign('related_person', $this->enrichRelatedPeopleWithThumbnails($relatedPeople ?: null));
+        $interface->assign('related_objects', $this->mediaObject->getRelatedObjects());
+
+        // Parent collection(s): resolve member_of nid(s) to title + Pika URL.
+        $parentCollections = $this->resolveParentCollections();
+        $interface->assign('parent_collection', $parentCollections ?: null);
+
+        // Admin
+        // Reload URL
+        $cacheReloadUrl = $this->mediaObject->getAbsoluteUrl() . '?reload=true';
+        $interface->assign('cache_reload_url', $cacheReloadUrl);
+        // Link to Islandora node; Link to Islandora Pika JSON for opac Admins
+        $islandoraUrl         = rtrim($configArray['Islandora2']['url'], '/') . '/node/' . $this->mediaObject->getNodeId();
+        $islandoraPikaJsonUrl = rtrim($configArray['Islandora2']['url'], '/') . '/pika-json/node/' . $this->mediaObject->getNodeId();
+        $interface->assign([
+            'islandora_url'           => $islandoraUrl,
+            'islandora_pika_json_url' => $islandoraPikaJsonUrl,
+        ]);
+
 
         // Analytics
         $interface->assign('archivePage', true);
 
+        // Process art materials taxonomy field into name+AAT-number pairs for artworkDetailsSection.tpl.
+        // Each entry's name ends with the AAT number in parentheses, e.g. "bronze (metal) (300010957)".
+        $rawMaterials = $nodeData['materials'] ?? null;
+        $artMaterials = [];
+        if ($rawMaterials !== null) {
+            // Normalize: single item has a 'name' key directly; multiple items is a numeric array.
+            $items = isset($rawMaterials['name']) ? [$rawMaterials] : (array)$rawMaterials;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $artMaterials[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('artMaterials', $artMaterials ?: null);
+
+        // Same processing for art technique taxonomy field.
+        $rawArtTechnique = $nodeData['art_technique'] ?? null;
+        $artTechniques = [];
+        if ($rawArtTechnique !== null) {
+            $items = isset($rawArtTechnique['name']) ? [$rawArtTechnique] : (array)$rawArtTechnique;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $artTechniques[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('artTechniques', $artTechniques ?: null);
+
+        // Same processing for style/period taxonomy field.
+        $rawStylePeriod = $nodeData['style_period'] ?? null;
+        $stylePeriods = [];
+        if ($rawStylePeriod !== null) {
+            $items = isset($rawStylePeriod['name']) ? [$rawStylePeriod] : (array)$rawStylePeriod;
+            foreach ($items as $item) {
+                $name = is_array($item) ? ($item['name'] ?? '') : (string)$item;
+                $aatNumber = null;
+                if (preg_match('/\((\d+)\)\s*$/', $name, $matches)) {
+                    $aatNumber = $matches[1];
+                }
+                if ($name !== '') {
+                    $stylePeriods[] = ['name' => $name, 'aatNumber' => $aatNumber];
+                }
+            }
+        }
+        $interface->assign('stylePeriods', $stylePeriods ?: null);
+
+        // Process installation date strings into human-readable display values.
+        // Entries are EDTF-style strings: a single year ("2015"), a full date ("2016-10-08"),
+        // or a date range with start and end separated by "/" ("2016-10-08/2017-10-07").
+        $rawInstallations = $nodeData['installations'] ?? null;
+        $installationDates = [];
+        if ($rawInstallations !== null) {
+            $items = is_array($rawInstallations) ? $rawInstallations : [$rawInstallations];
+            foreach ($items as $item) {
+                $raw = trim((string)$item);
+                if ($raw === '') {
+                    continue;
+                }
+                if (str_contains($raw, '/')) {
+                    [$start, $end] = explode('/', $raw, 2);
+                    $start         = trim($start);
+                    $end           = trim($end);
+                    if ($start === '') {
+                        $installationDates[] = 'ending ' . $this->formatInstallationDate($end);
+                    } elseif ($end === '') {
+                        $installationDates[] = $this->formatInstallationDate($start);
+                    } else {
+                        $installationDates[] = $this->formatInstallationDate($start) . ' to ' . $this->formatInstallationDate($end);
+                    }
+                } else {
+                    $installationDates[] = $this->formatInstallationDate($raw);
+                }
+            }
+        }
+        $interface->assign('installationDates', $installationDates ?: null);
+        $interface->assign('installationLabel', count($installationDates) > 1 ? 'Installations' : 'Installation');
+        // Do label assignment here to avoid SMARTY deprecation of |@count modifier structure
+
+        //TODO: coordinates will display as the Artwork section Installation Location.
+        // we will need a guard for non-art objects; and alternate place to display the coordinates.
+
+        $interface->assign('maps_key', $configArray['Maps']['apiKey'] ?? '');
+
+        // Transcription: collect text/plain Transcript media, fetch content, pair with location/language metadata.
+        $transcriptMedia = array_values(array_filter(
+            $this->mediaObject->getMedia(),
+            fn ($m) => $m->use === 'Transcript' && $m->mime === 'text/plain'
+        ));
+        usort($transcriptMedia, fn ($a, $b) => $a->created <=> $b->created);
+
+        $rawLoc    = $nodeData['transcription_loc'] ?? '';
+        $rawLang   = $nodeData['transcription_lang']['name'] ?? '';
+        // Split on commas not preceded by a backslash; then unescape \, → ,
+        $locations = $rawLoc !== ''
+            ? array_map(fn ($s) => str_replace('\\,', ',', trim($s)), preg_split('/(?<!\\\\),/', $rawLoc))
+            : [];
+        $languages = $rawLang !== '' ? array_map('trim', explode(',', $rawLang)) : [];
+
+        if (empty($transcriptMedia)) {
+            $this->logger->debug('No Transcript media found for node.', ['nid' => $this->mediaObject->getNodeId(), 'totalMedia' => count($this->mediaObject->getMedia())]);
+        }
+
+        $transcription = [];
+        foreach ($transcriptMedia as $i => $tm) {
+            $text = $this->fetchTranscriptText($tm->fileUrl);
+            if ($text === null) {
+                continue;
+            }
+            $transcription[] = [
+                'location' => $locations[$i] ?? '',
+                'language' => $languages[$i] ?? '',
+                'text'     => $this->linkTimestamps($text),
+            ];
+        }
+        $interface->assign('transcription', $transcription ?: null);
+
+        // Normalize Drupal link fields for externalLinksSection.tpl.
+        $externalLinks = $this->normalizeLinkField($nodeData['external_link'] ?? null);
+        $interface->assign('externalLinks', $externalLinks ?: null);
+        $this->loadWikipediaData($externalLinks);
+        $interface->assign('furtherSiteLinks', $this->normalizeLinkField($nodeData['further_site_info'] ?? null) ?: null);
+        $rawGenealogyLinks = $this->normalizeLinkField($nodeData['genealogy_link'] ?? null);
+        foreach ($rawGenealogyLinks as &$link) {
+            $link['uri'] = $this->rewriteGenealogyLinkUri($link['uri']);
+        }
+        unset($link);
+        $interface->assign('genealogyLinks', $rawGenealogyLinks ?: null);
+
+        // Catalog links: rewrite host to the current library's catalog when the stored
+        // host matches a known library's catalogUrl, then fall back to a generic title.
+        $rawCatalogLinks = $this->normalizeLinkField($nodeData['catalog_link'] ?? null, 'This title within the catalog.');
+        foreach ($rawCatalogLinks as &$link) {
+            $link['uri'] = $this->rewriteCatalogLinkUri($link['uri']);
+        }
+        unset($link);
+        global $library;
+        if ($library && $library->archiveOnlyInterface) {
+            // GroupedWork is a Pika concept; non-Pika catalogs cannot resolve those URLs.
+            $rawCatalogLinks = array_values(array_filter(
+                $rawCatalogLinks,
+                fn ($link) => !str_contains($link['uri'], '/GroupedWork/')
+            ));
+        }
+        $interface->assign('catalogLinks', $rawCatalogLinks ?: null);
+
+        // Staff role flag consumed by staffViewSection.tpl
+        $isStaffUser = \UserAccount::userHasRole('archives')
+            || \UserAccount::userHasRole('opacAdmin')
+            || \UserAccount::userHasRole('libraryAdmin');
+        $interface->assign('isStaffUser', $isStaffUser);
+
+        // Pre-compute whether the map section is enabled for this library. Must be assigned
+        // before getBaseMoreDetailsOptions() renders section templates so that detailsSection.tpl
+        // can suppress coordinates already covered by the map section.
+        $enabledSectionKeys = [];
+        if ($library && count($library->archiveMoreDetailsOptions) > 0) {
+            foreach ($library->archiveMoreDetailsOptions as $option) {
+                $enabledSectionKeys[] = $option->section;
+            }
+        } else {
+            $libraryId = $library ? (int)$library->libraryId : -1;
+            foreach (\LibraryArchiveMoreDetails::getDefaultOptions($libraryId) as $option) {
+                $enabledSectionKeys[] = $option->section;
+            }
+        }
+        $interface->assign('map_section_enabled', in_array('map', $enabledSectionKeys));
+
+        $moreDetailsOptions = $this->filterAndSortMoreDetailsOptions($this->getBaseMoreDetailsOptions());
+        $interface->assign('moreDetailsOptions', $moreDetailsOptions);
+
     }
 
+    /**
+     * Builds the full set of more-details accordion sections from Archive2 section templates.
+     * Each section's body is fetched from `Archive2/sections/{key}Section.tpl`.
+     * Sections whose template renders empty are excluded.
+     */
+    protected function getBaseMoreDetailsOptions(): array
+    {
+        global $interface;
+
+        $sections = \LibraryArchiveMoreDetails::$moreDetailsOptions;
+        $sections['moreDetails'] = 'Catalog Details';
+
+        $allOptions = [];
+        foreach ($sections as $key => $label) {
+            $body = trim($interface->fetch("Archive2/sections/{$key}Section.tpl"));
+            if ($body !== '') {
+                $allOptions[$key] = [
+                    'label'         => $label,
+                    'body'          => $body,
+                    'openByDefault' => false,
+                ];
+            }
+        }
+
+        return $allOptions;
+    }
+
+    /**
+     * Filters and sorts $allOptions to only the sections configured for the current
+     * library (or the LibraryArchiveMoreDetails defaults), setting openByDefault from
+     * the collapseByDefault flag. Mirrors IslandoraDriver::filterAndSortMoreDetailsOptions().
+     */
+    protected function filterAndSortMoreDetailsOptions(array $allOptions): array
+    {
+        global $library;
+
+        $useDefault         = true;
+        $moreDetailsFilters = [];
+
+        if ($library && count($library->archiveMoreDetailsOptions) > 0) {
+            $useDefault = false;
+            /** @var \LibraryArchiveMoreDetails $option */
+            foreach ($library->archiveMoreDetailsOptions as $option) {
+                $moreDetailsFilters[$option->section] = $option->collapseByDefault ? 'closed' : 'open';
+            }
+        }
+
+        if ($useDefault) {
+            $libraryId             = $library ? (int)$library->libraryId : -1;
+            $defaultDetailsFilters = \LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
+            foreach ($defaultDetailsFilters as $filter) {
+                $moreDetailsFilters[$filter->section] = $filter->collapseByDefault ? 'closed' : 'open';
+            }
+        }
+
+        $filteredMoreDetailsOptions = [];
+        foreach ($moreDetailsFilters as $option => $initialState) {
+            if (array_key_exists($option, $allOptions)) {
+                $detailOptions                       = $allOptions[$option];
+                $detailOptions['openByDefault']      = ($initialState === 'open');
+                $filteredMoreDetailsOptions[$option] = $detailOptions;
+            }
+        }
+
+        return $filteredMoreDetailsOptions;
+    }
+
+    /**
+     * Maps a content model name to its viewer identifier, or null if unmapped.
+     *
+     * @see MODEL_VIEWER_MAP
+     */
     protected function getViewerForModel(?string $model): ?string
     {
-        // TODO: This needs to be flushed out
         if ($model === null || $model === '') {
             return null;
         }
@@ -218,159 +737,924 @@ class ArchiveObject extends \Action
         return self::MODEL_VIEWER_MAP[$model] ?? null;
     }
 
-	private function formatDisplayDate($value): ?string {
-		if ($value === null || $value === '') {
-			return null;
-		}
-
-		try {
-			if (is_numeric($value)) {
-				$date = new \DateTimeImmutable('@' . (int)$value);
-			}else{
-				$date = new \DateTimeImmutable((string)$value);
-			}
-		}catch (\Exception $e){
-			return null;
-		}
-
-		$date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-		return $date->format('m/d/Y h:i a');
-	}
-
-    protected function canCurrentUserDownload(): bool {
-        //$user = \UserAccount::getLoggedInUser();
-        // TODO: implement user download permissions
-        return true;
-
+    /**
+     * Formats a single EDTF date string for display.
+     * Full dates (YYYY-MM-DD) → "Month D, YYYY"; partial dates (YYYY-MM) → "Month YYYY"; year-only values pass through as-is.
+     */
+    private function formatInstallationDate(string $date): string
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+            if ($dt !== false) {
+                return $dt->format('F j, Y');
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $date)) {
+            $dt = \DateTimeImmutable::createFromFormat('Y-m', $date);
+            if ($dt !== false) {
+                return $dt->format('F Y');
+            }
+        }
+        return $date;
     }
 
     /**
-     * Determine if the current patron can view the object.
+     * Formats a Unix timestamp or date string as `m/d/Y h:i a` in the server's local timezone.
+     *
+     * @param int|string|null $value
      */
-    protected function canCurrentUserView(): bool
+    private function formatDisplayDate($value): ?string
     {
-        return true;
-        if ($this->mediaObject->pika_usage === 'no') {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            if (is_numeric($value)) {
+                $date = new \DateTimeImmutable('@' . (int)$value);
+            } else {
+                $date = new \DateTimeImmutable((string)$value);
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        $date = $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+        return $date->format('m/d/Y h:i a');
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-place entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $places Output of I2Object::getRelatedPlace()
+     * @return array|null
+     */
+    private function enrichRelatedPlacesWithThumbnails(?array $places): ?array
+    {
+        if (empty($places)) {
+            return $places;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($places as &$place) {
+            $tid                = $place['tid'] ?? null;
+            $term               = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb              = $term?->getThumbnail();
+            $place['thumbnail'] = $thumb['url'] ?? null;
+        }
+        unset($place);
+        usort($places, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        return $places;
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-event entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $events Output of I2Object::getRelatedEvent()
+     * @return array|null
+     */
+    private function enrichRelatedEventsWithThumbnails(?array $events): ?array
+    {
+        if (empty($events)) {
+            return $events;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($events as &$event) {
+            $tid               = $event['tid'] ?? null;
+            $term              = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb             = $term?->getThumbnail();
+            $event['thumbnail'] = $thumb['url'] ?? null;
+        }
+        unset($event);
+        usort($events, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        return $events;
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-organization entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $orgs Output of I2Object::getRelatedOrganization()
+     * @return array|null
+     */
+    private function enrichRelatedOrganizationsWithThumbnails(?array $orgs): ?array
+    {
+        if (empty($orgs)) {
+            return $orgs;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($orgs as &$org) {
+            $tid               = $org['tid'] ?? null;
+            $term              = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb             = $term?->getThumbnail();
+            $org['thumbnail']  = $thumb['url'] ?? null;
+        }
+        unset($org);
+        usort($orgs, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        return $orgs;
+    }
+
+    /**
+     * Adds a 'thumbnail' URL to each related-person entry by fetching the
+     * taxonomy term. Falls back to the vocabulary default image when no
+     * term-specific thumbnail is set.
+     *
+     * @param array|null $people Output of I2Object::getRelatedPerson()
+     * @return array|null
+     */
+    private function enrichRelatedPeopleWithThumbnails(?array $people): ?array
+    {
+        if (empty($people)) {
+            return $people;
+        }
+        $factory = new TaxonomyFactory();
+        foreach ($people as &$person) {
+            $tid                 = $person['tid'] ?? null;
+            $term                = ($tid !== null) ? $factory->fromTid($tid) : null;
+            $thumb               = $term?->getThumbnail();
+            $person['thumbnail'] = $thumb['url'] ?? null;
+        }
+        unset($person);
+        usort($people, fn ($a, $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''));
+        return $people;
+    }
+
+    /**
+     * Returns the related-person array for this object.
+     * Subclasses may override to augment or replace the default list
+     * (e.g. Compound merges people from child objects).
+     *
+     * @return array
+     */
+    protected function getRelatedPeople(): array
+    {
+        return $this->mediaObject->getRelatedPerson() ?? [];
+    }
+
+    /**
+     * Resolves the member_of field into an array of ['title', 'url'] pairs
+     * suitable for rendering as hyperlinks in the Catalog Details section.
+     *
+     * member_of may arrive as a bare nid (int), a single array with 'id'/'nid',
+     * or an array of such entries. Any entry whose node cannot be fetched or has
+     * no title is silently skipped.
+     *
+     * @return array<array{title: string, url: string}>
+     */
+    private function resolveParentCollections(): array
+    {
+        $raw = $this->mediaObject->member_of;
+        if (empty($raw)) {
+            return [];
+        }
+
+        if (!is_array($raw)) {
+            $raw = [$raw];
+        }
+
+        $factory = new I2ObjectFactory();
+        $links   = [];
+        foreach ($raw as $entry) {
+            $nid = is_array($entry) ? ($entry['id'] ?? ($entry['nid'] ?? null)) : $entry;
+            if (!is_numeric($nid)) {
+                continue;
+            }
+            $obj = $factory->fromNodeId((int)$nid);
+            if ($obj === null) {
+                continue;
+            }
+            $title = $obj->getTitle();
+            if (empty($title)) {
+                continue;
+            }
+            $links[] = [
+                'title' => $title,
+                'url'   => $obj->getUrl(),
+            ];
+        }
+        return $links;
+    }
+
+    /**
+     * Converts a simple EDTF/ISO date string to a human-readable format.
+     * Handles YYYY-MM-DD → "Month Day, Year" and YYYY-MM → "Month Year".
+     * Returns the original string unchanged for year-only, ranges, or any
+     * value that does not match those two patterns.
+     */
+    private function formatEdtfDate(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+            if ($date !== false) {
+                return $date->format('F j, Y');
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $value)) {
+            $date = \DateTimeImmutable::createFromFormat('Y-m', $value);
+            if ($date !== false) {
+                return $date->format('F Y');
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Normalizes the linked_agent field into display-ready entries, each with:
+     *   'label'      — role label string, e.g. "Artist (art)"
+     *   'name'       — agent display name
+     *   'tid'        — taxonomy term ID, or null if not present in the payload
+     *   'vocabulary' — 'corporate_body', 'person', or null (inferred from vid or rel heuristic)
+     *
+     * @return array<array{label: string, name: string, tid: int|null, vocabulary: string|null}>
+     */
+    private function normalizeLinkedAgents(): array
+    {
+        $raw = $this->mediaObject->linked_agent;
+        if (empty($raw) || !is_array($raw)) {
+            return [];
+        }
+        if (isset($raw['name'])) {
+            $raw = [$raw];
+        }
+
+        $result = [];
+        foreach ($raw as $agent) {
+            $name = $agent['name'] ?? null;
+            if (empty($name)) {
+                continue;
+            }
+
+            [$roleLabel, $code] = $this->parseRoleLabel(
+                //$agent['relation_label'] ?? $agent['rel'] ?? ($agent['role'] ?? '')
+                $agent['relation_label'] ?? ''
+            );
+            $label = $roleLabel !== '' ? $roleLabel : 'Creator';
+            if ($code !== null) {
+                $label .= " ({$code})";
+            }
+
+            $tid = isset($agent['tid']) ? (int)$agent['tid'] : null;
+
+            // Prefer an explicit vocabulary key; fall back to rel-field heuristic.
+            $vocabulary = $agent['vocabulary'] ?? null;
+            if ($vocabulary === null) {
+                $rel = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+                $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
+                    ? 'corporate_body'
+                    : 'person';
+            }
+
+            $result[] = [
+                'label'      => $label,
+                'name'       => $name,
+                'tid'        => $tid,
+                'vocabulary' => $vocabulary,
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Builds the production team from two sources:
+     *   1. linked_agent field — filtered by excluding NON_PRODUCTION_TEAM_ROLES role labels.
+     *   2. related_person paragraphs — filtered by matching PRODUCTION_TEAM_ROLES_RELATOR_CODES.
+     *
+     * Entries from both sources are merged by name so a person appearing in both
+     * lists gets a single entry with their roles concatenated (e.g. "Editor, Interviewer").
+     *
+     * Each entry: ['role' => string, 'code' => string|null, 'name' => string, 'tid' => int|null, 'vocabulary' => string|null].
+     *
+     * @param array $relatedPeople Output of I2Object::getRelatedPerson(); matched entries are
+     *                             removed so they are not duplicated in the Related People section.
+     * @return array<array{role: string, code: string|null, name: string, tid: int|null, vocabulary: string|null}>
+     */
+    private function buildProductionTeam(array &$relatedPeople): array
+    {
+        //$this->logger->debug("Building Production Team");
+        $team   = [];
+        $byName = []; // name → index in $team for dedup
+
+        // --- Pass 1: linked_agent — role-label based filter ---
+        $linkedAgents = $this->mediaObject->linked_agent;
+        if (!empty($linkedAgents) && is_array($linkedAgents)) {
+            if (isset($linkedAgents['name'])) {
+                $linkedAgents = [$linkedAgents];
+            }
+            foreach ($linkedAgents as $agent) {
+                $name = $agent['name'] ?? null;
+                if (empty($name)) {
+                    continue;
+                }
+                [$roleLabel, $code] = $this->parseRoleLabel($agent['relation_label'] ?? '');
+                $role = strtolower($roleLabel);
+                if (empty($role) || in_array($role, self::NON_PRODUCTION_TEAM_ROLES)) {
+                    continue;
+                }
+                $tid        = isset($agent['tid']) ? (int)$agent['tid'] : null;
+                $vocabulary = $agent['vocabulary'] ?? null;
+                if ($vocabulary === null) {
+                    $rel        = strtolower($agent['rel'] ?? ($agent['role'] ?? ''));
+                    $vocabulary = (str_contains($rel, 'corporate') || str_contains($rel, 'org'))
+                        ? 'corporate_body'
+                        : 'person';
+                }
+                $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
+            }
+        }
+
+        // --- Pass 2: related_person — relator-code based filter ---
+        // Entries added to the team are removed from $relatedPeople to prevent duplication.
+        foreach ($relatedPeople as $key => $person) {
+            $name = $person['name'] ?? null;
+            if (empty($name)) {
+                continue;
+            }
+            [$roleLabel, $code] = $this->parseRoleLabel($person['relation_label'] ?? '');
+            if (empty($code) || !in_array($code, self::PRODUCTION_TEAM_ROLES_RELATOR_CODES)) {
+                continue;
+            }
+            $tid        = isset($person['tid']) ? (int)$person['tid'] : null;
+            $vocabulary = $person['vid'] ?? 'person';
+            $this->addToTeam($team, $byName, $name, ucfirst($roleLabel), $code, $tid, $vocabulary);
+            unset($relatedPeople[$key]); // Don't Display Production Team in Related People Section also
+        }
+        return $team;
+    }
+
+    /**
+     * Parses a role label string into [label, code], handling two formats:
+     *   - "Performer (prf)"         (linked_agent form — no outer parens)
+     *   - "(Photographer (pht))"    (relation_label form — outer parens present)
+     *
+     * Returns [label, null] when no three-letter code is found.
+     *
+     * @return array{string, string|null}
+     */
+    private function parseRoleLabel(string $raw): array
+    {
+        $raw = trim($raw);
+        // Strip outer parentheses: "(Label (xyz))" → "Label (xyz)"
+        $raw = preg_replace('/^\((.+)\)$/', '$1', $raw);
+        if (preg_match('/^(.*?)\s*\(([a-zA-Z]{3})\)\s*$/', $raw, $m)) {
+            return [trim($m[1]), $m[2]];
+        }
+        return [$raw, null];
+    }
+
+    /**
+     * Adds or merges a production team member into $team, keyed by $byName.
+     * When the name already exists, the role is appended with ", "; tid/vocabulary from the first entry are kept.
+     */
+    private function addToTeam(array &$team, array &$byName, string $name, string $role, ?string $code, ?int $tid = null, ?string $vocabulary = null): void
+    {
+        if (isset($byName[$name])) {
+            $team[$byName[$name]]['role'] .= ', ' . $role;
+        } else {
+            $byName[$name] = count($team);
+            $team[]        = ['role' => $role, 'code' => $code, 'name' => $name, 'tid' => $tid, 'vocabulary' => $vocabulary];
+        }
+    }
+
+    /**
+     * Returns the Library object associated with this archive object's library TID,
+     * or null if the TID is missing or does not match a library record.
+     *
+     * @return \Library|null
+     */
+    public function getOwningLibrary(): ?\Library
+    {
+        $libraryTid = $this->mediaObject->library['tid'] ?? null;
+        $library = new \Library();
+        $library->libraryTid = $libraryTid;
+        $library->find(true);
+
+        if (!$library || empty($library->libraryId)) {
+            return null;
+        }
+        return $library;
+    }
+
+    /**
+     * Returns the libraryId of the library that owns this archive object,
+     * or null if no owning library can be resolved.
+     *
+     * @return int|null
+     */
+    public function getOwningLibraryId(): ?int
+    {
+        $library = $this->getOwningLibrary();
+        return (int)$library->libraryId ?? null;
+    }
+
+
+    /** Returns true if the current user may download the master (original) file. */
+    protected function canCurrentUserDownloadOrignial(): bool
+    {
+        // anonymous download
+        if ((int)$this->mediaObject->pika_anon_master_download === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if ($user && (int)$this->mediaObject->pika_master_download === 1) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Returns true if the current user may download the intermediate (low-resolution) file. */
+    protected function canCurrentUserDownloadIntermediate(): bool
+    {
+        // anonymous download
+        if ((int)$this->mediaObject->pika_anon_lc_download === 1) {
+            return true;
+        }
+        // logged in
+        $user = \UserAccount::getLoggedInUser();
+        if ($user && ((int)$this->mediaObject->pika_lc_download === 1)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function canCurrentUserRequestCopy(): bool
+    {
+        $owningLibrary = $this->getOwningLibrary();
+
+        if (!$owningLibrary) {
             return false;
         }
 
-        return true;
-
-        $viewingRestrictions = $this->resolveViewingRestrictions();
-        if (count($viewingRestrictions) === 0) {
+        if ($owningLibrary->allowRequestsForArchiveMaterials) {
             return true;
         }
 
-        $canView            = false;
-        $validHomeLibraries = [];
-        $userPTypes         = [];
+        return false;
+    }
 
+    protected function canCurrentUserClaimAuthorship(): bool
+    {
+        if ($this->mediaObject->__get('pika_claim_authorship')) {
+            return true;
+        }
+        return false;
+    }
+
+    private ?bool $canCurrentUserViewResolved = null;
+
+    /**
+     * Determine if the current patron can view the object. Memoized: subclasses
+     * (e.g. Image, Postcard) that need to gate their own restricted-content URLs
+     * call this before parent::launch() runs the same check again, so caching the
+     * result avoids repeating the user/library lookups inside userSatisfiesRestriction().
+     */
+    protected function canCurrentUserView(): bool
+    {
+        if ($this->canCurrentUserViewResolved === null) {
+            $this->canCurrentUserViewResolved = !$this->isContentUnavailable()
+                && self::userSatisfiesRestriction($this->resolveViewingRestrictions());
+        }
+        return $this->canCurrentUserViewResolved;
+    }
+
+    /**
+     * True when pika_usage itself takes the object out of circulation, independent of
+     * any pika_access_limits library restriction. Used by launch() to choose a
+     * "this content isn't available" message instead of the library-restriction
+     * messaging, since logging in or visiting a particular library never helps here.
+     */
+    protected function isContentUnavailable(): bool
+    {
+        return self::isNodeUnavailableByUsage($this->mediaObject);
+    }
+
+    /**
+     * Static entry point for callers that only have a node (e.g. the Archive2 AJAX
+     * proxy endpoints), not a fully constructed ArchiveObject instance. Mirrors
+     * canCurrentUserView() exactly, without per-instance memoization.
+     */
+    public static function canUserViewNode(MediaObjectInterface $node): bool
+    {
+        if (self::isNodeUnavailableByUsage($node)) {
+            return false;
+        }
+        return self::userSatisfiesRestriction(self::resolveViewingRestrictionForNode($node));
+    }
+
+    /**
+     * pika_usage of 'no' takes an object out of circulation everywhere. pika_usage of
+     * 'testonly' is meant to be visible only on test/non-production Pika servers, mirroring
+     * the Solr search filter in SearchObject_Islandora2::getStandardFilters() (Pika Usage
+     * filter, ~line 1407: 'ss_pika_usage:yes' on production, '!ss_pika_usage:no' otherwise)
+     * so an object can't be browsed to directly on production even though it's excluded
+     * from production search results.
+     */
+    private static function isNodeUnavailableByUsage(MediaObjectInterface $node): bool
+    {
+        global $configArray;
+        $usage = $node->pika_usage;
+        if ($usage === 'no') {
+            return true;
+        }
+        // Casing of this field's stored values is inconsistent elsewhere in the codebase
+        // ('testOnly' vs 'testonly'), so compare case-insensitively.
+        if (is_string($usage) && strcasecmp($usage, 'testonly') === 0 && $configArray['Site']['isProduction']) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Given a resolved restriction value (null/'all'/subdomain), does the current user/session satisfy it? */
+    private static function userSatisfiesRestriction(?string $restriction): bool
+    {
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
+            return true;
+        }
+
+        // pika_access_limits is a free-text field staff type a library subdomain into, so
+        // matching it against actual subdomains must be case-insensitive -- otherwise a
+        // casing mismatch (e.g. "Adams" vs. "adams") would silently deny legitimate
+        // patrons of that library even though the restriction was clearly meant for them.
         $user = \UserAccount::getLoggedInUser();
-        if ($user && $user->getHomeLibrary()) {
-            $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
-            $userPTypes           = $user->getRelatedPTypes();
-            $linkedAccounts       = $user->getLinkedUsers();
-            foreach ($linkedAccounts as $linkedAccount) {
-                $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+        if ($user) {
+            $validHomeLibraries = [];
+            if ($user->getHomeLibrary()) {
+                $validHomeLibraries[] = $user->getHomeLibrary()->subdomain;
+            }
+            foreach ($user->getLinkedUsers() as $linkedAccount) {
+                if ($linkedAccount->getHomeLibrary()) {
+                    $validHomeLibraries[] = $linkedAccount->getHomeLibrary()->subdomain;
+                }
+            }
+            foreach ($validHomeLibraries as $homeLibrarySubdomain) {
+                if (strcasecmp(self::stripArchiveSuffix($homeLibrarySubdomain), $restriction) === 0) {
+                    return true;
+                }
             }
         }
 
         global $locationSingleton;
-        $physicalLocation         = $locationSingleton->getPhysicalLocation();
-        $physicalLibrarySubdomain = null;
+        $physicalLocation = $locationSingleton->getPhysicalLocation();
         if ($physicalLocation) {
             $physicalLibrary            = new \Library();
             $physicalLibrary->libraryId = $physicalLocation->libraryId;
-            if ($physicalLibrary->find(true)) {
-                $physicalLibrarySubdomain = $physicalLibrary->subdomain;
+            if ($physicalLibrary->find(true) && strcasecmp(self::stripArchiveSuffix($physicalLibrary->subdomain), $restriction) === 0) {
+                return true;
             }
         }
 
-        foreach ($viewingRestrictions as $restriction) {
-            $restrictionType = 'homeLibraryOrIP';
-            if (strpos($restriction, ':') !== false) {
-                [$restrictionType, $restriction] = explode(':', $restriction, 2);
+        return false;
+    }
+
+    /**
+     * Archive-only interfaces follow the convention of the library's traditional
+     * subdomain with an "archive" suffix (e.g. "adams" => "adamsarchive"), while
+     * pika_access_limits restrictions are keyed off the traditional subdomain. Strip
+     * a trailing "archive" from a library subdomain so "adamsarchive" matches an
+     * "adams" restriction. Subdomains without the suffix are returned unchanged.
+     */
+    private static function stripArchiveSuffix(?string $subdomain): string
+    {
+        $subdomain = (string)$subdomain;
+        if (strcasecmp(substr($subdomain, -strlen('archive')), 'archive') === 0) {
+            return substr($subdomain, 0, -strlen('archive'));
+        }
+        return $subdomain;
+    }
+
+    private ?string $viewingRestriction         = null;
+    private bool    $viewingRestrictionResolved = false;
+
+    /**
+     * Resolves the effective pika_access_limits value for this object, walking up
+     * parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or
+     * 'all'). Memoized since both canCurrentUserView() and getViewingRestrictionLibraryName()
+     * need it.
+     */
+    protected function resolveViewingRestrictions(): ?string
+    {
+        if (!$this->viewingRestrictionResolved) {
+            $this->viewingRestriction         = self::resolveViewingRestrictionForNode($this->mediaObject);
+            $this->viewingRestrictionResolved = true;
+        }
+        return $this->viewingRestriction;
+    }
+
+    /**
+     * Resolves the effective pika_access_limits value for an arbitrary node, walking
+     * up parent collections when the node's own value is empty/'default'. Returns null
+     * for no restriction, or the literal restriction value (a library subdomain, or 'all').
+     */
+    public static function resolveViewingRestrictionForNode(MediaObjectInterface $node): ?string
+    {
+        $startingNid = $node->getNodeId();
+        $depth       = 0;
+        while ($node !== null && $depth < 10) { // guard against bad/cyclic field_member_of data
+            $raw = $node->pika_access_limits ?? '';
+            if (is_array($raw)) {
+                // The Islandora editing interface only ever lets staff set a single string
+                // value for pika_access_limits, so this shouldn't normally happen. But if a
+                // malformed/legacy node hands back an array anyway, warn so it gets noticed
+                // and use the first entry, rather than letting (string) cast the whole array
+                // to the literal "Array" -- which would match no restriction and silently
+                // lock the object for every patron.
+                (new Logger(self::class))->warning('pika_access_limits arrived as an array; expected a single string value. Using the first element.', [
+                    'nid' => $node->getNodeId(),
+                    'raw' => $raw,
+                ]);
+                $raw = reset($raw) ?: '';
             }
-            $restrictionType  = strtolower(trim($restrictionType));
-            $restrictionType  = str_replace(' ', '', $restrictionType);
-            $restriction      = trim($restriction);
-            $restrictionLower = strtolower($restriction);
-            if ($restrictionLower === 'anonymousmasterdownload' || $restrictionLower === 'verifiedmasterdownload') {
+
+            $value = trim((string)$raw);
+            if ($value === '' || strcasecmp($value, 'default') === 0) {
+                $node = $node->getParentCollection();
+                $depth++;
                 continue;
             }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'patronsfrom') {
-                $libraryDomain = trim($restriction);
-                if ($restrictionLower === 'default' || array_search($libraryDomain, $validHomeLibraries, true) !== false) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'homelibraryorip' || $restrictionType === 'withinlibrary') {
-                $libraryDomain = trim($restriction);
-                if ($libraryDomain === $physicalLibrarySubdomain) {
-                    $canView = true;
-                    break;
-                }
-            }
-
-            if ($restrictionType === 'ptypes' || $restrictionType === 'ptype') {
-                $validPTypes = array_map('trim', explode(',', $restriction));
-                foreach ($validPTypes as $pType) {
-                    if (array_search($pType, $userPTypes, true) !== false) {
-                        $canView = true;
-                        break 2;
-                    }
-                }
-            }
+            return $value;
         }
 
-        return $canView;
+        if ($node !== null) {
+            // The walk hit the depth guard without ever resolving a restriction (a cyclic
+            // field_member_of relationship, or collection nesting deeper than we expect).
+            // Fail open -- allow viewing -- rather than denying access for a node whose
+            // restriction can never actually be resolved; log so staff can investigate and
+            // fix the underlying collection structure.
+            (new Logger(self::class))->error('Viewing-restriction resolution hit the parent-collection depth guard; allowing access.', [
+                'nid'          => $startingNid,
+                'stoppedAtNid' => $node->getNodeId(),
+                'depth'        => $depth,
+            ]);
+        }
+
+        return null;
     }
 
-    protected function resolveViewingRestrictions(): array
+    /**
+     * Display name of the library a viewing restriction is scoped to, for use in
+     * access-denied messaging. Null when there's no restriction or the restriction
+     * is 'all' (no specific library). Falls back to "contributing library" when the
+     * restriction's subdomain doesn't match a library on this site (e.g. a
+     * restriction for Lafayette on the MLN1 server, or an MLN1 library on MLN2).
+     */
+    protected function getViewingRestrictionLibraryName(): ?string
     {
-        $raw = $this->mediaObject->pika_access_limits ?? null;
-        if ($raw === null) {
-            return [];
+        $restriction = $this->resolveViewingRestrictions();
+        if ($restriction === null || strcasecmp($restriction, 'all') === 0) {
+            return null;
         }
 
-        if (is_string($raw)) {
-            $rawArray = preg_split('/[\r\n;]+/', $raw);
-        } elseif (is_array($raw)) {
-            $rawArray = $raw;
-        } else {
-            $this->logger->warning('Unexpected type for pika_access_limits.', ['type' => gettype($raw)]);
-            return [];
+        $library            = new \Library();
+        $library->subdomain = $restriction;
+        if ($library->find(true)) {
+            return $library->displayName;
         }
 
-        return array_values(array_filter($rawArray));
+        // The restriction doesn't correspond to any library on this site -- either a typo,
+        // or (per the docblock above) a subdomain only known to a different Pika
+        // instance. Either way it silently locks the object out for everyone, so log it
+        // rather than leaving no trail for staff to notice and fix the underlying value.
+        (new Logger(self::class))->notice('pika_access_limits restriction does not match any library on this site.', [
+            'nid'         => $this->mediaObject->getNodeId(),
+            'restriction' => $restriction,
+        ]);
+        return 'the contributing library';
     }
 
-    protected function parseRestriction($restriction)
+    /**
+     * Scans the normalized external links for a Wikipedia URL and, if found, fetches
+     * the Wikipedia article via the API and assigns `wikipediaData` and `wiki_lang`
+     * to the template. Mirrors IslandoraDriver::loadLinkedData() for the wikipedia case.
+     */
+    private function loadWikipediaData(array $externalLinks): void
     {
-        // has paramaters
-        if (strstr($restriction, ':')) {
-            $pieces = explode(':', $restriction);
-            $k = trim($pieces[0]);
-            // has multipule parameters
-            if (strstr($pieces[1], ',')) {
-                $subs = explode(',', $pieces[1]);
-                foreach ($subs as $key => $val) {
-                    $subs[$key] = trim($val);
-                }
-                // has single parameter
-            } else {
-                $v = trim($pieces[1]);
-                $restrictions[$k] = [$v];
-                return $restrictions;
+        global $interface, $configArray;
+        foreach ($externalLinks as $link) {
+            $uri = $link['uri'] ?? '';
+            if (!str_contains($uri, 'wikipedia.org/wiki/')) {
+                continue;
             }
-            $restrictions[$k] = $subs;
-            return $restrictions;
+            $lang       = preg_match('|https?://([a-z]{2,3})\.wikipedia\.org/wiki/|', $uri, $m) ? $m[1] : 'en';
+            $searchTerm = preg_replace('|https?://[a-z]{2,3}\.wikipedia\.org/wiki/|', '', $uri);
+            require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
+            $parser = new \ExternalEnrichment\WikipediaParser($lang);
+            $apiUrl = "http://{$lang}.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=" . urlencode(urldecode($searchTerm));
+            $data   = $parser->getWikipediaPage($apiUrl);
+            if ($data) {
+                $interface->assign('wikipediaData', $data);
+                $interface->assign('wiki_lang', substr($configArray['Site']['language'], 0, 2));
+            }
+            break;
         }
-        $k = trim($restriction);
-        $restrictions[$k] = 1;
-        return $restrictions;
+    }
+
+    /**
+     * Normalizes a Drupal link field (single item or array of items) into a
+     * consistent array of ['uri' => string, 'title' => string] entries.
+     *
+     * @param mixed  $raw
+     * @param string $titleFallback Text to use when the item has no title; defaults to the URI.
+     * @return array<array{uri: string, title: string}>
+     */
+    private function normalizeLinkField($raw, string $titleFallback = ''): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        $items = isset($raw['uri']) ? [$raw] : (array)$raw;
+        $links = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $uri = trim($item['uri'] ?? '');
+            if ($uri === '') {
+                continue;
+            }
+            $links[] = [
+                'uri'   => $uri,
+                'title' => trim($item['title'] ?? '') ?: ($titleFallback ?: $uri),
+            ];
+        }
+        return $links;
+    }
+
+    /**
+     * Rewrites the host portion of a genealogy link URI to the current library's
+     * catalog URL when genealogy is enabled for the current library.
+     * Returns the original URI unchanged when genealogy is not enabled.
+     */
+    private function rewriteGenealogyLinkUri(string $uri): string
+    {
+        global $library, $configArray;
+
+        if (!$library || !$library->enableGenealogy) {
+            return $uri;
+        }
+
+        $parts = parse_url($uri);
+        if (!isset($parts['host'])) {
+            return $uri;
+        }
+
+        $currentBase = empty($library->catalogUrl)
+            ? rtrim($configArray['Site']['url'], '/')
+            : ($_SERVER['REQUEST_SCHEME'] . '://' . $library->catalogUrl);
+
+        $newUri  = $currentBase;
+        $newUri .= $parts['path'] ?? '';
+        if (isset($parts['query'])) {
+            $newUri .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $newUri .= '#' . $parts['fragment'];
+        }
+        return $newUri;
+    }
+
+    /**
+     * Rewrites the host portion of a catalog link URI to the current library's
+     * catalogUrl, but only when the original host (or a known non-production
+     * variant of it) matches a library's catalogUrl in the database.
+     * Preserves the original URI when no library match is found.
+     *
+     * Since MLN2 is unlikely to have the corresponding title for
+     * an MLN1 archive object's catalog link, preserve the original link in those cases.
+     *
+     * On non-production servers two additional candidate hosts are tried:
+     *   - Test-server form:  first-subdomain + '2' + rest  (opac.x.org → opac2.x.org)
+     *   - Local-dev form:    replace TLD with '.local'      (opac.x.org → opac.x.local)
+     */
+    private function rewriteCatalogLinkUri(string $uri): string
+    {
+        global $library, $configArray;
+
+        $parts    = parse_url($uri);
+        $linkHost = $parts['host'] ?? null;
+        if ($linkHost === null || !$library || empty($library->catalogUrl)) {
+            return $uri;
+        }
+
+        // Archive-only libraries point to a non-Pika catalog; preserve the stored host.
+        if ($library->archiveOnlyInterface) {
+            return $uri;
+        }
+
+        // Always try the exact stored host first.
+        $hostsToTry = [$linkHost];
+
+        if (empty($configArray['Site']['isProduction'])) {
+            // Test-server alternate: 'opac.marmot.org' → 'opac2.marmot.org'
+            $dotPos = strpos($linkHost, '.');
+            if ($dotPos !== false) {
+                $hostsToTry[] = substr($linkHost, 0, $dotPos) . '2' . substr($linkHost, $dotPos);
+            }
+
+            // Local-dev alternate: 'opac.marmot.org' → 'opac.marmot.local'
+            $lastDotPos = strrpos($linkHost, '.');
+            if ($lastDotPos !== false) {
+                $hostsToTry[] = substr($linkHost, 0, $lastDotPos) . '.local';
+            }
+        }
+
+        foreach ($hostsToTry as $candidateHost) {
+            $matchingLibrary             = new \Library();
+            $matchingLibrary->catalogUrl = $candidateHost;
+            if ($matchingLibrary->find(true)) {
+                $newUri  = 'https://' . $library->catalogUrl;
+                $newUri .= $parts['path'] ?? '';
+                if (isset($parts['query'])) {
+                    $newUri .= '?' . $parts['query'];
+                }
+                if (isset($parts['fragment'])) {
+                    $newUri .= '#' . $parts['fragment'];
+                }
+                return $newUri;
+            }
+        }
+
+        return $uri;
+    }
+
+    private function fetchTranscriptText(string $url): ?string
+    {
+        global $configArray;
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT      => $configArray['Islandora2']['userAgent'] ?? '',
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+        $response   = curl_exec($ch);
+        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError  = curl_error($ch);
+        curl_close($ch);
+        if ($response === false || $statusCode !== 200) {
+            $this->logger->error('fetchTranscriptText failed.', [
+                'url'        => $url,
+                'statusCode' => $statusCode,
+                'curlError'  => $curlError,
+            ]);
+            return null;
+        }
+        return $response;
+    }
+
+    /**
+     * Replaces timestamp markers in transcript text with links that seek the media player.
+     *
+     * Two formats are supported (only one per transcript):
+     *   (mm:ss)      — e.g. (1:30)
+     *   [hh:mm:ss]   — e.g. [0:01:30]
+     *
+     * The generated links target all Archive2 player elements via a combined jQuery
+     * selector so they work for audio, video, and compound variants.
+     */
+    private function linkTimestamps(string $text): string
+    {
+        $playerSelector = '#archive-audio-player,#compound-audio-player,#video-player,#compound-video-player';
+        $makeLink = function (string $match, int $offsetSeconds) use ($playerSelector): string {
+            $escaped = htmlspecialchars($match, ENT_QUOTES, 'UTF-8');
+            return '<a onclick="$(\'' . $playerSelector . '\').get(0).currentTime=\'' . $offsetSeconds . '\';" style="cursor:pointer">' . $escaped . '</a>';
+        };
+
+        // Format (mm:ss)
+        if (preg_match_all('/\(\d{1,2}:\d{1,2}\)/', $text, $matches)) {
+            foreach ($matches[0] as $match) {
+                $inner = substr($match, 1, -1);
+                [$minutes, $seconds] = explode(':', $inner);
+                if (!is_numeric($minutes) || !is_numeric($seconds)) {
+                    $this->logger->warning('Failed to parse transcript timestamp.', ['match' => $match]);
+                    continue;
+                }
+                $text = str_replace($match, $makeLink($match, (int)$minutes * 60 + (int)$seconds), $text);
+            }
+            return $text;
+        }
+
+        // Format [hh:mm:ss]
+        if (preg_match_all('/\[\d{1,2}:\d{1,2}:\d{1,2}\]/', $text, $matches)) {
+            foreach ($matches[0] as $match) {
+                $inner = substr($match, 1, -1);
+                [$hours, $minutes, $seconds] = explode(':', $inner);
+                if (!is_numeric($hours) || !is_numeric($minutes) || !is_numeric($seconds)) {
+                    $this->logger->warning('Failed to parse transcript timestamp.', ['match' => $match]);
+                    continue;
+                }
+                $text = str_replace($match, $makeLink($match, (int)$hours * 3600 + (int)$minutes * 60 + (int)$seconds), $text);
+            }
+        }
+
+        return $text;
     }
 }

@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,6 +27,9 @@
  * @access      public
  */
 class FavoriteHandler {
+	// Solr field holding the Islandora2 node id; used to match returned archive docs back to the requested ids.
+	protected const ISLANDORA_ID_FIELD = 'its_node_id';
+
 	/** @var UserList */
 	private $list;
 	private $listId;
@@ -43,8 +45,21 @@ class FavoriteHandler {
 	protected $userListSortOptions = [];  // user list sort options handled by Pika SQL database
 	protected $solrSortOptions = ['title', 'author'], // user list sorting options handled by Solr engine.
 			// Note these values need to match options found in searches.ini Sorting section
-		$islandoraSortOptions = ['fgs_label_s']; // user list sorting options handled by the Islandora Solr engine.
+		$islandoraSortOptions = ['ss_title_sort']; // user list sorting options handled by the Islandora Solr engine.
 			// Note these values need to match options found in islandoraSearches.ini Sorting section
+
+	/**
+	 * Determine whether a sort value is one of the sort options this handler supports:
+	 * a catalog Solr sort, a database-handled user list sort, or an archive Islandora sort.
+	 *
+	 * @param string $sort  The sort value to validate
+	 * @return bool
+	 */
+	private function isValidSortOption($sort){
+		return in_array($sort, $this->solrSortOptions) ||
+			in_array($sort, array_keys($this->userListSortOptions)) ||
+			in_array($sort, $this->islandoraSortOptions);
+	}
 
 	/**
 	 * Constructor.
@@ -61,14 +76,14 @@ class FavoriteHandler {
 
 
 		// Determine Sorting Option //
-		if (isset($list->defaultSort)){
-			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
+		if (isset($list->defaultSort) && $this->isValidSortOption($list->defaultSort)){
+			// when the list has a stored sort setting, use it only if it is still a supported sort
+			// option. This guards against stale values persisted before the Islandora2 migration (eg. the
+			// legacy fgs_label_s archive sort), which would otherwise be passed to the archive Solr engine
+			// and error out. Rejecting it falls back to the safe default user list sort below.
+			$this->defaultSort = $list->defaultSort;
 		}
-		if (isset($_REQUEST['sort']) && (
-			in_array($_REQUEST['sort'], $this->solrSortOptions) ||
-			in_array($_REQUEST['sort'], array_keys($this->userListSortOptions)) ||
-			in_array($_REQUEST['sort'], $this->islandoraSortOptions))
-		){
+		if (isset($_REQUEST['sort']) && $this->isValidSortOption($_REQUEST['sort'])){
 			// if URL variable is a valid sort option, set the list's sort setting
 			$this->sort           = $_REQUEST['sort'];
 			$userSpecifiedTheSort = true;
@@ -208,23 +223,19 @@ class FavoriteHandler {
 		// Archive Search
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
-			require_once ROOT_DIR . '/RecordDrivers/IslandoraDriver.php';
-			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
+			// Initialize from the current search globals
+			/** @var SearchObject_Islandora2 $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 			if ($archiveSearchObject->pingServer(false)){
 				$archiveSearchObject->init();
-				$archiveSearchObject->setPrimarySearch(true);
-				$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-				$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-				$archiveSearchObject->setLimit($recordsPerPage);//MDN 3/30 this was set to 200, but should be based off the page size
 				if (!$this->isUserListSort && !$this->isMixedUserList){   // is a solr sort
 					$archiveSearchObject->setSort($this->sort);             // set solr sort. (have to set before retrieving solr sort options below)
 				}// Archive Only Searches //
 				if (!$this->isMixedUserList){
 					// User Sorted Archive Only Searches
 					if ($this->isUserListSort){
-						$idsToFetch = array_slice($this->archiveIds, $page, $recordsPerPage);
+						$idsToFetch = array_slice($this->archiveIds, $startRecord, $recordsPerPage);
 						if (count($idsToFetch)){
 							$archiveSearchObject->setPage(1);              // set to the first page for the search only
 							$archiveSearchObject->setQueryIDs($idsToFetch);// do solr search by Ids
@@ -232,7 +243,7 @@ class FavoriteHandler {
 							foreach ($archiveResult['response']['docs'] as $result){
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search($result['PID'], $idsToFetch);
+								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $idsToFetch);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -274,7 +285,7 @@ class FavoriteHandler {
 							try {
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search($result['PID'], $this->archiveIds);
+								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $this->archiveIds);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -351,7 +362,7 @@ class FavoriteHandler {
 		// Catalog Search
 		$catalogResourceList = [];
 		if (count($this->catalogIds) > 0){
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_UserListSolr $catalogSearchObject */
 			$catalogSearchObject               = SearchObjectFactory::initSearchObject('UserListSolr');
 			$catalogSearchObject->userListSort = $this->sort;
@@ -450,17 +461,17 @@ class FavoriteHandler {
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
 
-			// Initialise from the current search globals
-			/** @var SearchObject_UserListIslandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora');
+			// Initialize from the current search globals
+			/** @var SearchObject_UserListIslandora2 $archiveSearchObject */
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('UserListIslandora2');
+			//TODO: 'UserListIslandora2'
 			$archiveSearchObject->userListSort = $this->sort;
 			if ($isPageSizeParamSet){
 				$archiveSearchObject->userListPageSize = $recordsPerPage;
 			}
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', 'administrator'); //TODO: move to construct()/init() for user list
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', 'no'); //TODO: move to construct()/init() for user list
+			$archiveSearchObject->setApplyStandardFilters(true);
 			$archiveSearchObject->setLimit($recordsPerPage);
 
 			if (!$this->isUserListSort && !$this->isMixedUserList){ // is a solr sort
@@ -481,7 +492,7 @@ class FavoriteHandler {
 					$interface->assign('sideRecommendations', $archiveSearchObject->getRecommendationsTemplates('side')); // only side facet needed for archive searches
 
 					if (!empty($_REQUEST['filter'])){
-						$searchFilteredIds         = $archiveSearchObject->getFilteredPIDs($this->archiveIds);
+						$searchFilteredIds         = $archiveSearchObject->getFilteredNodeIds($this->archiveIds);
 						$pageInfo['resultTotal']   = count($searchFilteredIds);
 						$remainingIdsInSortedOrder = array_intersect($this->archiveIds, $searchFilteredIds);
 					} else {
@@ -526,7 +537,7 @@ class FavoriteHandler {
 					}
 				}
 				$this->archiveIds = array_slice($this->archiveIds, 0, $recordsPerPage);
-				//TODO: can not sort till after search filtering occurs now
+				//TODO: cannot sort till after search filtering occurs now
 
 				if (!empty($this->archiveIds)){
 					$archiveSearchObject->setPage(1); // set to the first page for the search only
@@ -617,7 +628,7 @@ class FavoriteHandler {
 		$catalogRecordSet = $archiveRecordSet = [];
 		// Retrieve records from index (currently, only Solr IDs supported):
 		if (count($this->catalogIds) > 0){
-			// Initialise from the current search globals
+			// Initialize from the current search globals
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
@@ -632,26 +643,22 @@ class FavoriteHandler {
 			//TODO: user list sorting here
 		}
 		if (count($this->archiveIds) > 0){
-			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			// Initialize from the current search globals
+			/** @var SearchObject_Islandora2 $archiveSearchObject */
+			//$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
+			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora2');
 			$archiveSearchObject->init();
+			$archiveSearchObject->setApplyStandardFilters(true);
 			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 			$archiveSearchObject->setQueryIDs($this->archiveIds);
-
 			$archiveSearchObject->processSearch(false, $applyFiltering);
-
 			$archiveRecordSet = $archiveSearchObject->getResultRecordSet();
-
-
 		}
 		return [...$catalogRecordSet, ...$archiveRecordSet];
 	}
 
 	function getCitations($citationFormat, $page, $pageSize, $filter=array()){
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$citations = [];
 		$offset    = ($page - 1) * $pageSize;
@@ -701,7 +708,7 @@ class FavoriteHandler {
 				if(!empty($archiveResults['response']['docs'])){
 					foreach ($archiveResults['response']['docs'] as $archiveResult){
 						$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
-						$key         = array_search($archiveResult['PID'], $this->favorites);
+						$key         = array_search((string)$archiveResult[self::ISLANDORA_ID_FIELD], $this->favorites);
 						if ($key !== false){
 							$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
 						}

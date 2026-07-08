@@ -1,3 +1,4 @@
+{* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 <div class="panel active" id="descriptionPanel"><a data-toggle="collapse" href="#descPanelBody">
         <div class="panel-heading">
             <h2 class="panel-title">Description</h2>

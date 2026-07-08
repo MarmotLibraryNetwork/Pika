@@ -1,3 +1,20 @@
+/*
+ * Pika Discovery Layer
+ * Copyright (C) 2026  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 Pika.Searches = (function(){
 	$(function(){
 		console.log("Searches loading");
@@ -133,6 +150,15 @@ Pika.Searches = (function(){
 				var usingHorizontalSearchBox = $('#horizontal-search-box').is(':visible');
 				$("#lookfor").autocomplete({
 					source:function(request,response){
+						var searchSourceEl = $('#searchSource');
+						var catalogType = searchSourceEl.is('select')
+								? (searchSourceEl.find(':selected').data('catalog_type') || searchSourceEl.val())
+								: (searchSourceEl.data('catalog_type') || searchSourceEl.val());
+						if (catalogType === 'islandora2' || catalogType === 'genealogy' || catalogType === 'islandora'){
+							// Skip suggestions for archive and genealogy searches, since the suggestions come from catalog searches
+							response([]);
+							return;
+						}
 						var url    = "/Search/AJAX",
 								params = {
 									'method'   :'GetAutoSuggestList',
@@ -214,14 +240,22 @@ Pika.Searches = (function(){
 		enableSearchTypes: function(){
 			var searchTypeElement = $("#searchSource");
 			var catalogType = "catalog";
-			if (searchTypeElement){
-				var selectedSearchType = $(searchTypeElement.find(":selected"));
-				if (selectedSearchType){
-					catalogType = selectedSearchType.data("catalog_type");
+			if (searchTypeElement.length > 0) {
+				if (searchTypeElement.is('select')) {
+					var selectedSearchType = searchTypeElement.find(":selected");
+					if (selectedSearchType.length > 0) {
+						catalogType = selectedSearchType.data("catalog_type");
+					}
+				} else {
+					// Single-source interface uses a hidden input; read data-catalog_type directly
+					catalogType = searchTypeElement.data("catalog_type") || searchTypeElement.val();
 				}
 			}
-			if (catalogType == 'islandora'){
-				$(".islandoraType").show();
+			if (catalogType == 'islandora2'){
+				$(".islandoraType").show().prop('disabled', false);
+				$(".catalogType,.genealogyType,.ebscoType").hide();
+			}else if (catalogType == 'islandora'){
+				$(".islandoraType").hide().prop('disabled', true);
 				$(".catalogType,.genealogyType,.ebscoType").hide();
 			}else if (catalogType == 'genealogy'){
 				$(".genealogyType").show();
@@ -288,6 +322,7 @@ Pika.Searches = (function(){
 				$("#islandoraType").remove();
 				$("#ebscoType").remove();
 			}else if (catalogType == 'archive') {
+				//both islandora and islandora2 route through catalogType 'archive'
 				$("#islandoraType").val(searchType);
 				$("#genealogyType").remove();
 				$("#ebscoType").remove();

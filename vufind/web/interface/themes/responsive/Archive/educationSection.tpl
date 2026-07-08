@@ -42,7 +42,7 @@
 					</div>
 				</div>
 			{/if}
-			{if count($academicRecord.publications)}
+			{if !empty($academicRecord.publications)}
 				{foreach from=$academicRecord.publications item=publication}
 
 					<div class="row">
@@ -57,7 +57,7 @@
 					</div>
 				{/foreach}
 			{/if}
-			{if count($academicRecord.education)}
+			{if !empty($academicRecord.education)}
 				{foreach from=$academicRecord.education item=education}
 
 					<div class="row">

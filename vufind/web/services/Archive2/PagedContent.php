@@ -34,7 +34,7 @@ class PagedContent extends ArchiveObject
         $interface->assign('viewer', 'mirador');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
    
 }

@@ -42,6 +42,15 @@ function getBrowseCategoryUpdates(){
 			],
 		],
 
+		'2026.02.0_AddSearchSourceToBrowseCategory' => [
+			'release'         => '2026.02.0',
+			'title'           => 'Add Search Source to Browse Category',
+			'description'     => 'Adds searchSource column to browse_category to distinguish catalog vs archive categories. Existing rows default to catalog.',
+			'continueOnError' => false,
+			'sql'             => [
+				"ALTER TABLE `browse_category` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'catalog' AFTER `defaultSort`;",
+			],
+		],
 
 	];
 }

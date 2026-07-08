@@ -248,7 +248,8 @@ abstract class Horizon extends ScreenScrapingDriver{
 					}
 					//Make sure no one else is using that
 					$userValidation = new User();
-					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
+					$displayName    = $userValidation->escape($_REQUEST['displayName']); // prevent sql injection
+					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$displayName}'");
 					if ($userValidation->N > 0) {
 						$updateErrors[] = 'Sorry, that name is in use or is invalid.';
 						return $updateErrors;

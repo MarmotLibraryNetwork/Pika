@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,6 +38,8 @@ class TopFacets implements RecommendationInterface {
 	 * @param   object  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
+	private array $mainFacets;
+
 	public function __construct($searchObject, $params){
 		// Save the basic parameters:
 		/** @var SearchObject_Solr|SearchObject_Base searchObject */
@@ -49,9 +51,11 @@ class TopFacets implements RecommendationInterface {
 
 		// Load the desired facet information:
 		$config = getExtraConfigArray($iniFile);
-		if ($this->searchObject->getSearchType() == 'genealogy' || $this->searchObject->getSearchType() == 'islandora'){
+		if (in_array($this->searchObject->getSearchType(), ['genealogy', 'islandora2', 'islandora'])){
+			// No Top Facets
 			$this->mainFacets = [];
 		}else{
+			//Catalog search configuration
 			global $locationSingleton;
 			$searchLibrary           = Library::getActiveLibrary();
 			$searchLocation          = $locationSingleton->getActiveLocation();

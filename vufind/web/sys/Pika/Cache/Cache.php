@@ -37,40 +37,40 @@ use InvalidArgumentException;
 class Cache implements CacheInterface
 {
 
-	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
-
 	private $keyTypes = [
 		'patron', 'holds', 'checkouts', 'history', 'fines',
 		'overdrive_counts', 'overdrive_settings', 'overdrive_patron_token', 'overdrive_patron_productKey'
 	];
 
-	protected $handler = false;
-	private   $logger  = false;
+	/** @var \Memcached|null */
+	protected $handler = null;
+	/** @var \Pika\Logger|false */
+	private $logger = false;
 
 	/**
 	 * Cache constructor.
 	 * @param Memcached $handler Memcached handler object
 	 */
-	public function __construct(Memcached $handler = null)
+	public function __construct(?Memcached $handler = null)
 	{
 		global $configArray;
 		if($handler instanceof Memcached) {
 			$this->handler = $handler;
 		} else {
 			// no handler passed -- fire up an instance of memcached
-			$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
-			$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
+			$host = $configArray['Caching']['memcache_host'] ?? '127.0.0.1';
+			$port = $configArray['Caching']['memcache_port'] ?? 11211;
 			$memCached = new Memcached('pika');
 			// Caution! Since this is a persistent connection adding server adds on every page load
 			// and will max out number of server.
-			if (!count($memCached->getServerList()) || count($memCached->getServerList()) === 0) {
+			if (empty($memCached->getServerList())) {
 				$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
 				$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
 				$memCached->addServer($host, $port);
 			}
 			$this->handler = $memCached;
 		}
-		if((bool)$configArray['System']['debugMemCache']) {
+		if (!empty($configArray['System']['debugMemCache'])) {
 			$this->logger = new Logger("Pika\Cache");
 		}
 	}
@@ -88,8 +88,11 @@ class Cache implements CacheInterface
 	 */
 	public function get($key, $default = null)
 	{
-		$return = ($this->handler->get($key) !== false) ? $this->handler->get($key) : $default;
-		// The cached value can be 0; For example, see isPidValidForPika()
+		$return = $this->handler->get($key);
+		// RES_NOTFOUND distinguishes a true cache miss from a stored false/0 value
+		if ($return === false && $this->handler->getResultCode() === \Memcached::RES_NOTFOUND) {
+			$return = $default;
+		}
 		$this->_log('Get', $key, $return);
 		return $return;
 	}
@@ -130,14 +133,13 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-//		if(!($this->handler instanceof  Memcached)) {
-//			$this->handler = initCache();
-//		}
 		$return = $this->handler->delete($key);
-		if($return === false && $this->handler->getResultCode() == Memcached::RES_NOTFOUND) {
+		if ($return === false && $this->handler->getResultCode() === \Memcached::RES_NOTFOUND) {
 			$return = true;
-		} elseif($return === null ) {
-			$this->logger->error('Memcached error: Object is null');
+		} elseif ($return === null) {
+			if ($this->logger) {
+				$this->logger->error('Memcached error: Object is null');
+			}
 			$return = false;
 		}
 		$this->_log('Delete', $key, $return);
@@ -172,9 +174,15 @@ class Cache implements CacheInterface
 	public function getMultiple($keys, $default = null)
 	{
 		if(!is_array($keys)) {
-			throw new \InvalidArgumentException('Cache::get() expects first argument to be array.');
+			throw new \InvalidArgumentException('Cache::getMultiple() expects first argument to be array.');
 		}
-		return $this->handler->getMulti($keys);
+		$results = $this->handler->getMulti($keys) ?: [];
+		foreach ($keys as $key) {
+			if (!array_key_exists($key, $results)) {
+				$results[$key] = $default;
+			}
+		}
+		return $results;
 	}
 
 	/**
@@ -223,10 +231,13 @@ class Cache implements CacheInterface
 	 */
 	public function deleteMultiple($keys)
 	{
-		foreach($keys as $key) {
-			$this->handler->delete($key);
+		$success = true;
+		foreach ($keys as $key) {
+			if (!$this->delete($key)) {
+				$success = false;
+			}
 		}
-		return true;
+		return $success;
 	}
 
 	/**
@@ -246,7 +257,8 @@ class Cache implements CacheInterface
 	 */
 	public function has($key)
 	{
-		return $this->handler->get($key) ? true : false;
+		$this->handler->get($key);
+		return $this->handler->getResultCode() !== \Memcached::RES_NOTFOUND;
 	}
 
 	/**
@@ -277,7 +289,7 @@ class Cache implements CacheInterface
 
 	/**
 	 * @param  $key
-	 * @throws Exception
+	 * @throws CacheException
 	 */
 	private function checkReservedCharacters($key)
 	{
@@ -296,17 +308,8 @@ class Cache implements CacheInterface
 	}
 
 	private function _log($action, $key, $result) {
-		global $configArray;
-
-		if($this->logger) {
-			if($result != false) {
-				$result = 'true';
-			} else {
-				$result = 'false';
-			}
-			if((bool)$configArray['System']['debugMemCache']) {
-				$this->logger->debug($action . ':' . $key . ':' . strval($result));
-			}
+		if ($this->logger) {
+			$this->logger->debug($action . ':' . $key . ':' . ($result !== false ? 'true' : 'false'));
 		}
 	}
 }

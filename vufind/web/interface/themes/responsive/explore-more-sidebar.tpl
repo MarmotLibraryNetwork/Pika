@@ -86,6 +86,7 @@
 			<a class="explore-more-scroller-link" href="{$section.link}" {if $section.openInNewWindow}target="_blank"{/if}>All Results {if $section.numFound}({$section.numFound}){/if}</a>
 
 		{elseif $section.format == 'tableOfContents'}
+			{*TODO: need a archive version check here *}
 			<ul>
 				{foreach from=$section.values item=value}
 					<li>
@@ -96,18 +97,58 @@
 				{/foreach}
 			</ul>
 		{elseif $section.format == 'textOnlyList'}
-			<ul>
-			{foreach from=$section.values item=value}
-				<li>
-					<a href="{$value.link}">
-						{$value.label}
-					</a>
-					{if $value.linkingReason}
-						&nbsp;
+			{assign var="tolTotal" value=$section.values|@count}
+			{assign var="tolLimit" value=5}
+			{if $tolTotal <= $tolLimit}
+				<ul>
+				{foreach from=$section.values item=value}
+					<li><a href="{$value.link}">{$value.label}</a></li>
+				{/foreach}
+				</ul>
+			{elseif $tolTotal <= 12}
+				{* Inline expand: first 5 visible, rest hidden behind toggle *}
+				<ul>
+				{foreach from=$section.values item=value name="tolLoop"}
+					{if $smarty.foreach.tolLoop.iteration <= $tolLimit}
+						<li><a href="{$value.link}">{$value.label}</a></li>
 					{/if}
-				</li>
-			{/foreach}
-			</ul>
+				{/foreach}
+					<li id="more{$sectionId}">
+						<button class="btn btn-link" onclick="Pika.ResultsList.moreFacets('{$sectionId}'); return false;">{translate text='more'} ...</button>
+					</li>
+				</ul>
+				<ul class="narrowGroupHidden" id="narrowGroupHidden_{$sectionId}" style="display:none">
+				{foreach from=$section.values item=value name="tolLoop"}
+					{if $smarty.foreach.tolLoop.iteration > $tolLimit}
+						<li><a href="{$value.link}">{$value.label}</a></li>
+					{/if}
+				{/foreach}
+					<li>
+						<button class="btn btn-link" onclick="Pika.ResultsList.lessFacets('{$sectionId}'); return false;">{translate text='less'} ...</button>
+					</li>
+				</ul>
+			{else}
+				{* Popup: first 5 visible, all items in modal *}
+				{assign var="tolSectionLabel" value=$archiveSections[$sectionId]}
+				{if !empty($exploreMoreSection->displayName)}{assign var="tolSectionLabel" value=$exploreMoreSection->displayName}{/if}
+				<ul>
+				{foreach from=$section.values item=value name="tolLoop"}
+					{if $smarty.foreach.tolLoop.iteration <= $tolLimit}
+						<li><a href="{$value.link}">{$value.label}</a></li>
+					{/if}
+				{/foreach}
+					<li id="more{$sectionId}">
+						<button class="btn btn-link" onclick="Pika.ResultsList.moreFacetPopup('{$tolSectionLabel|escape}', '{$sectionId}'); return false;">{translate text='more'} ...</button>
+					</li>
+				</ul>
+				<div id="moreFacetPopup_{$sectionId}" style="display:none">
+					<ul>
+					{foreach from=$section.values item=value}
+						<li><a href="{$value.link}">{$value.label}</a></li>
+					{/foreach}
+					</ul>
+				</div>
+			{/if}
 
 		{else} {* list *}
 			{* Simple display with one thumbnail per item *}

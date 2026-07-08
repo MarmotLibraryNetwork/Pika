@@ -1,6 +1,6 @@
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -540,6 +540,15 @@ var Pika = (function(){
 			/*writeText is only available in https mode */
 		}
 	}
+
+	// removeBlankThumbnail: function(imgElem, elemToHide, isForceRemove) {
+	// 	var $img = $(imgElem);
+	// 	//when the content providers cannot find a bookjacket, they return a 1x1 pixel
+	// 	//remove the wrapping div, for consistent spacing with other results
+	// 	if ($img.height() == 1 && $img.width() == 1 || isForceRemove) {
+	// 		$(elemToHide).remove();
+	// 	}
+	// }
 
 }(Pika || {}));
 

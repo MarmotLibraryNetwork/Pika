@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +29,7 @@ class Archive_Results extends Union_Results {
 		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		$timer->logTime('Include search engine');
 
-		// Initialise from the current search globals
+		// Initialize from the current search globals
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
@@ -69,6 +68,7 @@ class Archive_Results extends Union_Results {
 		//   no matter whether there were any results
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('spellingSuggestions', $searchObject->getSpellingSuggestions());
+		//TODO: work out how spelling suggestions work
 		$interface->assign('lookfor',             $searchObject->displayQuery());
 		$interface->assign('searchType',          $searchObject->getSearchType());
 		// Will assign null for an advanced search
@@ -130,8 +130,8 @@ class Archive_Results extends Union_Results {
 			$interface->assign('recordStart', $summary['startRecord']);
 			$interface->assign('recordEnd',   $summary['endRecord']);
 
-			$facetSet = $searchObject->getFacetList();
-			$interface->assign('facetSet',       $facetSet);
+//			$facetSet = $searchObject->getFacetList();
+//			$interface->assign('facetSet',       $facetSet);
 
 			// Big one - our results
 			$recordSet = $searchObject->getResultRecordHTML();

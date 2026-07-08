@@ -172,7 +172,6 @@ class Location extends DB_DataObject {
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['locationId']);
 		unset($facetSettingStructure['numEntriesToShowByDefault']);
-		unset($facetSettingStructure['showAsDropDown']);
 		//unset($facetSettingStructure['sortMode']);
 
 		$locationBrowseCategoryStructure = LocationBrowseCategory::getObjectStructure();

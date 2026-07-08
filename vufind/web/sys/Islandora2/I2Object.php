@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2026  Marmot Library Network
@@ -21,6 +22,7 @@ namespace Islandora2;
 
 require_once ROOT_DIR . '/sys/Islandora2/I2Media.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 
 use Pika\Logger;
 use Islandora2\I2Media;
@@ -35,8 +37,16 @@ abstract class I2Object implements MediaObjectInterface
 {
     protected Logger $logger;
     protected array $rawNode;
-    protected array $nodeWithoutFieldPrefix;
+    /**
+     * Prefix-stripped view of $rawNode, built lazily by nwfp().
+     *
+     * removeFieldPrefix() deep-copies the entire payload, so it is deferred until
+     * a consumer actually reads the stripped view (most do, but objects used only
+     * for raw/model checks never pay for it).
+     */
+    protected ?array $nodeWithoutFieldPrefix = null;
     protected array $media = [];
+    protected array $childrenObjects = [];
 
     /**
      * Determine if the subclass can represent the supplied Islandora node.
@@ -53,8 +63,20 @@ abstract class I2Object implements MediaObjectInterface
     final public function __construct(array $node, ?Logger $logger = null)
     {
         $this->rawNode = $node;
-        $this->nodeWithoutFieldPrefix = $this->removeFieldPrefix($node);
         $this->logger = $logger ?? new Logger(static::class);
+    }
+
+    /**
+     * Return the prefix-stripped node, building and caching it on first access.
+     *
+     * @return array
+     */
+    protected function nwfp(): array
+    {
+        if ($this->nodeWithoutFieldPrefix === null) {
+            $this->nodeWithoutFieldPrefix = $this->removeFieldPrefix($this->rawNode);
+        }
+        return $this->nodeWithoutFieldPrefix;
     }
 
     /**
@@ -65,24 +87,21 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function __get(string $name)
     {
-        if (array_key_exists($name, $this->nodeWithoutFieldPrefix)) {
-            return $this->nodeWithoutFieldPrefix[$name];
-        } elseif (array_key_exists($name, $this->rawNode)) {   
-            return $this->rawNode[$name];
+        if ($name === 'childrenObjects') {
+            return $this->getChildObjects();
         }
-
-        return null;
-    }
-
-    /**
-     * Allow subclasses to perform light-weight normalisation before storage.
-     *
-     * @param array $node
-     * @return array
-     */
-    protected function normalizeNode(array $node): array
-    {
-        return $node;
+        // try both field_name and name for raw node
+        if (array_key_exists('field_' . $name, $this->rawNode)) {
+            return $this->rawNode['field_' . $name];
+        } elseif (array_key_exists($name, $this->rawNode)) {
+            return $this->rawNode[$name];
+        } 
+        // avoid creating copy unless no other accessor works
+        $node = $this->nwfp();
+        if (array_key_exists($name, $node)) {
+            return $node[$name];
+        }
+        return false;
     }
 
     /**
@@ -94,7 +113,7 @@ abstract class I2Object implements MediaObjectInterface
     public function getNode(bool $withoutFieldPrefix = true): array
     {
         if ($withoutFieldPrefix) {
-            return $this->getNodeWithoutFieldPrefix();
+            return $this->nwfp();
         }
         return $this->getRawNode();
     }
@@ -116,11 +135,34 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getNodeWithoutFieldPrefix(): array
     {
-        return $this->nodeWithoutFieldPrefix;
+        return $this->nwfp();
+    }
+
+    /**
+     * Resolve the Islandora media type from the raw node.
+     *
+     * @param array $node
+     * @return string|null Lower-cased model value or null when unavailable.
+     */
+    protected static function getObjectModelFromNode(array $node): ?string
+    {
+        $fieldModel = $node['field_model'] ?? null;
+        if (!is_array($fieldModel)) {
+            return null;
+        }
+        if (array_key_exists('tid', $fieldModel)) {
+            return isset($fieldModel['name']) ? strtolower($fieldModel['name']) : null;
+        } elseif (isset($fieldModel[0]) && is_array($fieldModel[0]) && array_key_exists('tid', $fieldModel[0])) {
+            return isset($fieldModel[0]['name']) ? strtolower($fieldModel[0]['name']) : null;
+        }
+        return null;
     }
 
     /**
      * Resolve the Islandora object model string from the node.
+     * 
+     * The constant containing the array of model -> display map is found in 
+     * Functions.php
      *
      * @return string
      */
@@ -144,25 +186,58 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return string
      */
-    public function getDisplayModel(): ?string 
+    public function getDisplayModel(): ?string
     {
-        $displayModel = $this->legacy_resource_type['name'] ?? null;
-        if($displayModel === null) {
+        $displayModel = array_key_exists($this->legacy_resource_type['name'], ISLANDORA2_DISPLAY_MODEL_URL_MAP) ? $this->legacy_resource_type['name'] : null;
+        
+        if ($displayModel === null) {
             $displayModel = $this->getObjectModel();
         }
         return $displayModel;
     }
 
     /**
-     * Attempt to return the primary media file/derivative metadata.
+     * Attempt to return the original media file.
      *
-     * @return array|null
+     * @return I2Media|null
      */
     public function getOriginalMedia(): ?I2Media
     {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('original file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('original file')) {
+                return $m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the PDF file.
+     *
+     * @return I2Media|null
+     */
+    public function getPDFMedia(): ?I2Media
+    {
+        $media = $this->getMedia();
+        foreach ($media as $m) {
+            if ($m->useIs('PDF')) {
+                return $m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Attempt to return the intermediate media file.
+     *
+     * @return I2Media|null
+     */
+    public function getIntermediateFile(): ?I2Media
+    {
+        $media = $this->getMedia();
+        foreach ($media as $m) {
+            if ($m->useIs('intermediate file')) {
                 return $m;
             }
         }
@@ -174,15 +249,16 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media|null The newest thumbnail, or null when none exist.
      */
-    public function getThumbnail() {
+    public function getThumbnail()
+    {
         $media = $this->getMedia();
         $thumbnails = [];
-        foreach($media as $m) {
-            if($m->useIs('thumbnail image')) {
+        foreach ($media as $m) {
+            if ($m->useIs('thumbnail image')) {
                 $thumbnails[] = $m;
             }
         }
-        if(empty($thumbnails)) {
+        if (empty($thumbnails)) {
             return null;
         }
         $sorted = $this->sortMediaByCreatedDate($thumbnails);
@@ -190,19 +266,51 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Return a best-effort thumbnail URL for this node.
+     *
+     * Prefers a dedicated "thumbnail image" media; when none exists (e.g. page
+     * objects that only carry a Service File image with no media-use term),
+     * falls back to the generated thumbnail derivative on any other media.
+     *
+     * @return string Thumbnail URL, or '' when no usable image is available.
+     */
+    public function getThumbnailUrl(): string
+    {
+        $thumb = $this->getThumbnail();
+        if ($thumb && $thumb->thumbnailUrl !== '') {
+            return $thumb->thumbnailUrl;
+        }
+        // Only image media carry a usable picture; other media (OCR text, FITS,
+        // etc.) expose a generic file-type icon as their thumbnail, so skip them.
+        foreach ($this->getMedia() as $m) {
+            if ($m->bundle !== 'image') {
+                continue;
+            }
+            if ($m->thumbnailUrl !== '') {
+                return $m->thumbnailUrl;
+            }
+            if ($m->fileUrl !== '') {
+                return $m->fileUrl;
+            }
+        }
+        return '';
+    }
+
+    /**
      * Return all thumbnail media objects associated with this node.
      *
      * @return I2Media[]|null Array of thumbnail media objects, or null when none exist.
      */
-    public function getThumbnails() {
+    public function getThumbnails()
+    {
         $media = $this->getMedia();
         $thumbnails = [];
-        foreach($media as $m) {
-            if($m->useIs('thumbnail image')) {
+        foreach ($media as $m) {
+            if ($m->useIs('thumbnail image')) {
                 $thumbnails[] = $m;
             }
         }
-        if(empty($thumbnails)) {
+        if (empty($thumbnails)) {
             return null;
         }
         return $thumbnails;
@@ -213,14 +321,62 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return I2Media|null The service file media object, or null when unavailable.
      */
-    public function getServiceFile() {
+    public function getServiceFile()
+    {
         $media = $this->getMedia();
-        foreach($media as $m) {
-            if($m->useIs('service file')) {
+        foreach ($media as $m) {
+            if ($m->useIs('service file')) {
                 return $m;
             }
         }
         return null;
+    }
+
+    /**
+     * Return the created date formatted according to the given format string.
+     *
+     * @param string $format A date() format string.
+     * @return string|null Formatted date string, or null when no created date is set.
+     */
+    public function getDateCreated($format = 'm/d/Y')
+    {
+        $created = $this->created;
+        if (empty($created)) {
+            return null;
+        }
+        return date($format, $created);
+    }
+
+    /**
+     * Return the curator-set ordering weight for this node (field_weight).
+     *
+     * Comes back as a string via pika-json and as an int via JSON:API; unset
+     * nodes have no weight. Normalized to an int defaulting to 0.
+     *
+     * @return int
+     */
+    public function getWeight(): int
+    {
+        return (int)($this->rawNode['field_weight'] ?? 0);
+    }
+
+    /**
+     * Return the geographic coordinates for this node from field_coordinates.
+     *
+     * @return array|null Associative array with 'lat' and 'lng' floats, or null when not set.
+     */
+    public function getCoordinates(): ?array
+    {
+        $coords = $this->rawNode['field_coordinates'] ?? null;
+        if (!is_array($coords)) {
+            return null;
+        }
+        $lat = $coords['lat'] ?? null;
+        $lng = $coords['lng'] ?? $coords['lon'] ?? null;
+        if ($lat === null || $lng === null) {
+            return null;
+        }
+        return ['lat' => (float)$lat, 'lng' => (float)$lng];
     }
 
     /**
@@ -230,10 +386,12 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getDescription(): ?string
     {
-       if(isset($this->nodeWithoutFieldPrefix['description_long']) && $this->nodeWithoutFieldPrefix['description_long'] !== '') {
-            return $this->nodeWithoutFieldPrefix['description_long'];
-        } elseif (isset($this->nodeWithoutFieldPrefix['description']) && $this->nodeWithoutFieldPrefix['description'] !== '') {
-            return $this->nodeWithoutFieldPrefix['description'];
+        if (isset($this->rawNode['field_description_long']) && $this->rawNode['field_description_long'] !== '') {
+            return $this->rawNode['field_description_long'];
+            //return htmlentities($this->rawNode['field_description_long']);
+			//Displaying html should be okay
+        } elseif (isset($this->rawNode['field_description']) && $this->rawNode['field_description'] !== '') {
+            return $this->rawNode['field_description'];
         }
         return null;
     }
@@ -245,10 +403,10 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getTitle(): ?string
     {
-        if(isset($this->nodeWithoutFieldPrefix['display_title']) && $this->nodeWithoutFieldPrefix['display_title'] !== '') {
-            return $this->nodeWithoutFieldPrefix['display_title'];
-        } elseif (isset($this->nodeWithoutFieldPrefix['title']) && $this->nodeWithoutFieldPrefix['title'] !== '') {
-            return htmlentities($this->nodeWithoutFieldPrefix['title']);
+        if (isset($this->rawNode['field_display_title']) && $this->rawNode['field_display_title'] !== '') {
+            return $this->rawNode['field_display_title'];
+        } elseif (isset($this->rawNode['title']) && $this->rawNode['title'] !== '') {
+            return htmlentities($this->rawNode['title']);
         }
         return null;
     }
@@ -258,9 +416,10 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return string|null The language name, or null when unavailable.
      */
-    public function getLanguage(): ?string {
-        if(isset($this->nodeWithoutFieldPrefix['language']['name']) && $this->nodeWithoutFieldPrefix['language']['name'] !== '') {
-            return $this->nodeWithoutFieldPrefix['language']['name'];
+    public function getLanguage(): ?string
+    {
+        if (isset($this->rawNode['field_language']['name']) && $this->rawNode['field_language']['name'] !== '') {
+            return $this->rawNode['field_language']['name'];
         }
         return null;
     }
@@ -270,23 +429,91 @@ abstract class I2Object implements MediaObjectInterface
      *
      * @return array|null Array of subject values, or null when none are present.
      */
-    public function getSubjects(): ?array {
-        $subjects = (empty($this->nodeWithoutFieldPrefix['subject']) === false) ? $this->nodeWithoutFieldPrefix['subject'] : null;
+    public function getSubjects(): ?array
+    {
+        $subjects = (empty($this->rawNode['field_subject']) === false) ? $this->rawNode['field_subject'] : null;
+        if ($subjects === null) {
+            return null;
+        }
+        // if it's a single subject, wrap in an array
+        if (is_array($subjects) && array_key_exists('tid', $subjects)) {
+            $subjects = [$subjects];
+        }
+        usort($subjects, fn ($a, $b) => strcmp($a['name'] ?? '', $b['name'] ?? ''));
+        // The null-coalescing ?? '' handles any subjects that might be missing a name key gracefully.
         return $subjects;
     }
 
     /**
-     * Return the media as associacted with this item as objects.
-     * 
+     * Return the media associated with this item as objects.
+     *
      * @return array Returns an empty array if no media is present
      */
     public function getMedia(): array
     {
-        if(!empty($this->media)) {
+        if (!empty($this->media)) {
             return $this->media;
         }
 
         return $this->loadMedia();
+    }
+
+    /**
+     * Return the first page of raw child node data from the children API.
+     *
+     * @return array|null Array of raw child node payloads, or null on failure.
+     */
+    public function getRawChildren(): ?array
+    {
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return null;
+        }
+        $response = (new Request())->fetchChildren($nid);
+        return $response['children'] ?? null;
+    }
+
+    /**
+     * Return all children as I2Objects.
+     *
+     * Page 1 is fetched synchronously; any remaining pages are fetched in
+     * parallel via MultiCurl (max 250 children per request).
+     *
+     * @return array Array of I2Object instances; empty when the node has no children.
+     */
+    public function getChildObjects(): array
+    {
+        if (!empty($this->childrenObjects)) {
+            return $this->childrenObjects;
+        }
+
+        $nid = $this->getNodeId();
+        if ($nid === null) {
+            return [];
+        }
+
+        $factory  = new I2ObjectFactory();
+        $children = [];
+
+        foreach ((new Request())->fetchAllChildren($nid) as $childNode) {
+            $obj = $factory->fromNode($childNode);
+            if ($obj !== null) {
+                $children[] = $obj;
+            }
+        }
+
+        $this->childrenObjects = $children;
+        return $children;
+    }
+
+    public function getParentCollection() {
+        $parent_nid = $this->rawNode['field_member_of'] ?? null;
+        if ($parent_nid == null)
+            return null;
+        if(is_array($parent_nid))
+            $parent_nid = $parent_nid[0]['target_id'];
+        $factory = new I2ObjectFactory();
+        return $factory->fromNodeId($parent_nid);
     }
 
     /**
@@ -303,9 +530,24 @@ abstract class I2Object implements MediaObjectInterface
         return null;
     }
 
+    /**
+     * Return the relative URL for this Islandora object.
+     *
+     * @return string
+     */
     public function getUrl(): string
     {
         return getObjRelativeUrl($this);
+    }
+
+    /**
+     * Return the absolute URL for this Islandora object.
+     *
+     * @return string
+     */
+    public function getAbsoluteUrl(): string
+    {
+        return getObjAbsoluteUrl($this);
     }
 
     /**
@@ -316,6 +558,230 @@ abstract class I2Object implements MediaObjectInterface
     protected function getLogger(): Logger
     {
         return $this->logger;
+    }
+
+    /**
+     * Return the Corporate Body taxonomy term for this node's contributing library.
+     *
+     * Primary path: looks up the Pika Library row by libraryTid to read its
+     * corporateBodyTid, then resolves that to an Islandora term.
+     *
+     * Fallback: fetches the library vocabulary term from Islandora and resolves
+     * via the first entry in its field_related_organization (ignoring relation).
+     *
+     * @return TaxonomyObjectInterface|null The Corporate Body term, or null when unavailable.
+     */
+    public function getLibraryOrganization(): ?TaxonomyObjectInterface
+    {
+        $libraryTid = isset($this->rawNode['field_library']['tid']) ? (int)$this->rawNode['field_library']['tid'] : 0;
+        if ($libraryTid <= 0) {
+            $this->logger->warn('Warning: no library set for node ' . $this->getNodeId());
+            return null;
+        }
+
+        $taxonomy = new TaxonomyFactory();
+
+        // Primary: resolve via the Pika Library DB row → corporateBodyTid
+        $pikaLibrary             = new \Library();
+        $pikaLibrary->libraryTid = $libraryTid;
+        if ($pikaLibrary->find(true) && !empty($pikaLibrary->corporateBodyTid) && $pikaLibrary->corporateBodyTid > 0) {
+            $term = $taxonomy->fromTid((int)$pikaLibrary->corporateBodyTid);
+            if ($term !== null) {
+                return $term;
+            }
+        }
+
+        // Fallback: fetch the library vocabulary term from Islandora and use the
+        // first entry in field_related_organization to reach the Corporate Body term.
+        $libraryTerm = $taxonomy->fromTid($libraryTid);
+        if ($libraryTerm === null) {
+            $this->logger->warn('Warning: library term ' . $libraryTid . ' not found in Islandora for node ' . $this->getNodeId());
+            return null;
+        }
+        $relatedOrgs = $libraryTerm->getRelatedOrganization();
+        if (empty($relatedOrgs)) {
+            $this->logger->warn('Warning: library term ' . $libraryTid . ' has no related organization for node ' . $this->getNodeId());
+            return null;
+        }
+        $orgTid = isset($relatedOrgs[0]['tid']) ? (int)$relatedOrgs[0]['tid'] : 0;
+        if ($orgTid <= 0) {
+            $this->logger->warn('Warning: related organization on library term ' . $libraryTid . ' has no tid for node ' . $this->getNodeId());
+            return null;
+        }
+        return $taxonomy->fromTid($orgTid);
+    }
+
+    /**
+     * Return the related place taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related place entries, or null when none are present.
+     */
+    public function getRelatedPlace(): ?array
+    {
+        $raw = $this->rawNode['field_related_place'] ?? null;
+        if (empty($raw)) {
+            return null;
+        }
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'geo_location', 'Place');
+    }
+
+    /**
+     * Return the related event taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related event entries, or null when none are present.
+     */
+    public function getRelatedEvent(): ?array
+    {
+        $raw = $this->rawNode['field_related_event'] ?? null;
+        if (empty($raw)) {
+            return null;
+        }
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'event', 'Event');
+    }
+
+    /**
+     * Return the related organization taxonomy terms associated with this node.
+     *
+     * @return array|null Array of related organization entries, or null when none are present.
+     */
+    public function getRelatedOrganization(): ?array
+    {
+        $raw = $this->rawNode['field_related_org'] ?? null;
+        if (empty($raw)) {
+            return null;
+        }
+        if (is_array($raw) && array_key_exists('tid', $raw)) {
+            $raw = [$raw];
+        }
+        return $this->normalizeRelatedTerms($raw, 'corporate_body', 'Organization');
+    }
+
+    /**
+     * Return the related persons associated with this node.
+     *
+     * Handles both single and multiple related-person paragraph entries, normalizing
+     * the result to a flat array of person term arrays.
+     *
+     * @return array|null Array of related person entries, or null when none are present.
+     */
+    public function getRelatedPerson(): ?array
+    {
+        $paragraphs = $this->nwfp()['related_person_paragraph'] ?? null;
+        if ($paragraphs === null) {
+            return null;
+        }
+        if (is_array($paragraphs) && array_key_exists('id', $paragraphs)) {
+            $paragraphs = [$paragraphs];
+        }
+        $raw = [];
+        foreach ($paragraphs as $paragraph) {
+            $entry         = $paragraph['related_person'] ?? [];
+            $entry['note'] = $this->getRelatedPersonNote($paragraph);
+            $raw[]         = $entry;
+        }
+        return $this->normalizeRelatedTerms($raw, 'person', 'Person');
+    }
+
+    /**
+     * Normalize a list of raw taxonomy term references into a consistent shape
+     * consumed by the relatedTaxonomyTiles partial.
+     *
+     * Each entry shape: ['tid', 'name', 'url', 'thumbnail', 'relation', 'relation_label'].
+     * Note is preserved when present (used by related-person data).
+     */
+    private function normalizeRelatedTerms(array $entries, string $defaultVocab, string $defaultSegment): ?array
+    {
+        $result = [];
+        foreach ($entries as $raw) {
+            $tid  = $raw['tid'] ?? null;
+            $name = $raw['name'] ?? '';
+            if (empty($tid) && empty($name)) {
+                continue;
+            }
+            $vocab   = strtolower($raw['vocabulary'] ?? $defaultVocab);
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? $defaultSegment;
+            $entry   = [
+                'tid'            => isset($tid) ? (int)$tid : null,
+                'name'           => $name,
+                'url'            => !empty($tid) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#',
+                'thumbnail'      => $raw['thumbnail'] ?? null,
+                'relation'       => $raw['relation'] ?? null,
+                'relation_label' => $raw['relation_label'] ?? null,
+            ];
+            if (isset($raw['note'])) {
+                $entry['note'] = $raw['note'];
+            }
+            $result[] = $entry;
+        }
+        return $result ?: null;
+    }
+
+    private function getRelatedPersonNote(array $person): ?string
+    {
+        $note = $person['related_person_note'];
+        if ($note === null) {
+            return null;
+        }
+        // Data should be clean display text. Warn and extract prefix if legacy relator/local phrases are present.
+        if (stristr($note, 'relator') || stristr($note, 'local')) {
+            $this->logger->warn('Related Person note contains unexpected relator/local phrase for node ID: ' . $this->getNodeId(), [$note]);
+            $separator = stristr($note, 'relator') ? 'relator' : 'local';
+            $parts     = explode($separator, $note);
+            return ($parts[0] && is_string($parts[0])) ? trim($parts[0]) : null;
+        }
+        return $note;
+    }
+
+    /**
+     * Return the related archive objects linked via the related_object_paragraph field.
+     *
+     * Each entry includes the object's nid, title, thumbnail URL (extracted from the
+     * embedded Thumbnail Image media), and optional note.
+     *
+     * @return array|null Array of related object entries, or null when none are present.
+     */
+    public function getRelatedObjects(): ?array
+    {
+        $raw = $this->nwfp()['related_object_paragraph'] ?? null;
+        if ($raw === null) {
+            return null;
+        }
+        // Normalize a single paragraph entry (associative array) to a list.
+        if (is_array($raw) && array_key_exists('id', $raw)) {
+            $raw = [$raw];
+        }
+        $objects = [];
+        foreach ($raw as $entry) {
+            $relObj = $entry['related_object'] ?? null;
+            if ($relObj === null) {
+                continue;
+            }
+            $nid = $relObj['nid'] ?? null;
+            if ($nid === null) {
+                $this->logger->warn('related_object_paragraph entry missing nid on node ' . $this->getNodeId());
+                continue;
+            }
+            $thumbnailUrl = null;
+            foreach ($relObj['media'] ?? [] as $mediaItem) {
+                if (($mediaItem['media_use']['name'] ?? null) === 'Thumbnail Image') {
+                    $thumbnailUrl = $mediaItem['thumbnail']['url'] ?? null;
+                    break;
+                }
+            }
+            $objects[] = [
+                'nid'       => $nid,
+                'title'     => $relObj['title'] ?? null,
+                'note'      => $entry['related_object_note'] ?? null,
+                'thumbnail' => $thumbnailUrl,
+            ];
+        }
+        return empty($objects) ? null : $objects;
     }
 
     /**
@@ -373,7 +839,7 @@ abstract class I2Object implements MediaObjectInterface
      * @param I2Media[] $mediaItems
      * @return I2Media[]
      */
-    public function sortMediaByCreatedDate(array $mediaItems): array
+    protected function sortMediaByCreatedDate(array $mediaItems): array
     {
         usort($mediaItems, static function (I2Media $a, I2Media $b): int {
             return $b->created <=> $a->created;
@@ -384,33 +850,18 @@ abstract class I2Object implements MediaObjectInterface
 
     /**
      * Find media associated with node and return as array of objects
-     * 
-     * @return array 
+     *
+     * @return array
      */
-    private function loadMedia():array {
-        $rawMedia = $this->nodeWithoutFieldPrefix['media'];
+    private function loadMedia(): array
+    {
+        $rawMedia = $this->nwfp()['media'] ?? [];
         $media = [];
-        foreach($rawMedia as $m) {
+        foreach ($rawMedia as $m) {
             $media[] = new I2Media($m);
         }
         $this->media = $media;
         return $media;
-    }
-
-    /**
-     * Resolve the Islandora media type from the raw node.
-     *
-     * @param array $node
-     * @return string|null Lower-cased model value or null when unavailable.
-     */
-    protected static function getObjectModelFromNode(array $node): ?string
-    {
-        if(array_key_exists('tid', $node['field_model'])) {
-            return isset($node['field_model']['name']) ? strtolower($node['field_model']['name']) : null;
-        } elseif (array_key_exists('tid', $node['field_model'][0])){
-            return isset($node['field_model'][0]['name']) ? strtolower($node['field_model'][0]['name']) : null;
-        }
-        return null;
     }
 
 }

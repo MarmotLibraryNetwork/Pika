@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -90,11 +89,9 @@ class UserList extends DB_DataObject {
 		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
-			'(
-     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-    OR
-    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
-)'
+			'((user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))
+       OR
+            (user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%"))'
 		);
 
 		return $listEntry->count();
@@ -182,19 +179,21 @@ class UserList extends DB_DataObject {
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 			$listEntry->whereAdd(
 				'(' .
-				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )' .
+				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%")' .
 				' OR ' .
-				'(user_list_entry.groupedWorkPermanentId LIKE "%:%")' .
-//				'(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )' .
+				'(user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))' .
 				')'
-			//TODO: checking the islandora cache does not really check that pid is valid. Probably should remove
 			);
 			if($listEntry->find()){
 				while ($listEntry->fetch()){
-					if (strpos($listEntry->groupedWorkPermanentId, ':') !== false){
-						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
+					if (!str_contains($listEntry->groupedWorkPermanentId, '-') && ctype_digit($listEntry->groupedWorkPermanentId)){
+						if (!$listEntry->hidden){
+							$archiveIDs[] = $listEntry->groupedWorkPermanentId;
+						}
 					}else{
-						$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+						if (!$listEntry->hidden){
+							$catalogIDs[] = $listEntry->groupedWorkPermanentId;
+						}
 					}
 					$listEntries[] = $listEntry->groupedWorkPermanentId;
 				}
@@ -289,6 +288,9 @@ class UserList extends DB_DataObject {
 	 */
 	function removeListEntry($workToRemove){
 		// Remove the Saved List Entry
+		if(str_contains($workToRemove->groupedWorkPermanentId, 'islandora2-')){
+			$workToRemove = str_replace('islandora2-', '', $workToRemove);
+		}
 		if ($workToRemove instanceof UserListEntry){
 			$workToRemove->delete();
 		}else{

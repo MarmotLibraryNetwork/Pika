@@ -292,7 +292,7 @@ class ListWidget extends DB_DataObject {
 			//The title is not unique
 			$validationResults['errors'][] = 'This widget has already been created.  Please select another name.';
 		}
-		//Make sure there aren't errors
+		//  Make sure there aren't any errors
 		if (count($validationResults['errors']) > 0){
 			$validationResults['validatedOk'] = false;
 		}
@@ -381,14 +381,14 @@ class ListWidget extends DB_DataObject {
 					}
 				}
 			}
-			// Calling unset also calls __set magic method and the lists get deleted from the widget-- so, don't call unset
+			// Calling unset also calls __set magic method, and the lists get deleted from the widget-- so, don't call unset
 			// XXClear the lists so they are reloaded the next timeXX
 			//unset($this->lists);
 		}
 	}
 
 	public function validateLists(){
-		//Setup validation return array
+		//Set up validation return array
 		$validationResults = [
 			'validatedOk' => true,
 			'errors'      => [],
@@ -427,7 +427,7 @@ class ListWidget extends DB_DataObject {
 			}
 		}
 
-		//Make sure there aren't errors
+		//Make sure there are no errors
 		if (count($validationResults['errors']) > 0){
 			$validationResults['validatedOk'] = false;
 		}

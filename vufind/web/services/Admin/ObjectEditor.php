@@ -213,7 +213,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				$interface->assign('objectName', $existingObject->label());
 			}
 		}elseif (!empty($_REQUEST['name']) && !empty($structure['name'])){
-			// Convenience for fetching Variables objectes
+			// Convenience for fetching Variables objects
 			$name                 = trim($_REQUEST['name']);
 			$objectType           = $this->getObjectType();
 			$existingObject       = new $objectType;

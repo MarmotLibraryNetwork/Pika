@@ -1,7 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2025  Marmot Library Network
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1154,8 +1154,8 @@ class User extends DB_DataObject {
 
 		$indexToSortBy = 'sortTitle';
 		$holdSort      = function ($a, $b) use (&$indexToSortBy){
-			$a = isset($a[$indexToSortBy]) ? $a[$indexToSortBy] : null;
-			$b = isset($b[$indexToSortBy]) ? $b[$indexToSortBy] : null;
+			$a = $a[$indexToSortBy] ?? null;
+			$b = $b[$indexToSortBy] ?? null;
 
 			// Put empty values (except for specified values of zero) at the bottom of the sort
 			if (modifiedEmpty($a) && modifiedEmpty($b)){
@@ -1167,8 +1167,8 @@ class User extends DB_DataObject {
 			}
 
 			if ($indexToSortBy == 'format'){
-				$a = implode($a, ',');
-				$b = implode($b, ',');
+				if (is_array($a)) {$a = implode( ',', $a);}
+				if (is_array($b)) {$b = implode( ',', $b);}
 			}
 
 			return strnatcasecmp($a, $b);

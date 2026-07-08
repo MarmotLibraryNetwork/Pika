@@ -56,7 +56,7 @@
 
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
 							<td>
-							{if $property.type == 'label'}
+							{if $property.type == 'label' || $property.type == 'archive2node'}
 								{if strlen($propValue) > 0}{* Don't display link with no text *}
 									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;{$propValue}</a>
 								{/if}
@@ -296,12 +296,19 @@
 					{/literal}
 				{/if}
 
+
+
 				{if $objectType == "MergedGroupedWork" || $objectType == "NonGroupedRecord"}
 					{* TODO: CJ this sort column is actually mysql date time string. Initial glances this looks to be sorting okay
 					 but there could be a better sorting method to pick out. - pascal *}
 					{literal}
 				"order": [[4, "desc"]]
 					{/literal}
+
+				{elseif $objectType == "Archive2\ArchiveRequest" || $objectType == "Archive2\ClaimAuthorshipRequest"}
+				{literal}
+					"order": [[5, "desc"]]
+				{/literal}
 				{else}
 					{literal}
 				"order": [[0, "asc"]]

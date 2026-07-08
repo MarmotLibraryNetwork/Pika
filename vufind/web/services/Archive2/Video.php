@@ -29,6 +29,10 @@ class Video extends ArchiveObject
     {
         global $interface;
 
+        // parent::launch() checks for a null mediaObject (e.g. missing/invalid id in the
+        // URL) and shows the unavailable page before this method touches $this->mediaObject.
+        parent::launch();
+
         $video = $this->mediaObject->getVideo();
         if ($video === null) {
             $this->logger->warning('Video media not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
@@ -39,7 +43,7 @@ class Video extends ArchiveObject
             $interface->assign('videoMime', $video->mime);
         }
 
-        $poster = $this->mediaObject->getVideoPoster();
+        $poster = $this->mediaObject->getThumbnail();
         if ($poster === null) {
             $this->logger->warning('Video poster not found for node.', ['nid' => $this->mediaObject->getNodeId()]);
             $interface->assign('posterUrl', null);
@@ -54,12 +58,10 @@ class Video extends ArchiveObject
         $transcripts = $this->mediaObject->getTranscripts();
         $interface->assign('transcripts', $transcripts ?? []);
 
-        parent::launch();
-
         $interface->assign('viewer', 'video');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
    
 }

@@ -347,21 +347,42 @@ function loadSearchInformation(){
 			$searchSource = 'genealogy';
 		}elseif ($module == 'Archive'){
 			$searchSource = 'islandora';
+//			$searchSource = 'islandora2';
+		}elseif ($module == 'Archive2'){
+			//$searchSource = 'islandora';
+			$searchSource = 'islandora2';
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';
 		}else{
 			global $locationSingleton;
 			global $library;
+			global $configArray;
 			$location = $locationSingleton->getActiveLocation();
-			[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = SearchSources::getCombinedSearchSetupParameters($location, $library);
-			if ($enableCombinedResults && $showCombinedResultsFirst){
-				$searchSource = 'combinedResults';
-			}else{
-				$searchSource = 'local';
+			if ($library && $library->archiveOnlyInterface) {
+				// Archive-only interfaces should default to archive search even when the
+				// module hasn't been determined yet (e.g. root URL '/' before loadModuleActionId runs).
+				if (!empty($configArray['Islandora2']['enabled']) && $library->enableArchive) {
+					$searchSource = 'islandora2';
+				} elseif (!empty($configArray['Islandora']['enabled']) && $library->enableArchive) {
+					$searchSource = 'islandora';
+				}
+			} else {
+				[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = SearchSources::getCombinedSearchSetupParameters($location, $library);
+				if ($enableCombinedResults && $showCombinedResultsFirst){
+					$searchSource = 'combinedResults';
+				}else{
+					$searchSource = 'local';
+				}
 			}
 		}
 	}
-	$_REQUEST['searchSource'] = $searchSource;
+	// Don't overwrite a searchSource value that was explicitly submitted in a POST form (e.g. Admin
+	// object editors). Those forms use 'searchSource' as a field name unrelated to the global search
+	// context, and stomping on $_REQUEST here causes the posted value to be silently discarded.
+	// (Used for Browse Categories, now that we can build archive search browse categories.)
+	if (!isset($_POST['searchSource'])) {
+		$_REQUEST['searchSource'] = $searchSource;
+	}
 
 	/** @var Library $searchLibrary */
 	$searchLibrary  = Library::getSearchLibrary($searchSource);
@@ -432,6 +453,7 @@ function enableErrorHandler(){
 	$errorHandlingEnabled = true;
 }
 
+//TODO: single use; remove and replace with the basic commands
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
 }
@@ -455,9 +477,9 @@ function pika_autoloader($class) {
 
 // todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
-	if (substr($class, 0, 4) == 'CAS_') {
-		return CAS_autoload($class);
-	}
+//	if (str_starts_with($class, 'CAS_')) {
+//		return CAS_autoload($class);
+//	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
@@ -485,29 +507,41 @@ function vufind_autoloader($class) {
 			$className = ROOT_DIR . '/services/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Covers/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
+		}elseif (file_exists('sys/Archive2/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Archive2/' . $class . '.php';
+			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){
-		    $className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
-		    require_once $className;
-        }elseif (file_exists('sys/Account/' . $class . '.php')){
-            $className = ROOT_DIR . '/sys/Account/' . $class . '.php';
-            require_once $className;
-        }elseif (file_exists('sys/' . $nameSpaceClass)){
+			$className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Account/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Account/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
 			require_once 'sys/' . $nameSpaceClass;
 		}else{
-			try {
-				include_once $nameSpaceClass;
-			} catch (Exception $e) {
-				// todo: This should fail over to next instead of throwing fatal error.
-				// PEAR_Singleton::raiseError("Error loading class $class");
-			}
+			// Appears to be for root directory classes: Action, AJAXHandler,
+			// CatalogConnection, CatalogFactory
+			@include_once $nameSpaceClass;
+			// Ignore failures, presuming we are loading classes for other auto-loaders after thism
+//			if (!class_exists($class, false)){
+//				global $pikaLogger;
+//				if ($pikaLogger){
+//					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
+//				}
+//			}
+//			else {
+//				global $pikaLogger;
+//				if ($pikaLogger){
+//					$pikaLogger->debug(__FUNCTION__ . " : loaded class '$class' (tried '$nameSpaceClass' via include path)");
+//				}
+//			}
 		}
 	}catch (Exception $e){
-		// PEAR_Singleton::raiseError("Error loading class $class");
-		// todo: This should fail over to next instead of throwing fatal error.
+		// Fail over to next loader instead of throwing error.
 	}
 }

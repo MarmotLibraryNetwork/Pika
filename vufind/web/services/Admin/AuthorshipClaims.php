@@ -29,10 +29,10 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
+require_once ROOT_DIR . '/sys/Archive2/ClaimAuthorshipRequest.php';
 class Admin_AuthorshipClaims extends ObjectEditor {
 	function getObjectType(){
-		return 'ClaimAuthorshipRequest';
+		return 'Archive2\ClaimAuthorshipRequest';
 	}
 	function getToolName(){
 		return 'AuthorshipClaims';
@@ -43,12 +43,13 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	function getAllObjects($orderBy = null){
 		$list = [];
 
-		$object = new ClaimAuthorshipRequest();
+		$object = new Archive2\ClaimAuthorshipRequest();
 		$user   = UserAccount::getLoggedInUser();
-		if (!UserAccount::userHasRole('archives')){
+		if (!UserAccount::userHasRole('opacAdmin')){
 			$homeLibrary      = $user->getHomeLibrary();
-			$archiveNamespace = $homeLibrary->archiveNamespace;
-			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
+			// If home library doesn't have a TID set it to a non-existent TID
+			$libraryTid = $homeLibrary->libraryTid ?? 28561;
+			$object->whereAdd("libraryTid = $libraryTid");
 		}
 		$object->orderBy($orderBy ?? 'dateRequested desc');
 		$object->find();
@@ -60,10 +61,10 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	}
 
 	function getObjectStructure(){
-		return ClaimAuthorshipRequest::getObjectStructure();
+		return Archive2\ClaimAuthorshipRequest::getObjectStructure();
 	}
 	function getAllowableRoles(){
-		return array('archives');
+		return ['opacAdmin', 'archives'];
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';
@@ -75,8 +76,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin', 'archives');
+		return UserAccount::userHasRoleFromList(['opacAdmin','archives']);
 	}
 
 }

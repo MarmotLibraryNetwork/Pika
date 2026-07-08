@@ -13,6 +13,9 @@
 		<br>
 
 		<div class="page">
+			{if $maxRatings}
+				<div class="alert alert-info">Only the latest 1,000 ratings are listed.</div>
+			{/if}
 			{if $ratings}
 				<table class="table table-striped" id="myRatingsTable">
 					<thead>
@@ -20,7 +23,8 @@
 						<th style="min-width: 80px;">{translate text='Date'}</th>
 						<th>{translate text='Title'}</th>
 						<th>{translate text='Author'}</th>
-						<th style="min-width: 130px;">{translate text='Star Rating'}</th>
+						<th style="min-width: 130px; white-space: nowrap;">{translate text='Star Rating'}</th>
+						<th>&nbsp;</th>
 					</tr>
 					</thead>
 					<tbody>
@@ -39,7 +43,7 @@
 							<td class="myAccountCell">
 								{$rating.author}
 							</td>
-							<td class="myAccountCell">
+							<td class="myAccountCell" style="white-space: nowrap;">
 								{* include file='GroupedWork/title-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData *}
 								<div class="title-rating"
 								     data-user_rating="{$rating.ratingData.user}"
@@ -49,7 +53,10 @@
 								>
 									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData ratingTitle=$rating.title}
 								</div>
-								<p>{$rating.review}</p>
+								<p style="white-space: normal">{$rating.review}</p>
+							</td>
+							<td>
+								<span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</span>
 							</td>
 						</tr>
 					{/foreach}
@@ -74,7 +81,8 @@
 								{"orderDataType": "dom-date"},
 								null,
 								null,
-								{"orderDataType": "dom-rating"}
+								{"orderDataType": "dom-rating"},
+								{"orderable": false}
 							],
 							pageLength: 10,
 							"order": [[0, "desc"]]
@@ -87,6 +95,9 @@
 				<div class="alert alert-info">You have not rated any titles yet.</div>
 			{/if}
 
+			{if $maxNotInterested}
+				<div class="alert alert-info">Only the latest 1,000 not interested titles are listed.</div>
+			{/if}
 			{if $notInterested}
 				<h2 class="h3">{translate text='Not Interested'}</h2>
 				<table class="myAccountTable table stripe" id="notInterestedTable">
@@ -118,18 +129,16 @@
 							return $('span', td).attr("data-date");
 						});
 					}
-					$(document).ready(function(){
+					$(function(){
 						$('#notInterestedTable').DataTable({
 							"columns":[
 								{"orderDataType": "dom-ni-date"},
 								null,
 								null,
 								{"orderable": false}
-
 							],
 							pageLength: 10,
 							"order": [[0, "desc"]]
-
 						});
 					});
 

@@ -25,9 +25,31 @@ require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
 /* Responsible for displaying video from Islandora2 */
 class Compound extends ArchiveObject
 {
+    /**
+     * Merges related people from all child objects into the parent's list,
+     * deduplicated by taxonomy term ID.
+     */
+    protected function getRelatedPeople(): array
+    {
+        $people   = parent::getRelatedPeople();
+        $seenTids = array_column($people, 'tid');
+        foreach ($this->mediaObject->getChildObjects() as $child) {
+            foreach ($child->getRelatedPerson() ?? [] as $person) {
+                $tid = $person['tid'] ?? null;
+                if ($tid !== null && !in_array($tid, $seenTids, true)) {
+                    $people[]   = $person;
+                    $seenTids[] = $tid;
+                }
+            }
+        }
+        return $people;
+    }
+
     public function launch()
     {
         global $interface;
+
+        parent::launch();
 
         $childrenData = [];
         $allAudio = true;
@@ -35,8 +57,8 @@ class Compound extends ArchiveObject
         $firstObjectModel = null;
 
         // get child objects
-        if (method_exists($this->mediaObject, 'getChildren')) {
-            $childObjects = $this->mediaObject->getChildren();
+        if (method_exists($this->mediaObject, 'getChildObjects')) {
+            $childObjects = $this->mediaObject->getChildObjects();
 
             // First pass: check if all children are the same type
             foreach ($childObjects as $childObject) {
@@ -100,7 +122,7 @@ class Compound extends ArchiveObject
                     if ($video === null) {
                         $this->logger->warning('Video media not found for compound child.', ['nid' => $childObject->getNodeId()]);
                     }
-                    $poster = $childObject->getVideoPoster();
+                    $poster = $childObject->getThumbnail();
                     $captions = $childObject->getCaptions();
 
                     // Cast captions to array
@@ -139,16 +161,16 @@ class Compound extends ArchiveObject
                 ];
             }
         } else {
-            $this->logger->error('mediaObject does not have getChildren method.', ['nid' => $this->mediaObject->getNodeId()]);
+            $this->logger->error('mediaObject does not have getChildObjects method.', ['nid' => $this->mediaObject->getNodeId()]);
         }
-
-        parent::launch();
 
         $interface->assign('children', $childrenData);
         $interface->assign('viewer', 'compound');
 
         $title = $this->mediaObject->getTitle();
-        return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+        parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
     }
+
+
 
 }

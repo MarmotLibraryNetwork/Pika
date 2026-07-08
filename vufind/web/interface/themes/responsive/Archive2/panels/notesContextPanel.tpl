@@ -1,3 +1,4 @@
+{* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
 	<div class="panel" id="notesContextPanel"><a data-toggle="collapse" href="#notesContextPanelBody">
 			<div class="panel-heading">
@@ -13,12 +14,11 @@
 				{include file="Archive2/partials/fieldRow.tpl" label="Local Note" value=$local_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Funding Note" value=$funding_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Further Site Info" value=$further_site_info}
-				{include file="Archive2/partials/fieldRow.tpl" label="Material Description" value=$material_description}
+				{*{include file="Archive2/partials/fieldRow.tpl" label="Material Description" value=$material_description}// displays in art information *}
 				{include file="Archive2/partials/fieldRow.tpl" label="Physical Description Note" value=$phys_desc_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Related Materials Note" value=$rel_materials_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Ownership Note" value=$ownership_note}
 				{include file="Archive2/partials/fieldRow.tpl" label="Reproduction Note" value=$repro_note}
-				{include file="Archive2/partials/fieldRow.tpl" label="Record Content Source" value=$record_content_source}
 				{include file="Archive2/partials/fieldRow.tpl" label="Research Level" value=$research_level}
 				{include file="Archive2/partials/fieldRow.tpl" label="Research Type" value=$research_type}
 				{include file="Archive2/partials/fieldRow.tpl" label="History" value=$history}

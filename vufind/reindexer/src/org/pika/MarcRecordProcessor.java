@@ -932,7 +932,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, RecordIdentifier identifier) {
-		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
+		// Note: ilsRecords variable has alternate manifestations for the same record, like for an order record or ILS econtent items
 
 		HashSet<String> languageNames        = new HashSet<>();
 		HashSet<String> translationsNames    = new HashSet<>();
@@ -964,7 +964,7 @@ abstract class MarcRecordProcessor {
 				if (firstIndicator == '0') {
 					// Languages in title
 					for (char subfield : Arrays.asList('a', 'b', 'd')) {
-						// 041a Language code of text/sound track or separate title
+						// 041a Language code of text/soundtrack or separate title
 						// 041b Language code of summary or abstract
 						// 041d Language code of sung or spoken text
 
@@ -973,7 +973,7 @@ abstract class MarcRecordProcessor {
 							int round = 1;
 							do {
 								// Multiple language codes can be smashed together in a single subfield,
-								// so we need to parse each three letter code and process it.
+								// so we need to parse each three-letter code and process it.
 								// (Note: this loop also has to handle for single entry language codes that
 								// are less than three letters.[probably incorrect codes])
 
@@ -984,7 +984,7 @@ abstract class MarcRecordProcessor {
 								String    languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
 									// Don't allow untranslated language codes into the facet but do allow codes
-									// that have been translated to "Unknown",etc
+									// that have been translated to "Unknown", etc.
 									languageNames.add(languageName);
 
 									if (primaryLanguage == null && subfield == 'a' && round == 1) {
@@ -995,7 +995,7 @@ abstract class MarcRecordProcessor {
 								}
 								if (length >= 3) {
 									languageCode = languageCode.substring(3);
-									// truncate the subfield data for the next round
+									// truncate the subfield data for the next round.
 									// the last round with multiple language codes will be exactly 3 long,
 									// so need to cut to 0-length to break out of loop.
 								}
@@ -1007,7 +1007,7 @@ abstract class MarcRecordProcessor {
 					// Translations
 					for (char subfield : Arrays.asList('b', 'd', 'j')) {
 						// Multiple language codes can be smashed together in a single subfield,
-						// so we need to parse each three letter code and process it.
+						// so we need to parse each three-letter code and process it.
 						// (Note: this loop also has to handle for single entry language codes that
 						// are less than three letters.[probably incorrect codes])
 
@@ -1023,7 +1023,7 @@ abstract class MarcRecordProcessor {
 								}
 								if (length >= 3) {
 									languageCode = languageCode.substring(3);
-									// truncate the subfield data for the next round
+									// truncate the subfield data for the next round.
 									// the last round with multiple language codes will be exactly 3 long,
 									// so need to cut to 0-length to break out of loop.
 								}
@@ -1220,6 +1220,14 @@ abstract class MarcRecordProcessor {
 		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
 	}
 
+	/**
+	 * Since MARC indicators are not reliably set correctly for access links,
+	 * go through some conditions for things we know are not access links.
+	 * (Cover links have several data points we can check to eliminate them from our list of candidates)
+	 *
+	 * @param urlField The MARC 856 field to analyze
+	 * @return whether this link might be an eContent link or definitely is not
+	 */
 	private boolean isLikelyEContentUrl(DataField urlField){
 		if (urlField.getIndicator2() != '2') {
 			if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
@@ -1227,25 +1235,30 @@ abstract class MarcRecordProcessor {
 				// (some image links do not have a 2nd indicator of 2)
 				// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
 
-				// 2nd indicator of 1 is designate related resource link rather than the access link but some
+				// 2nd indicator of 1 is designated related resource link rather than the access link, but some
 				// eContent does this anyway for the resource link
 				String subFieldZ = "";
 				String subField3 = "";
 				if (urlField.getSubfield('z') != null) {
 					subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
+					if (subFieldZ.contains("image")) {
+						return false; // Definitely not resource url
+					}
 				}
 				if (urlField.getSubfield('3') != null) {
 					subField3 = urlField.getSubfield('3').getData().toLowerCase();
+					if (subField3.contains("image")) {
+						return false;  // Definitely not resource url
+					}
 				}
-				return !subFieldZ.contains("image") && !subField3.contains("image");
+				return true; // Likely resource url
 			}
 		}
 		return false;
 	}
 
 	/**
-	 * @param df
-	 *          a DataField
+	 * @param df  a DataField
 	 * @return the integer (0-9, 0 if blank or other) in the 2nd indicator
 	 */
 	int getInd2AsInt(DataField df) {

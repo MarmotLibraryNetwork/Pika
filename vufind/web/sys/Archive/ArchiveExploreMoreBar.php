@@ -18,7 +18,8 @@
  */
 
 /**
- *
+ * Library setting to control which sections of the Archive Explore More sidebar are displayed
+ * and in which order.
  *
  * @category Pika
  * @author: Pascal Brammeier
@@ -37,11 +38,11 @@ class ArchiveExploreMoreBar extends DB_DataObject {
 	public $weight;
 
 	static public $archiveSections = [
-		'parentBook'           => 'Entire Book',
-		'tableOfContents'      => 'Table of Contents',
+		'parentBook'           => 'Entire Book', // TODO: Used for page Views
+		//'tableOfContents'      => 'Table of Contents',
 		'relatedCollections'   => 'Related Archive Collections',
 		'linkedCatalogRecords' => 'Librarian Picks',
-		'exactEntityMatches'   => 'Related People, Places &amp; Events',
+		//'exactEntityMatches'   => 'Related People, Places &amp; Events', // No longer applicable for Islandora2
 		'relatedPeople'        => 'Associated People',
 		'relatedPlaces'        => 'Associated Places',
 		'relatedOrganizations' => 'Associated Organizations',

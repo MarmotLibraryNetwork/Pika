@@ -262,7 +262,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 		$barcode  = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 		$password = trim($password);
 
-		// Check if user exists in database
+		// Check if the user exists in the database
 		// NOTE: the user may still exist in the database if barcode has changed. this will be checked next.
 		// this select still needs to be made so we can compare passwords and update if necessary.
 		$userExistsInDB = false;

@@ -2295,11 +2295,19 @@ class GroupedWorkDriver extends RecordInterface {
 		return $workAPI->getRatingData($this->getPermanentId());
 	}
 
+	/**
+	 * Build the Explore More sidebar data for this record's full-display page.
+	 *
+	 * Controlled by the config.ini setting [Catalog] showExploreMoreForFullRecords.
+	 * Returns an empty array when the feature is disabled.
+	 *
+	 * @return array
+	 */
 	public function getExploreMoreInfo(){
-		global $interface;
 		global $configArray;
 		$exploreMoreOptions = [];
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']){
+			global $interface;
 			$interface->assign('showMoreLikeThisInExplore', true);
 			$interface->assign('showExploreMore', true);
 			if ($this->getCleanISBN()){
@@ -2989,9 +2997,10 @@ class GroupedWorkDriver extends RecordInterface {
 		$relatedUrls               = [];
 		$availableExternallyStatus = translate('availableExternallyStatus');
 
-		$recordHoldable     = false;
-		$recordBookable     = false;
-		$recordIsHomePickUp = false;
+		$recordHoldable            = false;
+		$recordBookable            = false;
+		$recordIsHomePickUp        = false;
+		$isExternalReservationItem = false; // true when a *local* item has an external reservation URL and is not holdable
 
 		$i                 = 0;
 		$allLibraryUseOnly = true;
@@ -3004,8 +3013,6 @@ class GroupedWorkDriver extends RecordInterface {
 
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
-			$isExternalReservationItem = false;
-
 			$itemId        = $curItem->itemIdentifier;
 			$shelfLocation = $curItem->shelfLocation;
 
@@ -3116,13 +3123,13 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedUrls[] = [
 					'url' => $url
 				];
-				if (!$holdable && str_starts_with($curItem->recordIdentifier, 'ils') && ($available || $groupedStatus == 'Checked Out') /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
+				if (!$holdable && str_starts_with($curItem->recordIdentifier, 'ils') && ($available || $groupedStatus == 'Checked Out') && ($locallyOwned || $libraryOwned) /*&& $status !== $availableExternally /*&& $status == 'On Shelf'*/){
 					$isExternalReservationItem = true;
-					// Regular, available, not hold-able items with an item URL should be presumed as
+					// Regular, available, local, not hold-able items with an item URL should be presumed as
 					// items intended to be reserved externally (not in the library circulation system).
 					// Checked Out is the exceptional status to the $available check.  (Using Grouped Status, since detailed status give due date.)
 
-					// Exclude physical sideload items with the status check: str_starts_with($curItem->recordIdentifier, 'ils')
+					// Exclude physical sideload items with the check: str_starts_with($curItem->recordIdentifier, 'ils')
 					// (which will also be available, not hold-able and have an item URL)
 					$reservationPhrase = translate('Available for Reservation');
 					if ($groupedStatus == 'Checked Out'){
@@ -3285,7 +3292,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$relatedRecord['itemSummary'][$itemSummaryKey]['displayByDefault'] = true;
 				}
 				if ($itemSummaryInfo['available']){
-					// Needed for 'Available At' facet, especially if the first item that populated the itemSummary was unavailable
+					// Needed for the 'Available At' facet, especially if the first item that populated the itemSummary was unavailable
 					$relatedRecord['itemSummary'][$itemSummaryKey]['available'] = true;
 				}
 				$relatedRecord['itemSummary'][$itemSummaryKey]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
@@ -3541,7 +3548,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'WebPage';
 
 			default:
-				$this->logger->notice("No schema.org format set for $pikaFormat");
+				$this->logger->info("No schema.org format set for $pikaFormat");
 				return 'CreativeWork';
 		}
 	}
@@ -3572,7 +3579,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->notice('No schema.org book format set for ' . $pikaFormat);
+				$this->logger->info('No schema.org book format set for ' . $pikaFormat);
 			case 'Book Club Kit':
 			case 'Read-Along Book':
 			case 'Newspaper':
