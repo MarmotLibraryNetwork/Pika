@@ -341,7 +341,7 @@ class WikipediaParser {
 		$userAgent       = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 		$siteEmail       = $configArray['Site']['email'];
 		$siteURL         = $configArray['Site']['url'];
-		$version         = $interface ? rtrim($interface->getVariable('gitBranch')) : '';
+		$version         = $interface ? rtrim($interface->getTemplateVariable('gitBranch')) : '';
 		$userAgentString = "User-Agent: $userAgent/$version ($siteURL; $siteEmail)\r\n";
 		return $userAgentString;
 	}

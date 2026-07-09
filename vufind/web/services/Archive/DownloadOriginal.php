@@ -30,8 +30,8 @@ class Archive_DownloadOriginal extends Archive_Object{
 	function launch(){
 		global $interface;
 		$this->loadArchiveObjectData();
-		$anonymousMasterDownload = $interface->getVariable('anonymousMasterDownload');
-		$verifiedMasterDownload = $interface->getVariable('verifiedMasterDownload');
+		$anonymousMasterDownload = $interface->getTemplateVariable('anonymousMasterDownload');
+		$verifiedMasterDownload = $interface->getTemplateVariable('verifiedMasterDownload');
 
 		if ($anonymousMasterDownload || (UserAccount::isLoggedIn() && $verifiedMasterDownload)){
 			$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side

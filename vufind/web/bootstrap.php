@@ -49,8 +49,7 @@ $timer->logTime('Initialized Pika\Logger');
 // TODO: how does this interact with other error reporting?
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
-    // don't display warnings, smarty 2 will fill the page with them otherwise. (PHP8)
-	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_WARNING); 
+	error_reporting(E_ALL & ~E_DEPRECATED);
 } else {
 	ini_set('display_errors', 0);
 	ini_set('html_errors', 0);

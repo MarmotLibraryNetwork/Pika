@@ -23,13 +23,13 @@
 		{/if}
 {/if}
 
-{section name=listEntry loop=$listEntries}
+{foreach from=$listEntries item=listEntry}
 {*If the listEntry has a note see if it is the same work*}
-{if $listEntries[listEntry]->notes && ($listEntries[listEntry]->groupedWorkPermanentId == $title.id || $listEntries[listEntry]->groupedWorkPermanentId == $title.PID)}
-{translate text="Notes"}: {$listEntries[listEntry]->notes}
+{if $listEntry->notes && ($listEntry->groupedWorkPermanentId == $title.id || $listEntry->groupedWorkPermanentId == $title.PID)}
+{translate text="Notes"}: {$listEntry->notes}
 
 {/if}
-{/section}
+{/foreach}
 ---------------------
 {/foreach}
 {/if}

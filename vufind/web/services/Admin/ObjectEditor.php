@@ -389,7 +389,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	function display($mainContentTemplate = null, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
 		global $interface;
 		if (empty($mainContentTemplate)){
-			$mainContentTemplate = $interface->getVariable('pageTemplate'); // The main template may get set in other places in Object Editor
+			$mainContentTemplate = $interface->getTemplateVariable('pageTemplate'); // The main template may get set in other places in Object Editor
 		}
 		if (empty($pageTitle)){
 			$pageTitle = $this->getPageTitle();

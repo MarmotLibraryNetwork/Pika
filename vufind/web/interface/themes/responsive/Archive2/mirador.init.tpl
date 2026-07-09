@@ -137,4 +137,4 @@ var viewer = Mirador.viewer({
         },
     },
 });
-{/literal }
+{/literal}

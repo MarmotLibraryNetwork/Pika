@@ -31,7 +31,7 @@
  *                  pass into <link> tag.
  * -------------------------------------------------------------
  */
-function smarty_function_css($params, &$smarty)
+function smarty_function_css($params, \Smarty\Template $template)
 {
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;
@@ -60,5 +60,5 @@ function smarty_function_css($params, &$smarty)
 
 	// We found the file -- build the link tag:
 	$media = isset($params['media']) ? " media=\"{$params['media']}\"" : '';
-	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getVariable('gitBranch')) . "\">";
+	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getTemplateVariable('gitBranch')) . "\">";
 }

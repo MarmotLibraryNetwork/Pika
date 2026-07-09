@@ -30,18 +30,19 @@
  * -------------------------------------------------------------
  *
  * @param array  $params  Incoming parameter array
- * @param Smarty|UInterface|object &$smarty Smarty object
+ * @param \Smarty\Template $template Smarty template object
  *
  * @return string        <script> tag for including Javascript
  */ // @codingStandardsIgnoreStart
-function smarty_function_js($params, &$smarty){
+function smarty_function_js($params, \Smarty\Template $template){
 	// @codingStandardsIgnoreEnd
 	// Extract details from the config file, Smarty interface and parameters
 	// so we can find CSS files:
 	global $configArray;
+	global $interface;
 
 	$local    = $configArray['Site']['local'];
-	$themes   = explode(',', $smarty->getPikaTheme());
+	$themes   = explode(',', $interface->getPikaTheme());
 	$themes[] = 'default';
 	$filename = $params['filename'];
 
@@ -69,6 +70,5 @@ function smarty_function_js($params, &$smarty){
 	}
 
 	// We found the file -- build the script tag:
-//	global $interface;
-	return "<script src=\"$js?v=" . urlencode($smarty->getVariable('gitBranch')) . '"></script>';
+	return "<script src=\"$js?v=" . urlencode($interface->getTemplateVariable('gitBranch')) . '"></script>';
 }

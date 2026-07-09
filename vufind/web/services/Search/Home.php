@@ -76,7 +76,7 @@ class Search_Home extends Action {
 ////			$browseResults = $browseAJAX->getBrowseCategoryInfo(reset($browseCategories)->textId);
 ////			$interface->assign('browseResults', $browseResults);
 		}
-		if (!$interface->get_template_vars('browseMode')){
+		if (!$interface->getTemplateVars('browseMode')){
 			$interface->assign('browseMode', 'covers'); // fail safe: if no browseMode is set at all, go with covers
 		}
 
