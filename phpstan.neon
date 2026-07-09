@@ -1,0 +1,9 @@
+parameters:
+  level: 1
+  paths:
+    - vufind/web
+  excludePaths:
+    - vufind/web/sys/tuque
+    - vufind/web/PEAR
+  # Legacy codebase — suppress noisy checks until incrementally fixed
+  reportUnmatchedIgnoredErrors: false

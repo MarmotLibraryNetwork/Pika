@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: composer
+    directory: /install
+    schedule:
+      interval: weekly
+    # Security updates only — feature bumps are handled deliberately at release time
+    open-pull-requests-limit: 0

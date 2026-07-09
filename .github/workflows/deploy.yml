@@ -1,0 +1,109 @@
+name: Deploy
+
+# ---------------------------------------------------------------------------
+# Deployment model
+#
+#   * Every Pika server runs a self-hosted GitHub Actions runner registered
+#     with labels:  self-hosted, pika, <environment>, <instance>
+#     e.g.  [self-hosted, pika, test, marmot]  on the marmot.test server.
+#
+#   * Push to the active release branch (repo variable ACTIVE_RELEASE_BRANCH,
+#     e.g. "2026.02.0")            ->  deploys to all TEST servers.
+#   * Push a version tag (v20*, e.g. "v2026.02.1")
+#                                  ->  deploys to all PRODUCTION servers,
+#                                      gated by the "production" GitHub
+#                                      Environment (required reviewers).
+#   * workflow_dispatch            ->  deploy any ref to either environment
+#                                      by hand (also used for rollback: run
+#                                      it from an older tag).
+#
+#   Instance lists come from repo variables TEST_INSTANCES and
+#   PRODUCTION_INSTANCES: JSON arrays such as
+#     ["marmot","clearview","flatirons","lion","wcpl"]
+#
+# The deploy job runs *locally on each Pika server* (git pull in place,
+# composer install, Smarty cache clear, Apache reload, DB updates, smoke
+# test) via .github/scripts/deploy.sh — no SSH keys involved.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches:
+      - "20[0-9][0-9].[0-9][0-9].*"   # release branches -> test
+    tags:
+      - "v20*"                        # version tags -> production
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "test"
+        type: choice
+        options:
+          - test
+          - production
+
+jobs:
+  # CI must pass before anything is deployed
+  ci:
+    name: CI checks
+    uses: ./.github/workflows/ci.yml
+
+  deploy-test:
+    name: "Deploy to test: ${{ matrix.instance }}"
+    needs: ci
+    if: |
+      (github.event_name == 'push' &&
+       github.ref_type == 'branch' &&
+       github.ref_name == vars.ACTIVE_RELEASE_BRANCH) ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.environment == 'test')
+    environment: test
+    concurrency:
+      group: deploy-test-${{ matrix.instance }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        instance: ${{ fromJson(vars.TEST_INSTANCES) }}
+    runs-on:
+      - self-hosted
+      - pika
+      - test
+      - ${{ matrix.instance }}
+    steps:
+      # Checkout only to get the current deploy script; the site itself is
+      # updated in place at /usr/local/pika by the script.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Deploy ${{ github.ref_name }} to ${{ matrix.instance }}.test
+        run: bash .github/scripts/deploy.sh "${{ matrix.instance }}.test" "${{ github.ref_name }}"
+
+  deploy-production:
+    name: "Deploy to production: ${{ matrix.instance }}"
+    needs: ci
+    if: |
+      (github.event_name == 'push' &&
+       github.ref_type == 'tag') ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.environment == 'production')
+    # Configure required reviewers on this GitHub Environment to gate
+    # production deploys behind a manual approval.
+    environment: production
+    concurrency:
+      group: deploy-production-${{ matrix.instance }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        instance: ${{ fromJson(vars.PRODUCTION_INSTANCES) }}
+    runs-on:
+      - self-hosted
+      - pika
+      - production
+      - ${{ matrix.instance }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Deploy ${{ github.ref_name }} to ${{ matrix.instance }}.production
+        run: bash .github/scripts/deploy.sh "${{ matrix.instance }}.production" "${{ github.ref_name }}"
