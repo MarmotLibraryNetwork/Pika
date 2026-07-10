@@ -1,0 +1,57 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color);
+
+@include vertical-align-library-name-header;
+
+
+// Adopting Nashville styling of browse categories
+@include nashville-selected-browse-label-search;
+
+@include hide-selected-browse-label-background;
+
+@include sacramento-browse-category($selectedCategoryColor, $browse-category-font-size);
+
+#browse-category-carousel .browse-category {
+  &.selected button {
+    color: #fff;
+  }
+}
+
+@include sacramento-browse-category-pickers($browseCarouselControlColor);
+
+
+/* this controls the subcategory menu button are and menu buttons on browse */
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    padding: 6px 10px;
+  }
+}
+
+@include hide-browse-category-results-divider;
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading {
+    background: $accordion-header-bg-color;
+  }
+
+  .active .panel-heading {
+    background: $accordion-active-header-bg-color;
+  }
+
+  .panel, .panel-heading {
+    border-radius: 0;
+  }
+
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}

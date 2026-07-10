@@ -1,0 +1,22 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-container {
+  background-image: url('/interface/themes/msc_resp/images/header_background.png');
+}
+
+@include header-login-button-mixin;
+
+
+#browse-category-picker .browse-category {
+  &.selected {
+    background: $cmu-accent-yellow;
+
+    button {
+      color: $cmu-text-color-for-yellow;
+    }
+  }
+}

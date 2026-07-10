@@ -1,0 +1,162 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color, $header-buttons-color);
+a .header-button {
+  text-transform: uppercase;
+  border: 2px solid $spl-orange;
+
+  &:hover {
+    background-color: $spl-darker-orange;
+  }
+}
+
+a#headerLogoutLink > .header-button {
+  background-color: #fff;
+  border: 1px solid $spl-orange;
+
+  &:hover {
+    background-color: #FAEDC5;
+  }
+}
+
+#header-logo {
+  padding-top: 20px;
+}
+
+//.vertical-align-library-name-header;
+
+// Adopting Nashville styling of browse categories
+#main-content-with-sidebar > .row.breadcrumbs,
+#home-page-browse-header {
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
+}
+
+@include nashville-selected-browse-label-search;
+
+@include hide-selected-browse-label-background;
+
+@include sacramento-browse-category($selectedCategoryColor, $browse-category-font-size, 60px, $spl-border-gray, $selectedCategoryBorderColor);
+
+@include sacramento-browse-category-pickers($browseCarouselControlColor);
+
+
+// this controls the subcategory menu button are and menu buttons on browse
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    padding: 6px 10px;
+  }
+
+  button {
+    &.selected {
+      border: 1px solid $selectedCategoryBorderColor;
+    }
+  }
+}
+
+@include hide-browse-category-results-divider;
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading {
+    background: $accordion-header-bg-color;
+  }
+
+  .active .panel-heading {
+    background: $accordion-active-header-bg-color;
+  }
+
+  .panel, .panel-heading {
+    border-radius: 0;
+  }
+
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}
+
+
+// Search Box Modifications
+#home-page-search-label {
+  text-shadow: none;
+
+  .bi-search {
+    display: none;
+  }
+}
+
+.searchTypeHome, .searchSource {
+  color: #333;
+  background-color: #fff;
+}
+
+// Hide the library hours and library home page
+// (Hide from screen readers)
+#home-page-library-section {
+  > a:nth-child(1), > a:nth-child(2) {
+    display: none;
+  }
+}
+
+.panel-group > a {
+  text-decoration-color: #333;
+  color: #333;
+}
+
+#more-details-accordion, #account-settings-accordion, #link-accordion {
+  .active {
+    .panel-title {
+      color: $accordion-active-header-color;
+      text-shadow: 1px 1px #fff;
+    }
+  }
+}
+
+.sidebar-links {
+  .panel {
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          text-shadow: 1px 1px #fff;
+        }
+      }
+    }
+  }
+}
+
+//TODO: I think this should go into the main styling.
+#refineSearch ~ #home-account-links {
+  padding-top: 15px;
+}
+
+.sidebar-label {
+  font-weight: bold;
+}
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+@include verticalAlignThumbnailArt;
+
+.btn-primary, .btn-info {
+  &:hover {
+    background-color: $spl-green;
+    border-color: #7BAD42;
+  }
+}
+
+
+@include sacramento-sidebar-button;
+
+// Return Now button.  Had bad side effects. Turned off
+//.btn-warning {
+//  &:hover {
+//    background-color: #E9E9E9;
+//    border-color:$btn-warning-border;
+//  }
+//}

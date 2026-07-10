@@ -1,0 +1,210 @@
+// Main Styling Sheet for Grand County Library District
+
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+
+// Library CSS Overrides
+
+// header //
+
+
+.breadcrumb {
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+#header-container {
+  border-bottom: none;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+
+.system-message-header {
+  //background-color: #fff;
+  //color: #FF0000;  // Not enough contrast
+  font-weight: bold;
+  text-align: center;
+  padding: 3px;
+}
+
+a .header-button {
+  //background-color: #8DC532FF;
+  //background: -moz-linear-gradient(top,  rgba(255,255,255,0) 0%, rgba(141,197,50,1) 100%); /* FF3.6-15 */
+  //background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /*     Chrome10-25,Safari5.1-6 */
+  //background: linear-gradient(to bottom,  rgba(255,255,255,0) 0%,rgba(141,197,50,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  //filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#8dc532',GradientType=0 ); /* IE6-9 */
+  font-size: x-large;
+  //line-height: 82px;
+  //vertical-align: middle;
+  //color: #003A68;
+}
+
+a .header-button:hover {
+  //background-color: #8DC532FF;
+  border: 2px solid $gcldDarkBlue;
+}
+
+/**** browse categories ****/
+
+// custom styling of main browse category carousel
+@include noCarouselBrowseCategoriesMixin();
+@include noCarouselSelectedCategoryMixin($gcldDarkBlue);
+
+#browse-category-carousel .browse-category.selected {
+  button {
+    color: $gcldDarkBlue;
+    text-shadow: 1px 1px #fff;
+  }
+
+  background: #80d2f1;
+  //background: #4A7A8D; // (4.7 AA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4A7A8D
+}
+
+#home-page-browse-header {
+  background-color: #fff;
+  padding-bottom: 15px;
+}
+
+@include browse-label-center-line($gcldDarkBlue, $gcldDarkBlue);
+
+#browse-label {
+  height: 4px;
+  margin-top: 1px;
+}
+
+#browse-category-carousel .browse-category {
+  padding-top: 5px;
+  padding-bottom: 3px;
+
+  button {
+    height: auto;
+    line-height: normal;
+  }
+}
+
+/**** left sidebar ****/
+
+
+#searchSource {
+  margin: 5px 0 0;
+  color: #fff;
+  background-color: $gcldDarkBlue;
+  border: medium none;
+  width: 90%;
+}
+
+#searchSource > option {
+  background-color: $gcldDarkBlue;
+  color: #fff;
+}
+
+// Use theme default
+//.form-control:focus {
+//  border-color: #3497D1;
+//  outline: 0 none;
+//  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
+//}
+
+#home-page-login {
+  text-shadow: none;
+  background-color: #fff;
+  font-size: 18px;
+  margin: 1px;
+  margin-top: 15px;
+  padding: 2px;
+}
+
+#home-page-login a {
+  color: #000;
+  font-size: 110%;
+}
+
+
+/**** left sidebar links ****/
+
+.panel-group .panel {
+  border-radius: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.sidebar-button,
+.sidebar-links .active .panel-heading,
+.sidebar-links .panel-heading,
+#narrow-search-label, // This sets the label texts to background color; TODO: this won't be accessible (and applies to
+#remove-search-label,
+#results-sort-label,
+#similar-authors-label {
+  background: none repeat scroll 0 0 $gcldDarkBlue;
+  border: none;
+  border-radius: 5px;
+//  color: $gcldDarkBlue; // Shouldn't hide the text
+}
+
+.facetList > .facetTitle, .facetList > .panel-title {
+  color: #000;
+  text-align: left;
+}
+
+.sidebar-links .active .panel-title,
+.sidebar-links .panel-title,
+.sidebar-label,
+#results-sort-label,
+#similar-authors-label {
+  color: #fff;
+  //font-size: 14px
+  padding-left: 15px;
+  font-weight: bold;
+  text-align: left;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+#home-page-hours-locations, #home-page-home-button {
+  border-radius: 5px;
+}
+
+.sidebar-links .panel-body {
+  //background-color: #fff;
+  color: #333;
+  //font-size: 15px; // this should be the default now
+}
+
+.sidebar-links .panel-heading {
+  border-bottom: medium none;
+  padding: 5px 15px;
+}
+
+.panel-heading {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+@include hideMenuHr;
+
+#home-page-library-section {
+  //background-color: #fff;
+  height: 100%;
+  padding: 15px 0;
+}
+
+#home-page-hours-locations {
+  margin-bottom: 1px;
+}
+
+.facetTitle {
+  border-bottom: none;
+  text-shadow: none;
+}
+
+.facetValue {
+  color: #000;
+  font-size: 14px;
+  padding-left: 30px;
+}
+

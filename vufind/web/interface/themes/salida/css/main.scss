@@ -1,0 +1,68 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-logo {
+  //background-color: white; // added background shading
+  //border-radius: 0.5em;
+  padding: 4px 0;
+  margin-top: 12px;
+}
+
+@include header-login-button-mixin;
+
+#horizontal-search-label,
+#keepFiltersSwitchLabel, #advancedSearchLink,
+#horizontal-search-box #horizontal-search-label {
+  color: $home-search-label-color;
+}
+
+#horizontal-search-box .searchSourceHorizontal, #horizontal-search-box .searchTypeHorizontal {
+  border: inherit;
+}
+
+#home-page-login, #home-page-search-label, .browse-category {
+  text-shadow: 1px 1px $salida-light-gray;
+}
+
+@include browse-label-center-line(#aaa, $salida-main-font-color);
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    box-shadow: none;
+  }
+}
+
+#browse-sub-category-menu {
+  button.selected {
+    border: 2px solid $selectedCategoryBorderColor;
+    color: $selectedCategoryBorderColor;
+    //background-color: $selectedCategoryColor;
+  }
+}
+
+body {
+  background-image: url('https://www.salidalibrary.org/wp-content/uploads/2023/12/Monarch-Ski-Resort-2013.jpg');
+  background-position: center top;
+  background-size: auto;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#footer-container {
+  background-color: #32393F;
+  color: #FFF;
+  a {
+    color: #fff;
+    text-decoration: dotted underline;
+  }
+}
+
+#footer-pika-logo {
+  background-color: #FFF;
+  padding: 4px;
+  border-radius: 4px;
+}
+

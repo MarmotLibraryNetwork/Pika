@@ -1,0 +1,41 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin; // use login button styling
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+@include verticalAlignThumbnailArt();
+
+
+body {
+  background-image: url('../images/evld-background.jpg');
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#content-container, #content-container > .row, #footer-container .navbar,
+.selected-browse-label-search {
+  background-color: #fff;
+}
+
+.btn-primary, #more-browse-results {
+  &:hover {
+    background-color: $evld-button-hover-yellow;
+  }
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    border: 1px solid #ccc;
+
+    &:hover {
+      background-color: $evld-button-hover-yellow;
+    }
+  }
+}

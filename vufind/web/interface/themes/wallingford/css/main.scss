@@ -1,0 +1,83 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color, #FFF, 0, 40px);
+a .header-button{
+  border-radius:0 0 0.1em 0.1em;
+  margin: 0 20px;
+
+  &:hover{
+    box-shadow: none;
+    background: $wallingford-primary;
+  }
+}
+
+#header-logo {
+  padding: 5px 10px 0 0;
+  max-height: $header-logo-max-height;
+}
+
+// Browse Category customizations based on AnyThink
+@include anythink-browse-label($browse-label-text-color);
+
+@include browse-category($selectedCategoryColor);
+
+@include anythink-browse-category-picker($browseCarouselControlColor, $selectedCategoryColor, $content-bg);
+
+@include anythink-selected-browse-label($browse-label-text-color);
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+@include verticalAlignThumbnailArt();
+
+#horizontal-search-box {
+  background-image: url('../images/search-bg.svg'), linear-gradient(180deg, #272858 50%, #f5f5f5 50%);
+  background-repeat: repeat-x;
+
+  #horizontal-search-label{
+    color: $wallingford-color-light;
+  }
+}
+
+.alert{
+  a {
+    color: #FFF;
+
+    &:hover{
+      color: $alert-info-color;
+      text-shadow: 0 0 15px $alert-shadow;
+    }
+  }
+}
+
+.alert-info{
+  color: $alert-info-color;
+}
+.alert-danger{
+  color: $alert-info-color;
+}
+.alert-warning {
+  color: $alert-info-color;
+}
+.alert-success{
+  a {
+    color: $alert-info-bg;
+    &:hover{
+      color: $wallingford-color-dark;
+      text-shadow: 0 0 15px lighten($alert-info-bg, .2);
+    }
+  }
+}
+#sidebar-content{
+  background-color: #fff;
+}
+.breadcrumbs, .breadcrumb{
+  background-color: #FFFF;
+}
+
+#browse-category-picker .jcarousel-control-next, #browse-category-picker .jcarousel-control-prev{
+  z-index: 2;
+}

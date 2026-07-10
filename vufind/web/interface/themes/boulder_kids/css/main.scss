@@ -1,0 +1,70 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+// Can't find an element with this id.
+//#header-container-header {
+//  font-family: "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+//  color: $green-boulder;
+//  white-space: nowrap;
+//  /*padding-left: 175px;*/
+//  padding-top: 40px;
+//}
+
+#library-name-header {
+  white-space: nowrap;
+  padding-top: 40px;
+}
+
+@include header-login-button-mixin(#fff, #333);
+a .header-button {
+  border: 1px solid #ccc;
+
+  &:hover {
+    color: #333;
+    background-color: #ebebeb;
+    border-bottom: 4px solid #adadad;
+  }
+}
+
+// Header Links
+// (mimics homepage menu bar)
+//#header-links {
+//  background: $blue-boulder;
+//  border-bottom: 1px dotted #111;
+//
+//  .header-link-wrapper {
+//    border: none;
+//    padding: 15px;
+//
+//    a {
+//      color: white;
+//      font-size: 18.66px;
+//    }
+//
+//    &:hover {
+//      background-color: #fff;
+//      a {
+//        color: #161616;
+//      }
+//    }
+//  }
+//}
+
+
+// Search Boxes
+.searchTypeHome {
+  background-color: #fff;
+  color: #000;
+}
+
+#horizontal-search-box {
+  background: $blue-boulder;
+}
+
+// Browse Categories
+.browse-category {
+  border-radius: 10px;
+}

@@ -1,0 +1,360 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+
+// Log-in & Out buttons
+a .header-button {
+  color: $bwml-color-white;
+  border-color: transparent;
+  background-color: $bwml-color-olive-green;
+  margin-top: 5px;
+  text-shadow: none;
+  font-weight: bold;
+  transition: .3s;
+
+  // Gets rid of the blue thick border under the button when mousing over
+  &:hover {
+    background-color: $bwml-color-bloodstone;
+    color: $bwml-color-white;
+    border-color: $bwml-color-bloodstone;
+    //border-bottom: 1px solid #adadad;
+  }
+}
+
+/* Gets rid of the blue thick border under the button when mousing over */
+// library override
+a .header-button:hover {
+  border-bottom: 1px solid #adadad !important;
+}
+
+/*Replaces the look of the mouseover on the login buttons*/
+// library override
+a .header-button:hover {
+  border-bottom: 4px solid #7B1405;
+}
+
+
+// Gets the border around the button
+.header-primary {
+  border: 1px solid #ccc
+}
+
+// Gets rid of the blue links that underline the text
+a#headerLogoutLink, a#headerLogoutLink, a#headerMyAccountLink {
+  color: #333;
+}
+
+
+//#browse-label, // Horizontal link on both sides of the words Browse the Catalog
+//.browse-label-text { // Background and text for Browse the Catalog
+//  display: none;
+//}
+
+//styles the arrows on both side of the browse categories
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    text-shadow: none;
+  }
+  .jcarousel-pagination a.active {
+    background:$selectedbrowseCarouselPaginationBackgroundColor; //styles the active circle for a browse category
+  }
+}
+
+// styles the box around the carousel arrows
+.jcarousel-control-next, .jcarousel-control-prev {
+  box-shadow: none;
+  //TODO: needed for non-browse carousels?
+}
+
+// the category text
+#browse-category-carousel .browse-category {
+  button {
+    color: $browse-label-text-color; //TODO: add to main stylesheet
+    text-shadow: none;
+    font-size: $browse-category-font-size;
+    &:focus {
+      outline: none; // hide outlining of clicked category
+    }
+  }
+
+  // Puts the green box around the carousel item that is selected
+  &.selected {
+    border: none;
+    background-color: $selectedCategoryColor;
+    background: $selectedCategoryColor;
+
+    // Drives the white text in each selected browse box
+    button {
+      color: #fff;
+      text-shadow: none;
+      height: 50px;  // Makes the button text center on the colored part above the shading
+    }
+  }
+  a { // Keeps the links green when mousing over the boxes in the carousel
+    &:visited, &:hover, &:active {
+      color: $bwml-color-olive-green;
+    }
+  }
+}
+
+// Drives the color for the horizontal rule for the name of the selected browse list
+#selected-browse-label {
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, $bwml-color-olive-green 30%, $bwml-color-olive-green 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  //TODO: repeat scroll needed in main stylesheet?
+}
+
+#header-container {
+  border-bottom: none;
+  min-height:65px;
+}
+
+
+  #lookfor{
+    border-radius:0;
+    background: $bwml-color-antique;
+    resize: none;
+  }
+
+//// Left search side-bar menu
+
+// This is the big SEARCH box at the top
+.home-page-search {
+  background: linear-gradient(to bottom, $bwml-color-olive-green, $bwml-color-olive-green) repeat scroll 0 0 rgba(0, 0, 0, 0);
+}
+
+.searchTypeHome {
+  background-color: $bwml-color-burgandy;
+}
+
+// Mouseover for the Facet Categories
+.facetTitle:hover, .exploreMoreTitle:hover {
+  text-decoration: underline;
+}
+
+
+//// Digital Archive Adjustments ////
+.active > a:focus .panel-title{
+  text-shadow: none;
+}
+#explore-more-body {
+  .panel-body {
+    a {
+      color: #333;
+    }
+  }
+}
+// Explore More overrides
+#explore-more-header {
+  font-variant: none;
+}
+
+// Carousel Arrows
+
+#explore-more-body .jcarousel-control-next, #explore-more-body .jcarousel-control-prev,
+.exploreMoreBar .jcarousel-control-next, .exploreMoreBar  .jcarousel-control-prev {
+  color: $bwml-color-burgandy;
+  text-shadow: none;
+}
+
+.bi-chevron-left:before {
+  color: $bwml-color-burgandy;
+}
+
+.bi-chevron-right:before {
+  color: $bwml-color-burgandy;
+}
+
+@media (min-width: 701px) {
+  .exhibit-thumbnail {
+    float: right;
+  }
+}
+
+
+// Library CSS Overrides
+
+/*** Browse Boxes & Header ***/
+
+
+
+/* Drives the color for the Magnifying Glass and the name of the selected browse list */
+.selected-browse-label-search a {
+  color: $bwml-color-burgandy;
+}
+
+/* Drives the color for the horizontal rule for the name of the selected browse list */
+#selected-browse-label {
+  background: linear-gradient(to bottom, #FFFFFF, #FFFFFF 50%, $bwml-color-burgandy 30%, $bwml-color-burgandy 33%, #FFFFFF 56%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+  margin-bottom: 5px;
+}
+
+/*** Horizontal Search Box ***/
+
+#header-container {
+  border-bottom: 0;
+}
+
+
+/**** Search Results Page Buttons ****/
+
+/* Colors the Place Hold buttons from green to grey on mouseover */
+.btn-primary:active, .btn-primary:focus, .btn-primary:hover {
+  color: #333;
+  background-color: #ebebeb;
+  border-color: #adadad;
+}
+
+/* Styles the Vertically stacked buttons that appear if you show editions */
+
+.btn-info {
+  background-color: #a3a60f;
+  border-color: #adadad;
+}
+
+a.btn.btn-sm.btn-default {
+  color: #333;
+}
+
+.btn-group-vertical > .btn:hover, .btn-group > .btn:hover {
+  background-color: #ebebeb;
+  border-color: #adadad;
+  color: #333;
+}
+
+/* Styles the Prospector Button */
+#prospectorLinkSection {
+  .btn-info {
+    background-color: #646510;
+    border-color: #4e4f0d;
+    color: #fff;
+    &:active, &:hover {
+      background-color: #ebebeb;
+      border-color: #adadad;
+      color: #333;
+    }
+  }
+}
+
+/****Digital Archive Display****/
+
+/*Moves the TWW Jacket image to the right so that the TOC flow better*/
+.img-responsive.thumbnail.exhibit-thumbnail {
+  float: left;
+  max-height: 250px;
+}
+
+/*Gets the text in the description to align with the title on a Collection Homepage*/
+.lead.row {
+  margin-left: auto;
+}
+
+/*Browse Categories Boxes on the Archive Homepage*/
+.archiveComponentBox {
+  background-color: white;
+}
+
+.archiveComponentContainer .archiveComponent .archiveComponentBody a, .archiveComponentContainer .archiveComponent .archiveComponentBody a:visited {
+  color:$link-color;
+}
+
+.archiveComponentContainer .archiveComponent {
+  color: $bwml-color-white;
+  background:$bwml-color-avocado;
+}
+
+.archiveComponentContainer .archiveComponent .archiveComponentHeader {
+  width: 100%
+}
+
+.archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
+  margin-right: 10px;
+}
+
+#basicSearchTypes,#searchSource,#genealogySearchTypes{
+  background: $bwml-color-antique;
+  color: $bwml-color-bloodstone;
+}
+
+#horizontal-search-button-container button[type=submit]{
+  background: $bwml-color-burgandy;
+  color: $bwml-color-antique;
+  border: 1px #CCC solid;
+  border-radius:0;
+  transition: .3s;
+  &:hover{
+    text-decoration: underline;
+    color: $bwml-color-white;
+  }
+}
+#keepFiltersSwitchLabel, #advancedSearchLink{
+  font-size:95%;
+}
+
+#footer-container{
+  position: relative;
+  padding-left: 0;
+  padding-top: 0;
+  &::before {
+    content: "";
+    display: block;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    background: $bwml-color-antique;
+    opacity: .95;
+  }
+}
+
+.navbar.navbar-static-bottom{
+  margin-bottom:0;
+  padding-bottom:20px;
+  padding-left: 40px;
+}
+
+.panel-heading, .sidebar-links .active .panel-heading, #explore-more-menu .exploreMoreTitle.panel-title, #explore-more-menu .active .exploreMoreTitle.panel-title{
+  border-color: #fef4ed;
+  background-color: $bwml-color-antique;
+}
+
+#home-account-links .panel-title, #home-library-links .panel-title, #explore-more-menu .panel-title{
+  color: $bwml-color-black;
+  text-shadow: none;
+}
+
+.breadcrumbs{
+  background-color: #ffffff;
+}
+
+#content-container .breadcrumbs{
+  background: $bwml-color-antique;
+  .breadcrumb{
+    background-color: transparent;
+  }
+}
+#sidebar-content{
+  background-color: #ffffff;
+  margin-top:-5px;
+}
+
+.sidebar-links .panel-body{
+  border: 2px solid $bwml-color-antique;
+}
+
+.facetTitle{
+  background-color: $bwml-color-antique;
+}
+#explore-more-header{
+ background-color: $bwml-color-burgandy;
+  text-align: center;
+  color: $bwml-color-white;
+  padding: 7px 0;
+  font-weight:normal;
+}
+
+#more-browse-results{
+  background-color: $bwml-color-antique;
+  color: $bwml-color-black;
+}

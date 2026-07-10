@@ -1,0 +1,78 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@font-face {
+  font-family: 'Roboto', sans-serif;
+}
+
+//body {
+//  font-family: 'Roboto', sans-serif;
+//}
+
+#header-logo {
+  padding-top: 20px;
+}
+
+a .header-button {
+  border: none;
+  border-radius: 35px;
+  font-weight: bold;
+
+  &:hover {
+    border: 1px solid #ccc;
+    text-decoration: none;
+  }
+}
+
+#searchSource {
+  color: $purple-louisville;
+}
+
+#browse-category-picker .browse-category {
+  border-radius: 10px;
+
+  &:hover {
+    background: #f6f6f6;
+  }
+
+  button {
+    text-shadow: none;
+    font-weight: bold;
+    min-height: 55px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &.selected {
+    font-size: 18px;
+    background: $green-louisville;
+
+    button {
+      color: #fff;
+    }
+
+    &:hover {
+      background-color: $green-louisville;
+    }
+  }
+}
+
+//#browse-label { // Every page needs a h1 heading for accessibility
+//  display: none;
+//}
+
+.jcarousel-control-next, .jcarousel-control-prev {
+  box-shadow: none;
+}
+
+.sidebar-links .panel-heading {
+//  background: #e7e7e7;
+}
+
+.sidebar-links .active .panel-heading {
+  background: $purple-louisville;
+}

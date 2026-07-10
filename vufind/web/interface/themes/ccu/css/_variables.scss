@@ -1,0 +1,48 @@
+//Variables Customizations for CCU theme
+
+$ccu-dark-blue: #00416B;
+$ccu-light-blue: #42b4e4;
+$ccu-yellow: #FCD823;
+
+//$ccu-light-blue: #0A7CC1; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0A7CC1
+$ccu-light-blue: #1C7DB7;   // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=1C7DB7
+
+
+$header-bg-color: $ccu-dark-blue; //Top color for background gradient in header
+$header-bottom-border-color: #000000;
+$footer-top-border-color: $ccu-dark-blue;
+
+$header-height: 98px;
+$header-logo-height: 88px;
+$header-bottom-border-width:3px;
+
+$home-search-top-color: $ccu-dark-blue;
+$home-search-bottom-color: $ccu-dark-blue;
+
+$menu-bar-background-color:$ccu-dark-blue;
+$menu-bar-selected-background-color: $ccu-light-blue;
+
+
+$btn-primary-bg: $ccu-yellow;
+$btn-primary-color: #333;
+
+// Home Page Browse Category More Results button
+$more-browse-results-bg-color: $ccu-light-blue;
+$more-browse-results-color: #d4d4d4;
+
+
+$category1MainColor: $ccu-light-blue;
+//$categoryLineColor: #ffffff;
+//$categoryLineShadow: #ffffff;
+//$selectedCategoryBorderColor: #ffffff;
+
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $ccu-yellow;
+
+// Selected Category color to give a highlighted appearance
+//$selectedCategoryColor: $ccu-light-blue;
+//$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+// set opened accordions color
+$accordion-active-header-bg-color: $ccu-light-blue;

@@ -1,0 +1,51 @@
+//Variables Customizations for Aspencat theme
+$font-family-sans-serif-resp: "HalisR-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+$aspencat-blue: #50A647; // official hexcode
+$aspencat-yellow: #8C3183; //official hexcode
+
+$header-bg-color: #fff;
+$header-bottom-border-color: $aspencat-yellow;
+$header-bottom-border-width: 3px;
+$footer-top-border-color: $aspencat-blue;
+$header-height: 120px;
+
+$home-search-top-color: $aspencat-blue; //Top color for background gradient in header
+$sidebar-link-color: $aspencat-yellow;
+$menu-bar-background-color: $aspencat-blue;
+$menu-bar-selected-background-color: $aspencat-yellow;
+
+$home-search-bottom-color: $aspencat-blue;
+
+
+$header-buttons-background-color : $aspencat-blue;
+
+$library-display-name-color: $aspencat-blue;
+$library-display-name-font-size: 26px;
+$library-display-name-font: "HalisR-SRegular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+//$menu-bar-background-color: $home-search-bottom-color;
+
+
+$category1MainColor: #ffffff;
+$categoryLineColor: #ffffff;
+$categoryLineShadow: #ffffff;
+$selectedCategoryBorderColor: #ffffff;
+
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $aspencat-yellow;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $aspencat-yellow;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+$browse-label-text-color: $aspencat-blue;
+$browse-category-text-color: $browse-label-text-color;
+$selected-browse-label-search-color: $aspencat-blue;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $aspencat-blue;
+
+// Primary Button Color
+$btn-primary-bg: $aspencat-blue;

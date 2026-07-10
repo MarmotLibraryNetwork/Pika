@@ -1,0 +1,24 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+// Main Styling for Pine River Library
+
+@include header-login-button-mixin($pineriverdarkblue);
+
+a .header-button:hover {
+  background: $pinerivergrey;
+}
+
+//.header-login-button-mixin;
+
+
+#header-logo {
+  padding: 0;
+}
+
+#browse-category-carousel .browse-category.selected {
+  background: $selectedCategoryColor;
+}

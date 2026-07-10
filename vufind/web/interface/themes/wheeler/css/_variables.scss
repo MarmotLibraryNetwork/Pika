@@ -1,0 +1,64 @@
+//$lion-light-blue: #9dd1f2;
+//$lion-dark-blue: #130840;
+//$lion-menu-blue: #74C1F2;
+
+//$wheeler-light-blue: #ACC9C9;
+//$wheeler-dark-green: #215959;
+//$wheeler-menu-red: #6D0D21;
+//$wheeler-menu-selected-yellow: #F4CD8B;
+//$wheeler-menu-selected-darkened-yellow: #F4CD8B;
+//$wheeler-main-content-light-brown: #EBE4DE;
+//$wheeler-side-bar-dark-brown: #D2CBC5;
+
+//$wheeler-blue: #6699cc;
+$wheeler-blue: #3674B3; // (4.87) // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=3674B3
+//$wheeler-green: #66cc66;
+$wheeler-green: #028102; // (5.06) // https://webaim.org/resources/contrastchecker/?fcolor=028102&bcolor=FFFFFF
+
+$header-height: 100px;
+$header-logo-height: 95px;
+$header-logo-max-height: none;
+
+$home-search-top-color: $wheeler-blue;
+$home-search-bottom-color: $wheeler-blue;
+
+//$sidebar-link-color: $lion-light-blue;
+$menu-bar-background-color: $wheeler-blue;
+$menu-bar-selected-background-color: $wheeler-green;
+
+$header-bg-color: #fff;
+
+$header-bottom-border-color: #fff;
+$footer-top-border-color: $wheeler-green;
+
+
+$home-page-login-background-color: $wheeler-green;
+/*$home-page-login-color: */
+
+$header-buttons-background-color : $wheeler-blue;
+
+$btn-primary-bg: $wheeler-blue;
+
+$category1MainColor: #ffffff;
+$categoryLineColor: #ffffff;
+$categoryLineShadow: #ffffff;
+$selectedCategoryBorderColor: #ffffff;
+
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $wheeler-blue;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $wheeler-blue;
+$selectedSubCategoryBackgroundColor: $wheeler-blue;
+
+
+$browse-label-text-color: $wheeler-green;
+$browse-category-text-color: $wheeler-green;
+$selected-browse-label-search-color: $wheeler-green;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $wheeler-blue;
+
+
+$library-display-name-color: $wheeler-green;

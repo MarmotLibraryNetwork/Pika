@@ -1,0 +1,61 @@
+$lyme-tan: #D4C7B2;
+$lyme-light-tan: #EAE3D1;
+$lyme-purple: #320DCE; // (10.07) // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=320DCE
+
+$--e-global-color-primary:#6E4555;
+$--e-global-color-secondary:#8F9888;
+$--e-global-color-text:#756E62;
+$--e-global-color-accent:#EBC676;
+$--e-global-color-5c44fa77:#F8DFB0;
+$--e-global-color-660c2c1:#EBC676;
+$--e-global-color-2bbf4110:#000;
+$--e-global-color-253bb082:#FFF;
+
+$header-height: 150px;
+$header-logo-height: 130px;
+$header-logo-max-height: none;
+//$header-logo-height: $header-height;
+
+
+$home-search-top-color: $lyme-tan; //Top color for background gradient in header
+$home-search-bottom-color: $lyme-tan;
+$home-search-label-color: #000;
+
+//$sidebar-link-color: $lion-light-blue;
+$menu-bar-background-color: $lyme-tan;
+$menu-bar-selected-background-color: $lyme-light-tan;
+$menu-bar-color: #000;
+$menu-bar-selected-color: #000;
+
+$header-bg-color: #fff;
+
+$header-bottom-border-color: #fff;
+$footer-top-border-color: $lyme-tan;
+
+
+$header-buttons-background-color : $lyme-purple;
+
+$btn-primary-bg: $lyme-purple;
+
+$category1MainColor: #fff;
+$categoryLineColor: #fff;
+$categoryLineShadow: #fff;
+$selectedCategoryBorderColor: #fff;
+
+$browseCarouselControlBackgroundColor: #fff;
+$browseCarouselControlColor: $lyme-purple;
+
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $lyme-light-tan;
+$selectedSubCategoryBackgroundColor: $lyme-light-tan;
+$selectedSubCategoryFontColor: #000;
+
+
+$browse-label-text-color: $lyme-purple;
+$browse-category-text-color: $lyme-purple;
+$selected-browse-label-search-color: $lyme-purple;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $lyme-purple;

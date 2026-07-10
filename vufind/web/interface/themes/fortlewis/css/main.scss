@@ -1,0 +1,21 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+// Main Styling for Fort Lewis College
+
+@include header-login-button-mixin;
+
+#header-logo {
+  padding-top: 0;
+  max-height: none;
+}
+
+#browse-category-carousel .browse-category.selected {
+  background-color: $selectedCategoryColor;
+  button {
+    color: $selectedSubCategoryFontColor;
+  }
+}

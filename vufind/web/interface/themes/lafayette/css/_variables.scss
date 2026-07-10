@@ -1,0 +1,78 @@
+// Variables for Flatirons Consortium styling
+$font-family-sans-serif-resp: 'Open Sans', verdana, sans-serif;
+// Colors taken from current catalog homepage
+$light-blue: #1A79CA; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=1A79CA
+$light-green: #597635;
+$bright-green: #207217; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=207217
+$grey-lafayette: #3b3f43;
+$mid-blue: #3276b1; // (4.81) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=3276B1
+
+$lafayette-light-green: #89ce00; // against $grey-lafayette (5.5) https://webaim.org/resources/contrastchecker/?fcolor=3B3F43&bcolor=89CE00
+
+$blue-boulder-background : #E1EAF4;
+$green-louisville-background : #E0E4D4;
+$purple-broomfield-background: #D7D4E0;
+
+$bright-purple : #7C14B8;
+
+
+
+// Header Variables
+$system-message-bg: #E8F4FA;
+
+//$header-height: 90px;
+$header-bg-color: #fff;
+$header-bottom-border-color: #fff;
+
+
+// Search Box color
+$home-search-top-color: $grey-lafayette; //Top color for background gradient in header
+$home-search-bottom-color: $grey-lafayette; //Bottom color for background gradient in header
+
+//Home Page Browse Category labels
+//$browse-header-background-color: $green-louisville-background; //#d7dce3;
+//$browse-label-text-color: $blue-boulder-text;
+//$browse-label-line-color: $blue-boulder-text;
+
+//Home Page Browse categories
+$browseCarouselControlBackgroundColor: #fff;
+
+$browse-category-font-size: 15px;
+
+$categoryLineShadow: #fff;
+$categoryLineColor: #fff;
+$browse-category-text-color: $grey-lafayette;
+$category1MainColor: #fff;
+$selectedCategoryBorderColor: $lafayette-light-green;
+
+//$category2MainColor: $category1MainColor;
+//$category3MainColor: $category1MainColor;
+//$category4MainColor: $category1MainColor;
+//$category5MainColor: $category1MainColor;
+//$category6MainColor: $category1MainColor;
+//$category7MainColor: $category1MainColor;
+//$category8MainColor: $category1MainColor;
+//$category9MainColor: $category1MainColor;
+$browseCarouselControlColor: $grey-lafayette;
+$selectedSubCategoryBackgroundColor: $lafayette-light-green;
+$selectedSubCategoryFontColor: $grey-lafayette;
+
+
+// Menu
+$menu-bar-background-color: $grey-lafayette;
+$menu-bar-selected-background-color: $mid-blue;
+
+// Accordions
+$accordion-active-header-bg-color: $grey-lafayette;
+$panel-border-radius: 0;
+
+$breadcrumb-bg:#fff;
+
+$home-page-login-background-color: $light-blue;
+$header-buttons-background-color: $light-blue;
+$header-buttons-color:#fff;
+
+$alert-info-text: black;
+
+// Sidebar buttons
+$sidebar-button-bg-color: $grey-lafayette;

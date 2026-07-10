@@ -1,0 +1,31 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-logo {
+  //max-width: 100%;
+  //max-height: none;
+}
+
+.loginOptions > a#headerLoginLink, .logoutOptions > .hidden-xs {
+  float: right;
+  width: 200px;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: scale(0.9);
+  }
+}
+
+a .header-button {
+  border-radius: 50px;
+  border: none;
+  text-shadow: none;
+
+  &:hover {
+    border: none;
+  }
+}
+

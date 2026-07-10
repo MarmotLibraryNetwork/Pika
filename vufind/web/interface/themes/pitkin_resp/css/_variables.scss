@@ -1,0 +1,56 @@
+//Variables Customizations for Pitkin theme
+$pitkin-line-black: #333;
+$pitkin-logo-gray: #717174;
+$pitkin-active-blue: #5183BF;
+$pitkin-sidebar-menu-gray: #3339;
+$pitkin-heading-gray: #939396;
+//$pitkin-green: #799a28;
+$pitkin-green: #58830A; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=58830A
+$pitkin-link-blue: #5183bf;
+$pitkin-menu-option-white: #fff;
+
+$pitkin-blue: #3D6DA6;
+//$pitkin-orange: #D94605;
+$pitkin-orange: #D14905; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=D14905
+
+$system-message-bg: transparent;
+$header-top-color: transparent;
+$header-bottom-border-color: #333;
+$footer-top-border-color: #333;
+$header-height: 130px;
+
+
+//$header-buttons-background-color : rgba(#fff, .6); // try lighter
+//$header-buttons-background-color : rgba(#fff, .56);
+
+// with logo with white text
+$header-buttons-background-color : rgba(51,51,51,0.6);
+
+$menu-bar-background-color: $pitkin-green;
+$menu-bar-selected-background-color: $pitkin-blue;
+
+$home-search-top-color: #e0e0e1;
+$home-search-bottom-color: #e0e0e1;
+$home-search-label-color: #000;
+
+$btn-primary-bg: $pitkin-orange;
+$accordion-active-header-bg-color: $pitkin-blue;
+$accordion-header-bg-color: $home-search-top-color;
+$accordion-header-bottom-gradient-color: $home-search-bottom-color;
+//TODO: create color variables for search facet accordions
+
+$category1MainColor: $pitkin-menu-option-white;
+
+$categoryLineColor: $pitkin-menu-option-white;
+$categoryLineShadow: $pitkin-menu-option-white;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $pitkin-active-blue;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+$selectedCategoryBorderColor: $pitkin-sidebar-menu-gray;
+
+$browseCarouselControlBackgroundColor: #fff;
+$browseCarouselControlColor: $pitkin-green;
+$browse-category-text-color: $pitkin-heading-gray;
+$browse-label-text-color: $pitkin-green;
+//$browse-label-line-color: #fff;

@@ -1,0 +1,29 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-container {
+  background: none;
+}
+
+#horizontal-search-box {
+  //background-color: $aims-black;
+  padding: 15px 0;
+}
+
+.btn, .btn-sm {
+  border-radius: 0;
+}
+
+// Browse Category customizations based on AnyThink
+@include anythink-browse-label($browse-label-text-color);
+
+@include browse-category($selectedCategoryColor);
+
+@include anythink-browse-category-picker($browseCarouselControlColor, $selectedCategoryColor, $content-bg);
+
+@include anythink-selected-browse-label($browse-label-text-color);
+
+

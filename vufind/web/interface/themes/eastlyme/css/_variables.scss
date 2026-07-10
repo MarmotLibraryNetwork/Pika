@@ -1,0 +1,92 @@
+$eastlyme-red: #790000;
+
+$easthampton-blue: #0065b8;
+$easthampton-red: #d8191b;
+$easthampton-purple: #9556a4;
+
+//Variables Customizations for Salida theme
+$header-bg-color: #fff;
+$footer-top-border-color: #333333;
+$header-height: 120px;
+$header-logo-max-height: none;
+
+
+$btn-primary-bg: $eastlyme-red;
+$library-display-name-color: $eastlyme-red;
+
+// with logo with white text
+//$header-buttons-background-color : rgba(51,51,51,0.6);
+$header-buttons-background-color : $eastlyme-red;
+
+
+$salida-light-gray: #FAFAFA;
+$salida-medium-gray-button-color: #AAAAAA;
+$salida-light-blue-search-button-color: #DDE8F4;
+$salida-main-font-color: #000;
+
+//$brand-primary: $salida-light-blue-search-button-color;
+
+$header-bottom-border-color: $salida-medium-gray-button-color;
+$footer-top-border-color: $salida-medium-gray-button-color;
+
+
+$home-search-top-color: $easthampton-blue;
+$home-search-bottom-color: $easthampton-blue;
+
+// Sidebar Login Section
+$home-page-login-color: $salida-main-font-color;
+$home-page-login-background-color: #FFF;
+
+
+
+//Accordions
+$accordion-active-header-bg-color: #e6e6e6;
+$accordion-active-header-color: $salida-main-font-color;
+
+$accordion-header-bg-color: $salida-light-gray;
+$accordion-active-header-shadow-color: #c0c0c0;
+$accordion-active-header-shadow-color: #c0c0c0;
+
+//$accordion-header-top-gradient-color: $salida-light-gray;
+//$accordion-header-bottom-gradient-color: $salida-light-gray;
+
+$category1MainColor: #fff;
+$categoryLineColor: #fff;
+$categoryLineShadow: #fff;
+$selectedCategoryBorderColor: #fff;
+
+
+$browseCarouselControlBackgroundColor: #fff;
+$browseCarouselControlColor: $eastlyme-red;
+//$category2MainColor: $category1MainColor;
+//$category3MainColor: $category1MainColor;
+//$category4MainColor: $category1MainColor;
+//$category5MainColor: $category1MainColor;
+//$category6MainColor: $category1MainColor;
+//$category7MainColor: $category1MainColor;
+//$category8MainColor: $category1MainColor;
+//$category9MainColor: $category1MainColor;
+$selectedCategoryBorderColor: $salida-main-font-color;
+
+//Home Page Browse Category labels
+$home-page-browse-content-background-color: #fff;
+$browse-label-text-color: $salida-main-font-color;
+$selected-browse-label-search-color: $salida-main-font-color;
+$browse-category-font-size: 30px;
+
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryBorderColor: #000;
+$selectedCategoryColor: #FFF;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+$selectedSubCategoryFontColor: $eastlyme-red;
+
+//Menu Bar Variables
+$menu-bar-background-color: $easthampton-blue;
+$menu-bar-selected-background-color: $eastlyme-red;
+
+//$menu-bar-background-color: $salida-medium-gray-button-color;
+//$menu-bar-color: #FFF;
+//$vertical-menu-bar-width: 40px;
+//$menu-bar-selected-background-color: tint($menu-bar-background-color, 50%);
+//$menu-bar-selected-color: #FFF;
