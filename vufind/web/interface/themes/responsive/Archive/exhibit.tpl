@@ -48,7 +48,7 @@
 			<div class="exploreMoreContainer">
 				<div class="jcarousel-wrapper" id="scrollExploreMore">
 					{* Scrolling Buttons *}
-					<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></button>
+					<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="bi bi-chevron-left"></i></button>
 
 
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
@@ -69,7 +69,7 @@
 							{/foreach}
 						</ul>
 					</div>
-					<button class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></button>
+					<button class="jcarousel-control-next" aria-label="Next Category"><i class="bi bi-chevron-right"></i></button>
 				</div>
 			</div>
 		</div>
@@ -153,7 +153,7 @@
 		<div id="nextInsertPoint" class="text-center">
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreExhibitResults('{$pid|urlencode}')" aria-label="Load more objects">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
 		</div>

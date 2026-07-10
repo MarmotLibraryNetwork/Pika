@@ -29,7 +29,7 @@
 		<th>Grouped Work ID</th>
 		<td><span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 			{if $userIsStaff}
-				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			{/if}
 		</td>
 	</tr>

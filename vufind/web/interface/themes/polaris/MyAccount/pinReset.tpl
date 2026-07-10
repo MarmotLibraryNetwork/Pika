@@ -29,11 +29,11 @@
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');"
 									        class="btn btn-outline-secondary" type="button">
-										<span class="glyphicon glyphicon-eye-close" aria-hidden="true"
+										<span class="bi bi-eye-slash" aria-hidden="true"
 										      title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>
 										</span>
-										<span class="glyphicon glyphicon-eye-open" style="display: none"
+										<span class="bi bi-eye" style="display: none"
 										      title="Hide {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>
@@ -58,11 +58,11 @@
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')"
 									        class="btn btn-outline-secondary" type="button">
-										<span class="glyphicon glyphicon-eye-close" aria-hidden="true"
+										<span class="bi bi-eye-slash" aria-hidden="true"
 										      title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>
 										</span>
-										<span class="glyphicon glyphicon-eye-open" style="display: none"
+										<span class="bi bi-eye" style="display: none"
 										      title="Hide {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>
@@ -86,11 +86,11 @@
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 								        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')"
 								        class="btn btn-outline-secondary" type="button">
-										<span class="glyphicon glyphicon-eye-close"
+										<span class="bi bi-eye-slash"
 										      aria-hidden="true" title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>
 										</span>
-										<span class="glyphicon glyphicon-eye-open"
+										<span class="bi bi-eye"
 														style="display: none" title="Hide {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>

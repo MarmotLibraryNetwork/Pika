@@ -68,7 +68,7 @@
 			</div>
 
 			<button type="button" id="more-browse-results" onclick="return Pika.Browse.getMoreResults()" aria-label="Load more results for browse category">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 
 		</div>

@@ -164,7 +164,7 @@
 									<li>
 										<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{else} href="#" onclick='return false;'{/if}> {* only add link on un-selected options *}
 											{translate text=$sortData.desc}
-											{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
+											{if $sortData.selected} <span class="bi bi-check-lg" aria-hidden="true"></span>{/if}
 										</a>
 									</li>
 								{/foreach}

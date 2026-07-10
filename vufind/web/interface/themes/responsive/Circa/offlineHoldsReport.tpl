@@ -15,7 +15,7 @@
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control" >
 									<span class="input-group-text">
-								<span class="glyphicon glyphicon-calendar"
+								<span class="bi bi-calendar3"
 								      onclick="$('#startDate').focus().datepicker('show')"
 								      aria-hidden="true">
 								</span>
@@ -29,7 +29,7 @@
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control">
 									<span class="input-group-text">
-							<span class="glyphicon glyphicon-calendar"
+							<span class="bi bi-calendar3"
 							      onclick="$('#endDate').focus().datepicker('show')"
 							      aria-hidden="true">
 								</span>

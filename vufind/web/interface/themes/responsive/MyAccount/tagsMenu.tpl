@@ -14,7 +14,7 @@
 							<div class="myAccountLink">
 								<a href='/Search/Results?lookfor={$tag->tag|escape:"url"}&amp;basicType=tag'>{$tag->tag|escape:"html"}</a> ({$tag->cnt})&nbsp;
 								<button class="btn btn-link" onclick="return Pika.Account.removeTag('{$tag->tag}');" title="Delete Tag">
-									<span class="glyphicon glyphicon-remove-circle">&nbsp;</span>
+									<span class="bi bi-x-circle">&nbsp;</span>
 								</button>
 							</div>
 						{/foreach}

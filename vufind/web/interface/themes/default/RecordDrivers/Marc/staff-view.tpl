@@ -7,7 +7,7 @@
 		</div>
 		{if $userIsStaff}
 			<div class="col-sm-2">
-				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
@@ -16,7 +16,7 @@
 		<div id="recordIdCol" class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">{$id}</div>
 		{if $userIsStaff}
 			<div class="col-sm-2">
-				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('recordIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('recordIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>

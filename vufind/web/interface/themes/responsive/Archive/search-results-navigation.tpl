@@ -8,7 +8,7 @@
 			<div id="previousRecordLink" class="previous">
 				{if isset($previousUrl)}
 					<a href="{$previousUrl}" onclick="Pika.Archive.setForExhibitNavigation({$previousIndex}{if $previousPage},{$previousPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$previousTitle}{translate text='Previous'}{else}{$previousTitle|truncate:180:"..."|escape:'html'}{/if}">
-						<span class="glyphicon glyphicon-chevron-left"></span> Prev
+						<span class="bi bi-chevron-left"></span> Prev
 					</a>
 				{/if}
 			</div>
@@ -33,7 +33,7 @@
 			<div id="nextRecordLink" class="next">
 				{if isset($nextUrl)}
 					<a href="{$nextUrl}" onclick="Pika.Archive.setForExhibitNavigation({$nextIndex}{if $nextPage},{$nextPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$nextTitle}{translate text='Next'}{else}{$nextTitle|truncate:180:"..."|escape:'html'}{/if}">
-						Next <span class="glyphicon glyphicon-chevron-right"></span>
+						Next <span class="bi bi-chevron-right"></span>
 					</a>
 				{/if}
 			</div>
@@ -43,7 +43,7 @@
 			<div id="previousRecordLink" class="previous">
 				{if isset($previousUrl)}
 					<a href="{*/*}{$previousUrl}?searchId={$searchId}&amp;recordIndex={$previousIndex}&amp;page={if isset($previousPage)}{$previousPage}{else}{$page}{/if}" title="{if !$previousTitle}{translate text='Previous'}{else}{$previousTitle|truncate:180:"..."|escape:'html'}{/if}">
-						<span class="glyphicon glyphicon-chevron-left"></span> Prev
+						<span class="bi bi-chevron-left"></span> Prev
 					</a>
 				{/if}
 			</div>
@@ -55,7 +55,7 @@
 			<div id="nextRecordLink" class="next">
 				{if isset($nextUrl)}
 					<a href="{*/*}{$nextUrl}?searchId={$searchId}&amp;recordIndex={$nextIndex}&amp;page={if isset($nextPage)}{$nextPage}{else}{$page}{/if}" title="{if !$nextTitle}{translate text='Next'}{else}{$nextTitle|truncate:180:"..."|escape:'html'}{/if}">
-						Next <span class="glyphicon glyphicon-chevron-right"></span>
+						Next <span class="bi bi-chevron-right"></span>
 					</a>
 				{/if}
 			</div>

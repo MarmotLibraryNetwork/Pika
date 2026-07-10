@@ -20,7 +20,7 @@
 				<input type="hidden" id="{$propName}Id_{$subObject->id}" name="{$propName}Id[{$subObject->id}]" value="{$subObject->id}">
 				{if $property.sortable}
 					<td>
-					<span class="glyphicon glyphicon-resize-vertical"></span>
+					<span class="bi bi-arrows-vertical"></span>
 					<input type="hidden" id="{$propName}Weight_{$subObject->id}" name="{$propName}Weight[{$subObject->id}]" value="{$subObject->weight}">
 					</td>
 				{/if}
@@ -65,18 +65,18 @@
 					{* link to delete *}
 				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required');updateDeleteNotice{$propName}(){literal}}{/literal};return false;">
 					{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-					<span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
+					<span class="bi bi-x-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
 				</a>
 				{if $property.editLink neq ''}
 					&nbsp;<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' aria-label='Edit SubLinks' title='Edit SubLinks'>
-						<span class="glyphicon glyphicon-link" title="edit links">&nbsp;</span>
+						<span class="bi bi-link-45deg" title="edit links">&nbsp;</span>
 					</a>
 				{elseif $property.canEdit}
 					{if method_exists($subObject, 'getEditLink')}
 						{assign var="editLink" value=$subObject->getEditLink()}
 							{if $editLink}
 								&nbsp;<a href='{$editLink}' title='Edit'>
-									<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
+									<span class="bi bi-pencil-square" title="edit">&nbsp;</span>
 								</a>
 						{/if}
 					{else}
@@ -88,7 +88,7 @@
 						{assign var="directLink" value=$subObject->getDirectLink()}
 						{if $directLink}
 						&nbsp;<a href='{$subObject->getDirectLink()}' title='Direct Link'>
-							<span class="glyphicon glyphicon-link" >&nbsp;</span>
+							<span class="bi bi-link-45deg" >&nbsp;</span>
 						</a>
 						{/if}
 					{else}
@@ -107,7 +107,7 @@
 
 	{* Notice displayed when rows are marked for deletion but not yet saved *}
 	<div id="{$propName}DeleteNotice" class="alert alert-warning" role="alert" style="display:none; margin-top:5px;">
-		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp;
+		<span class="bi bi-exclamation-circle-fill" aria-hidden="true"></span>&nbsp;
 		<strong><span class="warning" id="{$propName}DeleteCount"></span></strong> item(s) marked for deletion. Click <strong>Save Changes</strong> to process.
 	</div>
 
@@ -176,7 +176,7 @@
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}
-				/* newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>"; */
+				/* newRow += "<td><span class='bi bi-arrows-vertical'></span>"; */
 				newRow += "<td>"; /* hide the sort column icon for newly added rows */
 				newRow += "<input type='hidden' id='{$propName}Weight_" + numAdditional{$propName} +"' name='{$propName}Weight[" + numAdditional{$propName} +"]' value='" + (100 - numAdditional{$propName})  +"'>";
 				newRow += "</td>";

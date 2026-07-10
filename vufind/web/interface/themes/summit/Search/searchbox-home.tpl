@@ -7,7 +7,7 @@
 	<div class="col-12">
 		<div class="row">
 			<div class="d-sm-none d-md-block-inline col-lg-12 text-center">
-				<label id="home-page-search-label" for="lookfor">SEARCH <span class="glyphicon glyphicon-search" aria-hidden="true"></label></span>
+				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></label></span>
 			</div>
 		</div>
 		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">

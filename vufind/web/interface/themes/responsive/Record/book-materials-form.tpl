@@ -17,7 +17,7 @@
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-text"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
 			{*<div class="form-group col-md-5 ui-front">
@@ -40,7 +40,7 @@
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-text"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
 			{*<div class="form-group col-md-5 ui-front">

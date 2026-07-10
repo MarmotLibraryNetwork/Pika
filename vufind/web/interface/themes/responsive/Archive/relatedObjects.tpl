@@ -144,19 +144,19 @@
 
 			{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
 				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" aria-label="Load more objects">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="bi bi-chevron-down" aria-hidden="true"></span>
 				</button>
 			{elseif $displayType == 'timeline'}
 				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="bi bi-chevron-down" aria-hidden="true"></span>
 				</button>
 			{elseif $displayType == 'scroller'}
 				<button type="button" id="more-browse-results" onclick="return Pika.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" aria-label="Load more objects">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="bi bi-chevron-down" aria-hidden="true"></span>
 				</button>
 			{else}
 				<button type="button" role="button" onclick="return Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="bi bi-chevron-down" aria-hidden="true"></span>
 				</button>
 			{/if}
 		{/if}

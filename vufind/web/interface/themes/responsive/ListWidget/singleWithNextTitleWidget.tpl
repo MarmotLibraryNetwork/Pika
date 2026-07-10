@@ -13,7 +13,7 @@
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
 			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();">
-				<i class="glyphicon glyphicon-chevron-right"></i>
+				<i class="bi bi-chevron-right"></i>
 			</div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>

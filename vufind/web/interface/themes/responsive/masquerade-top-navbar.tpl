@@ -4,7 +4,7 @@
 			<div class="row">
 				<div id="masquerade-header-title" class="col-7 col-sm-8 col-md-4 col-xl-3">
 					<h4>
-						<span class="glyphicon glyphicon-sunglasses"></span>
+						<span class="bi bi-sunglasses"></span>
 						&nbsp;
 						Masquerade Mode
 					</h4>

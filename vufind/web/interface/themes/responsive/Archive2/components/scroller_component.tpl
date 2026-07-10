@@ -11,7 +11,7 @@
 		{/if}
 		<div class="exploreMoreContainer">
 			<div class="jcarousel-wrapper" id="scrollCollection{$browseCollectionNid}">
-				<button class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="jcarousel-control-prev"><i class="bi bi-chevron-left"></i></button>
 				<div class="exploreMoreItemsContainer jcarousel">
 					<ul>
 						{foreach from=$browseCollectionItems item=item name="loop"}
@@ -32,7 +32,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<button class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="jcarousel-control-next"><i class="bi bi-chevron-right"></i></button>
 			</div>
 		</div>
 	</div>

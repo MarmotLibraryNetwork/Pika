@@ -114,8 +114,8 @@
 					{* An empty div; This is the target for the javascript that builds this screen *}
 					<div id="searchHolder"></div>
 
-					<button class="btn btn-outline-secondary" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
-					<button class="btn btn-outline-secondary" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-circle"></span>&nbsp;{translate text="Clear Search"}</button>
+					<button class="btn btn-outline-secondary" onclick="addGroup();return false;"><span class="bi bi-plus-lg"></span>&nbsp;{translate text="add_search_group"}</button>
+					<button class="btn btn-outline-secondary" onclick="resetSearch();return false;"><span class="bi bi-x-circle"></span>&nbsp;{translate text="Clear Search"}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
 					<button type="submit" class="btn btn-primary float-end">{translate text="Find"}</button>
 					<br><br>

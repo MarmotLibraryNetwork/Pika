@@ -56,7 +56,7 @@
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Searches.getMoreResults()" aria-label="Load more search results">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
 	{else}

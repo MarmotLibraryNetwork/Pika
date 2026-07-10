@@ -92,25 +92,25 @@ class Admin_Variables extends ObjectEditor {
 		$actions = [];
 		if ($existingObject && $existingObject->id != ''){
 			$actions[] = [
-				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp',
+				'text' => '<span class="bi bi-clock" aria-hidden="true"></span> Set to Current Timestamp',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->id,
 			];
 			$actions[] = [
-				'text' => '<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Increase by 10,000',
+				'text' => '<span class="bi bi-arrow-up" aria-hidden="true"></span> Increase by 10,000',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->id,
 			];
 			$actions[] = [
-				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 1,000',
+				'text' => '<span class="bi bi-arrow-down" aria-hidden="true"></span> Decrease by 1,000',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->id,
 			];
 			if ($existingObject->value == '1' || $existingObject->value == 'true'){
 				$actions[] = [
-					'text' => '<span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Set to false',
+					'text' => '<span class="bi bi-dash-circle-fill" aria-hidden="true"></span> Set to false',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
 				];
 			}elseif ($existingObject->value == '0' || $existingObject->value == 'false'){
 				$actions[] = [
-					'text' => '<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Set to true',
+					'text' => '<span class="bi bi-plus-circle-fill" aria-hidden="true"></span> Set to true',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
 				];
 			}
