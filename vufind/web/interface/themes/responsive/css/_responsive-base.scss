@@ -1,0 +1,398 @@
+//
+// Main responsive theme css (Bootstrap 5 / SCSS)
+//
+// Import order matters:
+//   1. bootstrap functions        — needed before variables can use them
+//   2. Pika variables (!default)  — library themes set their variables BEFORE importing
+//                                   this file, so their values win over these defaults
+//   3. bootstrap 5                — all Bootstrap defaults yield to the values set above
+//   4. bootstrap-icons            — icon font (replaces glyphicons)
+//   5. bs3-compat                 — temporary shims while templates migrate to BS5 markup
+//   6. Pika base rules + feature partials
+//
+
+//Default values for variables
+$navbarCollapseWidth: 480px !default;
+$navbarCollapseDesktopWidth: 481px !default;
+$horizontalComponentOffsetNarrow: 80px !default;
+
+@import "bootstrap/scss/functions";
+@import "variables";
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons";
+@import "bs3-compat";
+@import "pika-utilities";
+
+//
+//  Basic Style overrides
+//
+
+// (Bootstrap 3's .tab-focus() mixin override is gone; the equivalent focus outlines
+//  are applied via the a:focus / :focus rules below using $focus-ring-color.)
+
+// Mixin to use on links in order to distinguish from text without relying on color (Accessibility 1.4.1)
+@mixin link-decorating-mixin($link-color: $darkened-link-color-resp){
+  color: $link-color;
+  text-decoration: underline dotted;
+}
+
+a:focus {
+  outline: $focus-ring-color 2px solid;
+}
+
+a:hover {
+  color: darken($link-color-resp, 10%);
+}
+
+@media print {
+  a:link:after,
+  a:visited:after {
+    content: "" !important;
+  }
+}
+
+// Skip block navigation
+// (HTML and styling (originally scss) for skip block navigation taken from https://developer.mozilla.org )
+
+.a11y-nav {
+  position: absolute;
+  top: -20em;
+  width: 100%;
+  z-index: 10000; // var(--z-index-a11y); //  10000
+
+  a {
+    background-color: rgba(255, 255, 255, 0.9);
+    font-weight: bold; // var(--font-body-strong-weight); // 600
+    left: 0;
+    padding: 0.5rem;
+    position: absolute;
+    right: 0;
+    text-align: center;
+
+    &:hover,
+    &:focus {
+      box-shadow: 0 1px 2px rgba(43,42,51,.05); // var(--shadow-01); // 0 1px 2px rgba(43,42,51,.05);
+      text-decoration: none;
+      top: 20em;
+    }
+  }
+}
+
+#more-details-accordion .panel-body, .related-manifestation table {
+  a:not(.btn) {
+    @include link-decorating-mixin;
+  }
+}
+
+body {
+  font-family: $font-family-sans-serif-resp;
+  background-color: $body-bg-resp;
+  color: $body-text-color;
+  > .container {
+    background-color: $content-bg;
+  }
+}
+
+.noBreak {
+  white-space: nowrap;
+}
+
+.collapsed, .expanded {
+  cursor: pointer;
+}
+
+.fieldset-collapsed {
+  overflow: hidden;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  div, fieldset {
+    display: none;
+  }
+}
+
+.fieldset-collapsible-label {
+  color: #256292;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.fieldset-collapsible-label:before {
+  content: "▼ ";
+}
+
+.fieldset-collapsed .fieldset-collapsible-label {
+  background-position: 4px 4px;
+}
+
+.fieldset-collapsed .fieldset-collapsible-label:before {
+  content: "► ";
+}
+
+
+.accordion {
+  .panel-title.collapsed:before {
+    content: "► ";
+    @media print {
+      content: "";
+    }
+  }
+
+  .panel-title.expanded:before {
+    content: "▼ ";
+    @media print {
+      content: "";
+    }
+  }
+}
+
+.panel .panel-title:before {
+  content: "► ";
+  @media print {
+    content: "";
+  }
+}
+
+.panel.active .panel-title:before {
+  content: "▼ ";
+  @media print {
+    content: "";
+  }
+}
+
+@mixin panel-heading-gradient($start-color: $accordion-header-top-gradient-color, $end-color: $accordion-header-bottom-gradient-color){
+  .panel-heading {
+    @include gradient-y($start-color, $end-color);
+  }
+}
+
+// accordion mixin
+@mixin accordion-headers-and-titles(
+  $accordion-header-bg-color: $accordion-header-bg-color,
+  $accordion-active-header-bg-color: $accordion-active-header-bg-color,
+  $accordion-header-color: $accordion-header-color,
+  $accordion-active-header-color: $accordion-active-header-color,
+  $accordion-header-shadow: 1px 1px $accordion-header-shadow-color,
+  $accordion-active-header-shadow: 1px 1px $accordion-active-header-shadow-color,
+  $accordion-header-border-color: $accordion-header-border-color
+){
+  .panel-heading {
+    background-color: $accordion-header-bg-color;
+    border: 1px solid $panel-inner-border;
+  }
+
+  .panel-title {
+    color: $accordion-header-color;
+    text-shadow: $accordion-header-shadow;
+  }
+
+  .active {
+    .panel-heading {
+      background-color: $accordion-active-header-bg-color;
+    }
+
+    .panel-title {
+      color: $accordion-active-header-color;
+      text-shadow: $accordion-active-header-shadow;
+    }
+
+    > a:hover {
+      text-decoration: underline $accordion-active-header-color; // keep the title's link underlining the same color as the title
+    }
+
+    > a:focus {
+      text-decoration: none;
+      .panel-title {
+        text-shadow: 1px 1px $focus-ring-color;
+      }
+    }
+
+    > a:visited {
+      text-decoration: none;
+    }
+  }
+}
+@include accordion-headers-and-titles;
+
+// Modals
+// (Bootstrap 3 positioned the .modal element itself with left/negative margin; in
+//  Bootstrap 5 the .modal is the full-viewport overlay and sizing belongs on .modal-dialog.)
+.modal-dialog {
+  width: 80%;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media(max-width: $screen-xs-max) {
+    width: 98%;
+    max-width: 98%;
+  }
+}
+
+.modal-buttons {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+// top-right close button (legacy BS3 markup; Phase 4 replaces button.close with button.btn-close)
+.modal-header .close {
+  margin-top: -10px;
+  font-size: 43px; // 40px was too small to meet WCAG 2.2 standard : 2.5.8 Target Size (Minimum)
+  opacity: .4;
+}
+
+.btn:active, .btn.active {
+  font-weight: bold;
+}
+
+.btn-toolbar {
+  @media print {
+    display: none;
+  }
+}
+
+.btn-group {
+  @media print {
+    display: none;
+  }
+}
+
+.nav-tabs {
+  margin-bottom: 0;
+}
+
+@media print {
+  #header-wrapper, #side-bar {
+    display: none;
+  }
+}
+
+.bold {
+  font-weight: bold;
+}
+
+ul.list-striped, ol.list-striped {
+  > li:nth-child(odd),
+  > li:nth-child(odd) {
+    background-color: $table-bg-accent;
+  }
+}
+
+div.striped {
+  > div:nth-child(odd),
+  > div:nth-child(odd) {
+    background-color: $table-bg-accent;
+  }
+}
+
+// Library Admin Page
+#propertyRowfacets {
+  overflow-x: scroll;
+}
+
+// Google translate
+#google_translate_element {
+  font-size: smaller;
+  padding-left: 5px;
+}
+
+.goog-te-gadget {
+  display: inline-block;
+}
+
+.form-control:focus {
+  border: 1px solid $focus-ring-color;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(225, 95, 21, 0.7);
+}
+
+.btn-default:focus {
+  border-color: $focus-ring-color;
+}
+
+#horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus {
+  border: 1px solid $focus-ring-color !important;
+}
+
+.btn-group, .btn-group-vertical {
+  & > .btn:focus {
+    outline: 2px solid $focus-ring-color !important;
+  }
+}
+
+.browse-thumbnail a:focus, .coversColumn a:focus{
+  outline:none;
+}
+
+.browse-thumbnail a:focus img, a:focus img.listResultImage, .browse-thumbnail-sorted:focus-within {
+  outline: 2px solid $focus-ring-color!important;
+}
+
+#vertical-menu-bar .menu-bar-option:focus-within {
+  border: 2px solid $focus-ring-color !important;
+  outline: 2px solid white;
+}
+
+#vertical-menu-bar .menu-icon-selected:focus-within {
+  border: 2px solid $menu-bar-background-color !important;
+  outline: 2px solid white;
+}
+
+
+a:focus > .header-button {
+  outline: 1px solid $focus-ring-color !important;
+}
+
+#browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
+  outline: 2px solid $focus-ring-color !important;
+}
+
+input[type="checkbox"]:focus {
+  outline: 2px solid $focus-ring-color !important;
+}
+select:focus,input[type="select"]:focus {
+  outline: 1px solid $focus-ring-color !important;
+}
+
+nav.breadcrumbs [aria-current="page"] {
+  text-decoration: none !important;
+  font-style: italic !important;
+  color: #222;
+}
+
+.categoryValue:focus-within {
+  outline: 1px solid $focus-ring-color !important;
+}
+
+// Datatable style overrides
+table.dataTable.display tbody tr.odd, table.dataTable.order-column.stripe tbody tr.odd {
+  & > .sorting_1,& > .sorting_2,& > .sorting_3 {
+    a {
+      color: $darkened-link-color-resp;
+    }
+  }
+}
+.jcarousel-control-prev:focus, .jcarousel-control-next:focus{
+  outline: 2px solid $focus-ring-color;
+}
+
+// Third party imports
+@import "ratings";
+@import "datepicker";
+@import "jcarousel-responsive";
+
+// Customized import
+@import "switch";
+
+// Imports of functionality related to Pika
+@import "layout";
+@import "home";
+@import "browse-categories";
+@import "account";
+@import "author";
+@import "title-scroller";
+@import "record";
+@import "results-list";
+@import "grouped_work";
+@import "genealogy";
+@import "repository";
+@import "admin";

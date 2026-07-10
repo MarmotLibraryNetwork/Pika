@@ -1,0 +1,31 @@
+//
+// Permanent Pika utilities (not part of Bootstrap 5).
+//
+
+// Render a Bootstrap Icon from CSS (replaces the old pattern of using the
+// glyphicon classes as LESS mixins). $name is the bootstrap-icons icon name;
+// codepoints come from the $bootstrap-icons-map published by the icon SCSS.
+@mixin bi-icon($name) {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  &::before {
+    content: map-get($bootstrap-icons-map, $name);
+  }
+}
+
+// Extra-small button: Bootstrap 4/5 dropped btn-xs; Pika keeps it for dense UI
+// (staff views, inline record tools). Sized relative to btn-sm.
+.btn-xs {
+  padding: .1rem .3rem;
+  font-size: $font-size-base * .75;
+  border-radius: $btn-border-radius-sm;
+}

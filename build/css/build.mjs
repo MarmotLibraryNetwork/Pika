@@ -53,8 +53,9 @@ async function buildTheme(theme) {
 			loadPaths,
 			style: 'expanded',
 			quietDeps: true, // silence deprecation noise from node_modules (bootstrap)
-			// Bootstrap 5.x is built on @import; the @use migration comes with Bootstrap 6.
-			silenceDeprecations: ['import'],
+			// Bootstrap 5.x is built on @import; the @use migration (and the module
+			// color functions) come with Bootstrap 6.
+			silenceDeprecations: ['import', 'global-builtin', 'color-functions', 'slash-div'],
 		});
 		const from = entry;
 		const expanded = await prefixer.process(compiled.css, { from, map: false });

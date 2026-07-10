@@ -1,0 +1,458 @@
+//@import "bootstrap/less/variables";
+@import "variables";
+
+//Functionality related to the overall layout
+//Headers, Footer, columns, etc.
+
+#content-container {
+  @media (max-width: $screen-sm-min) {
+    width: auto;
+  }
+  @media (min-width: $screen-sm-min) {
+    width: 100%;
+  }
+  padding: 0;
+}
+//
+//#content-container,
+//#main-content-with-sidebar { // needed if $body-bg-resp is set to transparent (eg. to support image background)
+//  background-color: $content-bg;
+//}
+
+//Breadcrumbs (above header)
+.breadcrumbs {
+  background-color: $breadcrumb-bg; //TODO: is this redundant given that background-color is set on .breadcrumb in breadcrumbs.less
+  padding: 3px;
+}
+
+.breadcrumb {
+  padding: 0;
+  margin-bottom: 0;
+
+  > li {
+    display: inline-block;
+
+    + li:before {
+      content: ""; // Override default separator since we add one in code
+      padding: 0 5px;
+      color: $breadcrumb-color;
+    }
+  }
+}
+
+//System message
+.system-message-header {
+  background-color: $system-message-bg;
+  color: black;
+  text-align: center;
+  padding: 3px;
+  a {
+    @include link-decorating-mixin();
+  }
+}
+
+//Define the header elements
+#header-container {
+  height: $header-height;
+  min-height: 100px;
+  padding-top: 0;
+  background-color: $header-bg-color;
+  //background: linear-gradient(to bottom, $header-top-color, $header-middle-color 85%, $header-bottom-color);
+  border-bottom: $header-bottom-border-width solid $header-bottom-border-color;
+  margin-bottom: 0;
+}
+
+#header-logo {
+  padding: 10px 10px 0 0;
+  max-height: $header-logo-max-height;
+  @media (max-width: $screen-xs-max) {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+// New Version, markup is a > div.header-button
+a .header-button {
+  text-align: center;
+  line-height: $header-button-height;
+  color: $header-button-color;
+  background-color: $header-button-bg-color;
+  border: 1px solid $header-button-border-color;
+  margin-top: ($header-height - $header-button-height) / 2;
+
+  &:hover {
+    color: $header-button-hover-color;
+    background-color: $header-button-hover-bg-color;
+    font-weight: bold;
+    text-decoration-color: $header-button-hover-color;
+  }
+  &:visited {
+    text-decoration-color: $header-button-hover-color;
+  }
+}
+
+.header-primary { //TODO remove class from sheets and templates
+  //border-left: 2px solid $header-button-border-vertical;
+  //border-right: 2px solid $header-button-border-vertical;
+}
+
+@mixin header-login-button-mixin($background-color: rgba(51,51,51,0.7), $color: #fff, $margin-top: 20px, $header-line-height: 60px) {
+  //TODO: add hover bg-color & color
+  // rgba(51,51,51,0.7) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=6F6F6F
+  a .header-button {
+    border: 0;
+    border-radius: 0.5em;
+    color: $color;
+    background-color: $background-color;
+    margin-top: $margin-top;
+    line-height: $header-line-height;
+    text-shadow: none; //TODO: likely not needed
+
+    &:hover {
+      text-decoration: underline;
+      border-bottom: 0;  //TODO: likely not needed
+      box-shadow: 2px 2px 5px #fff;
+    }
+  }
+}
+
+@mixin vertical-align-library-name-header() {
+  // This vertically centers #library-name-header (taken from https://css-tricks.com/centering-in-the-unknown/)
+  // looks to only work when the library name doesn't wrap
+  #headingInfo:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -0.25em; // Adjusts for spacing
+  }
+
+  #headingInfo {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+#library-name-header {
+  font-size: $library-display-name-font-size;
+  color: $library-display-name-color;
+  font-family: $library-display-name-font;
+  font-weight: bold;
+  white-space: normal;
+  padding-top: 5px;
+}
+
+#header-links {
+  text-align: center;
+
+  .header-link-wrapper:last-of-type {
+    border-right: 0 solid black;
+  }
+}
+
+.header-link-wrapper {
+  margin-top: 10px;
+  display: inline-block;
+  padding: 2px 15px;
+  border-right: 1px solid #0078ae;
+
+  a {
+    font-size: 16px;
+  }
+}
+
+// Footer
+#footer-container {
+  border-top: 8px solid $footer-top-border-color;
+  padding-top: 3px;
+
+  // zero out negative margins on xs screens
+  @media screen and (max-width: $screen-xs-max) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  @media (min-width: $screen-sm-max) {
+    padding-left: 40px;
+  }
+}
+
+#install-info {
+  padding-left: 20px;
+}
+
+#connect-with-us-info {
+  padding-right: 20px;
+}
+
+#connect-with-us-label {
+  margin-right: 15px;
+}
+
+.connect-icon {
+  padding: 0 3px 0 3px;
+  img {
+    background-color: #fff; // color in transparent icon images
+  }
+}
+
+#ReportAccessibilityIssue a {
+  @include link-decorating-mixin($darkened-link-color-resp);
+}
+
+// Fixed navigation in footer
+#navigation-controls {
+  border-top: 8px solid $footer-top-border-color;
+  background: #fff;
+  @media print {
+    display: none !important;
+  }
+}
+
+// Applies to both horizontal or side menu bar
+.menu-bar {
+  color: $menu-bar-color;
+  background-color: $menu-bar-background-color;
+}
+
+#horizontal-menu-bar-wrapper {
+
+}
+
+// Horizontal Menu Bar for small devices
+#horizontal-menu-bar-container {
+  .menu-icon {
+    float: right;
+    padding: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    height: 40px;
+
+    &:focus {
+      outline: none;
+    }
+
+    &.menu-left {
+      float: left;
+    }
+
+    &.menu-icon-selected {
+      background-color: $menu-bar-selected-background-color;
+    }
+  }
+
+  padding-left: $padding-xs-horizontal;
+  padding-right: $padding-xs-horizontal;
+
+  &.sticky-menu-bar {
+    // sticks to top of view port
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: $menu-bar-z-index;
+  }
+
+
+}
+
+// Vertical Menu Bar
+
+.sticky-sidebar {
+  // sticks to top-right of view port
+  position: fixed;
+  top: 0;
+  z-index: $menu-bar-z-index;
+}
+
+#vertical-menu-bar-wrapper {
+  width: $vertical-menu-bar-width;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#vertical-menu-bar {
+  width: $vertical-menu-bar-width;
+  height: 2000px; // needs to extend out of view, fallback option
+  height: 100vh; // best solution, height of the view port
+  background-color: $menu-bar-background-color;
+  color: $menu-bar-color;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 2px;
+  border-right: 3px solid $content-bg;
+
+  .menu-bar-option {
+    width: 100%;
+    padding-top: $padding-base-vertical;
+    border-top: 3px solid $content-bg;
+
+    &.menu-icon-selected {
+      background-color: $menu-bar-selected-background-color;
+
+      .menu-bar-label {
+        color: $menu-bar-selected-color;
+      }
+    }
+
+    // To Get Labeling to display Nicely
+    position: relative;
+  }
+
+  .menu-icon {
+    $menu-icon-padding: 5px;
+    padding: $menu-icon-padding;
+
+    img {
+      width: $vertical-menu-bar-width - 2*$menu-icon-padding;
+    }
+
+    &:visited, &:hover, &:focus {
+      text-decoration: none;
+      color: $menu-bar-color;
+      outline: none;
+    }
+
+    .menu-bar-label {
+      color: $menu-bar-color;
+      font-weight: bold;
+      text-transform: uppercase;
+
+      margin-top: 10px;
+    }
+  }
+}
+
+// Gives Vertical Rotated Text space that tracks with the document flow
+// requires two nested tags: <span class="rotated-text"><span class="rotated-text-inner">{text}</span></span>
+.rotated-text {
+  display: inline-block;
+  overflow: hidden;
+
+  width: $vertical-menu-bar-width;
+  line-height: $vertical-menu-bar-width; // need a set height for the rotated space to flow properly
+}
+
+.rotated-text-inner {
+  display: inline-block;
+  white-space: nowrap; // multiple word labels need to stay on the same line
+
+  // Rotate Text Vertically
+  transform: rotate(-90deg) translateX(-100%);
+  transform-origin: 0 0;
+
+  // puts the rotated text into the document flow like we want
+  &:after {
+    content: "";
+    float: left;
+    margin-top: 100%;
+  }
+}
+
+// Toggles Collapsed Sidebar
+// Applied to container divs, remove class to restore original width classes
+.collapsedSidebar {
+  width: $vertical-menu-bar-width;
+
+  &.rightSidebar {
+    // (LESS rounded the ratio to 4 decimals; Sass round() takes no precision argument
+    //  and the sub-0.005% difference is invisible)
+    @media (min-width: $screen-sm) {
+      left: 100% - percentage($vertical-menu-bar-width / ($container-sm - $grid-gutter-width));
+    }
+    @media (min-width: $screen-md) {
+      left: 100% - percentage($vertical-menu-bar-width / ($container-md - $grid-gutter-width));
+    }
+    @media (min-width: $screen-lg-min) {
+      left: 100% - percentage($vertical-menu-bar-width / ($container-lg - $grid-gutter-width));
+    }
+  }
+}
+
+// Toggles Expanding Main Content when Sidebar is collapsed
+.mainContentWhenSiderbarCollapsed {
+
+  @media (min-width: $screen-sm) {
+    width: 100% - percentage($vertical-menu-bar-width / ($container-sm - $grid-gutter-width));
+  }
+  @media (min-width: $screen-md) {
+    width: 100% - percentage($vertical-menu-bar-width / ($container-md - $grid-gutter-width));
+  }
+  @media (min-width: $screen-lg-min) {
+    width: 100% - percentage($vertical-menu-bar-width / ($container-lg - $grid-gutter-width));
+  }
+
+  &.rightSidebar {
+    // Adjustments to display when the sidebar is on the right hand side.
+    right: $vertical-menu-bar-width;
+  }
+}
+
+// Sidebar & Main content
+#side-bar {
+  // padding-left: 0;
+  @media print {
+    display: none;
+  }
+}
+
+#main-content-with-sidebar {
+  //padding-right: 0; //TODO delete; undone for right side bar
+  padding-bottom: 15px;
+  @media print {
+    width: 100%;
+    display: block !important;
+  }
+
+  & > .row {
+    //margin-right: -30px;// TODO delete; undone for right side bar
+    //margin-right: 15px;
+  }
+}
+
+//JCarousel styling
+.jcarousel ul > li {
+  text-align: center;
+}
+
+.jcarousel .thumbnail img {
+  max-height: 125px !important;
+}
+
+//TODO: no sectionLabel
+#sectionLabel {
+  width: 100%;
+  background-color: lighten(#80D2F1, 20%);
+  color: #137DE2;
+  text-transform: capitalize;
+  font-weight: bold;
+  padding: 5px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.nopadding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.required-input {
+  color: $accessible-red;
+}
+
+//#horizontal-search-box #lookfor {
+//  height: 34px!important;
+//}
+.btn-danger {
+  background: #702C29;
+  background-image: none;
+}
+
+.jcarousel li:focus-within {
+  outline: 2px solid $focus-ring-color;
+  outline-offset: -3px;
+  border: 1px solid #fff;
+}
+
+.jcarousel .active figure.thumbnail img {
+  border: 2px solid $focus-ring-color;
+}

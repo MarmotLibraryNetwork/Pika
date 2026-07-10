@@ -1,0 +1,263 @@
+//
+// Bootstrap 3 compatibility shims (HP-134)
+//
+// CSS-only bridges that keep legacy BS3 markup presentable while the templates
+// migrate to Bootstrap 5 markup. Every block is temporary and tagged with the
+// template-migration pass that retires it. Behavioral features (data attributes,
+// removed JS plugins, form structure) cannot be shimmed and are handled in the
+// template passes.
+//
+
+// --- BS3 utility mixins Bootstrap 5 no longer ships ------------------ keep while partials use them
+// (BS5 still provides transition(), box-shadow(), border-radius(), clearfix(),
+//  gradient-y() etc. — only the genuinely removed ones are recreated here.)
+@mixin center-block() {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+@mixin opacity($opacity) {
+  opacity: $opacity;
+}
+@mixin text-overflow() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@mixin size($width, $height: $width) {
+  width: $width;
+  height: $height;
+}
+@mixin square($size) {
+  @include size($size, $size);
+}
+@mixin user-select($select) {
+  user-select: $select;
+}
+@mixin rotate($degrees) {
+  transform: rotate($degrees);
+}
+@mixin scale($ratio, $ratio-y: $ratio) {
+  transform: scale($ratio, $ratio-y);
+}
+@mixin translate($x, $y) {
+  transform: translate($x, $y);
+}
+@mixin text-hide() {
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+@mixin tab-focus() {
+  outline: $focus-ring-color 2px solid;
+}
+
+// --- Wells --------------------------------------------------------- TODO remove after simple-renames pass
+.well {
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+}
+.well-lg { padding: 24px; border-radius: 6px; }
+.well-sm { padding: 9px; border-radius: 3px; }
+
+// --- Panels (visual card mapping) ---------------------------------- TODO remove after panels->cards/accordion pass
+.panel {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+}
+.panel-body { padding: 15px; }
+.panel-heading {
+  padding: 10px 15px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 16px;
+
+  > a { color: inherit; }
+}
+.panel-footer {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.panel-default { border-color: #ddd; }
+.panel-default > .panel-heading {
+  color: $gray-dark;
+  background-color: #f5f5f5;
+  border-color: #ddd;
+}
+.panel-primary { border-color: $primary; }
+.panel-primary > .panel-heading {
+  color: #fff;
+  background-color: $primary;
+  border-color: $primary;
+}
+.panel-group {
+  margin-bottom: 20px;
+
+  .panel {
+    margin-bottom: 0;
+    border-radius: 4px;
+
+    + .panel { margin-top: 5px; }
+  }
+  .panel-heading { border-bottom: 0; }
+  .panel-body { border-top: 1px solid #ddd; }
+}
+
+// --- Labels (renamed to badges in BS4/5) ---------------------------- TODO remove after simple-renames pass
+.label {
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+}
+.label-default { background-color: $label-default-bg; }
+.label-primary { background-color: $primary; }
+.label-success { background-color: $success; }
+.label-info    { background-color: $info; }
+.label-warning { background-color: #f0ad4e; }
+.label-danger  { background-color: $danger; }
+
+// BS3 badges carried their own background; BS5 badges rely on text-bg-* utilities.
+// Give bare .badge markup its BS3-era look until templates add text-bg-*.
+.badge {
+  background-color: $badge-bg;
+  color: #fff;
+}
+
+// --- Forms ---------------------------------------------------------- TODO remove after forms pass
+.form-group { margin-bottom: 15px; }
+.control-label { margin-bottom: 5px; }
+.form-horizontal .control-label { padding-top: 7px; margin-bottom: 0; }
+.help-block {
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  color: $accessible-gray-light;
+}
+.radio, .checkbox {
+  position: relative;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  label {
+    min-height: 20px;
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer;
+  }
+  input[type="radio"], input[type="checkbox"] {
+    position: absolute;
+    margin-left: -20px;
+    margin-top: 4px;
+  }
+}
+.radio-inline, .checkbox-inline {
+  display: inline-block;
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: normal;
+  vertical-align: middle;
+  cursor: pointer;
+
+  + .radio-inline, + .checkbox-inline { margin-left: 10px; }
+}
+.input-group-addon { @extend .input-group-text; }
+// BS3 selects used .form-control; BS5 needs .form-select for the arrow/padding.
+// (The template pass swaps the class; nothing to shim safely here.)
+
+// --- Buttons --------------------------------------------------------- TODO remove after simple-renames pass
+.btn-default { @extend .btn-outline-secondary; }
+
+// --- Thumbnails (BS5 replaced .thumbnail with .img-thumbnail) --------- TODO remove after component pass
+@mixin bs3-thumbnail() {
+  display: block;
+  padding: 4px;
+  margin-bottom: 20px;
+  line-height: $line-height-base;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: border .2s ease-in-out;
+}
+.thumbnail { @include bs3-thumbnail; }
+
+// --- Carets (BS5 draws dropdown carets via .dropdown-toggle) --------- TODO remove after component pass
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+// --- Float / text / image / a11y utilities --------------------------- TODO remove after simple-renames pass
+.pull-right { float: right !important; }
+.pull-left { float: left !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
+.img-responsive { max-width: 100%; height: auto; }
+.center-block { display: block; margin-left: auto; margin-right: auto; }
+.sr-only { @extend .visually-hidden; }
+
+// --- Responsive visibility utilities --------------------------------- TODO remove after visibility pass
+// Recreated at the customized BS3 breakpoints (tn 0-479, xs 480-767, sm 768-991,
+// md 992-1199, lg 1200+) so hidden-*/visible-* keep their exact pixel behavior
+// until the scripted d-* utility pass replaces them.
+.visible-tn, .visible-xs, .visible-sm, .visible-md, .visible-lg { display: none !important; }
+@media (max-width: $screen-tn-max) {
+  .visible-tn { display: block !important; }
+  .hidden-tn { display: none !important; }
+}
+@media (min-width: $screen-xs-min) and (max-width: $screen-xs-max) {
+  .visible-xs { display: block !important; }
+  .hidden-xs { display: none !important; }
+}
+@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+  .visible-sm { display: block !important; }
+  .hidden-sm { display: none !important; }
+}
+@media (min-width: $screen-md-min) and (max-width: $screen-md-max) {
+  .visible-md { display: block !important; }
+  .hidden-md { display: none !important; }
+}
+@media (min-width: $screen-lg-min) {
+  .visible-lg { display: block !important; }
+  .hidden-lg { display: none !important; }
+}
+
+// The only survivor of the 21.5KB bootstrap.inline-responsive.less (generated
+// inline/inline-block visibility variants): templates use hidden-inline-xs 4x.
+// Stock BS3 xs range = below 768px. Becomes `d-none d-md-inline` in the pass.
+.hidden-inline-xs { display: inline !important; }
+@media (max-width: 767px) {
+  .hidden-inline-xs { display: none !important; }
+}

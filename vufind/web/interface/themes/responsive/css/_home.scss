@@ -1,0 +1,359 @@
+@import "variables";
+
+//
+// Styling for home page elements
+//
+
+// Side-bar Search Box
+// Switched to css class instead of id attribute to overcome chrome device bug with background color. See D-4911
+.home-page-search {
+  background-color: $home-search-top-color;
+  background: linear-gradient(to bottom, $home-search-top-color, $home-search-bottom-color);
+  padding: 20px 0 10px;
+  margin-bottom: 5px;
+}
+
+//TODO: update any themes that actually use a gradient to have the mixin
+@mixin home-page-search-gradient($home-search-top-color, $home-search-bottom-color) {
+  .home-page-search {
+    background: linear-gradient(to bottom, $home-search-top-color, $home-search-bottom-color);
+  }
+}
+
+#home-page-search-label {
+  font-size: 35px;
+  font-weight: normal; // Remove bold from styling applied to label tag
+  color: $home-search-label-color;
+  text-shadow: 1px 1px $gray-light;
+}
+
+// Hide the Place Holder text on the search box by default for
+@mixin placeholder-mixin() {
+  font-size: 0; // zero out the text as a fail safe
+  color: transparent;
+  text-shadow: none;
+  border: 0;
+}
+
+// Must keep selectors separate because if the browser does not
+// recognize one of the selectors, it will dispose of the ruleset.
+#lookfor:-ms-input-placeholder{@include placeholder-mixin;}
+#lookfor::-webkit-input-placeholder{@include placeholder-mixin;}
+#lookfor:-moz-placeholder{@include placeholder-mixin;}
+#lookfor::-moz-placeholder{@include placeholder-mixin;}
+#lookfor::placeholder {@include placeholder-mixin;}
+
+.searchTypeHome, .searchSource {
+  margin: 5px 0 0;
+  color: $home-search-label-color;
+  background-color: $home-search-top-color;
+  border: none;
+  width: 90% !important;
+}
+
+#keepFiltersSwitchLabel, #advancedSearchLink {
+  color: $home-search-label-color;
+  font-weight: normal;
+  font-size: 85%;
+}
+
+#advancedSearchLink {
+  text-decoration: underline dotted;
+}
+
+// Horizontal Search Box Styling
+#horizontal-search-box {
+  background-color: $home-search-top-color;
+  background: linear-gradient(to bottom, $home-search-top-color, $home-search-bottom-color);
+  padding: 15px 0;
+
+  #searchForm {
+    .row {
+      // undo margin-adjusting for this row.
+      margin-left: 0;
+      margin-right: 0;
+
+      & > div {
+        margin-top: 4px; // provides vertical spacing between inputs for smaller screen widths.
+      }
+    }
+
+    #horizontal-search-button-container {
+      margin-top: 4px; // provides vertical spacing between inputs for smaller screen widths.
+      padding-left: 0; // remove gap between button and input box on the right.
+      & > div.row {
+        padding-left: 0;
+        margin-top: 0;
+
+        & > div {
+          margin-top: 0; // !important;
+        }
+      }
+
+      @media (max-width: $screen-sm-min) {
+        padding-left: 4px;
+      }
+    }
+  }
+
+  div {
+    padding-left: 4px;
+    padding-right: 0;
+    @media (max-width: $screen-sm-min) {
+      padding-left: 1px;
+      padding-right: 1px;
+    }
+  }
+
+  #horizontal-search-label {
+    color: $horizontal-search-label-color;
+  }
+
+  //#lookfor {
+  //  height: 34px;
+  //}
+
+  .searchSourceHorizontal,
+  .searchTypeHorizontal {
+    width: 100%;
+    margin: 0 0;
+    border: none;
+    border-radius: 0;
+  }
+
+  #keepFiltersSwitchLabel {
+    margin-bottom: 0;
+  }
+}
+
+#home-page-login {
+  background-color: $home-page-login-background-color;
+  color: $home-page-login-color;
+  font-size: 18px;
+  //text-shadow: 1px 1px $gray-light;
+  padding: 5px;
+  margin-bottom: 5px;
+
+  a {
+    color: $home-page-login-color;
+  }
+
+  #horizontal-search-wrapper + #content-container & {
+    margin-top: 5px; // Add some space between horizontal spacing
+  }
+}
+
+#home-page-library-section {
+  padding: 15px 0;
+  > a { // TODO: in template, put a tags within the current child div tags
+    &, &:visited, &:hover {
+      color: #fff;
+    }
+  }
+
+}
+
+.sidebar-button {
+  text-align: center;
+  color: $sidebar-button-color;
+  background-color: $sidebar-button-bg-color;
+  padding: 7px 0;
+  margin-bottom: 15px;
+}
+
+@mixin sidebar-button-mixin() {
+  .sidebar-button {
+    padding: 5px 15px;
+    background-color: $accordion-header-bg-color;
+    background: linear-gradient(to bottom, $accordion-header-top-gradient-color, $accordion-header-bottom-gradient-color);
+    color: #fff;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+}
+
+@mixin sacramento-sidebar-button($color: #333, $background: #f0efef) {
+  .sidebar-button {
+    color: $color;
+    background: $background;
+    padding: 5px 15px;
+    border-bottom: 1px solid #a1a1a1;
+    text-shadow: 1px 1px #fff;
+    font-size: 16px;
+    text-align: left;
+  }
+}
+#home-page-hours-locations, #home-page-home-button {
+  text-transform: uppercase;
+}
+
+// Library Link Formatting
+.sidebar-links {
+  .panel-body {
+    //font-size: 13px;  // Use styling default sizing instead (currently 15px)
+    color: $gray-dark;
+    //background-color: #eeeeee;
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+
+    a {
+      &, &:visited, &:hover {
+        &:not(.btn) { // Let buttons in the sidebar have their normal font color.
+          color: $sidebar-link-color;
+        }
+      }
+    }
+  }
+}
+
+hr.menu {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  height: 0;
+  border-top: 1px solid #d3d3d3;
+}
+
+// Don't Display the border line on the menu hr tag
+@mixin hideMenuHr() {
+  hr.menu {
+    border: none;
+  }
+}
+
+// Theming for auto-complete widget //
+.ui-helper-hidden {
+  display: none;
+}
+
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  float: left;
+  display: none;
+  min-width: 160px;
+  _width: 160px;
+  padding: 4px 0;
+  margin: 2px 0 0 0;
+  list-style: none;
+  background-color: #ffffff;
+  border-color: #ccc;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+
+  .ui-menu-item > a.ui-corner-all {
+    display: block;
+    padding: 3px 15px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
+    color: #555555;
+    white-space: nowrap;
+
+    &.ui-state-hover, &.ui-state-active {
+      color: #ffffff;
+      text-decoration: none;
+      background-color: #0088cc;
+      border-radius: 0;
+      //-webkit-border-radius: 0;
+      //-moz-border-radius: 0;
+      background-image: none;
+    }
+  }
+}
+
+// Put Labels beneath icons on small screens when the sidebar has moved across the top
+@media (max-width: 540px) {
+  .formatCategoryLabel {
+    float: none;
+    clear: both;
+  }
+}
+
+// shrink icons for a range where the labels slightly overlap & the sidebar still acts as a sidebar
+// the upper limit looks to be the width at which the #availabilityControlContainer div wraps
+@media (min-width: $screen-sm-min) and (max-width: 999px) {
+  .formatCategoryLabel {
+    float: none;
+    clear: both;
+  }
+}
+
+// Fix searchbox border radius
+#lookfor {
+  border-radius: $border-radius-small 0 0 $border-radius-small;
+  //overflow-y: hidden;
+  padding-top: 0.4em;
+  //height: 34px;
+  //line-height: 20px; // shouldn't be needed to cause to line up with other inputs
+  min-height: 24px;
+}
+
+#search-actions.input-group-btn {
+  vertical-align: top;
+}
+
+// Makes record-view descriptions more legible
+#descriptionPanelBody > .panel-body {
+  white-space: pre-line;
+  //line-height: 1.7em;
+}
+
+// User List sorting drop-down
+// taken from bootstrap css
+.dropdown-menu-right {
+  right: 0;
+  left: auto
+}
+
+.badge.badge-danger {
+  background: $accessible-red;
+}
+
+.badge.badge-warning {
+  background: #ffc107;
+  color: black;
+}
+
+.badge.badge-primary {
+  background: #007bff;
+}
+
+.badge.badge-secondary {
+  background: #6c757d;
+}
+
+.badge.badge-success {
+  background: #28a745;
+}
+
+.badge.badge-info {
+  background: #17a2b8;
+}
+
+.badge.badge-light {
+  background: #f8f9fa;
+  color: black;
+}
+
+.badge.badge-dark {
+  background: #343a40;
+}
