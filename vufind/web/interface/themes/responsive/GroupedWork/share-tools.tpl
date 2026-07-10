@@ -1,7 +1,7 @@
 {strip}
 	{if $showEmailThis == 1 || $showShareOnExternalSites == 1}
 	<div class="share-tools">
-		<span id="share-tools-label-{$recordDriver->getPermanentId()|escape}" class="share-tools-label hidden-inline-xs">SHARE</span>
+		<span id="share-tools-label-{$recordDriver->getPermanentId()|escape}" class="share-tools-label d-none d-md-inline">SHARE</span>
 		<ul aria-labelledby="share-tools-label-{$recordDriver->getPermanentId()|escape}" class="share-tools-list list-inline">
 		{if false && $showTextThis == 1}
 			<li>

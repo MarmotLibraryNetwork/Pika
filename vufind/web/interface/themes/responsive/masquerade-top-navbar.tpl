@@ -9,7 +9,7 @@
 						Masquerade Mode
 					</h4>
 				</div>
-				<div id="masquerade-header-name-section" class="hidden-tn hidden-xs col-sm-5 col-lg-6">
+				<div id="masquerade-header-name-section" class="d-none d-md-block col-sm-5 col-lg-6">
 					<h5>Masquerading As {$userDisplayName|capitalize}</h5>
 				</div>
 

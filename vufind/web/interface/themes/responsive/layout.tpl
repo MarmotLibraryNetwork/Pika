@@ -74,7 +74,7 @@
 						</div>
 					</div>
 
-					<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
+					<div id="horizontal-menu-bar-wrapper" class="row d-none d-sm-block d-md-none">
 						<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar">
 							{include file='horizontal-menu-bar.tpl'}
 						</div>

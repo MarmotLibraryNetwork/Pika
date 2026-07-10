@@ -110,7 +110,7 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-sm">
 									<div class="share-tools">
-										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label d-none d-md-inline">SHARE LIST</span>
 										<ul aria-labelledby="share-list-tools-label-{$favList->id}" class="share-tools-list list-inline">
 											<li>
 												<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">

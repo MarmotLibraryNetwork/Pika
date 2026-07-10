@@ -6,7 +6,7 @@
 <search id="home-page-search" class="home-page-search row"{if $displaySidebarMenu} style="display: none"{/if}>
 	<div class="col-tn-12">
 		<div class="row">
-			<div class="hidden-xs-inline col-md-12 text-center">
+			<div class="d-sm-none d-md-block-inline col-md-12 text-center">
 				<label id="home-page-search-label" for="lookfor">SEARCH <span class="glyphicon glyphicon-search" aria-hidden="true"></label></span>
 			</div>
 		</div>
@@ -181,7 +181,7 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-tn-6{else}col-tn-12{/if} text-center visible-xs">
+					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-tn-6{else}col-tn-12{/if} text-center d-none d-sm-block d-md-none">
 						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
@@ -207,7 +207,7 @@
 
 			{* Show/Hide Search Facets & Sort Options * }
 			{if $recordCount || $sideRecommendations}
-				<div class="row text-center visible-xs">
+				<div class="row text-center d-none d-sm-block d-md-none">
 					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 				</div>
 			{/if}-->*}

@@ -253,7 +253,7 @@
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 {*				{if !empty($relatedManifestations)}*}
-				<div class="row visible-xs">
+				<div class="row d-none d-sm-block d-md-none">
 
 					{* Determine if there were hidden Formats for this entry *}
 					{assign var=hasHiddenFormats value=false}
@@ -270,7 +270,7 @@
 							Formats:
 						</div>
 						<div class="hidethisdiv{$summId|escape} result-value col-tn-8">
-							<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('hidden-xs');return false;">
+							<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('d-sm-none d-md-block');return false;">
 									{implode subject=$relatedManifestations|@array_keys glue=",&nbsp;"}
 							</a>
 						</div>
@@ -281,7 +281,7 @@
 
 				{* Formats Section *}
 				<div class="row">
-					<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}hidden-xs {/if}col-sm-12" id="relatedManifestationsValue{$summId|escape}">
+					<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}d-sm-none d-md-block {/if}col-sm-12" id="relatedManifestationsValue{$summId|escape}">
 						{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 						{* relatedManifestationsValue ID is used by the Formats button *}
 
@@ -293,7 +293,7 @@
 				{if !$viewingCombinedResults}
 					{* Description Section *}
 					{if $summDescription}
-						<div class="row visible-xs">
+						<div class="row d-none d-sm-block d-md-none">
 							<div class="result-label col-tn-3">Description:</div>
 						</div>
 

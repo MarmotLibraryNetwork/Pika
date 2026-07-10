@@ -110,7 +110,7 @@
 					<button class="btn btn-default" type="submit">
 						<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
-						{*<span class="visible-xs-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
+						{*<span class="d-none d-sm-block d-md-none-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
 					</button>
 				</div>
 
@@ -139,7 +139,7 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="col-tn-3 col-xs-3 visible-xs">
+					<div class="col-tn-3 col-xs-3 d-none d-sm-block d-md-none">
 						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}

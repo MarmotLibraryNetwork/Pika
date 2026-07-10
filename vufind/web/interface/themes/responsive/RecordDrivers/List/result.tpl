@@ -82,7 +82,7 @@
 
 		{* Description Section *}
 		{if $summDescription}
-			<div class="row visible-xs">
+			<div class="row d-none d-sm-block d-md-none">
 				<div class="result-label col-tn-3 col-xs-3">Description:</div>
 			</div>
 

@@ -132,7 +132,7 @@
 							{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 							{* Header Row with Column Labels *}
-							<div class="row hidden-xs">
+							<div class="row d-sm-none d-md-block">
 								<div class="col-sm-1">
 									<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 								</div>

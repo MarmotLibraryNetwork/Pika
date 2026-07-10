@@ -7,7 +7,7 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 hidden-tn hidden-xs text-center">
+			<div id="main-content" class="col-xs-12 d-none d-md-block text-center">
 				{if $canView}
 					<div id="pdfContainer">
 						<div id="pdfContainerBody">
