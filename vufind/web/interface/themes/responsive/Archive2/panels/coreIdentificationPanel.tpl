@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="coreIdentificationPanel"><a data-toggle="collapse" href="#coreIdentificationPanelBody">
+	<div class="panel" id="coreIdentificationPanel"><a data-bs-toggle="collapse" href="#coreIdentificationPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Core Identification & Lifecycle</h2>
 			</div>

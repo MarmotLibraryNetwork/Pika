@@ -2,7 +2,7 @@
 	<div id="more-details-accordion" class="panel-group">
 		{foreach from=$moreDetailsOptions key="moreDetailsKey" item="moreDetailsOption"}
 			<div class="panel{if $moreDetailsOption.openByDefault} active{/if}" id="{$moreDetailsKey}Panel"{if $moreDetailsOption.hideByDefault} style="display:none"{/if}>
-				<a data-toggle="collapse" href="#{$moreDetailsKey}PanelBody">
+				<a data-bs-toggle="collapse" href="#{$moreDetailsKey}PanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">
 							{$moreDetailsOption.label}

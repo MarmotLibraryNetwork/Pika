@@ -1,6 +1,6 @@
 {strip}
 <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal" aria-label="Close Window">&times;</button>
+	<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close Window">&times;</button>
 	<h2 class="modal-title h3" id="myModalLabel">Login</h2>{* Sematically subheading of main page's h1 (for accessibility *}
 </div>
 <div class="modal-body">
@@ -64,7 +64,7 @@
 	{/if}
 </div>
 <div class="modal-footer">
-	<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
+	<button class="btn" data-bs-dismiss="modal" id="modalClose">Close</button>
 	<span class="modal-buttons">
 		<input type="submit" name="submit" value="{if $multistep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return Pika.Account.processAjaxLogin()">
 	</span>

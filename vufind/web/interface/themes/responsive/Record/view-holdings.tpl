@@ -20,7 +20,7 @@
 		{if strlen($section.name) > 0 && count($sections) > 1}
 			<div class="accordion-group">
 				<div class="accordion-heading" id="holdings-header-{$section.name|replace:' ':'_'}">
-					<a class='accordion-toggle' data-toggle="collapse" data-target="#holdings-section-{$section.name|replace:' ':'_'}">{$section.name}</a>
+					<a class='accordion-toggle' data-bs-toggle="collapse" data-bs-target="#holdings-section-{$section.name|replace:' ':'_'}">{$section.name}</a>
 				</div>
 		{/if}
 

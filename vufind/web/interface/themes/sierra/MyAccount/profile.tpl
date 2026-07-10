@@ -30,7 +30,7 @@
 			<div class="panel-group" id="account-settings-accordion">
 				{* barcode *}
 				<div class="panel active">
-					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#barcodePanel">
+					<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#barcodePanel">
 						<div class="panel-heading">
 							<h2 class="panel-title" id="barcodeTitle">
 								Scannable Library Card Barcode
@@ -57,7 +57,7 @@
 				</div>
 				{* ILS Settings *}
 				<div class="panel active">
-					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
+					<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#contactPanel">
 						<div class="panel-heading">
 							<h2 class="panel-title">
 								Contact Information
@@ -240,7 +240,7 @@
 				{else}
 					{if $allowPinReset && !$offline}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#pinPanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
 										{translate text='Update PIN'}
@@ -327,7 +327,7 @@
 					{*OverDrive Options*}
 					{if !$overDriveOfflineMode && $profile->isValidForOverDrive()}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#overdrivePanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
 										OverDrive Options
@@ -345,7 +345,7 @@
 				{*Hoopla Options*}
 				{if $profile->isValidForHoopla()}
 				<div class="panel active">
-					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
+					<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">
 							<h2 class="panel-title">
 								Hoopla Options
@@ -383,7 +383,7 @@
 				{*User Preference Options*}
 				{if $showAlternateLibraryOptions || $userIsStaff || ($showRatings && $showComments)}
 				<div class="panel active">
-					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#userPreferencePanel">
+					<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#userPreferencePanel">
 						<div class="panel-heading">
 							<h2 class="panel-title">
 								My Preferences
@@ -442,7 +442,7 @@
 
 				{if $allowAccountLinking}
 					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#linkedAccountPanel">
+						<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#linkedAccountPanel">
 							<div class="panel-heading">
 								<h2 class="panel-title">
 									Linked Accounts
@@ -490,7 +490,7 @@
 				{* Display user roles if the user has any roles*}
 				{if $userIsStaff || count($profile->roles) > 0}
 					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#rolesPanel">
+						<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#rolesPanel">
 							<div class="panel-heading">
 								<h2 class="panel-title">
 									Staff Settings

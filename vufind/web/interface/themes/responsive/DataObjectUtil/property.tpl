@@ -51,7 +51,7 @@
 				<div class="panel panel-default">
 					<div class="panel-heading row">
 						<div class="panel-title col-tn-11">
-							<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
+							<a data-bs-toggle="collapse" data-bs-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
 								{$property.label}
 							</a>
 						</div>

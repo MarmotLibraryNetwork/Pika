@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="identifiersAdministrativePanel"><a data-toggle="collapse" href="#identifiersAdministrativePanelBody">
+	<div class="panel" id="identifiersAdministrativePanel"><a data-bs-toggle="collapse" href="#identifiersAdministrativePanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Identifiers & Administrative</h2>
 			</div>

@@ -1,6 +1,6 @@
 {if $allowPinReset && !$offline}
 	<div class="panel active">
-		<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
+		<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#pinPanel">
 			<div class="panel-heading">
 				<h2 class="panel-title">
 					{translate text='Update PIN'}

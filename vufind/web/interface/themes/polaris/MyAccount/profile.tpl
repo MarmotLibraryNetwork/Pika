@@ -36,7 +36,7 @@
 				<br>
 				<div class="panel-group" id="account-settings-accordion">
 					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#basicPanel">
+						<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#basicPanel">
 							<div class="panel-heading">
 								<h2 class="panel-title">
 									Basic Information
@@ -82,7 +82,7 @@
 					</div>
 
 					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
+						<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#contactPanel">
 							<div class="panel-heading">
 								<h2 class="panel-title">
 									Contact Information
@@ -341,7 +341,7 @@
 					{*OverDrive Options*}
 					{if !$overDriveOfflineMode && $profile->isValidForOverDrive()}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#overdrivePanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
 										OverDrive Options
@@ -359,7 +359,7 @@
 					{*Hoopla Options*}
 					{if $profile->isValidForHoopla()}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#hooplaPanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
 										Hoopla Options
@@ -403,7 +403,7 @@
 					{*User Preference Options*}
 					{if $showAlternateLibraryOptions || $userIsStaff || ($showRatings && $showComments)}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion"
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion"
 							   href="#userPreferencePanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
@@ -477,7 +477,7 @@
 
 					{if $allowAccountLinking}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion"
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion"
 							   href="#linkedAccountPanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
@@ -543,7 +543,7 @@
 					{* Display user roles if the user has any roles*}
 					{if $userIsStaff || count($profile->roles) > 0}
 						<div class="panel active">
-							<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#rolesPanel">
+							<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#rolesPanel">
 								<div class="panel-heading">
 									<h2 class="panel-title">
 										Staff Settings

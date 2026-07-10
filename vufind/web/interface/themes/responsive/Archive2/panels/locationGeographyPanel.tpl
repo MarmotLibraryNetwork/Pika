@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="locationGeographyPanel"><a data-toggle="collapse" href="#locationGeographyPanelBody">
+	<div class="panel" id="locationGeographyPanel"><a data-bs-toggle="collapse" href="#locationGeographyPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Location & Geography</h2>
 			</div>

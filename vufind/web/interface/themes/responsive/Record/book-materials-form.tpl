@@ -54,7 +54,7 @@
 </form>
 	<hr>
 	<div class="row">
-		<button id="calendarButton" class="btn btn-info center-block" type="button" data-toggle="collapse" data-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
+		<button id="calendarButton" class="btn btn-info center-block" type="button" data-bs-toggle="collapse" data-bs-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
 			Show/Hide Hourly Calendar
 		</button>
 

@@ -1,6 +1,6 @@
 {if $subjects}
     <div class="panel" id="subjectsPanel">
-        <a data-toggle="collapse" href="#subjectsPanelBody">
+        <a data-bs-toggle="collapse" href="#subjectsPanelBody">
             <div class="panel-heading">
                 <h2 class="panel-title">Subjects</h2>
             </div>

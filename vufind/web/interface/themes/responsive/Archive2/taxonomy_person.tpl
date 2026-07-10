@@ -40,7 +40,7 @@
 
 		{if $wikipediaData}
 				<div class="panel active" id="personWikipediaPanel">
-					<a data-toggle="collapse" href="#personWikipediaPanelBody">
+					<a data-bs-toggle="collapse" href="#personWikipediaPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
@@ -55,7 +55,7 @@
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="personRelatedObjectsPanel">
-				<a data-toggle="collapse" href="#personRelatedObjectsPanelBody">
+				<a data-bs-toggle="collapse" href="#personRelatedObjectsPanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
@@ -69,7 +69,7 @@
 
 			{if $notes}
 				<div class="panel" id="personNotesPanel">
-					<a data-toggle="collapse" href="#personNotesPanelBody">
+					<a data-bs-toggle="collapse" href="#personNotesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Notes</h2>
 						</div>
@@ -85,7 +85,7 @@
 			{/if}
 			{if $obituaries}
 				<div class="panel active" id="personObituariesPanel">
-					<a data-toggle="collapse" href="#personObituariesPanelBody">
+					<a data-bs-toggle="collapse" href="#personObituariesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Obituaries</h2>
 						</div>
@@ -113,7 +113,7 @@
 			{/if}
 			{if $burial}
 				<div class="panel" id="personBurialPanel">
-					<a data-toggle="collapse" href="#personBurialPanelBody">
+					<a data-bs-toggle="collapse" href="#personBurialPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Burial Details</h2>
 						</div>
@@ -143,7 +143,7 @@
 
 			{if $military}
 				<div class="panel" id="personMilitaryPanel">
-					<a data-toggle="collapse" href="#personMilitaryPanelBody">
+					<a data-bs-toggle="collapse" href="#personMilitaryPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Military Service</h2>
 						</div>
@@ -190,7 +190,7 @@
 
 			{if $academic}
 				<div class="panel" id="personAcademicPanel">
-					<a data-toggle="collapse" href="#personAcademicPanelBody">
+					<a data-bs-toggle="collapse" href="#personAcademicPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Academic Information</h2>
 						</div>

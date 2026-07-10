@@ -1,7 +1,7 @@
 {strip}
 	{if $tagList}
 		<div class="panel">
-			<a href="#myTagsPanel" data-toggle="collapse" {*data-parent="#account-link-accordion"*}>
+			<a href="#myTagsPanel" data-bs-toggle="collapse" {*data-bs-parent="#account-link-accordion"*}>
 				<div class="panel-heading">
 					<div class="panel-title collapsed">
 						My Tags

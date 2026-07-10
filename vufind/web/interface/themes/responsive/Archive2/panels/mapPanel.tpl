@@ -1,6 +1,6 @@
 {if $geolocation}
 	<div class="panel active" id="taxonomyMapPanel">
-		<a data-toggle="collapse" href="#taxonomyMapPanelBody">
+		<a data-bs-toggle="collapse" href="#taxonomyMapPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Map</h2>
 			</div>

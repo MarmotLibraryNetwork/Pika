@@ -8,7 +8,7 @@
 					{assign var="active" value=$smarty.foreach.listWidgetList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						<li {if $active}class="active"{/if} role="presentation">
-							<a href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.listWidgetList.index}">{$list->name}</a>
+							<a href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-bs-toggle="tab" data-index="{$smarty.foreach.listWidgetList.index}">{$list->name}</a>
 					</li>
 					{/if}
 				{/foreach}
@@ -81,7 +81,7 @@
 
 		$(function(){ldelim}
 			{if count($widget->lists) > 1 && (!isset($widget->listDisplayType) || $widget->listDisplayType == 'tabs')}
-			$('#listWidget{$widget->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
+			$('#listWidget{$widget->id} a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 {*				alert(e.target); // activated tab
 				//alert(e.relatedTarget); // previous tab *}
 				showList($(e.target).data('index'));

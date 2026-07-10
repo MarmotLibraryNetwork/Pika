@@ -15,7 +15,7 @@
 				{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
 				{* Clickable header for my account section *}
-				<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myAccountPanel">
+				<a data-bs-toggle="collapse" data-bs-parent="#account-link-accordion" href="#myAccountPanel">
 					<div class="panel-heading">
 						<div class="panel-title">
 							{*MY ACCOUNT*}
@@ -97,7 +97,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#pikaMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#pikaMenuGroup" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Pika Configuration
@@ -169,7 +169,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#adminMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#adminMenuGroup" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								System Administration
@@ -203,7 +203,7 @@
 					{assign var="curSection" value = false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#migrationMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#migrationMenuGroup" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">System Migration</div>
 						</div>
@@ -224,7 +224,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#indexingMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#indexingMenuGroup" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Indexing Information
@@ -250,7 +250,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#materialsRequestMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#materialsRequestMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Materials Requests
@@ -276,7 +276,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#catalogingMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#catalogingMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Cataloging
@@ -324,7 +324,7 @@
 										{assign var="curSection" value=false}
 								{/if}
 							<div class="panel{if $curSection} active{/if}">
-								<a href="#eContentInfoMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+								<a href="#eContentInfoMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 									<div class="panel-heading">
 										<div class="panel-title">
 											eContent Info
@@ -352,7 +352,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#LogMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#LogMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Logs
@@ -386,7 +386,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#archivesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#archivesMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Archives
@@ -419,7 +419,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#circulationMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#circulationMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Offline Circulation
@@ -446,7 +446,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#editorialReviewMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#editorialReviewMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Librarian Reviews
@@ -469,7 +469,7 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#reportsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#reportsMenu" data-bs-toggle="collapse" data-bs-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Reports

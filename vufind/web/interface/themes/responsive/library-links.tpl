@@ -5,7 +5,7 @@
           {if $categoryName && !is_numeric($categoryName)}{* Display any subsequent numeric indexes as uncategorized links *}
 					{* Put the links within a collapsible section *}
 					<div class="panel {if array_key_exists($categoryName, $expandedLinkCategories)}active{/if}">
-						<a data-toggle="collapse" data-parent="#link-accordion" href="#{$categoryName|escapeCSS}{$section}Panel">
+						<a data-bs-toggle="collapse" data-bs-parent="#link-accordion" href="#{$categoryName|escapeCSS}{$section}Panel">
 							<div class="panel-heading">
 								<div class="panel-title">
 									{$categoryName}

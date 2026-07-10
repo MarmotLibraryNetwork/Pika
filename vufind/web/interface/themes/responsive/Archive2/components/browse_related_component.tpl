@@ -3,7 +3,7 @@
 	<div class="archiveComponent browseFilterContainer">
 		<div class="row archiveComponentBody">
 			<div class="archiveComponentBox">
-				<a href="#" data-toggle="modal" data-target="#browseRelatedModal{$browseRelatedId}">
+				<a href="#" data-bs-toggle="modal" data-bs-target="#browseRelatedModal{$browseRelatedId}">
 					<div class="col-tn-4 col-xs-3 col-md-4 archiveComponentIconContainer">
 						<img src="{$browseRelatedImage}" width="100" height="100" alt="{$browseRelatedTitle|escape}" class="archiveComponentImage">
 					</div>
@@ -19,7 +19,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close Window">&times;</button>
+				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close Window">&times;</button>
 				<h2 class="modal-title h3" id="browseRelatedModalLabel{$browseRelatedId}">{$browseRelatedTitle}</h2>
 			</div>
 			<div class="modal-body">
@@ -32,7 +32,7 @@
 				{/foreach}
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
 			</div>
 		</div>
 	</div>

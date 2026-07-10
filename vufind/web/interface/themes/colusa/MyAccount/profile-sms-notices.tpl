@@ -1,6 +1,6 @@
 {strip}
 	<div class="panel active">
-		<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#smsPanel">
+		<a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#smsPanel">
 			<div class="panel-heading">
 				<div class="panel-title">
 					SMS Settings

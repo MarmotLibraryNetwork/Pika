@@ -38,7 +38,7 @@
 
 			{if $wikipediaData}
 				<div class="panel active" id="eventWikipediaPanel">
-					<a data-toggle="collapse" href="#eventWikipediaPanelBody">
+					<a data-bs-toggle="collapse" href="#eventWikipediaPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
@@ -53,7 +53,7 @@
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="eventRelatedObjectsPanel">
-				<a data-toggle="collapse" href="#eventRelatedObjectsPanelBody">
+				<a data-bs-toggle="collapse" href="#eventRelatedObjectsPanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
@@ -67,7 +67,7 @@
 
 			{if $notes}
 				<div class="panel" id="eventNotesPanel">
-					<a data-toggle="collapse" href="#eventNotesPanelBody">
+					<a data-bs-toggle="collapse" href="#eventNotesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Notes</h2>
 						</div>

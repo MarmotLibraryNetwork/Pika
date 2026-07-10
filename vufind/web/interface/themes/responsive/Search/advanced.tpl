@@ -80,7 +80,7 @@
 	<div id="main-content" class="advSearchContent">
 
 		<div class="dropdown pull-right">
-			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 				{translate text="Search Tips"}
 				&nbsp;<span class="caret"></span>
 			</button>
@@ -122,7 +122,7 @@
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
 							<div class="panel panel-default {if !empty($searchFilters)} active{/if}">
-								<a href="#facetPanel" data-toggle="collapse" role="button">
+								<a href="#facetPanel" data-bs-toggle="collapse" role="button">
 									<div class="panel-heading">
 										<h2 class="panel-title">
 											{translate text='Optional Filters'}

@@ -163,7 +163,7 @@
 	{if $repositoryLink && $loggedIn && $userRoles && (in_array('archives', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles))}
 		<div id="more-details-accordion" class="panel-group">
 			<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">
-				<a href="#staffViewPanelBody" data-toggle="collapse">
+				<a href="#staffViewPanelBody" data-bs-toggle="collapse">
 					<div class="panel-heading">
 						<h2 class="panel-title">
 							Staff View

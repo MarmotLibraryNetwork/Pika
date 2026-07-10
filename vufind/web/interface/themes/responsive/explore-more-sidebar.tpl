@@ -15,7 +15,7 @@
 		<div id="exploreMoreSideBar-{$sectionId}Panel" class="panel{if $exploreMoreSection->openByDefault} active{/if}">
 
 			{* Clickable header for my account section *}
-			<a data-toggle="collapse"{* data-parent="#explore-more-accordion"*} href="#exploreMoreSideBar-{$sectionId}PanelBody">
+			<a data-bs-toggle="collapse"{* data-bs-parent="#explore-more-accordion"*} href="#exploreMoreSideBar-{$sectionId}PanelBody">
 				<div class="panel-title exploreMoreTitle">
 					{if empty($exploreMoreSection->displayName)}
 						{$archiveSections[$sectionId]}

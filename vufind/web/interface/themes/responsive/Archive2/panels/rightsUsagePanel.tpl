@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="rightsUsagePanel"><a data-toggle="collapse" href="#rightsUsagePanelBody">
+	<div class="panel" id="rightsUsagePanel"><a data-bs-toggle="collapse" href="#rightsUsagePanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Rights & Usage</h2>
 			</div>

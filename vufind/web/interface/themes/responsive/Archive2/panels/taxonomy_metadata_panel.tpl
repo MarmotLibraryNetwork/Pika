@@ -3,7 +3,7 @@
 	<div id="taxonomy-more-details-accordion" class="panel-group">
 
 		<div class="panel" id="taxStaffViewPanel">
-			<a data-toggle="collapse" href="#taxStaffViewPanelBody">
+			<a data-bs-toggle="collapse" href="#taxStaffViewPanelBody">
 				<div class="panel-heading">
 					<h2 class="panel-title">Staff View</h2>
 				</div>

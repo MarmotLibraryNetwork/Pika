@@ -1,6 +1,6 @@
 {if $showUsernameField}
     <div class="panel active">
-        <a data-toggle="collapse" data-parent="#account-settings-accordion" href="#notificationsPanel">
+        <a data-bs-toggle="collapse" data-bs-parent="#account-settings-accordion" href="#notificationsPanel">
             <div class="panel-heading">
                 <h2 class="panel-title">
                     Notifications

@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="descriptiveContentPanel"><a data-toggle="collapse" href="#descriptiveContentPanelBody">
+	<div class="panel" id="descriptiveContentPanel"><a data-bs-toggle="collapse" href="#descriptiveContentPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Descriptive Content</h2>
 			</div>

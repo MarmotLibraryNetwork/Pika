@@ -79,7 +79,7 @@
 
 			{if $wikipediaData}
 				<div class="panel active" id="placeWikipediaPanel">
-					<a data-toggle="collapse" href="#placeWikipediaPanelBody">
+					<a data-bs-toggle="collapse" href="#placeWikipediaPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
@@ -94,7 +94,7 @@
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="placeRelatedObjectsPanel">
-				<a data-toggle="collapse" href="#placeRelatedObjectsPanelBody">
+				<a data-bs-toggle="collapse" href="#placeRelatedObjectsPanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
@@ -109,7 +109,7 @@
 			{include file="Archive2/panels/mapPanel.tpl"}
 			{if $place_addresses}
 				<div class="panel" id="geoAddressesPanel">
-					<a data-toggle="collapse" href="#geoAddressesPanelBody">
+					<a data-bs-toggle="collapse" href="#geoAddressesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Addresses</h2>
 						</div>
@@ -124,7 +124,7 @@
 
 			{if $notes}
 				<div class="panel active" id="geoNotesPanel">
-					<a data-toggle="collapse" href="#geoNotesPanelBody">
+					<a data-bs-toggle="collapse" href="#geoNotesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Notes</h2>
 						</div>

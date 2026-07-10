@@ -1,6 +1,6 @@
 {strip}
 <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal" aria-label="Close Window">&times;</button>
+	<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close Window">&times;</button>
 	<h2 class="modal-title h3" id="myModalLabel">{translate text='Log into your account'}</h2>{* Sematically subheading of main page's h1 (for accessibility *}
 </div>
 <div class="modal-body">
@@ -79,7 +79,7 @@
 </div>
 	{* The modal-footer is required for any follow-on actions that would add action buttons to the modal dialog *}
 	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
+		<button class="btn" data-bs-dismiss="modal" id="modalClose">Close</button>
 		<span class="modal-buttons"></span>
 	</div>
 {/strip}

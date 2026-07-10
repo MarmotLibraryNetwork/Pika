@@ -26,7 +26,7 @@
 	{if $loggedIn}
 		<div id="materialsRequestFilters" class="accordion">
 			<div class="panel panel-default">
-				<a href="#filterPanel" data-toggle="collapse" role="button">
+				<a href="#filterPanel" data-bs-toggle="collapse" role="button">
 					<div class="panel-heading">
 						<div class="panel-title {if !$filterError}collapsed{else}active{/if}">
 								Filters

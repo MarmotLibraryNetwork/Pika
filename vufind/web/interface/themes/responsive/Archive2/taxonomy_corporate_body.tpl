@@ -45,7 +45,7 @@
 
 			{if $wikipediaData}
 				<div class="panel active" id="orgWikipediaPanel">
-					<a data-toggle="collapse" href="#orgWikipediaPanelBody">
+					<a data-bs-toggle="collapse" href="#orgWikipediaPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
@@ -60,7 +60,7 @@
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="orgRelatedObjectsPanel">
-				<a data-toggle="collapse" href="#orgRelatedObjectsPanelBody">
+				<a data-bs-toggle="collapse" href="#orgRelatedObjectsPanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
@@ -76,7 +76,7 @@
 
 			{if $org_addresses}
 				<div class="panel" id="corpBodyAddressesPanel">
-					<a data-toggle="collapse" href="#corpBodyAddressesPanelBody">
+					<a data-bs-toggle="collapse" href="#corpBodyAddressesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Addresses</h2>
 						</div>
@@ -91,7 +91,7 @@
 
 			{if $notes}
 				<div class="panel" id="corpBodyNotesPanel">
-					<a data-toggle="collapse" href="#corpBodyNotesPanelBody">
+					<a data-bs-toggle="collapse" href="#corpBodyNotesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Notes</h2>
 						</div>
