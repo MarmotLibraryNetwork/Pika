@@ -10480,6 +10480,7 @@ img.x-twit {
 .archive-audio-poster-image {
   -o-object-fit: contain;
      object-fit: contain;
+  width: 100%;
   max-width: 600px;
   max-height: 600px;
 }
