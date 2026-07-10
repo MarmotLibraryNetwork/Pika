@@ -7,7 +7,7 @@
 				</h2>
 			</div>
 		</a>
-		<div id="pinPanel" class="panel-collapse collapse in">
+		<div id="pinPanel" class="panel-collapse collapse show">
 			<div class="panel-body">
 
 				{*            Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed*}
@@ -28,7 +28,7 @@
 								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays *}>
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');"
-									        class="btn btn-default" type="button">
+									        class="btn btn-outline-secondary" type="button">
 										<span class="glyphicon glyphicon-eye-close" aria-hidden="true"
 										      title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>
@@ -57,7 +57,7 @@
 								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays *}>
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')"
-									        class="btn btn-default" type="button">
+									        class="btn btn-outline-secondary" type="button">
 										<span class="glyphicon glyphicon-eye-close" aria-hidden="true"
 										      title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>
@@ -85,7 +85,7 @@
 								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays*}>
 									<button aria-label="{translate text='PIN'} is hidden, click to show"
 								        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')"
-								        class="btn btn-default" type="button">
+								        class="btn btn-outline-secondary" type="button">
 										<span class="glyphicon glyphicon-eye-close"
 										      aria-hidden="true" title="Show {translate text='PIN'}">
 												<div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div>

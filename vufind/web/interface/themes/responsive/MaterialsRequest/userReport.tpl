@@ -52,7 +52,7 @@
 								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 											 class="form-control" >
-								<span class="input-group-addon">
+								<span class="input-group-text">
 									<span class="glyphicon glyphicon-calendar" onclick="$('#startDate').focus().datepicker('show')" aria-hidden="true"></span>
 								</span>
 							</div>
@@ -63,7 +63,7 @@
 								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 											 class="form-control">
-								<span class="input-group-addon">
+								<span class="input-group-text">
 											<span class="glyphicon glyphicon-calendar"
 														onclick="$('#endDate').focus().datepicker('show')"
 														aria-hidden="true">
@@ -72,7 +72,7 @@
 							</div>
 						</div>
 					</fieldset>
-					<div><input type="submit" name="submit" value="Update Filters" class="btn btn-default"></div>
+					<div><input type="submit" name="submit" value="Update Filters" class="btn btn-outline-secondary"></div>
 				</form>
 			</div>
 
@@ -107,7 +107,7 @@
 
 			{* Export to Excel option *}
 			<form action="{$fullPath}" method="get">
-				<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
+				<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-outline-secondary">
 				{foreach from=$statusFilter item=status}
 					<input type="hidden" name="statusFilter[]" value="{$status}">
 				{/foreach}

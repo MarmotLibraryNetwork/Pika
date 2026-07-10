@@ -11,16 +11,16 @@
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-						<label class="btn btn-group-small btn-default">
+						<label class="btn btn-group-small btn-outline-secondary">
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('pdf', Pika.Archive.activeBookPage);">
 							View As PDF
 						</label>
 						{/if}
-						<label class="btn btn-group-small btn-default">
+						<label class="btn btn-group-small btn-outline-secondary">
 							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('image', Pika.Archive.activeBookPage);">
 							View As Image
 						</label>
-						<label class="btn btn-group-small btn-default">
+						<label class="btn btn-group-small btn-outline-secondary">
 							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('transcription', Pika.Archive.activeBookPage);">
 							View Transcription
 						</label>
@@ -49,13 +49,13 @@
 
 		<div id="download-options">
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-outline-secondary" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-outline-secondary" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-outline-secondary ">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 

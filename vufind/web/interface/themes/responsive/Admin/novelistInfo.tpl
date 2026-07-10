@@ -31,7 +31,7 @@
 			</div>
 			{if in_array('opacAdmin', $userRoles)}
 				<div class="form-group">
-					<button type="submit" name="truncateData" class="btn btn-default">Clear Cache</button>
+					<button type="submit" name="truncateData" class="btn btn-outline-secondary">Clear Cache</button>
 				</div>
 			{/if}
 		</form>

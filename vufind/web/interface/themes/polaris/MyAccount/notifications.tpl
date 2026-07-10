@@ -7,7 +7,7 @@
                 </h2>
             </div>
         </a>
-        <div id="notificationsPanel" class="panel-collapse collapse in">
+        <div id="notificationsPanel" class="panel-collapse collapse show">
             <div class="panel-body">
                 <form action="" method="post" class="form-horizontal" id="notificationsForm">
                     <input type="hidden" name="updateScope" value="contact">

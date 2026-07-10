@@ -45,10 +45,10 @@
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
+								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for library hold.{else}Cover image for {$record.title}.{/if}">
 						{/if}
 					{/if}
 
@@ -201,16 +201,16 @@
 							{/if}
 							{if $record.allowFreezeHolds}
 								{if $record.frozen}
-									<button onclick="return Pika.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+									<button onclick="return Pika.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-outline-secondary">{translate text="Thaw Hold"}</button>
 								{elseif $record.freezeable}
-									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-outline-secondary">{translate text="Freeze Hold"}</button>
 								{else}
 									<div onclick="Pika.showMessage('{translate text="Freeze Hold"}','The current hold cannot be {translate text="frozen"}.', true, false);"><button  disabled="disabled" style="width:100%;" class="btn btn-sm disabled" >{translate text="Freeze Hold"}</button></div>
 								{/if}
 
 							{/if}
 							{if $record.locationUpdateable}
-								<button onclick="return Pika.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
+								<button onclick="return Pika.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-outline-secondary">Change Pickup Loc.</button>
 							{/if}
 						{/if}
 					</div>

@@ -16,7 +16,7 @@
 
 		<div class="coversColumn col-sm-3 col-md-3 col-lg-3 col-xl-2 text-center">
 			<img src="/bookcover.php?isn={$record.isbn|@formatISBN}&amp;issn={$record.issn}&amp;size=medium&amp;upc={$record.upc}" {* preserve space for good parsing *}
-			     class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+			     class="listResultImage img-thumbnail img-fluid" alt="{translate text='Cover Image'}">
 		</div>
 
 		<div class="col-sm-8 col-md-8 col-lg-8 col-xl-9">

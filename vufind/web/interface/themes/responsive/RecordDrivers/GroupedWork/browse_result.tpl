@@ -2,7 +2,7 @@
 	{if $browseMode == 'grid'}
 		<div class="browse-list">
 			<a onclick="return Pika.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
-					<img class="img-responsive" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}"*} title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
+					<img class="img-fluid" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}"*} title="{$summTitle}{if $summAuthor} by {$summAuthor}{/if}">
 				<div><strong>{$summTitle}</strong>{if $summAuthor}<br> by {$summAuthor}{/if}</div>
 			</a>
 		</div>

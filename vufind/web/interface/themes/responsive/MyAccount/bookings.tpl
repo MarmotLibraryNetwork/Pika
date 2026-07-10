@@ -32,7 +32,7 @@
 								<input class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return Pika.Account.cancelSelectedBookings()">
 								<input class="btn btn-sm btn-danger" name="cancelAll" value="Cancel All" onclick="return Pika.Account.cancelAllBookings()">
 									*}
-{*<input type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel">*}{*
+{*<input type="submit" class="btn btn-sm btn-outline-secondary" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel">*}{*
 
 							</div>
 						</div>
@@ -58,7 +58,7 @@
 								<input class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return Pika.Account.cancelSelectedBookings()">
 								<input class="btn btn-sm btn-danger" name="cancelAll" value="Cancel All" onclick="return Pika.Account.cancelAllBookings()">
 								*}
-{*<input type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel">*}{*
+{*<input type="submit" class="btn btn-sm btn-outline-secondary" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel">*}{*
 
 							</div>
 						</div>

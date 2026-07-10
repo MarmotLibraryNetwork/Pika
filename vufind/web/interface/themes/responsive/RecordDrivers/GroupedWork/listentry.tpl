@@ -26,7 +26,7 @@
 			<div class="col-12 col-sm-2 col-xl-1 text-center">
 				{if $listEditAllowed}
 					<div class="btn-group-vertical" role="group">
-						<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}&page={$pageNum}&pagesize={$pageSize}&sort={$listSort}" class="btn btn-default">{translate text='Edit'}</a>
+						<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}&page={$pageNum}&pagesize={$pageSize}&sort={$listSort}" class="btn btn-outline-secondary">{translate text='Edit'}</a>
 						{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
 						<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}&page={$pageNum}&pagesize={$pageSize}&sort={$listSort}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete'}</a>
 					</div>
@@ -59,7 +59,7 @@
 						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 						>
 							{if $summRating.user}
-								<div class="text-left small">Your rating: {$summRating.user} stars</div>
+								<div class="text-start small">Your rating: {$summRating.user} stars</div>
 							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>

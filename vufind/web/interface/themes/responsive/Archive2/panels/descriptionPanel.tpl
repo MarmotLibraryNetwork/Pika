@@ -4,7 +4,7 @@
             <h2 class="panel-title">Description</h2>
         </div>
     </a>
-    <div id="descPanelBody" class="panel-collapse collapse in">
+    <div id="descPanelBody" class="panel-collapse collapse show">
         <div class="panel-body">
             <div class="row">
                 <div class="result-result col-md-12">{$description}

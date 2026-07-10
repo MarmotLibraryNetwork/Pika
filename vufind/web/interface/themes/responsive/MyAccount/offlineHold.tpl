@@ -45,10 +45,10 @@
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{translate text='Cover Image'}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{translate text='Cover Image'}">
 						{/if}
 					{/if}
 
@@ -208,13 +208,13 @@
 {*
 							{if $record.allowFreezeHolds}
 								{if $record.frozen}
-									<button onclick="return Pika.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+									<button onclick="return Pika.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-outline-secondary">{translate text="Thaw Hold"}</button>
 								{elseif $record.freezeable}
-									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+									<button onclick="return Pika.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-outline-secondary">{translate text="Freeze Hold"}</button>
 								{/if}
 							{/if}
 							{if $record.locationUpdateable}
-								<button onclick="return Pika.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
+								<button onclick="return Pika.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-outline-secondary">Change Pickup Loc.</button>
 							{/if}
 						{/if}
 					</div>

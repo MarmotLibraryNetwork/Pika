@@ -9,7 +9,7 @@
 	<div class="row">
 		<div class="col-xl-6">
 			{if $thumbnail && $thumbnail.url}
-				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail">
+				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-fluid taxonomy-thumbnail">
 			{/if}
 		</div>
 		<div class="col-xl-6">
@@ -50,7 +50,7 @@
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
 					</a>
-					<div id="orgWikipediaPanelBody" class="panel-collapse collapse in">
+					<div id="orgWikipediaPanelBody" class="panel-collapse collapse show">
 						<div class="panel-body">
 							{include file="Archive2/sections/wikipediaSection.tpl"}
 						</div>
@@ -65,7 +65,7 @@
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
 				</a>
-				<div id="orgRelatedObjectsPanelBody" class="panel-collapse collapse in">
+				<div id="orgRelatedObjectsPanelBody" class="panel-collapse collapse show">
 					<div class="panel-body" id="orgRelatedObjectsContent">
 						Loading...
 					</div>

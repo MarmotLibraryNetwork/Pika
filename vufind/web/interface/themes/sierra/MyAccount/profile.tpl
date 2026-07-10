@@ -37,7 +37,7 @@
 							</h2>
 						</div>
 					</a>
-					<div id="barcodePanel" class="panel-collapse collapse in">
+					<div id="barcodePanel" class="panel-collapse collapse show">
 						<div class="panel-body" style="text-align: center;">
 							<svg role="img" id="barcode" style="margin: 0 auto;max-width: 100%" aria-labelledby="barcodeTitle"></svg>
 							{literal}
@@ -64,7 +64,7 @@
 							</h2>
 						</div>
 					</a>
-					<div id="contactPanel" class="panel-collapse collapse in">
+					<div id="contactPanel" class="panel-collapse collapse show">
 						<div class="panel-body">
 							{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 							<form action="" method="post" class="form-horizontal" id="contactUpdateForm">
@@ -247,7 +247,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="pinPanel" class="panel-collapse collapse in">
+							<div id="pinPanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 
 									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
@@ -260,7 +260,7 @@
 													<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													{* No size limits in case previously set password doesn't meet current restrictions *}
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');" class="btn btn-default" type="button" ><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
+														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');" class="btn btn-outline-secondary" type="button" ><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 													</span>
 												</div>
 											</div>
@@ -271,7 +271,7 @@
 												<div class="input-group">
 													<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
+														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-outline-secondary" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 													</span>
 												</div>
 											</div>
@@ -282,7 +282,7 @@
 												<div class="input-group">
 													<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
 													<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
+														<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-outline-secondary" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 													</span>
 												</div>
 											</div>
@@ -334,7 +334,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="overdrivePanel" class="panel-collapse collapse in">
+							<div id="overdrivePanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 										{include file="MyAccount/profile-overdrive-options.tpl"}
 								</div>
@@ -352,7 +352,7 @@
 							</h2>
 						</div>
 					</a>
-					<div id="hooplaPanel" class="panel-collapse collapse in">
+					<div id="hooplaPanel" class="panel-collapse collapse show">
 						<div class="panel-body">
 							{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 							<form action="" method="post" class="form-horizontal">
@@ -390,7 +390,7 @@
 							</h2>
 						</div>
 					</a>
-					<div id="userPreferencePanel" class="panel-collapse collapse in">
+					<div id="userPreferencePanel" class="panel-collapse collapse show">
 						<div class="panel-body">
 							{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 							<form action="" method="post" class="form-horizontal">
@@ -449,7 +449,7 @@
 								</h2>
 							</div>
 						</a>
-						<div id="linkedAccountPanel" class="panel-collapse collapse in">
+						<div id="linkedAccountPanel" class="panel-collapse collapse show">
 							<div class="panel-body">
 								<div class="alert alert-info">
 									<p>
@@ -497,7 +497,7 @@
 								</h2>
 							</div>
 						</a>
-						<div id="rolesPanel" class="panel-collapse collapse in">
+						<div id="rolesPanel" class="panel-collapse collapse show">
 							<div class="panel-body">
 								{include file="MyAccount/profile-staff-settings.tpl"}
 							</div>

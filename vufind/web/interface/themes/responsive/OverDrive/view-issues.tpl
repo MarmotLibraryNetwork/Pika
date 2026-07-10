@@ -26,7 +26,7 @@
 			{/if}
 *}
 			<div id="titleScrollerIssues" class="titleScrollerBody">
-				<button class="leftScrollerButton enabled btn btn-default issuesLeft" aria-label="Previous Issue"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="leftScrollerButton enabled btn btn-outline-secondary issuesLeft" aria-label="Previous Issue"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="scrollerBodyContainer">
 					<div class="scrollerBody" style="display:none"></div>
 					<div class="scrollerLoadingContainer">
@@ -40,7 +40,7 @@
 				{if !isset($widget) || $widget->showAuthor}
 					<div id="titleScrollerSelectedAuthorIssues" class="titleScrollerSelectedAuthor notranslate"></div>
 				{/if}
-				<button class="rightScrollerButton btn btn-default issuesRight" aria-label="Next Issue"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="rightScrollerButton btn btn-outline-secondary issuesRight" aria-label="Next Issue"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
 		</div>
 	</div>

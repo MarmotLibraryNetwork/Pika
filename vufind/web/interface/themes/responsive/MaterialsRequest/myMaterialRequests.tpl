@@ -24,7 +24,7 @@
 						</label>
 					</div>
 					<div class="form-group">
-						<input type="submit" name="submit" value="Update Filters" class="btn btn-sm btn-default">
+						<input type="submit" name="submit" value="Update Filters" class="btn btn-sm btn-outline-secondary">
 					</div>
 				</div>
 			</form>

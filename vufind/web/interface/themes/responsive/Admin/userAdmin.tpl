@@ -92,7 +92,7 @@
 												<input type="hidden" name="userAction" value="moveUserData">
 												<input type="hidden" name="userId" value="{$duplicateUser->id}">
 												<input type="hidden" name="moveUserId" value="{$userId}">
-												<button class="btn btn-sm btn-default" onclick="if(confirm('Confirm move user data to listed user #{$smarty.foreach.moveloop.iteration}')) $(this).parent('form').submit(); return false">Move data to user #{$smarty.foreach.moveloop.iteration}</button>
+												<button class="btn btn-sm btn-outline-secondary" onclick="if(confirm('Confirm move user data to listed user #{$smarty.foreach.moveloop.iteration}')) $(this).parent('form').submit(); return false">Move data to user #{$smarty.foreach.moveloop.iteration}</button>
 											</form>
 										{/if}
 									{/foreach}*}

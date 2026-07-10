@@ -53,7 +53,7 @@
 									<div class="btn-group btn-group-sm"{* data-toggle="buttons"*}>
 											{foreach from=$lendingOption->options item=option}
 													{if !$offline}
-														<label for="{$formatType}_{$option}" class="btn btn-sm btn-default{* {if $lendingOption->lendingPeriod == $option}active{/if}*}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if}{* class="form-control"*}>&nbsp; {$option}</label>
+														<label for="{$formatType}_{$option}" class="btn btn-sm btn-outline-secondary{* {if $lendingOption->lendingPeriod == $option}active{/if}*}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if}{* class="form-control"*}>&nbsp; {$option}</label>
 													{elseif $lendingOption->lendingPeriod == $option}
 															{$option}
 													{/if}

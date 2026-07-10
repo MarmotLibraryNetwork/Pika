@@ -2,7 +2,7 @@
 	{if $browseMode == 'grid'}
 		<div class="browse-list">
 			<a href="{$summUrl}">
-				<img class="img-responsive" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle}"*} title="{$summTitle}">
+				<img class="img-fluid" src="{$bookCoverUrl}" alt=""{* Empty alt text since is just duplicates the link text*} {*alt="{$summTitle}"*} title="{$summTitle}">
 				<div><strong>{$summTitle}</strong></div>
 			</a>
 		</div>

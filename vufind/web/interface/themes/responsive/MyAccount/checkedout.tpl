@@ -37,15 +37,15 @@
 								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected" data-selected=""{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
-						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
-							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
+							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-outline-secondary">Renew Selected Items</button>
+							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-outline-secondary">Renew All</button>
 						{/if}
-						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
+						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-outline-secondary" id="exportToExcelTop">Export to Excel</a>
 					</div>
 
 					{if !$hasOnlyEContentCheckOuts}
@@ -81,11 +81,11 @@
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</button>
-							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</button>
+							<button onclick="return Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-outline-secondary">Renew Selected Items</button>
+							<button onclick="return Pika.Account.renewAll()" class="btn btn-sm btn-outline-secondary">Renew All</button>
 							{* return for the onclick prevents form submission *}
 						{/if}
-						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
+						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-outline-secondary" id="exportToExcelTop">Export to Excel</a>
 					</div>
 				</form>
 

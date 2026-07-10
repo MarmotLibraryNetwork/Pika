@@ -10,7 +10,7 @@
 			<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				<div class="main-project-image">
 					{if $large_image}<a href="{$large_image}">{/if}
-					<img src="{$medium_image}" class="img-responsive" alt="Main image for {$title|escape}">
+					<img src="{$medium_image}" class="img-fluid" alt="Main image for {$title|escape}">
 						{if $large_image}</a>{/if}
 				</div>
 

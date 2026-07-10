@@ -44,12 +44,12 @@
 							</div>
 
 							<div class="input-group-btn" id="search-actions">
-								<button class="btn btn-default" type="submit">GO</button>
-								<button class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
+								<button class="btn btn-outline-secondary" type="submit">GO</button>
+								<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
 									<span class="caret"></span>
 								</button>
 
-								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
+								<ul id="searchType" class="dropdown-menu text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
 									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
@@ -182,7 +182,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
 					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-6{else}col-12{/if} text-center d-none d-sm-block d-md-none">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 
@@ -208,7 +208,7 @@
 			{* Show/Hide Search Facets & Sort Options * }
 			{if $recordCount || $sideRecommendations}
 				<div class="row text-center d-none d-sm-block d-md-none">
-					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 				</div>
 			{/if}-->*}
 

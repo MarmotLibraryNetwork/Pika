@@ -85,7 +85,7 @@
 										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control" >
-										<span class="input-group-addon">
+										<span class="input-group-text">
 											<span class="glyphicon glyphicon-calendar"
 														onclick="$('#startDate').focus().datepicker('show')"
 														aria-hidden="true">
@@ -99,7 +99,7 @@
 										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control">
-										<span class="input-group-addon">
+										<span class="input-group-text">
 											<span class="glyphicon glyphicon-calendar"
 													onclick="$('#endDate').focus().datepicker('show')"
 													aria-hidden="true">
@@ -156,7 +156,7 @@
 							</div>
 						</fieldset>
 
-						<input type="submit" name="submit" value="Update Filters" class="btn btn-default">
+						<input type="submit" name="submit" value="Update Filters" class="btn btn-outline-secondary">
 					</form>
 
 				</div>
@@ -326,7 +326,7 @@
 						</div>
 						<div class="row">
 							<div class="col-sm-12">
-								<input class="btn btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return Pika.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-outline-secondary" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return Pika.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
 					</div>

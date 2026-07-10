@@ -11,7 +11,7 @@
 			{if $thumbnail}
 				<div class="row">
 					<div class="col-sm-12">
-						<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
+						<img src="{$thumbnail}" class="img-fluid thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
 						{$description}
 						<div class="clearfix"></div>
 					</div>

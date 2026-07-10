@@ -1,13 +1,13 @@
 {strip}
 	<div id="main-content">
 		<div class="btn-group">
-			<a class="btn btn-sm btn-default" href="/Admin/IndexingProfiles?objectAction=edit&amp;id={$id}">Edit Profile</a>
+			<a class="btn btn-sm btn-outline-secondary" href="/Admin/IndexingProfiles?objectAction=edit&amp;id={$id}">Edit Profile</a>
 			{foreach from=$additionalObjectActions item=action}
 				{if $smarty.server.REQUEST_URI != $action.url}
-					<a class="btn btn-default btn-sm" href='{$action.url}'>{$action.text}</a>
+					<a class="btn btn-outline-secondary btn-sm" href='{$action.url}'>{$action.text}</a>
 				{/if}
 			{/foreach}
-			<a class="btn btn-sm btn-default" href='/Admin/IndexingProfiles?objectAction=list'>Return to List</a>
+			<a class="btn btn-sm btn-outline-secondary" href='/Admin/IndexingProfiles?objectAction=list'>Return to List</a>
 		</div>
 		<h1 role="heading" aria-level="1" class="h2">{$IndexProfileName}</h1>
 		<table class="table table-striped table-bordered">

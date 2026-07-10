@@ -20,7 +20,7 @@
 			{/if}
 			<br>
 			<div>
-				<button onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-default">
+				<button onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-outline-secondary">
 					{translate text="Add Tag"}
 				</button>
 			</div>

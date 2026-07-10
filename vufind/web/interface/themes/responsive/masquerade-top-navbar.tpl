@@ -13,8 +13,8 @@
 					<h5>Masquerading As {$userDisplayName|capitalize}</h5>
 				</div>
 
-				<div id="masquerade-header-end" class="col-5 col-sm-4 col-md-3 col-xl-2 pull-right">
-					<button class="btn btn-masquerade btn-block pull-right" onclick="Pika.Account.endMasquerade()">End Masquerade</button>
+				<div id="masquerade-header-end" class="col-5 col-sm-4 col-md-3 col-xl-2 float-end">
+					<button class="btn btn-masquerade btn-block float-end" onclick="Pika.Account.endMasquerade()">End Masquerade</button>
 				</div>
 			</div>
 

@@ -11,7 +11,7 @@
 		</div>
 	{/if}
 	{if $importResults.errors}
-		<div class="well">
+		<div class="card card-body">
 			<p class="alert alert-warning">The following errors occurred. For any titles that failed to import, you can search the catalog for these titles to re-add to your lists.</p>
 			<ul class="list-group">
 				{foreach from=$importResults.errors item=error}
@@ -20,7 +20,7 @@
 			</ul>
 		</div>
 {* TODO: use with newer bootstrap
-		<div class="well">
+		<div class="card card-body">
 			<p>The following errors occurred. For titles that failed to import, you can search the catalog for these titles to re-add them to your lists.</p>
 			<p>
 			<ul class="list-group">
@@ -32,6 +32,6 @@
 		</div>
 *}
 	{/if}
-		<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
+		<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-outline-secondary btn-sm">Return to My Lists</a>
 	</div>
 {/strip}

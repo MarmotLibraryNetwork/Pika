@@ -2,7 +2,7 @@
 <form method="post" action="" id="overDriveHoldPromptsForm" class="form">
 	<div>
 		<input type="hidden" name="overdriveId" value="{$overDriveId}">
-		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as well*}
+		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as card card-body*}
 			<div class="form-group">
 				<label class="control-label" for="patronId">{translate text="Place hold for account"}: </label>
 				<div class="controls">

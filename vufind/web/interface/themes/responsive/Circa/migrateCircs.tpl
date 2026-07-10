@@ -16,7 +16,7 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-12 well">
+			<div class="col-12 card card-body">
 				<p>This will load circs into the Pika Offline Circ tables to be processed as check outs.</p>
 			<p>Circs can be loaded from either an INI formatted text
 				or from a CSV formatted text.
@@ -62,7 +62,7 @@
 {*					<textarea rows="10" cols="20" name="barcodesToCheckOut" id="barcodesToCheckOut" class="required" aria-required="true" onchange="clearOfflineCircResults();"></textarea>*}
 				</div>
 				<div class="col-sm-12">
-					<button name="submit" class="btn btn-primary pull-right">Submit Offline Checkouts</button>
+					<button name="submit" class="btn btn-primary float-end">Submit Offline Checkouts</button>
 				</div>
 			</fieldset>
 		</div>

@@ -3,7 +3,7 @@
 	<div id="header_library">
 		<div class="col-4 col-sm-4 col-md-3 col-lg-8 col-xl-8">
 			<a href="{if !empty($logoLink)}{$logoLink}{else}/{*empty link to home page*}{/if}" title="{$logoLinkTitleAttribute}">
-				<img id="header-logo" class="img-fluid" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+				<img id="header-logo" class="img-fluid" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="float-start"{/if}>
 			</a>
 		</div>
 
@@ -17,7 +17,7 @@
 			</div>
 
 			<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2">
-				<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
+				<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as card card-body. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
 					</div>

@@ -12,16 +12,16 @@
 		{/if}
 		<p>
 			{if $showReturnToList}
-				<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=list'>Return to List</a>
+				<a class="btn btn-outline-secondary" href='/{$module}/{$toolName}?objectAction=list'>Return to List</a>
 			{/if}
 			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("Are you sure you want to delete this {$objectType}?")'>Delete</a>{/if}
 		</p>
 		<div class="btn-group">
 			{foreach from=$additionalObjectActions item=action}
 				{if empty($action.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
-					<button class="btn btn-default btn-sm"{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</button>
+					<button class="btn btn-outline-secondary btn-sm"{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</button>
 				{else}
-				<a class="btn btn-default btn-sm"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</a>
+				<a class="btn btn-outline-secondary btn-sm"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</a>
 				{/if}
 			{/foreach}
 		</div>

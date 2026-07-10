@@ -5,7 +5,7 @@
 	{* In mobile view this div is the top div and spans across the screen *}
 	<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
 		<a href="{if !empty($logoLink)}{$logoLink}{else}/{*empty link to home page*}{/if}" title="{$logoLinkTitleAttribute}">
-			<img id="header-logo" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+			<img id="header-logo" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="float-start"{/if}>
 		</a>
 	</div>
 
@@ -34,7 +34,7 @@
 		</div>
 
 		<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2">
-			<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
+			<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as card card-body. Continue to log out?')"{/if}>
 				<div class="header-button header-primary">
 					{translate text="Log Out"}
 				</div>
@@ -55,7 +55,7 @@
 		{* Show log out option on Force Pin Update so users can log out if they choose *}
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 			<div class="d-sm-none d-md-block col-md-2 offset-md-7 col-lg-2 offset-lg-2 offset-xl-2 col-xl-2">
-				<a  id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
+				<a  id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as card card-body. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
 					</div>

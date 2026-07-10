@@ -4,7 +4,7 @@
             <h2 class="panel-title">Details</h2>
         </div>
     </a>
-    <div id="detailsPanelBody" class="panel-collapse collapse in">
+    <div id="detailsPanelBody" class="panel-collapse collapse show">
         <div class="panel-body">
             {* Names *}
 				{if $familyName}

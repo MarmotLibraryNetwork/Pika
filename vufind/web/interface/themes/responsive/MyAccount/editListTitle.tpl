@@ -19,7 +19,7 @@
 					<input type="hidden" id="myListPageSize" name="pagesize" value="{$pageSize}">
 					<input type="hidden" id="myListSort" name="sort" value="{$listSort}">
 					<div class = "col-md-2">
-						<img src="{$recordDriver->getBookcoverUrl('medium')}" class="img-thumbnail img-responsive" alt="Thumbnail for {$recordDriver->getTitle()|escape:"html"}">
+						<img src="{$recordDriver->getBookcoverUrl('medium')}" class="img-thumbnail img-fluid" alt="Thumbnail for {$recordDriver->getTitle()|escape:"html"}">
 					</div>
 						<div class="col-md-10">
 						<div class="form-group">

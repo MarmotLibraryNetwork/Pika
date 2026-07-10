@@ -25,7 +25,7 @@
 		</div>
 	{/if}
 	<div class="row" style="margin-top: 15px">
-			<div class="col-12 text-right pull-right" id="ReportAccessibilityIssue" aria-label="report accessibility issue">
+			<div class="col-12 text-end float-end" id="ReportAccessibilityIssue" aria-label="report accessibility issue">
 				<a href="/Help/AccessibilityReport" title="issue reporting">Report Accessibility Issue</a>
 			</div>
 	</div>

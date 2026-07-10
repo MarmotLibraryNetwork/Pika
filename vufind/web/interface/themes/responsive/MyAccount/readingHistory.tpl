@@ -71,7 +71,7 @@
 							</div>
 							{if $historyActive == true}
 								<div class="col-sm-6">
-									<div class="btn-group btn-group-sm pull-right">
+									<div class="btn-group btn-group-sm float-end">
 								{if $transList}
 									<button class="btn btn-sm btn-danger " onclick="return Pika.Account.ReadingHistory.deleteAllAction()">Delete All</button>
 								{/if}
@@ -98,7 +98,7 @@
 										<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
 										<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
 									</select>
-									<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+									<button class="btn btn-outline-secondary" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
 								</div>
 							</div>
 							<hr>
@@ -124,7 +124,7 @@
 										</select>
 									</div>
 									<div class="form-group col-md-2" id="coverOptions">
-										<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+										<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 									</div>
 								</div>
 							</div>
@@ -188,10 +188,10 @@
 																{if $record.coverUrl}
 																	{if $record.recordId && $record.linkUrl}
 																		<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-																			<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
+																			<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
 																		</a>
 																	{else} {* Cover Image but no Record-View link *}
-																		<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
+																		<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
 																	{/if}
 																{/if}
 															</div>

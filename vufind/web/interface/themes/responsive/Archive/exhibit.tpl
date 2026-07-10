@@ -7,7 +7,7 @@
 
 	{if $main_image}
 		<div class="main-project-image">
-			<img src="{$main_image}" class="img-responsive" usemap="#map" alt='Main image for "{$title}" collection'>
+			<img src="{$main_image}" class="img-fluid" usemap="#map" alt='Main image for "{$title}" collection'>
 		</div>
 	{/if}
 
@@ -22,14 +22,14 @@
 			{$imageMap}
 			<script>
 				$(document).ready(function(e) {ldelim}
-					$('img[usemap]').addClass('img-responsive');
+					$('img[usemap]').addClass('img-fluid');
 					$('img[usemap]').rwdImageMaps();
 				{rdelim});
 			</script>
 		{else}
 			{if $thumbnail && !$main_image}
 				{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-				<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
+				<img src="{$thumbnail}" class="img-fluid thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 				{if $exhibitThumbnailURL}</a>{/if}
 
 			{/if}
@@ -99,7 +99,7 @@
 			<div class="col-md-5 offset-md-1">
 				{* Display information to sort the results (by date or by title *}
 				<div class="input-group">
-					<label for="results-sort" class="input-group-addon">Sort By</label>
+					<label for="results-sort" class="input-group-text">Sort By</label>
 					<select id="results-sort" name="sort" class="form-control">
 						<option value="title" {if $sort=='title'}selected="selected"{/if}>Title</option>
 						<option value="newest" {if $sort=='newest'}selected="selected"{/if}>Newest First</option>
@@ -172,16 +172,16 @@
 				</a>
 				<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
 					<div class="panel-body">
-						<a class="btn btn-small btn-default" href="{$repositoryLink}" target="_blank">
+						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}" target="_blank">
 							View in Islandora
 						</a>
-						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
+						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
 							View MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
+						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-small btn-outline-secondary" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>

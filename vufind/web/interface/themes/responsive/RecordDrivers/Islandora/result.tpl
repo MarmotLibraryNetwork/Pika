@@ -33,7 +33,7 @@
 			{if $disableCoverArt != 1}
 				{*<div class='descriptionContent{$summShortId|escape}' style='display:none'>{$summDescription}</div>*}
 				<a href="{$summUrl}">
-					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail{if $summTitle} for '{$summTitle}'{/if}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-fluid" alt="Thumbnail{if $summTitle} for '{$summTitle}'{/if}">
 				</a>
 			{/if}
 		</div>
@@ -114,7 +114,7 @@
 			{/foreach}
 		{/if}
 
-		<div class="row well-small">
+		<div class="row card card-body-small">
 			<div class="col-12 result-value" id="descriptionValue{$jquerySafeId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>
 		</div>
 

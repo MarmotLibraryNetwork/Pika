@@ -6,13 +6,13 @@
 	{if $thumbnail && $thumbnail.url}
 	<img src="{$thumbnail.url|escape}"
 	     alt="{$term_title|escape}"
-	     class="img-responsive taxonomy-thumbnail">
+	     class="img-fluid taxonomy-thumbnail">
 	{/if}
 </div>
 <div class="col-sm-6">
 
 	{if $term_description}
-		<div class="taxonomy-description well">
+		<div class="taxonomy-description card card-body">
 			{$term_description}
 		</div>
 	{/if}

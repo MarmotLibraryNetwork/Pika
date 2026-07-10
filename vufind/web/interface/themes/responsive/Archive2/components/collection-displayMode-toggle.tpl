@@ -68,12 +68,12 @@
 			<div class="btn-group btn-group-sm" data-toggle="buttons">
 				<button tabindex="0" title="Covers" aria-label="change results to grid layout"
 					onclick="Pika.Archive2.toggleCollectionDisplayMode('covers')" id="collectionModeGrid"
-					class="btn btn-sm btn-default displayMode{if $collectionDisplayMode != 'list'} active{/if}">
+					class="btn btn-sm btn-outline-secondary displayMode{if $collectionDisplayMode != 'list'} active{/if}">
 					<span class="thumbnail-icon"></span><span> Covers</span>
 				</button>
 				<button tabindex="0" title="List" aria-label="change results to list layout"
 					onclick="Pika.Archive2.toggleCollectionDisplayMode('list')" id="collectionModeList"
-					class="btn btn-sm btn-default displayMode{if $collectionDisplayMode == 'list'} active{/if}">
+					class="btn btn-sm btn-outline-secondary displayMode{if $collectionDisplayMode == 'list'} active{/if}">
 					<span class="list-icon"></span><span> List</span>
 				</button>
 			</div>

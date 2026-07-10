@@ -5,7 +5,7 @@
 		</h1>
 
 		<div class="row">
-			<div class="col-12"><a class="btn btn-default" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
+			<div class="col-12"><a class="btn btn-outline-secondary" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
 			<br><br>
 		</div>
 
@@ -20,7 +20,7 @@
 						{/foreach}
 					</select>
 				</div>
-	{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
+	{*			<button type="submit" class="btn btn-outline-secondary btn-sm">Set Date</button>*}
 				</div>
 				<div class="col-md-6">
 				<div class="form-group">
@@ -32,7 +32,7 @@
 						{/foreach}
 					</select>
 				</div>
-	{*			<button type="submit" class="btn btn-default btn-sm">Compare</button>*}
+	{*			<button type="submit" class="btn btn-outline-secondary btn-sm">Compare</button>*}
 				</div>
 			</form>
 		</div>
@@ -43,7 +43,7 @@
 				{foreach from=$indexingStatHeader item=itemHeader name=indexCols}
 					{if $smarty.foreach.indexCols.index}{* Skip the first column for scope name *}
 						<div class="col-md-4">
-							<button class="toggle-vis btn btn-default btn-primary" data-column="{$smarty.foreach.indexCols.index}"
+							<button class="toggle-vis btn btn-outline-secondary btn-primary" data-column="{$smarty.foreach.indexCols.index}"
 							        style="width: 100%">{$itemHeader}</button>
 						</div>
 					{/if}

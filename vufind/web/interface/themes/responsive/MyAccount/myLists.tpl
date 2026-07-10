@@ -7,10 +7,10 @@
 		<div class="btn-group">
 			<button onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</button>
 			{if $showConvertListsFromClassic}
-				<button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
+				<button value="importFromClassic" class="btn btn-sm btn-outline-secondary" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
 			{/if}
 		</div>
-		<div class="btn-group pull-right">
+		<div class="btn-group float-end">
 			<button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected Lists</button>
 		</div>
 	</div>
@@ -134,11 +134,11 @@
 												</div>
 											{else}
 												<div class="btn-group btn-group-sm">
-													<button value="emailList" class="btn btn-sm btn-default"
+													<button value="emailList" class="btn btn-sm btn-outline-secondary"
 																	onclick='return Pika.Lists.emailListAction("{$myList.id}")'
 																	title="Share via e-mail">Email List
 													</button>
-													<button value="exportToExcel" class="btn btn-sm btn-default"
+													<button value="exportToExcel" class="btn btn-sm btn-outline-secondary"
 																	onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel
 													</button>
 												</div>

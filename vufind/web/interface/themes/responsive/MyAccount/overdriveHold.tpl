@@ -43,10 +43,10 @@
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for Overdrive hold.{else}Cover image for {$record.title}.{/if}">
+								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for Overdrive hold.{else}Cover image for {$record.title}.{/if}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for Overdrive hold.{else}Cover image for {$record.title}.{/if}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for Overdrive hold.{else}Cover image for {$record.title}.{/if}">
 						{/if}
 					{/if}
 				</div>
@@ -148,12 +148,12 @@
 						{if $record.frozen}
 							{if $record.showUpdateHoldButton}
 								{* The Update hold button is only useful for changing the hold notification email now *}
-								<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
+								<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-outline-secondary">{translate text="Update Hold"}</button>
 							{/if}
-							<button onclick="return Pika.OverDrive.thawOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+							<button onclick="return Pika.OverDrive.thawOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-outline-secondary">{translate text="Thaw Hold"}</button>
 						{else}
 							{*We can freeze available OverDrive holds *}
-							<button onclick="return Pika.OverDrive.freezeOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+							<button onclick="return Pika.OverDrive.freezeOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-outline-secondary">{translate text="Freeze Hold"}</button>
 						{/if}
 						<button onclick="return Pika.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>

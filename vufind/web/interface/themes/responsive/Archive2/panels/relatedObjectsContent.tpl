@@ -4,14 +4,14 @@
 		<div class="related-objects-tiles">
 			<a href="{$obj.link}">
 				<figure class="browse-thumbnail-sorted">
-					<img src="{$obj.image}" alt="{$obj.title|escape}" class="img-responsive">
+					<img src="{$obj.image}" alt="{$obj.title|escape}" class="img-fluid">
 					<figcaption class="explore-more-category-title">{$obj.title|removeTrailingPunctuation|truncate:30:"..."}</figcaption>
 				</figure>
 			</a>
 		</div>
 	{/foreach}
 </div>
-<div class="related-objects-search-link text-right">
+<div class="related-objects-search-link text-end">
 	<a href="{$relatedObjectsSearchUrl}">
 		{if $relatedObjectsTotal > 20}All Related Objects{else}Related Objects Search{/if}
 	</a>

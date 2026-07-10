@@ -14,18 +14,18 @@
 				{foreach from=$usageArray item=row}
 					<tr>
 						<td>{$row.displayName}</td>
-						<td class="text-right">{$row.numObjects|number_format}</td>
-						<td class="text-right">{$row.driveSpace|number_format}</td>
-						<td class="text-right">{$row.driveSpaceGB|number_format:1}</td>
+						<td class="text-end">{$row.numObjects|number_format}</td>
+						<td class="text-end">{$row.driveSpace|number_format}</td>
+						<td class="text-end">{$row.driveSpaceGB|number_format:1}</td>
 					</tr>
 				{/foreach}
 			</tbody>
 			<tfoot>
 				<tr>
 					<td></td>
-					<td class="text-right"><strong>{$totalObjects|number_format}</strong></td>
-					<td class="text-right"><strong>{$totalBytes|number_format}</strong></td>
-					<td class="text-right"><strong>{$totalDriveSpace|number_format:1} GB</strong></td>
+					<td class="text-end"><strong>{$totalObjects|number_format}</strong></td>
+					<td class="text-end"><strong>{$totalBytes|number_format}</strong></td>
+					<td class="text-end"><strong>{$totalDriveSpace|number_format:1} GB</strong></td>
 				</tr>
 			</tfoot>
 		</table>

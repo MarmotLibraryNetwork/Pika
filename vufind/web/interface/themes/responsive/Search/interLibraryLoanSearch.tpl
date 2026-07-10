@@ -9,7 +9,7 @@
 	<div class="row" id="prospectorLinkSection">
 		<div class="col-12">
 			<br>
-			<button class="btn btn-sm btn-info pull-right" onclick="window.open('{$interLibraryLoanUrl}', 'child'); return false">See more results in {$interLibraryLoanName}</button>
+			<button class="btn btn-sm btn-info float-end" onclick="window.open('{$interLibraryLoanUrl}', 'child'); return false">See more results in {$interLibraryLoanName}</button>
 		</div>
 	</div>
 

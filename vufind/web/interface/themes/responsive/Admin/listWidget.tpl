@@ -1,7 +1,7 @@
 {strip}
 <div id="listWidgetHelp">
 	<h2 class="h3">List Widget Integration Notes</h2>
-	<div class="well">
+	<div class="card card-body">
 		<p>To integrate this widget into another site, insert an iFrame into your site with a source of :</p>
 		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
 		<p>
@@ -30,7 +30,7 @@
 </iframe>
 <hr>
 <h2 class="h3">List Widget with Resizing Integration Notes</h2>
-<div class="well">
+<div class="card card-body">
 	<p>
 		To have a list widget which adjusts its height based on the html content within the list widget use the source url :
 	</p>

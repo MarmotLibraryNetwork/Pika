@@ -9,7 +9,7 @@
 		<div class="row">
 			<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				<div class="main-project-image">
-					<img src="{$medium_image}" class="img-responsive">
+					<img src="{$medium_image}" class="img-fluid">
 				</div>
 			</div>
 			<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">

@@ -114,7 +114,7 @@
 	<div class="{$propName}Actions">
 		<button onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</button>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
-			<div class="btn-group pull-right">
+			<div class="btn-group float-end">
 				{foreach from=$property.additionalOneToManyActions item=action}
 					{assign var="actionAllowed" value=false}
 					{if is_array($action.allowed_roles)}
@@ -130,14 +130,14 @@
 					{/if}
 					{if $actionAllowed}
 						{if empty($action.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
-							<button class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</button>
+							<button class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</button>
 						{else}
-							<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+							<a class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 						{/if}
 					{elseif $action.allowed_roles && $userRoles && (!in_array($action.allowed_roles, $userRoles))}
 						<small></small>
 					{else}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 					{/if}
 
 				{/foreach}

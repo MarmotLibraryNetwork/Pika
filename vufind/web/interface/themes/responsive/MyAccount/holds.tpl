@@ -47,7 +47,7 @@
 
 					{if !$hideCoversFormDisplayed}
 						{* Display the Hide Covers switch above the first section that has holds; and only display it once *}
-						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 						{assign var="hideCoversFormDisplayed" value=true}
 					{/if}
 				</div>
@@ -81,8 +81,8 @@
 							<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
 								<div class="btn-group">
 								<input type="submit" class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return Pika.Account.cancelSelectedHolds();">
-								{if $sectionKey=='unavailable'}<input type="submit" class="btn btn-sm btn-default" name="freezeSelected" value="{translate text="Freeze"} Selected" onclick="return Pika.Account.getFreezeHoldsForm();" >{/if}
-								<input type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel" >
+								{if $sectionKey=='unavailable'}<input type="submit" class="btn btn-sm btn-outline-secondary" name="freezeSelected" value="{translate text="Freeze"} Selected" onclick="return Pika.Account.getFreezeHoldsForm();" >{/if}
+								<input type="submit" class="btn btn-sm btn-outline-secondary" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel" >
 								</div>
 							</div>
 						</div>

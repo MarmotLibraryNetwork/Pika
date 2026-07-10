@@ -13,7 +13,7 @@
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 					<a href="{$original_image}">
 				{/if}
-					<img src="{$large_image}" class="img-responsive" oncontextmenu="return false;">
+					<img src="{$large_image}" class="img-fluid" oncontextmenu="return false;">
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 					</a>
 				{/if}
@@ -25,24 +25,24 @@
 		<div id="download-options">
 			{if $canView}
 				{if $anonymousLcDownload || ($loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
+					<a class="btn btn-outline-secondary" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Log in to Download Large Image</a>
+					<a class="btn btn-outline-secondary" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Log in to Download Large Image</a>
 				{/if}
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
+					<a class="btn btn-outline-secondary" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Log in to Download Original Image</a>
+					<a class="btn btn-outline-secondary" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Log in to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-outline-secondary" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-outline-secondary" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-outline-secondary">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 

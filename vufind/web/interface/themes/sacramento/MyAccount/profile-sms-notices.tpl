@@ -7,7 +7,7 @@
 				</div>
 			</div>
 		</a>
-		<div id="smsPanel" class="panel-collapse collapse in">
+		<div id="smsPanel" class="panel-collapse collapse show">
 			<div class="panel-body">
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal">

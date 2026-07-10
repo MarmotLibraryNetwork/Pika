@@ -43,7 +43,7 @@
 								</h2>
 							</div>
 						</a>
-						<div id="basicPanel" class="panel-collapse collapse in">
+						<div id="basicPanel" class="panel-collapse collapse show">
 							<div class="panel-body">
 								<form action="" method="post" class="form-horizontal">
 									<div class="form-group">
@@ -89,7 +89,7 @@
 								</h2>
 							</div>
 						</a>
-						<div id="contactPanel" class="panel-collapse collapse in">
+						<div id="contactPanel" class="panel-collapse collapse show">
 							<div class="panel-body">
 								{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 								<form action="" method="post" class="form-horizontal" id="contactUpdateForm">
@@ -348,7 +348,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="overdrivePanel" class="panel-collapse collapse in">
+							<div id="overdrivePanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 									{include file="MyAccount/profile-overdrive-options.tpl"}
 								</div>
@@ -366,7 +366,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="hooplaPanel" class="panel-collapse collapse in">
+							<div id="hooplaPanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 									<form action="" method="post" class="form-horizontal">
@@ -411,7 +411,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="userPreferencePanel" class="panel-collapse collapse in">
+							<div id="userPreferencePanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 									<form action="" method="post" class="form-horizontal">
@@ -485,7 +485,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="linkedAccountPanel" class="panel-collapse collapse in">
+							<div id="linkedAccountPanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 									<div class="alert alert-info">
 										<p>
@@ -550,7 +550,7 @@
 									</h2>
 								</div>
 							</a>
-							<div id="rolesPanel" class="panel-collapse collapse in">
+							<div id="rolesPanel" class="panel-collapse collapse show">
 								<div class="panel-body">
 									{include file="MyAccount/profile-staff-settings.tpl"}
 								</div>

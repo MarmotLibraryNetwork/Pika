@@ -111,7 +111,7 @@
 		<div id="horizontal-search-button-container" class="col-md-3 col-sm-12">
 			<div class="row">
 				<div class="col-3 col-sm-3 col-md-4 col-lg-4">
-					<button class="btn btn-default" type="submit">
+					<button class="btn btn-outline-secondary" type="submit">
 						<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
 						{*<span class="d-none d-sm-block d-md-none-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
@@ -144,7 +144,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
 					<div class="col-3 col-sm-3 d-none d-sm-block d-md-none">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 			</div>

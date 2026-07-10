@@ -4,7 +4,7 @@
 		<input type="hidden" name="overdriveId" value="{$overDriveId}">
 		{if !empty($issueId)}<input type="hidden" name="issueId" value="{$issueId}">{/if}
 			{if !empty($formatType)}<input type="hidden" id="formatType" value="{$formatType}">{/if}
-		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as well*}
+		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as card card-body*}
 			<div class="form-group">
 				<label class="control-label" for="patronId">{translate text="Checkout to account"}: </label>
 				<div class="controls">

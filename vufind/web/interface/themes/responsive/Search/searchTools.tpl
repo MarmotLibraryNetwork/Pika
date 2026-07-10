@@ -1,6 +1,6 @@
 {strip}
     {if $showSearchTools || ($loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles)))}
-			<div class="searchtools well small">
+			<div class="searchtools card card-body small">
 				<strong>{translate text='Search Tools'}:</strong>
           {if $showSearchTools}
 						&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>

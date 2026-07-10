@@ -12,19 +12,19 @@
 
 			<div id="download-options">
 			{if $can_download_orginal && $orignal_media_file}
-				<a class="btn btn-default" href="{$orignal_media_file}">Download Original File</a>
+				<a class="btn btn-outline-secondary" href="{$orignal_media_file}">Download Original File</a>
 			{/if}
 			{if $can_download_intermediate && $intermediate_media_file}
-				<a class="btn btn-default" href="{$intermediate_media_file}">Download Intermediate File</a>
+				<a class="btn btn-outline-secondary" href="{$intermediate_media_file}">Download Intermediate File</a>
 			{/if}
 			{if $can_request_copy}
-				<a class="btn btn-default" href="/Archive2/RequestCopy/{$nid}">Request Copy</a>
+				<a class="btn btn-outline-secondary" href="/Archive2/RequestCopy/{$nid}">Request Copy</a>
 			{/if}
 			{if $can_claim_authorship}
-				<a class="btn btn-default" href="/Archive2/ClaimAuthorship/{$nid}">Claim Authorship</a>
+				<a class="btn btn-outline-secondary" href="/Archive2/ClaimAuthorship/{$nid}">Claim Authorship</a>
 			{/if} 
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$nid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$nid|escape}');" class="btn btn-outline-secondary">{translate text='Add to favorites'}</button>
 			{/if}
 			</div>
 

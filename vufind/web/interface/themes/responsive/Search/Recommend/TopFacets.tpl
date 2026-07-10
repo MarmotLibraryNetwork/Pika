@@ -50,7 +50,7 @@
 							{if $thisFacet.isApplied}
 								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" aria-pressed="true" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{else}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-outline-secondary" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{/if}
 						{/foreach}
 					</div>

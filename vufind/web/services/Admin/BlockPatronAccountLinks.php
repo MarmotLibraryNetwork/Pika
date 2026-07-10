@@ -66,7 +66,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor {
 
 	/**
 	 * Define the properties which are editable for the object
-	 * as well as how they should be treated while editing, and a description for the property
+	 * as card card-body as how they should be treated while editing, and a description for the property
 	 */
 	function getObjectStructure(){
 		return BlockPatronAccountLink::getObjectStructure();

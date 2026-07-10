@@ -14,8 +14,8 @@
 						<button class="btn btn-primary" type="submit">Go</button>
 					</div>
         {/if}
-			<div class="form-group col-sm-5 pull-right">
-				<span class="pull-right">
+			<div class="form-group col-sm-5 float-end">
+				<span class="float-end">
 					<label for="pagesize" class="control-label">Entries Per Page:&nbsp;</label>
 					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm">
 						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
@@ -32,16 +32,16 @@
 			{if !empty($filterLabel)}
 				<div class="form-group col-sm-7">
 					<div class="input-group">
-					<label for="filterCount" class="control-label input-group-addon">{$filterLabel}</label>
+					<label for="filterCount" class="control-label input-group-text">{$filterLabel}</label>
 					<input id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
 					<span class="input-group-btn"><button class="btn btn-primary" type="submit">Go</button></span>
 				</div>
 				</div>
       {/if}
-			<div class="form-group col-sm-5 pull-right">
-				<span class="pull-right">
+			<div class="form-group col-sm-5 float-end">
+				<span class="float-end">
 					<div class="input-group">
-					<label for="pagesize" class="control-label input-group-addon">Entries Per Page</label>
+					<label for="pagesize" class="control-label input-group-text">Entries Per Page</label>
 					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm" onchange="Pika.changePageSize()">
 						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
 						<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>

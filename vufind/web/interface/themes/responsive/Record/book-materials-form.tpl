@@ -17,7 +17,7 @@
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
 			{*<div class="form-group col-md-5 ui-front">
@@ -40,7 +40,7 @@
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
 			{*<div class="form-group col-md-5 ui-front">
@@ -54,7 +54,7 @@
 </form>
 	<hr>
 	<div class="row">
-		<button id="calendarButton" class="btn btn-info center-block" type="button" data-bs-toggle="collapse" data-bs-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
+		<button id="calendarButton" class="btn btn-info d-block mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
 			Show/Hide Hourly Calendar
 		</button>
 

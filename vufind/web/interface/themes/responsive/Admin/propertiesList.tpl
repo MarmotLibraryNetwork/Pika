@@ -9,7 +9,7 @@
 		{$instructions}
 	</div>
 {/if}
-{* Display Standard buttons at top of table as well as below *}
+{* Display Standard buttons at top of table as card card-body as below *}
 {if $canAddNew}
 	<form action="" method="get" id="addNewFormTop">
 		<div>
@@ -24,11 +24,11 @@
 		<form action="" method="get">
 			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-				<button type="submit" value='{$customAction.action}' class="btn btn-default">{$customAction.label}</button>
+				<button type="submit" value='{$customAction.action}' class="btn btn-outline-secondary">{$customAction.label}</button>
 			</div>
 		</form>
 	{elseif is_null($customAction.action) && $customAction.onclick}
-		<button class="btn btn-default{* btn-sm*}" onclick="{$customAction.onclick}">{$customAction.label}</button>
+		<button class="btn btn-outline-secondary{* btn-sm*}" onclick="{$customAction.onclick}">{$customAction.label}</button>
 	{/if}
 {/foreach}
 
@@ -208,13 +208,13 @@
 		<form action="" method="get">
 			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-				<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
+				<button type="submit" value='{$customAction.action}' class="btn btn-small btn-outline-secondary">{$customAction.label}</button>
 			</div>
 		</form>
 	{/if}
 
 	{if is_null($customAction.action) && $customAction.onclick}
-		<a class="btn btn-default btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
+		<a class="btn btn-outline-secondary btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
 	{/if}
 {/foreach}
 

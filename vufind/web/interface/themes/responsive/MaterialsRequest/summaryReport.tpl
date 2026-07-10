@@ -127,7 +127,7 @@
 			{foreach from=$statusFilter item=status}
 				<input type="hidden" name="statusFilter[]" value="{$status}">
 			{/foreach}
-			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel"  class="btn btn-default">
+			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel"  class="btn btn-outline-secondary">
 		</form>
 
 		{* Export to Excel option *}

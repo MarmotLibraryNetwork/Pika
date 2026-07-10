@@ -5,7 +5,7 @@
 			<div class="alert alert-info">There are currently <span class="badge">{$numCachedObjects}</span> objects in the cache.  Clearing the entire cache may result in performance issues until the cache is rebuilt.</div>
 
 			<div class="form-group">
-				<button type="submit" name="submit" class="btn btn-default">Clear Cache</button>
+				<button type="submit" name="submit" class="btn btn-outline-secondary">Clear Cache</button>
 			</div>
 
 		</form>

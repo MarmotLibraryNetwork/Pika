@@ -11,7 +11,7 @@
 						<a href="{$obj.url}">
 							<img src="{$obj.thumbnailUrl}"
 							     alt="{$obj.title|escape}"
-							     class="img-responsive taxonomy-related-thumb"
+							     class="img-fluid taxonomy-related-thumb"
 							 />
 						</a>
 					{/if}

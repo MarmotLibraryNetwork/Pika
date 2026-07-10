@@ -2,7 +2,7 @@
 	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
 		{* the data-order attribute is used for user-defined ordering in user lists  *}
-		<a id="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
+		<a id="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as card card-body *}
 
 		{* Title row *}
 		<div class="row result-title-row">
@@ -23,7 +23,7 @@
 			<div class="col-sm-11 col-md-3 col-lg-3 col-xl-2 text-center">
 				{if $disableCoverArt != 1}
 					<a href="{$summUrl}">
-						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail{if $summTitle} for '{$summTitle|escape}'{/if}">
+						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-fluid" alt="Thumbnail{if $summTitle} for '{$summTitle|escape}'{/if}">
 					</a>
 				{/if}
 			</div>
@@ -94,7 +94,7 @@
 					{/foreach}
 				{/if}
 
-				<div class="row well-small">
+				<div class="row card card-body-small">
 					<div class="col-sm-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|highlight|truncate_html:450:"..."}</div>
 				</div>
 
@@ -109,7 +109,7 @@
 			<div class="col-sm-2 col-md-2 col-lg-2 col-xl-1">
 				{if $listEditAllowed}
 					<div class="btn-group-vertical" role="group">
-						<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
+						<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-outline-secondary">{translate text='Edit'}</a>
 						{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
 						<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete'}</a>
 					</div>

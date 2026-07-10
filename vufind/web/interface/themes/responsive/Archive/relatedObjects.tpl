@@ -35,7 +35,7 @@
 			<div class="col-md-5 offset-md-1">
 				{* Display information to sort the results (by date or by title *}
 				<div class="input-group">
-					<label for="results-sort" class="input-group-addon">Sort By</label>
+					<label for="results-sort" class="input-group-text">Sort By</label>
 				<select id="results-sort" name="sort" class="form-control">
 					<option value="title" {if $sort=='title'}selected="selected"{/if}>Title</option>
 					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>Newest First</option>
@@ -74,7 +74,7 @@
 			<div class="row">
 				<div class="col-sm-12">
 					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
-						<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
+						<label class="btn btn-outline-secondary btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
 								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
 							{elseif $displayType == 'timeline'}
@@ -82,7 +82,7 @@
 							{/if}
 						</label>
 						{foreach from=$dateFacetInfo item=facet}
-							<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} active{/if}">
+							<label class="btn btn-outline-secondary btn-sm{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} active{/if}">
 								{if $displayType == 'map'}
 									<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br>({$facet.count})
 								{elseif $displayType == 'timeline'}
@@ -92,7 +92,7 @@
 						{/foreach}
 						{if $numObjectsWithUnknownDate > 0}
 							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date" data-toggle="buttons">
-								<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
+								<label class="btn btn-outline-secondary btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 									{if $displayType == 'map'}
 										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})
 									{elseif $displayType == 'timeline'}

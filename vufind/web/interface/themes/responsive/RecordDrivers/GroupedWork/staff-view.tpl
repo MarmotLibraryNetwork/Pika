@@ -1,22 +1,22 @@
 {strip}
-<button onclick="return Pika.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
-<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
-<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload NoveList Data</button>
+<button onclick="return Pika.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload Cover</button>
+<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload Enrichment</button>
+<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload NoveList Data</button>
 		{if $loggedIn && $userIsStaff}
-			<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
-			<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
+			<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Reindex</button>
+			<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Regrouping</button>
 
 				{if $userRoles && in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles)}
 					<a href="/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape:'url'}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
-						 target="_blank" class="btn btn-sm btn-default">Merge this Work to another
+						 target="_blank" class="btn btn-sm btn-outline-secondary">Merge this Work to another
 					</a>
 				{/if}
 		{/if}
     {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
-			<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+			<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-outline-secondary">Add Librarian Review</a>
     {/if}
 		{if $loggedIn && $enableArchive && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
-	<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
+	<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-outline-secondary">Clear Islandora Cache</button>
 {/if}
 
 
@@ -29,7 +29,7 @@
 		<th>Grouped Work ID</th>
 		<td><span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 			{if $userIsStaff}
-				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			{/if}
 		</td>
 	</tr>

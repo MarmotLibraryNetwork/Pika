@@ -50,9 +50,9 @@
 						     data-show_review="{if $showComments  && (!$loggedIn || !$user->noPromptForUserReviews)}1{else}0{/if}"
 						>
 							{if $summRating.user}
-								<div class="text-left small">Your rating: {$summRating.user} stars</div>
+								<div class="text-start small">Your rating: {$summRating.user} stars</div>
 							{else}
-								<div class="text-left small">Rate this title: </div>
+								<div class="text-start small">Rate this title: </div>
 							{/if}
 							{include file='MyAccount/star-rating.tpl' id=$summId ratingData=$summRating ratingTitle=$summTitle}
 						</div>

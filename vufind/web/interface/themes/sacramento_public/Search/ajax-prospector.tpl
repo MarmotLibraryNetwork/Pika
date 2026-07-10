@@ -1,7 +1,7 @@
 {strip}
 	<div class="row" id="prospectorSection">
 		<div class="col-12 col-md-4">
-			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
+			<img class="d-block mx-auto" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
 		</div>
 		<div class="col-12 col-md-8">
 			<h2>In {$innReachEncoreName}</h2>
@@ -43,7 +43,7 @@
 	<div class="row" id="prospectorLinkSection">
 		<div class="col-12">
 			<br>
-			<button class="btn btn-sm btn-info pull-right" onclick="window.open('{$prospectorLink}', 'child'); return false">See more results in {$innReachEncoreName}</button>
+			<button class="btn btn-sm btn-info float-end" onclick="window.open('{$prospectorLink}', 'child'); return false">See more results in {$innReachEncoreName}</button>
 		</div>
 	</div>
 

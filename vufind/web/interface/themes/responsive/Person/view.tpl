@@ -20,10 +20,10 @@
 				<a href='/Admin/People?objectAction=edit&amp;id={$id}' title='Edit this person' class='btn btn-primary'>
 					Edit
 				</a>
-				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-default'>
+				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-outline-secondary'>
 					Add Marriage
 				</a>
-				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-default'>
+				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-outline-secondary'>
 					Add Obituary
 				</a>
 			</div>

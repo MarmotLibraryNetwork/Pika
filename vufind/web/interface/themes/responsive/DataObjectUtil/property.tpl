@@ -253,7 +253,7 @@
 						$(varSelectorId).prop('checked',false);
 						Pika.confirm("{$property.warning}. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
 							$(varSelectorId).prop('checked',true);
-							$('.modal-footer button.btn-default').click();
+							$('.modal-footer button.btn-outline-secondary').click();
                 {rdelim});
               {rdelim}
             {rdelim});
@@ -269,5 +269,5 @@
 {/if}
 
 {if $property.showDescription}
-	<div class="well well-sm">{$property.description}</div>
+	<div class="card card-body card card-body-sm">{$property.description}</div>
 {/if}

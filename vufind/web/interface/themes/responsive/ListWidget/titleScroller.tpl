@@ -22,7 +22,7 @@
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<button class="leftScrollerButton enabled btn btn-default" onclick="{$scrollerVariable}.scrollToLeft();" tabindex="0" aria-label="Scroll left"><i class="glyphicon glyphicon-chevron-left"></i></button>
+			<button class="leftScrollerButton enabled btn btn-outline-secondary" onclick="{$scrollerVariable}.scrollToLeft();" tabindex="0" aria-label="Scroll left"><i class="glyphicon glyphicon-chevron-left"></i></button>
 
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
@@ -39,7 +39,7 @@
 			{if !isset($widget) || $widget->showAuthor}
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor notranslate"></div>
 			{/if}
-			<button class="rightScrollerButton btn btn-default" onclick="{$scrollerVariable}.scrollToRight();" tabindex="0" aria-label="Scroll right"><i class="glyphicon glyphicon-chevron-right"></i></button>
+			<button class="rightScrollerButton btn btn-outline-secondary" onclick="{$scrollerVariable}.scrollToRight();" tabindex="0" aria-label="Scroll right"><i class="glyphicon glyphicon-chevron-right"></i></button>
 		</div>
 			{if isset($widget)}
 		{if $widget->autoRotate}

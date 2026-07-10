@@ -31,7 +31,7 @@
 		{else}
 			{img_assign filename='self_reg_banner.png' var=selfRegBanner}
 			{if $selfRegBanner}
-				<img src="{$selfRegBanner}" alt="Self Register for a new library card" class="img-responsive">
+				<img src="{$selfRegBanner}" alt="Self Register for a new library card" class="img-fluid">
 			{/if}
 
 			<div id="selfRegDescription" class="alert alert-info">

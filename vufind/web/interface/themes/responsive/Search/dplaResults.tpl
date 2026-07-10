@@ -18,7 +18,7 @@
 					{if $showCovers}
 						<div class="col-4 col-lg-2">
 							{if $result.object}
-								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail for '{$result.title}'">
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-fluid" alt="Thumbnail for '{$result.title}'">
 							{/if}
 						</div>
 					{/if}

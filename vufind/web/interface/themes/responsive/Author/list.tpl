@@ -9,7 +9,7 @@
 				 *}
 		{translate text='for search'} <b>'{$lookfor|escape}'</b>
 	{/if}
-	<div class="pull-right">
+	<div class="float-end">
 		{translate text='Sort'}
 		<select name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;">
 		{foreach from=$sortList item=sortData key=sortLabel}

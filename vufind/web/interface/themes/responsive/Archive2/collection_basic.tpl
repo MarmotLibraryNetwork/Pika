@@ -14,7 +14,7 @@
 			{if $thumbnail}
 			<div class="col-sm-12">
 				{if $thumbnail_link}<a href="{$thumbnail_link}">{/if}
-				<img src="{$thumbnail}" class="img-responsive" alt="{$title|escape}">
+				<img src="{$thumbnail}" class="img-fluid" alt="{$title|escape}">
 				{if $thumbnail_link}</a>{/if}
 			
 			{/if}

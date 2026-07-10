@@ -62,7 +62,7 @@
 
 					{if $google_translate_key}
 						<div class="row breadcrumbs">
-							<div class="col-sm-12 col-md-3 offset-md-9 text-right">
+							<div class="col-sm-12 col-md-3 offset-md-9 text-end">
 								<div id="google_translate_element"></div>
 							</div>
 						</div>

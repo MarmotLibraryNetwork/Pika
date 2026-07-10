@@ -4,7 +4,7 @@ Only used by un-used method SearchObject_Solr->getSuggestionListHTML() *}
 	<a id="record{$summId|escape:"url"}"></a>
 	<div id="groupedRecord{$summId|escape}" class="resultsList row">
 		<div class="col-sm-12 col-md-3 col-lg-3 col-xl-2 text-center">
-			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Book cover for &quot;{$summTitle}&quot;.">
+			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-fluid" alt="Book cover for &quot;{$summTitle}&quot;.">
 			{* TODO: if ever used, update with keyboard-accessible star rating interface
 			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=true}*}
 		</div>
@@ -42,7 +42,7 @@ Only used by un-used method SearchObject_Solr->getSuggestionListHTML() *}
 				</div>
 			{/if}
 
-			<div class="row well-small">
+			<div class="row card card-body-small">
 				<div class="col-lg-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|truncate_html:450:"..."}</div>
 			</div>
 

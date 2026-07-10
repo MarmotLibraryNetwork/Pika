@@ -15,7 +15,7 @@
 									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control" >
-									<span class="input-group-addon">
+									<span class="input-group-text">
 								<span class="glyphicon glyphicon-calendar"
 								      onclick="$('#startDate').focus().datepicker('show')"
 								      aria-hidden="true">
@@ -29,7 +29,7 @@
 									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control">
-									<span class="input-group-addon">
+									<span class="input-group-text">
 							<span class="glyphicon glyphicon-calendar"
 							      onclick="$('#endDate').focus().datepicker('show')"
 							      aria-hidden="true">
@@ -75,11 +75,11 @@
 								<div class="text-center">
 									<div class="btn-group-vertical">
 										<input type="submit" name="fetchStatGroups" value="Set Sierra Stat Group Numbers for circs"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 										<input type="submit" name="exportToSierra" value="Export for Sierra Offline Circulation App"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 										<input type="submit" name="markExported" value="Mark these circs as processed via export"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 									</div>
 								</div>
 							{/if}

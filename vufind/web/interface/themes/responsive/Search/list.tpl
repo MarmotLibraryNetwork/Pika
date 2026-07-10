@@ -2,7 +2,7 @@
 	<h1 role="heading" aria-level="1" class="h2">Search Results</h1>
 
 		{if $searchType == 'advanced'}
-			<div id="advanced-search" class="well well-sm">
+			<div id="advanced-search" class="card card-body card card-body-sm">
 {*				<h5>Advanced Search Query : </h5>*}
 				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
 				<br>

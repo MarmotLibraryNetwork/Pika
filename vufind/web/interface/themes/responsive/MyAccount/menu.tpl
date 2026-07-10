@@ -23,7 +23,7 @@
 						</div>
 					</div>
 				</a>
-				{*  This content is duplicated in MyAccount/mobilePageHeader.tpl; Update any changes there as well *}
+				{*  This content is duplicated in MyAccount/mobilePageHeader.tpl; Update any changes there as card card-body *}
 				<div id="myAccountPanel" class="panel-collapse collapse{if  $displaySidebarMenu || $curSection} in{/if}">
 					<div class="panel-body">
 						<span class="expirationFinesNotice-placeholder"></span>

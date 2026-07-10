@@ -11,7 +11,7 @@
 	{if $thumbnail}
 		<div {if $randomImageComponents}class="col-sm-6 text-center"{else}class="col-sm-12 text-center"{/if}>
 
-			<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-fit" alt="{$title|escape}">
+			<img src="{$thumbnail}" class="img-fluid thumbnail collection-thumbnail-fit" alt="{$title|escape}">
 
 		</div>
 	{/if}

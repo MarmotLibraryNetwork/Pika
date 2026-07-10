@@ -59,7 +59,7 @@
 								Saturday
 							{/if}
 						</div>
-						<div class="col-sm-12 col-md-8 text-left">
+						<div class="col-sm-12 col-md-8 text-start">
 							{if $curHours->closed}
 								Closed
 							{else}

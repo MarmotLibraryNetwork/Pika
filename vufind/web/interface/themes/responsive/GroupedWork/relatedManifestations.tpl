@@ -18,9 +18,9 @@
 							<button class="btn-link" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 								{$relatedManifestation.format}<br>
 								{if $relatedManifestation.numRelatedRecords == 1}
-									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
+									<span class="manifestation-toggle-text badge text-bg-secondary" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
 								{else}
-									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
+									<span class="manifestation-toggle-text badge text-bg-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
 								{/if}
 							</button>
 						</div>

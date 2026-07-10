@@ -10,7 +10,7 @@
 		<div class="row">
 			<div class="col-12">
 				<p>
-					<a class="btn btn-sm btn-default" href='/Admin/LoanRules?objectAction=list'>Return to List</a>
+					<a class="btn btn-sm btn-outline-secondary" href='/Admin/LoanRules?objectAction=list'>Return to List</a>
 				</p>
 			</div>
 		</div>
@@ -44,7 +44,7 @@
 						</div>
 						<div class="row">
 						<div class="col-12">
-							<input type="submit" name="reload" value="Reload Data" class="btn btn-primary pull-right">
+							<input type="submit" name="reload" value="Reload Data" class="btn btn-primary float-end">
 						</div>
 						</div>
 					</fieldset>
