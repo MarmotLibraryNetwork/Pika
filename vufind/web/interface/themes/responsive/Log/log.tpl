@@ -1,5 +1,5 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h1 role="heading" aria-level="1" class="h2">{$pageTitleShort}</h1>
 		<hr>
 
@@ -8,13 +8,13 @@
 		<div class="h4">Filter by</div>
 		<form class="navbar form-inline row">
         {if !empty($filterLabel)}
-					<div class="form-group col-xs-7">
+					<div class="form-group col-sm-7">
 						<label for="filterCount" class="control-label">{$filterLabel}:&nbsp;</label>
 						<input style="width: 125px;" id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
 						<button class="btn btn-primary" type="submit">Go</button>
 					</div>
         {/if}
-			<div class="form-group col-xs-5 pull-right">
+			<div class="form-group col-sm-5 pull-right">
 				<span class="pull-right">
 					<label for="pagesize" class="control-label">Entries Per Page:&nbsp;</label>
 					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm">
@@ -30,7 +30,7 @@
 {*
 		<form class="navbar form-inline row">
 			{if !empty($filterLabel)}
-				<div class="form-group col-xs-7">
+				<div class="form-group col-sm-7">
 					<div class="input-group">
 					<label for="filterCount" class="control-label input-group-addon">{$filterLabel}</label>
 					<input id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
@@ -38,7 +38,7 @@
 				</div>
 				</div>
       {/if}
-			<div class="form-group col-xs-5 pull-right">
+			<div class="form-group col-sm-5 pull-right">
 				<span class="pull-right">
 					<div class="input-group">
 					<label for="pagesize" class="control-label input-group-addon">Entries Per Page</label>

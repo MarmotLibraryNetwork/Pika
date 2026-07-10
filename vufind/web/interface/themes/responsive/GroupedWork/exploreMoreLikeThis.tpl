@@ -1,7 +1,7 @@
 {strip}
 	<div id="moreLikeThisInfo" style="display:none">
 		<div class="sectionHeader">More Like This</div>
-		<div class="col-sm-12">
+		<div class="col-md-12">
 			{assign var="scrollerName" value="MoreLikeThis"}
 			{assign var="scrollerTitle" value=""}
 			{assign var="wrapperId" value="morelikethis"}

@@ -1,5 +1,5 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		{if $loggedIn}
 			<h1>Student Report</h1>
 			<div class="alert alert-info">

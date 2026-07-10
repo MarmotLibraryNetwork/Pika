@@ -16,7 +16,7 @@
 	</div>
 	<hr>
 	<div class="row">
-		<div class="form-group col-sm-4" id="sortOptions">
+		<div class="form-group col-md-4" id="sortOptions">
 			<label for="sort" class="control-label">Sort Lists By&nbsp;</label>
 			<select class="sortMethod form-control" id="sort" name="sort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
@@ -40,7 +40,7 @@
 				<div class="result">
 
 					<div class="row result-title-row">
-						<div class="col-tn-12">
+						<div class="col-12">
 							<h2 class="h3">
 								<span class="result-index">{$smarty.foreach.myLists.iteration}.</span>&nbsp;
 								<a href="{$myList.url}" class="result-title{* notranslate*}">{$myList.name}</a>
@@ -49,47 +49,47 @@
 					</div>
 
 					<div class="row">
-						<div class="col-md-1">
+						<div class="col-lg-1">
 							<input type="checkbox" class="form-control-static myListsCheckBoxes" value="{$myList.id}" aria-label="select list to delete">
 						</div>
-						<div class="col-md-2">
+						<div class="col-lg-2">
 							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" alt="Cover Image for list &quot;{$myList.name}&quot;">
 						</div>
-						<div class="col-md-9">
+						<div class="col-lg-9">
 							<div class="row">
-								<div class="col-xs-10 col-lg-11">
+								<div class="col-sm-10 col-xl-11">
 									<div class="row related-manifestation">
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">Items:</span>
 											<span class="result-value">{if $myList.numTitles}{$myList.numTitles}{else}0{/if}</span>
 										</div>
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">List Access:</span>
 											<span class="result-value">{if $myList.isPublic}Public{else}Private{/if}</span>
 										</div>
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">Default Sort:</span>
 											<span class="result-value">{$myList.defaultSort}</span>
 										</div>
 									</div>
 									<div class="row related-manifestation">
-										<div class="col-sm-6">
+										<div class="col-md-6">
 											<span class="result-label">Created:</span>
 											<span class="result-value">{$myList.created|date_format:"%b %d, %Y %r"}</span>
 										</div>
-										<div class="col-sm-6">
+										<div class="col-md-6">
 											<span class="result-label">Last Updated:</span>
 											<span class="result-value">{$myList.dateUpdated|date_format:"%b %d, %Y %r"}</span>
 										</div>
 
 									</div>
 									<div class="row">
-										<div class="col-tn-12">
+										<div class="col-12">
 											{if $myList.description}{$myList.description}{/if}
 										</div>
 									</div>
 									<div class="row">
-										<div class="col-tn-12">
+										<div class="col-12">
 
 											{if $myList.isPublic}
 												<div class="result-tools-horizontal btn-toolbar">
@@ -147,7 +147,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
+								<div class="col-sm-2 col-md-2 col-lg-2 col-xl-1">
 									{if $staff && $myList.isPublic}
 										<div class="btn-group-vertical">
 											<button value="transferList" onclick="return Pika.Lists.transferListToUser({$myList.id}); "

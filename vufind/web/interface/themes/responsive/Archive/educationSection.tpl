@@ -3,7 +3,7 @@
 
 			{if $academicRecord.academicPosition}
 				<div class="row">
-					<div class="result-label col-sm-12">
+					<div class="result-label col-md-12">
 					{$academicRecord.academicPosition.title}
 						{if $academicRecord.academicPosition.employer}
 							&nbsp;{if $academicRecord.academicPosition.employer.link}<a href="{$academicRecord.academicPosition.employer.link}">{/if}{$academicRecord.academicPosition.employer.label}{if $academicRecord.academicPosition.employer.link}</a>{/if}
@@ -17,27 +17,27 @@
 
 			{if $academicRecord.researchInterests}
 				<div class="row">
-					<div class="result-label col-sm-4">
+					<div class="result-label col-md-4">
 						Research Interests:
 					</div>
-					<div class="result-value col-sm-8">
+					<div class="result-value col-md-8">
 						{implode subject=$academicRecord.researchInterests}
 					</div>
 				</div>
 			{/if}
 			{if $academicRecord.cvLink}
 				<div class="row">
-					<div class="result-value col-sm-8">
+					<div class="result-value col-md-8">
 						<a href="{$academicRecord.cvLink}">Curriculum Vitae</a>
 					</div>
 				</div>
 			{/if}
 			{if $academicRecord.honorsAwards}
 				<div class="row">
-					<div class="result-label col-sm-4">
+					<div class="result-label col-md-4">
 						Honors and Awards:
 					</div>
-					<div class="result-value col-sm-8">
+					<div class="result-value col-md-8">
 						{implode subject=$academicRecord.honorsAwards}
 					</div>
 				</div>
@@ -46,10 +46,10 @@
 				{foreach from=$academicRecord.publications item=publication}
 
 					<div class="row">
-						<div class="result-label col-sm-4">
+						<div class="result-label col-md-4">
 							Published in:
 						</div>
-						<div class="result-value col-sm-8">
+						<div class="result-value col-md-8">
 							{if $publication.link}<a href='{$publication.link}'>{/if}
 								{$publication.label}
 							{if $publication.link}</a>{/if}
@@ -61,10 +61,10 @@
 				{foreach from=$academicRecord.education item=education}
 
 					<div class="row">
-						<div class="result-label col-sm-4">
+						<div class="result-label col-md-4">
 							Degree:
 						</div>
-						<div class="result-value col-sm-8">
+						<div class="result-value col-md-8">
 							{if $education.degreeName}{$education.degreeName}{/if}
 							{if $education.degreeGrantor}
 								{if $education.degreeName}&nbsp;from&nbsp;{/if}
@@ -80,26 +80,26 @@
 						{*
 			{if $degreeName}
 				<div class="row">
-					<div class="result-label col-sm-12">Degree Name: </div>
-					<div class="result-value col-sm-8">
+					<div class="result-label col-md-12">Degree Name: </div>
+					<div class="result-value col-md-8">
 						{$degreeName}
 					</div>
 				</div>
 			{/if}
 			{if $graduationDate}
 				<div class="row">
-					<div class="result-label col-sm-4">Graduation Date: </div>
-					<div class="result-value col-sm-8">
+					<div class="result-label col-md-4">Graduation Date: </div>
+					<div class="result-value col-md-8">
 						{$graduationDate}
 					</div>
 				</div>
 			{/if}
 			{foreach from=$educationPeople item="educationPerson"}
 				<div class="row">
-					<div class="result-label col-sm-4">
+					<div class="result-label col-md-4">
 						{$educationPerson.role}:
 					</div>
-					<div class="result-value col-sm-8">
+					<div class="result-value col-md-8">
 						{if $educationPerson.link}
 							<a href='{$educationPerson.link}'>
 								{$educationPerson.label}

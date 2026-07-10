@@ -27,10 +27,10 @@
 	<div class="result row record{$smarty.foreach.recordLoop.iteration}">
 	{/if}
 
-		<div class="col-md-10">
+		<div class="col-lg-10">
 			<a href='/Author/Home?author="{$record.0|escape:"url"}"'>{$record.0|escape:"html"}</a>
 		</div>
-		<div class="col-md-2">
+		<div class="col-lg-2">
 			{$record.1} title{if $record.1 > 1}s{/if}
 		</div>
 	</div>

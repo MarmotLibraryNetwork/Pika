@@ -1,6 +1,6 @@
 {strip}
 	<div id="home-page-browse-header" class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 			<div class="row text-center" id="browse-label">
 				<h1 role="heading" aria-level="1" class="browse-label-text">Browse the Catalog</h1>
 			</div>
@@ -38,7 +38,7 @@
 		</div>
 	</div>
 	<div id="home-page-browse-content" class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 
 			<div class="row" id="selected-browse-label">
 

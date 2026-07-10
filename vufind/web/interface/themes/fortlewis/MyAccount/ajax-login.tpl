@@ -22,23 +22,23 @@
 		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *} onsubmit="return Pika.Account.processAjaxLogin()">
 			<div class="row">
 
-				<div class="col-sm-6">
+				<div class="col-md-6">
 					<p><strong>Students, Faculty, and staff</strong>, log in with your Fort Lewis College Network Account.</p>
 					<a href="/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
 				</div>
 
-				<div class="col-sm-6">
+				<div class="col-md-6">
 					<p><strong>Community Members</strong>, log in with your name and library card number.</p>
 					<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 					<div id="loginUsernameRow" class="form-group">
-						<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}:</label>
-						<div class="col-xs-12 col-sm-8">
+						<label for="username" class="control-label col-sm-12 col-md-4">{$usernameLabel}:</label>
+						<div class="col-sm-12 col-md-8">
 							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
 						</div>
 					</div>
 					<div id="loginPasswordRow" class="form-group">
-						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
-						<div class="col-xs-12 col-sm-8">
+						<label for="password" class="control-label col-sm-12 col-md-4">{$passwordLabel}: </label>
+						<div class="col-sm-12 col-md-8">
 							<input type="password" name="password" id="password" size="28" onkeydown="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $showForgotPinLink}
 								<p class="text-muted help-block">
@@ -50,7 +50,7 @@
 						</div>
 					</div>
 					<div id="loginPasswordRow2" class="form-group">
-						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+						<div class="col-sm-12 offset-md-4 col-md-8">
 							<label for="showPwd" class="checkbox">
 								<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
 								{translate text="Reveal Password"}
@@ -65,7 +65,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+						<div class="col-sm-12 offset-md-4 col-md-8">
 					<span class="modal-buttons">
 						<input type="submit" name="submit" value="{if $multistep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return Pika.Account.processAjaxLogin()">
 					</span>

@@ -4,7 +4,7 @@
 	<div id="itemRow{$overDriveFormat->id}" class="eContentHolding">
 		<div class="eContentHoldingHeader">
 			<div class="row">
-				<div class="col-sm-9">
+				<div class="col-md-9">
 					<span class="eContentHoldingFormat">{$overDriveFormat->name}</span>
 					{if $showEContentNotes}
 						{$overDriveFormat->notes}
@@ -13,7 +13,7 @@
 			</div>
 
 			<div class="row eContentHoldingUsage">
-				<div class="col-sm-12">
+				<div class="col-md-12">
 					{$overDriveFormat->getFormatNotes()}
 				</div>
 			</div>

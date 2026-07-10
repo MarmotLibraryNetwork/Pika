@@ -1,4 +1,4 @@
-{*<div id="page-content" *}{*class="col-xs-12 col-sm-8 col-md-9 col-lg-9" defined by container*}{*>*}
+{*<div id="page-content" *}{*class="col-sm-12 col-md-8 col-lg-9 col-xl-9" defined by container*}{*>*}
 <form action="" method="post" id="offlineCircForm">
 	<div id="main-content" class="full-result-content">
 		<h1 role="heading" aria-level="1" class="h2">Migrate Circs</h1>
@@ -16,7 +16,7 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-tn-12 well">
+			<div class="col-12 well">
 				<p>This will load circs into the Pika Offline Circ tables to be processed as check outs.</p>
 			<p>Circs can be loaded from either an INI formatted text
 				or from a CSV formatted text.
@@ -37,15 +37,15 @@
 		</div>
 		</div>
 		<div class="row">
-			<div class="col-xs-3">
+			<div class="col-sm-3">
 				<div><label for="login">{$ILSname} Username</label>:</div>
 				<div><input type="text" name="login" id="login" value="{$lastLogin}" class="required" aria-required="true" onchange="clearOfflineCircResults();"> </div>
 			</div>
-			<div class="col-xs-3">
+			<div class="col-sm-3">
 				<div><label for="password1">{$ILSname} Password</label>:</div>
 				<div><input type="password" name="password1" id="password1" value="{$lastPassword1}" class="required" aria-required="true" onchange="clearOfflineCircResults();"></div>
 			</div>
-			<div class="col-xs-4">
+			<div class="col-sm-4">
 				<label for="showPwd" class="checkbox">
 					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">
 					Show {$ILSname} Password
@@ -55,13 +55,13 @@
 		<div class="row">
 
 			<fieldset>
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 					<div><label for="barcodesToCheckOut">Enter barcodes to check out (one pair per line)</label>:</div>
 					<textarea rows="20" cols="80" name="barcodesToCheckOut" id="barcodesToCheckOut" class="required form-control" aria-required="true"></textarea>
 
 {*					<textarea rows="10" cols="20" name="barcodesToCheckOut" id="barcodesToCheckOut" class="required" aria-required="true" onchange="clearOfflineCircResults();"></textarea>*}
 				</div>
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 					<button name="submit" class="btn btn-primary pull-right">Submit Offline Checkouts</button>
 				</div>
 			</fieldset>

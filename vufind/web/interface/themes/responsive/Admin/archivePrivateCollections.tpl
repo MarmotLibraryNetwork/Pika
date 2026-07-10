@@ -1,5 +1,5 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<form name="archiveSubjects" method="post">
 			<h1 role="heading" aria-level="1" class="h2">Archive Private Collections and Objects</h1>
 			<div class="form-group">

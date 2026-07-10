@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		<h1 role="heading" aria-level="1" class="h2">Import Lists from Classic Catalog</h1>
 	{if $importResults && $importResults.success}
 		<div class="alert alert-success">

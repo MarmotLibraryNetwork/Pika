@@ -8,8 +8,8 @@
 		<input type="hidden" name="id" value="{$id|replace:'ils:':''}">
 	<fieldset>
 		<div class="row">
-			{*<div class="form-group col-sm-5">*}
-			<div class="form-group col-sm-6 col-sm-offset-3">
+			{*<div class="form-group col-md-5">*}
+			<div class="form-group col-md-6 offset-md-3">
 				<label for="startDate" class="control-label">Start Date</label>
 				<div class="input-group">
 					<input id="startDate" name="startDate" type="text" class="form-control required" placeholder="mm/dd/yyyy"
@@ -20,7 +20,7 @@
 					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-sm-5 ui-front">
+			{*<div class="form-group col-md-5 ui-front">
 				<label for="startTime" class="control-label">Start Time</label>
 				<input id="startTime" name="startTime" type="text" class="form-control bookingTime required"  placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.startTime} value="{$smarty.request.startTime}" {/if}
@@ -30,8 +30,8 @@
 		</div>
 		<hr>
 		<div class="row">
-			{*<div class="form-group col-sm-5">*}
-			<div class="form-group col-sm-6 col-sm-offset-3">
+			{*<div class="form-group col-md-5">*}
+			<div class="form-group col-md-6 offset-md-3">
 
 			<label for="endDate" class="control-label" >End Date</label>
 				<div class="input-group input-append date">
@@ -43,7 +43,7 @@
 					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-sm-5 ui-front">
+			{*<div class="form-group col-md-5 ui-front">
 				<label for="endTime" class="control-label">End Time</label>
 				<input id="endTime" name="endTime" type="text" class="form-control bookingTime required" placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.endTime} value="{$smarty.request.endTime}" {/if}
@@ -58,7 +58,7 @@
 			Show/Hide Hourly Calendar
 		</button>
 
-		<div class="col-xs-10 col-xs-offset-1">
+		<div class="col-sm-10 offset-sm-1">
 			<style>
 				#bookingCalendar table td.active {ldelim} {* muted text applied to closed and unavailable times. *}
 					color: #999999;

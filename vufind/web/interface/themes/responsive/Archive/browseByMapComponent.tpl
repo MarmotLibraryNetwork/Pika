@@ -1,10 +1,10 @@
 {strip}
-	<div class="archiveComponentContainer nopadding col-sm-12 col-md-6">
+	<div class="archiveComponentContainer nopadding col-md-12 col-lg-6">
 		<div class="archiveComponent">
 			<div class="row archiveComponentBody">
 				<div class="archiveComponentBox">
 					<a href="/Archive/{$pid}/Exhibit?style=map">
-					<div class="col-tn-4 col-xs-3 col-md-4 archiveComponentIconContainer">
+					<div class="col-4 col-sm-3 col-lg-4 archiveComponentIconContainer">
 						<img src="/interface/themes/responsive/images/map_component.png" width="100" height="100" class="archiveComponentImage" alt=""{* "Alternative text of images should not be repeated as text" *}>
 					</div>
 					<div class="archiveComponentControls">

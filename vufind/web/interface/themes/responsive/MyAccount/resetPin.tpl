@@ -1,5 +1,5 @@
 {strip}
-	<div id="page-content" class="col-xs-12">
+	<div id="page-content" class="col-sm-12">
 
 		<h1 role="heading" aria-level="1" class="h2">{translate text='Reset My PIN'}</h1>
       {if $resetPinResult.error}
@@ -22,8 +22,8 @@
 					<input type="hidden" name="bc" value="{$bc}">
 				{/if}
 				<div class="form-group">
-					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
-					<div class="col-xs-8">
+					<div class="col-sm-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
+					<div class="col-sm-8">
 						<div class="input-group">
 							<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
@@ -33,8 +33,8 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
-					<div class="col-xs-8">
+					<div class="col-sm-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
+					<div class="col-sm-8">
 						<div class="input-group">
 							<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
 							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
@@ -42,7 +42,7 @@
 							</span>
 						</div>
 					</div>
-					<div class="col-tn-12">
+					<div class="col-12">
 						<br>
 						<div class="alert alert-info">
 							{include file="MyAccount/passwordRequirements.tpl"}
@@ -50,7 +50,7 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<div class="col-xs-8 col-xs-offset-4">
+					<div class="col-sm-8 offset-sm-4">
 						<input id="resetPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN'}">
 					</div>
 				</div>

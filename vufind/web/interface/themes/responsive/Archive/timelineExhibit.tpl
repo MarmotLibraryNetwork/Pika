@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $parentExhibitUrl}
 		{* Search/Archive Navigation for Exhibits within an exhibit *}
 		{include file="Archive/search-results-navigation.tpl"}

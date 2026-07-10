@@ -30,8 +30,8 @@
 
 	  {if $showLists}
 		  <div class="form-group">
-			  <label for="addToList-list" class="col-sm-3">{translate text='Choose a List'}</label>
-			  <div class="col-sm-9">
+			  <label for="addToList-list" class="col-md-3">{translate text='Choose a List'}</label>
+			  <div class="col-md-9">
 				  <select name="list" id="addToList-list">
 					  {foreach from=$nonContainingLists item="list"}
 						  <option value="{$list.id}">{$list.title|escape:"html"}</option>
@@ -49,8 +49,8 @@
 
 	  {if $showLists}
 			<div class="form-group">
-				<label for="addToList-notes" class="col-sm-3">{translate text='Add a Note'}</label>
-				<div class="col-sm-9">
+				<label for="addToList-notes" class="col-md-3">{translate text='Add a Note'}</label>
+				<div class="col-md-9">
 					<textarea name="notes" rows="3" cols="50" class="form-control" id="addToList-notes"></textarea>
 				</div>
 			</div>

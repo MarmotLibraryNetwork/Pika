@@ -14,8 +14,8 @@
 					<input type="hidden" name="updateScope" value="contact">
 					<input type="hidden" name="profileUpdateAction" value="updateSms">
 					<div class="form-group">
-						<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
-						<div class="col-xs-8">
+						<div class="col-sm-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
+						<div class="col-sm-8">
 							{if !$offline && $canUpdateContactInfo == true}
 								<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
 								<p class="help-block alert alert-warning">
@@ -34,8 +34,8 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
-						<div class="col-xs-8">
+						<div class="col-sm-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
+						<div class="col-sm-8">
 							{if !$offline && $canUpdateContactInfo == true}
 								<input type="tel" name="mobileNumber" id="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
 							{else}
@@ -46,7 +46,7 @@
 
 					{if !$offline}
 						<div class="form-group">
-							<div class="col-xs-8 col-xs-offset-4">
+							<div class="col-sm-8 offset-sm-4">
 								<input type="submit" value="Update SMS Settings" name="updateContactInfo" class="btn btn-sm btn-primary">
 							</div>
 						</div>

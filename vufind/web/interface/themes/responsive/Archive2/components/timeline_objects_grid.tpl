@@ -20,7 +20,7 @@
 					{if $collectionChild.year != $current_year || $current_year == "__none__"}
 						{if $current_year != "__none__"}</div></div>{/if}
 						{assign var="current_year" value=$collectionChild.year}
-						<div class="collection-timeline-year col-xs-12">
+						<div class="collection-timeline-year col-sm-12">
 						<h2 class="timeline-year-heading h4">{if $collectionChild.year}{$collectionChild.year}{else}Unknown date{/if}</h2>
 						<div class="row">
 					{/if}

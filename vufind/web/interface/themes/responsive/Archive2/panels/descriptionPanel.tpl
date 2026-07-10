@@ -7,17 +7,17 @@
     <div id="descPanelBody" class="panel-collapse collapse in">
         <div class="panel-body">
             <div class="row">
-                <div class="result-result col-sm-12">{$description}
+                <div class="result-result col-md-12">{$description}
                     <hr />
                 </div>
             </div>
             <div class="row">
-                <div class="result-label col-sm-4">Physical Description: </div>
-                <div class="result-value col-sm-8">{$physical_description}</div>
+                <div class="result-label col-md-4">Physical Description: </div>
+                <div class="result-value col-md-8">{$physical_description}</div>
             </div>
             <div class="row">
-                <div class="result-label col-sm-4">Language: </div>
-                <div class="result-value col-sm-8">{$languageName}</div>
+                <div class="result-label col-md-4">Language: </div>
+                <div class="result-value col-md-8">{$languageName}</div>
             </div>
         </div>
     </div>

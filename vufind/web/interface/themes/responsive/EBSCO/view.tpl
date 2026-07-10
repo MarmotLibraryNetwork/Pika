@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Display Title *}
 		<h1 role="heading" aria-level="1" class="h2">
 		{$recordDriver->getTitle()|escape}
@@ -9,13 +9,13 @@
 		</h1>
 
 		<div class="row">
-			<div id="main-content" class="col-tn-12">
+			<div id="main-content" class="col-12">
 				<div class="row">
-					<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
+					<div id="record-details-column" class="col-sm-12 col-md-12 col-lg-9">
 						{include file="EBSCO/view-title-details.tpl"}
 					</div>
 
-					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
+					<div id="recordTools" class="col-sm-12 col-md-6 col-lg-3">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
@@ -31,7 +31,7 @@
 
 		{if $recordDriver->hasFullText()}
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 					{$recordDriver->getFullText()}
 				</div>
 			</div>
@@ -43,7 +43,7 @@
 
 		{* Show a link to EBSCO for now *}
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<a href="{$recordDriver->getEbscoUrl()}" target="_blank" class="btn btn-sm btn-info">View in EBSCO EDS</a>
 			</div>
 		</div>

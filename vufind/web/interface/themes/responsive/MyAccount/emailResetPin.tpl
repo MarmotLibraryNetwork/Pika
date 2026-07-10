@@ -1,5 +1,5 @@
 {strip}
-	<div id="page-content" class="col-xs-12">
+	<div id="page-content" class="col-sm-12">
 
 		<h1 role="heading" aria-level="1" class="h2">{translate text='Reset My PIN'}</h1>
 		<div class="alert alert-info"> Provide the requested information and click the "{translate text='Reset My PIN'}" button to receive an email to the address on file containing a link to reset your {translate text='pin'}.</div>
@@ -8,13 +8,13 @@
 
 		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
 			<div class="form-group">
-				<label for="barcode" class="control-label col-xs-12 col-sm-4">{if empty($barcodeLabel)}Card Number{else}{$barcodeLabel}{/if}<span class="required">*</span></label>
-				<div class="col-xs-12 col-sm-8">
+				<label for="barcode" class="control-label col-sm-12 col-md-4">{if empty($barcodeLabel)}Card Number{else}{$barcodeLabel}{/if}<span class="required">*</span></label>
+				<div class="col-sm-12 col-md-8">
 					<input id="barcode" name="barcode" type="text" size="14" maxlength="14" class="required form-control" aria-required="true">
 				</div>
 			</div>
 			<div class="form-group">
-				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+				<div class="col-sm-12 offset-md-4 col-md-8">
 					<input id="emailPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN'}">
 				</div>
 			</div>

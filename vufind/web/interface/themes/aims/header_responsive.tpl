@@ -1,5 +1,5 @@
 <div class="row">
-	<div id="header_black" class="col-tn-12">
+	<div id="header_black" class="col-12">
 		<a href="https://www.aims.edu/">
 			<img src="/interface/themes/aims/images/logo_responsive.png" alt="Aims Community College">
 		</a>
@@ -7,12 +7,12 @@
 </div>
 <div class="row">
 	<div id="header_library">
-		<div class="col-tn-4 col-xs-4 col-sm-3 col-md-8 col-lg-8">
+		<div class="col-4 col-sm-4 col-md-3 col-lg-8 col-xl-8">
 			<a class="nielsenlibrarytxt" href="https://www.aims.edu/kieferlibrary/">KIEFER LIBRARY</a>
 		</div>
 
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-			<div class="d-sm-none d-md-block col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
+			<div class="d-sm-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0">
 				<a id="headerMyAccountLink" href="/MyAccount/Home">
 					<div class="header-button header-primary">
 						{translate text="Your Account"}
@@ -20,7 +20,7 @@
 				</a>
 			</div>
 
-			<div class="d-sm-none d-md-block col-sm-2 col-md-2 col-lg-2">
+			<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2">
 				<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
@@ -29,7 +29,7 @@
 			</div>
 		</div>
 
-		<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
+		<div class="loginOptions col-md-2 offset-md-7 col-lg-2 offset-lg-2 offset-xl-2 col-xl-2"{if $loggedIn} style="display: none;"{/if}>
 			{if $showLoginButton == 1}
 				<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this);{/if}">
 					<div class="d-sm-none d-md-block header-button header-primary">

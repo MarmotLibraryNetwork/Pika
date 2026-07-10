@@ -13,9 +13,9 @@
 					<input type="hidden" name="updateScope" value="contact">
 					<input type="hidden" name="profileUpdateAction" value="updatePatronUsername">
 					<div class="form-group">
-						<div class="col-xs-4"><label for="alternate_username">Username:</label>
+						<div class="col-sm-4"><label for="alternate_username">Username:</label>
 						</div>
-						<div class="col-xs-8">
+						<div class="col-sm-8">
 							{if !empty($linkedUsers) && count($linkedUsers) > 1 && $selectedUser != $activeUserId}
 								{*Security: Prevent changing email, username, or password for linked accounts. See D-4031 *}
 								{if !empty(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}
@@ -37,7 +37,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-xs-8 col-xs-offset-4">
+						<div class="col-sm-8 offset-sm-4">
 							<input type="submit" value="Update Username" name="updateUsername" class="btn btn-sm btn-primary">
 						</div>
 					</div>

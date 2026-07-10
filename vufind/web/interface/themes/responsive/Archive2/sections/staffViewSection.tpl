@@ -1,18 +1,18 @@
 {strip}
 	{if $isStaffUser}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Islandora URL:</div>
-			<div class="result-value col-sm-8"><a href="{$islandora_url}" target="_blank">{$islandora_url}</a></div>
+			<div class="result-label col-md-4">Islandora URL:</div>
+			<div class="result-value col-md-8"><a href="{$islandora_url}" target="_blank">{$islandora_url}</a></div>
 		</div>
 		{if $userRoles && (in_array('opacAdmin', $userRoles))}
 			<div class="row archive-field-row">
-				<div class="result-label col-sm-4">Islandora Pika JSON:</div>
-				<div class="result-value col-sm-8"><a href="{$islandora_pika_json_url}" target="_blank">{$islandora_pika_json_url}</a></div>
+				<div class="result-label col-md-4">Islandora Pika JSON:</div>
+				<div class="result-value col-md-8"><a href="{$islandora_pika_json_url}" target="_blank">{$islandora_pika_json_url}</a></div>
 			</div>
 		{/if}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Reload Cache:</div>
-			<div class="result-value col-sm-8"><a href="{$cache_reload_url}">{$cache_reload_url}</a></div>
+			<div class="result-label col-md-4">Reload Cache:</div>
+			<div class="result-value col-md-8"><a href="{$cache_reload_url}">{$cache_reload_url}</a></div>
 		</div>
 		{include file="Archive2/partials/fieldRow.tpl" label="Node ID" value=$nid}
 		{include file="Archive2/partials/fieldRow.tpl" label="UUID" value=$uuid}
@@ -26,8 +26,8 @@
 		{include file="Archive2/partials/fieldRow.tpl" label="Last Changed" value=$record_change_date}
 		{if $member_of}
 			<div class="row archive-field-row">
-				<div class="result-label col-sm-4">Collection Node ID:</div>
-				<div class="result-value col-sm-8">
+				<div class="result-label col-md-4">Collection Node ID:</div>
+				<div class="result-value col-md-8">
 					{* member_of may be a single entry (array with 'id' key) or a list of entries *}
 					{if is_array($member_of) && isset($member_of.target_id)}
 						<div><a href="/Archive2/Collection/{$member_of.target_id}">{$member_of.target_id}</a></div>

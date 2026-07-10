@@ -5,8 +5,8 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Published In" value=$published_in}
 	{if $presented_at || $debugDetails}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Presented At:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Presented At:</div>
+			<div class="result-value col-md-8">
 				{if $presented_at}
 					{if $presented_at_event_tid}
 						<a href="/Archive2/Event/{$presented_at_event_tid}">{$presented_at|escape}</a>
@@ -22,8 +22,8 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Conference Date" value=$conference_date}
 	{if $supporting_departments || $debugDetails}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Supporting Departments:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Supporting Departments:</div>
+			<div class="result-value col-md-8">
 				{if $supporting_departments}
 					{foreach from=$supporting_departments item=dept}
 						<div><a href="/Archive2/Organization/{$dept.tid}">{$dept.name|escape}</a></div>

@@ -1,5 +1,5 @@
 {strip}
-<div class="nopadding col-sm-12">
+<div class="nopadding col-md-12">
 	<div class="exploreMoreBar row">
 		<div class="label-top">
 			<div class="exploreMoreBarLabel">
@@ -10,7 +10,7 @@
 
 	{if $collectionChildren}
 		<div class="row collection-row-spacer">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				{if $recordCount}
 				<p>{$recordCount} items in this collection.</p>
 				{/if}

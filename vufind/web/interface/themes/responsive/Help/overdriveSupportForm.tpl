@@ -1,5 +1,5 @@
 <h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
-<div class="col-tn-12">
+<div class="col-12">
 	<div class="alert alert-info">
 		Need help downloading a title or using the title on your device?  Please fill out this support form. All fields marked <span class="required-input">*</span> are required.
 	</div>
@@ -75,7 +75,7 @@
 		</div>
 		{if $captcha}
 			<div class="form-group">
-				<div class="col-sm-9 col-sm-offset-3">
+				<div class="col-md-9 offset-md-3">
 					{$captcha}
 				</div>
 			</div>

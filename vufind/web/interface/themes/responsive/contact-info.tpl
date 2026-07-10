@@ -1,7 +1,7 @@
 {strip}
 	{if $twitterLink || $facebookLink || $generalContactLink || $youtubeLink || $instagramLink || $goodreadsLink}
 		<div class="row">
-			<div class="col-tn-12">
+			<div class="col-12">
 		<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 		{if $twitterLink}
 			<a href="{$twitterLink}" class="connect-icon" title="Contact the library on X (twitter)"><img src="{img filename='x.png'}" alt="Contact the library on X" class="img-rounded"></a>
@@ -25,7 +25,7 @@
 		</div>
 	{/if}
 	<div class="row" style="margin-top: 15px">
-			<div class="col-tn-12 text-right pull-right" id="ReportAccessibilityIssue" aria-label="report accessibility issue">
+			<div class="col-12 text-right pull-right" id="ReportAccessibilityIssue" aria-label="report accessibility issue">
 				<a href="/Help/AccessibilityReport" title="issue reporting">Report Accessibility Issue</a>
 			</div>
 	</div>

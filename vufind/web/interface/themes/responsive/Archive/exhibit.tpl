@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $parentExhibitUrl}
 	{* Search/Archive Navigation for Exhibits within an exhibit *}
 	{include file="Archive/search-results-navigation.tpl"}
@@ -17,7 +17,7 @@
 	</h1>
 
 	<div class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 		{if $hasImageMap}
 			{$imageMap}
 			<script>
@@ -84,7 +84,7 @@
 
 			<div class="row">
 
-			<div class="col-sm-6">
+			<div class="col-md-6">
 				<form action="/Archive/Results">
 					<div class="input-group">
 						<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
@@ -96,7 +96,7 @@
 					</div>
 				</form>
 			</div>
-			<div class="col-sm-5 col-sm-offset-1">
+			<div class="col-md-5 offset-md-1">
 				{* Display information to sort the results (by date or by title *}
 				<div class="input-group">
 					<label for="results-sort" class="input-group-addon">Sort By</label>
@@ -114,7 +114,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-sm-4">
+			<div class="col-md-4">
 				{if $recordCount}
 					{$recordCount} objects in this collection.
 				{/if}
@@ -136,7 +136,7 @@
 					browse-thumbnails-few
 				{/if}">
 				{foreach from=$relatedImages item=image}
-					{if $showThumbnailsSorted && count($relatedImages) >= 18}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
+					{if $showThumbnailsSorted && count($relatedImages) >= 18}<div class="col-sm-6 col-md-4 col-lg-3">{/if}
 						<figure class="{if $showThumbnailsSorted && count($relatedImages) >= 18}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
 							<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 								<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>

@@ -1,5 +1,5 @@
 {strip}
-	<div id="main-content" class="col-tn-12 col-xs-12">
+	<div id="main-content" class="col-12 col-sm-12">
 		<h1 role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 		{if $instructions}
 			<div class="alert alert-info">{$instructions}</div>
@@ -27,8 +27,8 @@
 
 				<input type="hidden" name="objectAction" value="processFile">
 				<div class="row form-group">
-					<label for="file" class="col-sm-5 control-label">Barcode Text File (one barcode per line): </label>
-					<div class="col-sm-7">
+					<label for="file" class="col-md-5 control-label">Barcode Text File (one barcode per line): </label>
+					<div class="col-md-7">
 						<input type="file" name="migrationBarcodes" id="migrationBarcodes" accept=".csv,.txt" class="form-control">
 					</div>
 				</div>

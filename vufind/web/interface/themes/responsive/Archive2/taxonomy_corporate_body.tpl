@@ -1,24 +1,24 @@
 {* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{include file="Archive/search-results-navigation.tpl"}
 			<h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail">
 			{/if}
 		</div>
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name"     value=$alternate_name}
 			{include file="Archive2/partials/fieldRow.tpl" label="Organization Type"  value=$organization_type}
 			{if $organization_url && $organization_url.uri}
 				<div class="row archive-field-row">
-					<div class="result-label col-sm-4">Website:</div>
-					<div class="result-value col-sm-8">
+					<div class="result-label col-md-4">Website:</div>
+					<div class="result-value col-md-8">
 						<a href="{$organization_url.uri|escape}" target="_blank" rel="noopener">
 							{if $organization_url.title}{$organization_url.title|escape}{else}{$organization_url.uri|escape}{/if}
 						</a>
@@ -32,7 +32,7 @@
 	<br class="clearfix">
 	{if $term_description}
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
@@ -99,7 +99,7 @@
 					<div id="corpBodyNotesPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
 							<div class="row">
-								<div class="col-sm-12">{$notes}</div>
+								<div class="col-md-12">{$notes}</div>
 							</div>
 						</div>
 					</div>

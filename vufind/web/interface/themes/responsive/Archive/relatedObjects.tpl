@@ -7,7 +7,7 @@
 		</div>
 
 		<div class="row">
-			<div class="col-sm-6">
+			<div class="col-md-6">
 				{if ($displayType == 'map' || $displayType == 'mapNoTimeline' || $displayType == 'timeline')}
 					<form action="/Archive/Results">
 						<div class="input-group">
@@ -32,7 +32,7 @@
 					</form>
 				{/if}
 			</div>
-			<div class="col-sm-5 col-sm-offset-1">
+			<div class="col-md-5 offset-md-1">
 				{* Display information to sort the results (by date or by title *}
 				<div class="input-group">
 					<label for="results-sort" class="input-group-addon">Sort By</label>
@@ -62,7 +62,7 @@
 		</div>
 		{if !empty($label)}<h2>{$label}</h2>{/if}{* For accessibility, don't display an empty heading *}
 		<div class="row">
-			<div class="col-sm-4">
+			<div class="col-md-4">
 				{if $recordCount}
 					{$recordCount} total objects.
 				{/if}
@@ -72,7 +72,7 @@
 		{if $displayType != 'basic' && $displayType != 'mapNoTimeline' && $displayType != 'scroller' && ($recordEnd < $recordCount || $updateTimeLine)}
 			{* Display selection of date ranges *}
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
 						<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
@@ -124,7 +124,7 @@
 	{else}
 		<div id="related-exhibit-images" class="{if $showThumbnailsSorted}row{else}results-covers home-page-browse-thumbnails{/if}">
 		{foreach from=$relatedObjects item=image}
-			{if $showThumbnailsSorted}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
+			{if $showThumbnailsSorted}<div class="col-sm-6 col-md-4 col-lg-3">{/if}
 				<figure class="{if $showThumbnailsSorted}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
 					<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return Pika.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 						<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>

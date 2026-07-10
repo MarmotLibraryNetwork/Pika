@@ -1,7 +1,7 @@
 {include file="GroupedWork/load-full-record-view-enrichment.tpl"}
 
 {strip}
-	<div class="col-tn-12" xmlns="http://www.w3.org/1999/html">
+	<div class="col-12" xmlns="http://www.w3.org/1999/html">
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
@@ -16,7 +16,7 @@
 		</h1>
 
 		<div class="row">
-			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+			<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordcover" class="text-center row">
 						<img alt="{translate text='Book Cover'} for &quot;{$recordDriver->getTitle()|removeTrailingPunctuation|escape}&quot;" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
@@ -27,7 +27,7 @@
 				{/if}
 			</div>
 
-			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+			<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
 
 				{if $error}{* TODO: Does this get used? *}
 					<div class="row">
@@ -38,13 +38,13 @@
 				{/if}
 
 				<div class="row">
-					<div id="record-details-column" class="col-xs-12 col-sm-8">
-{*					<div id="record-details-column" class="col-xs-12 col-sm-9">*}
+					<div id="record-details-column" class="col-sm-12 col-md-8">
+{*					<div id="record-details-column" class="col-sm-12 col-md-9">*}
 						{include file="OverDrive/view-title-details.tpl"}
 					</div>
 
-{*					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">*}
-					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-4">
+{*					<div id="recordTools" class="col-sm-12 col-md-6 col-lg-3">*}
+					<div id="recordTools" class="col-sm-12 col-md-6 col-lg-4">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Show hold/checkout button as appropriate *}

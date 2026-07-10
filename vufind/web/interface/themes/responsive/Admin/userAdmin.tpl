@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-tn-12 col-xs-12">
+<div id="main-content" class="col-12 col-sm-12">
 	<h1>User Administration</h1>
 	<hr>
 	<form name="resetDisplayName" method="post" enctype="multipart/form-data" class="form-horizontal">
@@ -15,11 +15,11 @@
 
 			<input type="hidden" name="userAction" value="resetDisplayName">
 			<div class="row form-group">
-				<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-				<div class="col-sm-6">
+				<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+				<div class="col-md-6">
 					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
-				<div class="col-sm-2">
+				<div class="col-md-2">
 					<button type="submit" class="btn btn-primary">Reset User's display name</button>
 				</div>
 			</div>
@@ -42,11 +42,11 @@
 
 				<input type="hidden" name="userAction" value="showDuplicates">
 				<div class="row form-group">
-					<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-					<div class="col-sm-6">
+					<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $duplicateBarcode} value="{$duplicateBarcode}"{/if}>
 					</div>
-					<div class="col-sm-2">
+					<div class="col-md-2">
 						<button type="submit" class="btn btn-primary">Look up Accounts</button>
 					</div>
 				</div>
@@ -117,11 +117,11 @@
 
 				<input type="hidden" name="userAction" value="showReadingHistoryActions">
 				<div class="row form-group">
-					<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-					<div class="col-sm-6">
+					<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
 					</div>
-					<div class="col-sm-2">
+					<div class="col-md-2">
 						<button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
 					</div>
 				</div>

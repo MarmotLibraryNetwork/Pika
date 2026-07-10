@@ -1,6 +1,6 @@
 
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
@@ -12,7 +12,7 @@
 		{* Thumbnail and description *}
 		<div class="row">
 			{if $thumbnail}
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				{if $thumbnail_link}<a href="{$thumbnail_link}">{/if}
 				<img src="{$thumbnail}" class="img-responsive" alt="{$title|escape}">
 				{if $thumbnail_link}</a>{/if}
@@ -26,7 +26,7 @@
 		{* Child objects grid *}
 		{if $collectionChildren}
 		<div class="row collection-row-spacer">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				{if $recordCount}
 				<p>{$recordCount} items in this collection.</p>
 				{/if}

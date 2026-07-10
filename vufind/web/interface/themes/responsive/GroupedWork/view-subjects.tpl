@@ -13,8 +13,8 @@
 
 		{if $lcSubjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='LC Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='LC Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$lcSubjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>
@@ -25,8 +25,8 @@
 
 		{if $bisacSubjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='Bisac Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='Bisac Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$bisacSubjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>
@@ -37,8 +37,8 @@
 
 		{if $oclcFastSubjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='OCLC Fast Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='OCLC Fast Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$oclcFastSubjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>
@@ -49,8 +49,8 @@
 
 		{if $localSubjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='Local Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='Local Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$localSubjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>
@@ -61,8 +61,8 @@
 
 		{if $otherSubjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='Other Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='Other Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$otherSubjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>
@@ -75,8 +75,8 @@
 		{* Display All the subjects *}
 		{if $subjects}
 			<div class="row">
-				<div class="result-label col-xs-3">{translate text='Subjects'}</div>
-				<div class="col-xs-9 result-value">
+				<div class="result-label col-sm-3">{translate text='Subjects'}</div>
+				<div class="col-sm-9 result-value">
 					{foreach from=$subjects item=subject name=loop}
 						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;basicType=Subject">{$subject|escape}</a>
 						<br>

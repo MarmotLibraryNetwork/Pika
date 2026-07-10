@@ -2,7 +2,7 @@
 	{* taken from MyAccount/menu.tpl*}
 	{* id attributes have prefix 'mobileHeader-' added *}
 	<div class="row d-none d-sm-block d-md-none">
-		<div id="mobileHeader" class="col-tn-12 col-xs-12">
+		<div id="mobileHeader" class="col-12 col-sm-12">
 
 			<div id="mobileHeader-myAccountFines">
 				<span class="expirationFinesNotice-placeholder"></span>

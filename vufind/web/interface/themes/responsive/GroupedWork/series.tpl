@@ -1,7 +1,7 @@
 {strip}
 	{if $recordDriver}
 	<div id="seriesInfo" style="display:none" class="row">
-		<div class="col-sm-12">
+		<div class="col-md-12">
 			{assign var="scrollerName" value="Series"}
 			{assign var="scrollerTitle" value=""}
 			{assign var="wrapperId" value="series"}

@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-tn-12 col-xs-12">
+<div id="main-content" class="col-12 col-sm-12">
 	<h1 role="heading">Pika Solr Administration</h1>
 	<hr>
 	{if $PikaStatus}

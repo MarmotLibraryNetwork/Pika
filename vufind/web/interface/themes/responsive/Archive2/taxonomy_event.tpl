@@ -1,18 +1,18 @@
 {* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{include file="Archive/search-results-navigation.tpl"}
 			<h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{if $thumbnail && $thumbnail.url}
 				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail">
 			{/if}
 		</div>
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
 			{include file="Archive2/partials/fieldRow.tpl" label="Start Date"     value=$start_date}
 			{include file="Archive2/partials/fieldRow.tpl" label="End Date"       value=$end_date}
@@ -24,7 +24,7 @@
 	<br class="clearfix">
 	{if $term_description}
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
@@ -75,7 +75,7 @@
 					<div id="eventNotesPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
 							<div class="row">
-								<div class="col-sm-12">{$notes}</div>
+								<div class="col-md-12">{$notes}</div>
 							</div>
 						</div>
 					</div>

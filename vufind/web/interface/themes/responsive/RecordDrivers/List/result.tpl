@@ -7,7 +7,7 @@
 
 	{* Title Row *}
 	<div class="row result-title-row">
-		<div class="col-tn-12">
+		<div class="col-12">
 			<h2 class="h3">
 				<span class="result-index">{$resultIndex}.</span>&nbsp;
 				<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
@@ -26,11 +26,11 @@
 	<div class="row">
 		{if $showBookshelf}
 			{* Place holder column so that lists Display similar to other result entries *}
-			<div class="col-tn-1 col-sm-1"></div>
+			<div class="col-1 col-md-1"></div>
 		{/if}
 
 		{if $showCovers}
-			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+			<div class="coversColumn col-sm-3 col-md-3 col-lg-3 col-xl-2 text-center">
 				{if $disableCoverArt != 1}
 					<a href="/MyAccount/MyList/{$summShortId}" class="listResultImage">
 						<img src="/bookcover.php?id={$summShortId}&type=userList&size=medium" class="listResultImage img-thumbnail" alt="{translate text='No Cover Image'}">
@@ -40,15 +40,15 @@
 		{/if}
 
 		{if $showBookshelf}
-			<div class="{if !$showCovers}col-xs-12{else}col-xs-8 col-sm-8 col-md-8 col-lg-9{/if}">{* May turn out to be more than one situation to consider here *}
+			<div class="{if !$showCovers}col-sm-12{else}col-sm-8 col-md-8 col-lg-8 col-xl-9{/if}">{* May turn out to be more than one situation to consider here *}
 		{else}
-			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9 col-md-9 col-lg-10{/if}">{* May turn out to be more than one situation to consider here *}
+			<div class="{if !$showCovers}col-sm-12{else}col-sm-9 col-md-9 col-lg-9 col-xl-10{/if}">{* May turn out to be more than one situation to consider here *}
 		{/if}
 
 			{if $summAuthor}
 			<div class="row">
-				<div class="result-label col-tn-3">Created By: </div>
-				<div class="result-value col-tn-9 notranslate">
+				<div class="result-label col-3">Created By: </div>
+				<div class="result-value col-9 notranslate">
 					{if is_array($summAuthor)}
 						{foreach from=$summAuthor item=author}
 							{$author|highlight}
@@ -62,8 +62,8 @@
 
 		{if $summNumTitles}
 			<div class="row">
-				<div class="result-label col-tn-3">Number of Titles: </div>
-				<div class="result-value col-tn-9 notranslate">
+				<div class="result-label col-3">Number of Titles: </div>
+				<div class="result-value col-9 notranslate">
 					{$summNumTitles} titles are in this list.
 				</div>
 			</div>
@@ -72,8 +72,8 @@
 		{if $summSnippets}
 			{foreach from=$summSnippets item=snippet}
 				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption}: </div>
-					<div class="result-value col-tn-9 col-xs-9">
+					<div class="result-label col-3 col-sm-3">{translate text=$snippet.caption}: </div>
+					<div class="result-value col-9 col-sm-9">
 						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br>{/if}
 					</div>
 				</div>
@@ -83,11 +83,11 @@
 		{* Description Section *}
 		{if $summDescription}
 			<div class="row d-none d-sm-block d-md-none">
-				<div class="result-label col-tn-3 col-xs-3">Description:</div>
+				<div class="result-label col-3 col-sm-3">Description:</div>
 			</div>
 
 			<div class="row">
-				<div class="result-value col-tn-12" id="descriptionValue{$summId|escape}">
+				<div class="result-value col-12" id="descriptionValue{$summId|escape}">
 					{$summDescription|highlight|truncate_html:450:"..."}
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,7 +7,7 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 text-center">
+			<div id="main-content" class="col-sm-12 text-center">
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}

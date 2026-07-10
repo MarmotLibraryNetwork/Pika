@@ -1,5 +1,5 @@
 {strip}
-	<div class="archiveComponentContainer nopadding col-sm-12 col-md-6">
+	<div class="archiveComponentContainer nopadding col-md-12 col-lg-6">
 		<div class="archiveComponent horizontalComponent">
 			<div class="archiveComponentBody">
 				<div class="archiveComponentBox">

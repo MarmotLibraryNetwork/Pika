@@ -10,8 +10,8 @@
 					<form id="offlineHoldsFilter">
 						<div class="form-horizontal">
 							<div class="form-group">
-								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+								<label for="startDate" class="control-label col-md-2">Start Date</label>
+								<div class="input-group input-append date controls col-md-3" id="startDatePicker">
 									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control" >
@@ -24,8 +24,8 @@
 								</div>
 							</div>
 							<div class="form-group">
-								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+								<label for="endDate" class="control-label col-md-2">End Date</label>
+								<div class="input-group input-append date controls col-md-3" id="endDatePicker">
 									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control">
@@ -48,14 +48,14 @@
 							</div>
 							*}
 							<div class="form-group">
-								<label for="loginsToInclude" class="control-label col-sm-2">Logins To Show</label> <input type="text" name="loginsToInclude" id="startDate" size="60" value="{$loginsToInclude}" title="Separate multiple logins with commas, leave blank to include all" class="form-control col-sm-6" style="width: auto;">
+								<label for="loginsToInclude" class="control-label col-md-2">Logins To Show</label> <input type="text" name="loginsToInclude" id="startDate" size="60" value="{$loginsToInclude}" title="Separate multiple logins with commas, leave blank to include all" class="form-control col-md-6" style="width: auto;">
 							</div>
 						<div class="row">
-						<p class="alert alert-info col-sm-8 col-sm-offset-2">Separate multiple logins with commas. Leave blank to include all logins.</p>
+						<p class="alert alert-info col-md-8 offset-md-2">Separate multiple logins with commas. Leave blank to include all logins.</p>
 						</div>
 						<div class="form-group">
-							<label class="control-label col-sm-2">Status</label>
-							<div class="col-sm-6">
+							<label class="control-label col-md-2">Status</label>
+							<div class="col-md-6">
 								<div class="checkbox">
 									<label for="hideNotProcessed"><input type="checkbox" name="hideNotProcessed" id="hideNotProcessed" {if $hideNotProcessed}checked="checked"{/if}> Hide Not Processed</label>
 								</div>

@@ -5,7 +5,7 @@
 		{foreach from=$summary item="item"}
 			{if $item.displayByDefault && $numRowsShown<3}
 				<div class="itemSummary row">
-					<div class="{if $item.isEContent == false}col-xs-6{elseif $inRecordView}col-xs-11{else}col-tn-12{/if}{if $inRecordView} col-xs-offset-1{/if}" title="Location" aria-label="Location">
+					<div class="{if $item.isEContent == false}col-sm-6{elseif $inRecordView}col-sm-11{else}col-12{/if}{if $inRecordView} offset-sm-1{/if}" title="Location" aria-label="Location">
 						{* When on a Record view page, Indent one column, except for narrowest width devices (tn).
 						Give larger width (6) to item location since they tend to be longer than the call numbers. (that are given width 5) *}
 						<span class="itemSummaryShelfLocation notranslate"><strong>{$item.shelfLocation}</strong>
@@ -15,7 +15,7 @@
 						</span>
 					</div>
 					{if $item.isEContent == false}
-						<div class="{if $inRecordView}col-xs-5{else}col-xs-6{/if}{if !$inEditionsTable} col-tn-offset-1 col-xs-offset-0{/if}" title="Callnumber" aria-label="Callnumber">
+						<div class="{if $inRecordView}col-sm-5{else}col-sm-6{/if}{if !$inEditionsTable} offset-1 offset-sm-0{/if}" title="Callnumber" aria-label="Callnumber">
 							{* The offset column indents the call number on narrow view (tn) when location and call number are in their own row *}
 							{* Don't use offset within the editions table *}
 							<span class="itemSummaryCallNumber notranslate"><strong>{$item.callNumber}</strong></span>

@@ -9,8 +9,8 @@
 					{*{if $formField->fieldType == 'text' ||*}
 					{*$formField->fieldType == 'textarea'}*}
 					{*<div class="request_detail_field row">*}
-						{*<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>*}
-						{*<div class="request_detail_field_value col-sm-9">*}
+						{*<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>*}
+						{*<div class="request_detail_field_value col-md-9">*}
 							{*{if $formField->id && array_key_exists($formField->id, $additionalRequestData)}*}
 								{*{assign var='formfieldId' value=$formField->id}*}
 								{*{$additionalRequestData.$formfieldId}*}
@@ -22,8 +22,8 @@
 
 					{* Yes / No Fields *}
 					{*<div class="request_detail_field row">*}
-						{*<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>*}
-						{*<div class="request_detail_field_value col-sm-9">*}
+						{*<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>*}
+						{*<div class="request_detail_field_value col-md-9">*}
 							{*{if $formField->id && array_key_exists($formField->id, $additionalRequestData)}*}
 								{*{assign var='formfieldId' value=$formField->id}*}
 								{*{if $additionalRequestData.$formfieldId == 1}Yes*}
@@ -39,8 +39,8 @@
 					{if $formField->fieldType == 'format'}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{if $materialsRequest->formatLabel}
 									{$materialsRequest->formatLabel}
 								{else}{* Fallback if no label is found*}
@@ -54,49 +54,49 @@
 								{if $specialField == 'Abridged/Unabridged'}
 									{if $materialsRequest->abridged != 2}
 										<div class="request_detail_field row">
-											<label class="request_detail_field_label col-sm-3">Abridged: </label>
-											<div class=" request_detail_field_value col-sm-9">
+											<label class="request_detail_field_label col-md-3">Abridged: </label>
+											<div class=" request_detail_field_value col-md-9">
 												{if $materialsRequest->abridged == 1}Abridged Version{elseif $materialsRequest->abridged == 0}Unabridged Version{/if}
 											</div>
 										</div>
 									{/if}
 								{elseif $specialField == 'Article Field'}
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Magazine/Journal Title: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineTitle}</div>
+										<label class="request_detail_field_label col-md-3">Magazine/Journal Title: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->magazineTitle}</div>
 									</div>
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Date: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineDate}</div>
+										<label class="request_detail_field_label col-md-3">Date: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->magazineDate}</div>
 									</div>
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Volume: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineVolume}</div>
+										<label class="request_detail_field_label col-md-3">Volume: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->magazineVolume}</div>
 									</div>
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Number: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineNumber}</div>
+										<label class="request_detail_field_label col-md-3">Number: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->magazineNumber}</div>
 									</div>
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Page Numbers: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazinePageNumbers}</div>
+										<label class="request_detail_field_label col-md-3">Page Numbers: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->magazinePageNumbers}</div>
 									</div>
 
 									{* ebook and eaudio use the same database table column subformat *}
 								{elseif $specialField == 'Eaudio format'}
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">E-audio format: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->subFormat|translate}</div>
+										<label class="request_detail_field_label col-md-3">E-audio format: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->subFormat|translate}</div>
 									</div>
 								{elseif $specialField == 'Ebook format'}
 									<div class="request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">E-book format: </label>
-										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->subFormat|translate}</div>
+										<label class="request_detail_field_label col-md-3">E-book format: </label>
+										<div class=" request_detail_field_value col-md-9">{$materialsRequest->subFormat|translate}</div>
 									</div>
 								{elseif $specialField == 'Season'}
 									<div class="request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">Season: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="request_detail_field_label col-md-3">Season: </label>
+										<div class="request_detail_field_value col-md-9">
 											{$materialsRequest->season}
 										</div>
 									</div>
@@ -107,8 +107,8 @@
 
 						{elseif $formField->fieldType == 'author'}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$materialsRequest->authorLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">{$materialsRequest->author}</div>
+							<label class="request_detail_field_label col-md-3">{$materialsRequest->authorLabel}: </label>
+							<div class="request_detail_field_value col-md-9">{$materialsRequest->author}</div>
 						</div>
 
 						{elseif
@@ -133,8 +133,8 @@
 						$formField->fieldType == 'season'}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{$materialsRequest->$materialRequestTableColumnName}
 							</div>
 						</div>
@@ -145,8 +145,8 @@
 						$formField->fieldType == 'about'}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{if !empty(trim($materialsRequest->$materialRequestTableColumnName))}
 									<pre>{strip}
 										{$materialsRequest->$materialRequestTableColumnName}
@@ -159,16 +159,16 @@
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						{*{assign var="fieldValue" value=$materialsRequest->$materialRequestTableColumnName}*}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{$materialsRequest->$materialRequestTableColumnName|translate|capitalize}
 							</div>
 						</div>
 
 						{elseif $formField->fieldType == 'status'}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class=" request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class=" request_detail_field_value col-md-9">
 								{$materialsRequest->statusLabel}
 							</div>
 						</div>
@@ -179,8 +179,8 @@
 						{* Date Fields *}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{$materialsRequest->$materialRequestTableColumnName|date_format}
 							</div>
 						</div>
@@ -190,8 +190,8 @@
 						{* Yes / No Fields *}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 						<div class="request_detail_field row">
-							<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-							<div class="request_detail_field_value col-sm-9">
+							<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+							<div class="request_detail_field_value col-md-9">
 								{if $materialsRequest->$materialRequestTableColumnName == 1}Yes
 								{elseif $materialsRequest->$materialRequestTableColumnName == 0}No
 								{/if}
@@ -203,8 +203,8 @@
 						{elseif $formField->fieldType == 'createdBy'}
 						{if $showUserInformation}
 							<div class="request_detail_field row">
-								<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-								<div class="request_detail_field_value col-sm-9">
+								<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+								<div class="request_detail_field_value col-md-9">
 									{$requestUser->firstname} {$requestUser->lastname}
 								</div>
 							</div>
@@ -216,8 +216,8 @@
 							{if $showUserInformation}
 								{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 								<div class="request_detail_field row">
-									<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-									<div class="request_detail_field_value col-sm-9">
+									<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+									<div class="request_detail_field_value col-md-9">
 										{$materialsRequest->$materialRequestTableColumnName}
 									</div>
 								</div>
@@ -230,8 +230,8 @@
 							{if $showUserInformation}
 								{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 								<div class="request_detail_field row">
-									<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-									<div class="request_detail_field_value col-sm-9">
+									<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+									<div class="request_detail_field_value col-md-9">
 										{if $materialsRequest->$materialRequestTableColumnName == 1}Yes
 										{elseif $materialsRequest->$materialRequestTableColumnName == 0}No
 										{/if}
@@ -242,8 +242,8 @@
 						{elseif $formField->fieldType == 'holdPickupLocation'}
 							{if $showUserInformation}
 								<div class="request_detail_field row">
-									<label class="request_detail_field_label col-sm-3">{$formField->fieldLabel}: </label>
-									<div class=" request_detail_field_value col-sm-9">
+									<label class="request_detail_field_label col-md-3">{$formField->fieldLabel}: </label>
+									<div class=" request_detail_field_value col-md-9">
 										{$materialsRequest->location}
 										{*{if $materialsRequest->bookmobileStop}{$materialsRequest->bookmobileStop}{/if}*}
 									</div>
@@ -253,8 +253,8 @@
 							{if $showUserInformation}
 								{if $barCodeColumn}
 									<div class="row form-group">
-										<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 											{$requestUser->$barCodeColumn}
 										</div>
 									</div>

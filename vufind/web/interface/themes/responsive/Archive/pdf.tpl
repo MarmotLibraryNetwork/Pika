@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,7 +7,7 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 d-none d-md-block text-center">
+			<div id="main-content" class="col-sm-12 d-none d-md-block text-center">
 				{if $canView}
 					<div id="pdfContainer">
 						<div id="pdfContainerBody">
@@ -25,7 +25,7 @@
 		</div>
 
 		<div id="download-options" class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				{if $canView}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 				{/if}

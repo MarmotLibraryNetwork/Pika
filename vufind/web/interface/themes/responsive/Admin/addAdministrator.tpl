@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-tn-12 col-xs-12">
+<div id="main-content" class="col-12 col-sm-12">
 	{if $error}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
@@ -8,8 +8,8 @@
 			<legend><h1 role="heading" aria-level="1" class="h2">Add a New Administrator</h1></legend>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
-				<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-				<div class="col-sm-10">
+				<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+				<div class="col-md-10">
 					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
 			</div>

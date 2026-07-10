@@ -54,8 +54,8 @@
 			{foreach from=$section.values item=section}
 				<div class="section">
 					<div class="row">
-						<div class="subsectionTitle col-xs-5">{$section.title}</div>
-						<div class="subsection col-xs-7">
+						<div class="subsectionTitle col-sm-5">{$section.title}</div>
+						<div class="subsection col-sm-7">
 							<a href="{$section.link}"><img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail"></a>
 						</div>
 					</div>
@@ -193,10 +193,10 @@
 			{foreach from=$relatedArticles item=section}
 			<div class="row">
 				<a href="{$section.link}">
-					<div class="subsection col-xs-5">
+					<div class="subsection col-sm-5">
 						<img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail">
 					</div>
-					<div class="subsectionTitle col-xs-7">{$section.title}</div>
+					<div class="subsectionTitle col-sm-7">{$section.title}</div>
 				</a>
 			</div>
 			{/foreach}
@@ -206,7 +206,7 @@
 	{* Sections for Related Content From Novelist  *}
 	{foreach from=$exploreMoreInfo item=exploreMoreOption}
 		<div class="sectionHeader"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>{$exploreMoreOption.label}</div>
-		<div class="{*col-sm-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
+		<div class="{*col-md-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
 			<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
 			{$exploreMoreOption.body}
 			<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>

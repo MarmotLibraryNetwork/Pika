@@ -4,7 +4,7 @@
 	{else}
 		{assign var=isNewspaperLogin value=false}
 	{/if}
-<div id="page-content" class="col-xs-12">
+<div id="page-content" class="col-sm-12">
 	<h1 role="heading" aria-level="1" class="h2">{if $isNewspaperLogin}Log into your account to access {$newspaperName} site{elseif $action == "eContentSupport"}Log into your account to submit eContent support request{else}{translate text='Log into your account'}{/if}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
@@ -41,14 +41,14 @@
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
-						<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}: </label>
-						<div class="col-xs-12 col-sm-8">
+						<label for="username" class="control-label col-sm-12 col-md-4">{$usernameLabel}: </label>
+						<div class="col-sm-12 col-md-8">
 							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" aria-required="true">
 						</div>
 					</div>
 					<div id="loginPasswordRow" class="form-group">
-						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
-						<div class="col-xs-12 col-sm-8">
+						<label for="password" class="control-label col-sm-12 col-md-4">{$passwordLabel}: </label>
+						<div class="col-sm-12 col-md-8">
 							<input type="password" name="password" id="password" size="28" onkeydown="return Pika.submitOnEnter(event, '#loginForm');" class="form-control" aria-required="true">
 							{if $showForgotPinLink}
 								<p class="help-block">
@@ -62,7 +62,7 @@
 
 					</div>
 					<div id="loginPasswordRow2" class="form-group">
-						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+						<div class="col-sm-12 offset-md-4 col-md-8">
 							<label for="showPwd" class="checkbox">
 								<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
 								{translate text="Reveal Password"}
@@ -78,7 +78,7 @@
 					</div>
 
 					<div id="loginPasswordRow2" class="form-group">
-						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+						<div class="col-sm-12 offset-md-4 col-md-8">
 							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return Pika.Account.preProcessLogin();">
 							{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}

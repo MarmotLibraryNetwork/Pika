@@ -24,17 +24,17 @@
 			<div id="loginUsernameRow" class="form-group">
 				{if $offline && $allowUsername}
 					<div class="alert alert-warning">Due to the system being offline you must use your <strong>barcode</strong> to login.</div>
-					<label for="username" class="control-label col-xs-12 col-sm-4">Barcode:</label>
+					<label for="username" class="control-label col-sm-12 col-md-4">Barcode:</label>
         {else}
-				<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}:</label>
+				<label for="username" class="control-label col-sm-12 col-md-4">{$usernameLabel}:</label>
 				{/if}
-				<div class="col-xs-12 col-sm-8">
+				<div class="col-sm-12 col-md-8">
 					<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" aria-required="true">
 				</div>
 			</div>
 			<div id="loginPasswordRow" class="form-group">
-				<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
-				<div class="col-xs-12 col-sm-8">
+				<label for="password" class="control-label col-sm-12 col-md-4">{$passwordLabel}: </label>
+				<div class="col-sm-12 col-md-8">
 					<input type="password" name="password" id="password" size="28" onkeydown="return Pika.submitOnEnter(event, '#loginForm');" class="form-control" aria-required="true">
 					{if $showForgotPinLink}
 						<p class="text-muted help-block">
@@ -46,7 +46,7 @@
 				</div>
 			</div>
 			<div id="loginPasswordRow2" class="form-group">
-				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+				<div class="col-sm-12 offset-md-4 col-md-8">
 					<label for="showPwd" class="checkbox">
 						<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
 						{translate text="Reveal Password"}

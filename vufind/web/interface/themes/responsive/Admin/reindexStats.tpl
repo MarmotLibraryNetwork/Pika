@@ -1,17 +1,17 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h1 role="heading" aria-level="1" class="h2">Indexing Statistics : {$indexingStatsDate}
 			{if !empty($compareTo)} vs {$compareTo}{/if}
 		</h1>
 
 		<div class="row">
-			<div class="col-tn-12"><a class="btn btn-default" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
+			<div class="col-12"><a class="btn btn-default" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
 			<br><br>
 		</div>
 
 		<div class="row">
 			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
-				<div class="col-sm-6">
+				<div class="col-md-6">
 				<div class="form-group">
 					<label for="availableDates">Available Dates</label>
 					<select id="availableDates" name="day" class="form-control" onchange="$('#indexingDateSelection').submit()">
@@ -22,7 +22,7 @@
 				</div>
 	{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
 				</div>
-				<div class="col-sm-6">
+				<div class="col-md-6">
 				<div class="form-group">
 					<label for="compareTo">Compare To</label>
 					<select id="compareTo" name="compareTo" class="form-control" onchange="$('#indexingDateSelection').submit()">
@@ -42,7 +42,7 @@
 			<div class="row">
 				{foreach from=$indexingStatHeader item=itemHeader name=indexCols}
 					{if $smarty.foreach.indexCols.index}{* Skip the first column for scope name *}
-						<div class="col-sm-4">
+						<div class="col-md-4">
 							<button class="toggle-vis btn btn-default btn-primary" data-column="{$smarty.foreach.indexCols.index}"
 							        style="width: 100%">{$itemHeader}</button>
 						</div>

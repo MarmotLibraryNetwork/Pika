@@ -1,13 +1,13 @@
 {strip}
-<div class="archiveComponentContainer nopadding col-sm-12 col-md-6">
+<div class="archiveComponentContainer nopadding col-md-12 col-lg-6">
 	<div class="archiveComponent browseFilterContainer">
 		<div class="row archiveComponentBody">
 			<div class="archiveComponentBox">
 				<a href="#" data-bs-toggle="modal" data-bs-target="#browseSubjectsModal{$browseSubjectsId}">
-					<div class="col-tn-4 col-xs-3 col-md-4 archiveComponentIconContainer">
+					<div class="col-4 col-sm-3 col-lg-4 archiveComponentIconContainer">
 						<img src="{$browseSubjectsImage}" width="100" height="100" alt="{$browseSubjectsTitle|escape}" class="archiveComponentImage">
 					</div>
-					<div class="col-tn-8 col-xs-9 col-md-8 archiveComponentControls">
+					<div class="col-8 col-sm-9 col-lg-8 archiveComponentControls">
 						<div class="archiveComponentHeader">{$browseSubjectsTitle}</div>
 					</div>
 				</a>
@@ -25,7 +25,7 @@
 			<div class="modal-body">
 				{foreach from=$browseSubjectsItems item=subject}
 					<div class="row archive-field-row">
-						<div class="result-value col-sm-12">
+						<div class="result-value col-md-12">
 							<a href="{$subject.url}">{$subject.name|escape}</a> ({$subject.count})
 						</div>
 					</div>

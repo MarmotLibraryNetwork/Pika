@@ -1,6 +1,6 @@
 {strip}
 <style>{literal}.exploreMoreBar .explore-more-option .explore-more-image{text-align:center}.exploreMoreBar .explore-more-option .explore-more-image img{margin-left:auto;margin-right:auto}{/literal}</style>
-<div class="nopadding col-sm-12">
+<div class="nopadding col-md-12">
 	<div class="exhibitPage exploreMoreBar row">
 		{if $browseCollectionTitle}
 		<div class="label-top">

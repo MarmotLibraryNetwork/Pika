@@ -1,7 +1,7 @@
 {strip}
 	<div class="form-group">
-		<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><strong>{translate text='Receive notices by'}:</strong></div>
+		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm">
 					<label for="noticesTel" class="btn btn-sm btn-default{* {if $profile->notices == 'p'}active{/if}*}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
@@ -22,8 +22,8 @@
 	turned on, it is more evident to Admins what is going on here "under the hood"
 	 *}
 	<div class="form-group">
-		<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
-		<div class="col-xs-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
+		<div class="col-sm-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
+		<div class="col-sm-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
 				<p class='alert alert-warning'><strong>(Format: xxx-xxx-xxxx) &nbsp; Be sure to include the dashes.</strong></p>
 			{else}{$profile->workPhone|escape}{/if}</div>
 	</div>

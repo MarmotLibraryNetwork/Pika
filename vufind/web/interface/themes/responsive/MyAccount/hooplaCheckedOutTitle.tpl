@@ -3,7 +3,7 @@
 
 		{* Title Row *}
 		<div class="row result-title-row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<h2 class="h3">
 					<span class="result-index">{$resultIndex}.</span>&nbsp;
 					{if $record.linkUrl}
@@ -23,13 +23,13 @@
 
 			{* Cover Column *}
 			{if $showCovers}
-			{*<div class="col-xs-4">*}
-			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
+			{*<div class="col-sm-4">*}
+			<div class="col-sm-3 col-md-4 col-lg-3 checkedOut-covers-column">
 				<div class="row">
-					<div class="selectTitle d-sm-none d-md-block col-sm-1">
+					<div class="selectTitle d-sm-none d-md-block col-md-1">
 						&nbsp;{* Can't renew hoopla titles*}
 					</div>
-					<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
+					<div class="{*coverColumn *}text-center col-sm-12 col-md-10">
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 							{if $record.coverUrl}
 								{if $record.recordId && $record.linkUrl}
@@ -45,43 +45,43 @@
 				</div>
 			</div>
 		{else}
-			<div class="col-xs-1">
+			<div class="col-sm-1">
 				&nbsp;{* Can't renew hoopla titles*}
 			</div>
 		{/if}
 
 			{* Title Details Column *}
-			<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-9{else}col-xs-11{/if}">
+			<div class="{if $showCovers}col-sm-9 col-md-8 col-lg-9{else}col-sm-11{/if}">
 			<div class="row">
-				<div class="resultDetails col-xs-12 col-md-9">
+				<div class="resultDetails col-sm-12 col-lg-9">
 					{if strlen($record.author) > 0}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Author'}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record.author}</div>
+							<div class="result-label col-4 col-xl-3">{translate text='Author'}</div>
+							<div class="result-value col-8 col-xl-9">{$record.author}</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Source'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.checkoutSource}</div>
+						<div class="result-label col-4 col-xl-3">{translate text='Source'}</div>
+						<div class="result-value col-8 col-xl-9">{$record.checkoutSource}</div>
 					</div>
 
 					{if $record.checkoutdate}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record.checkoutdate|date_format}</div>
+							<div class="result-label col-4 col-xl-3">{translate text='Checked Out'}</div>
+							<div class="result-value col-8 col-xl-9">{$record.checkoutdate|date_format}</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.format} - Hoopla</div>
+						<div class="result-label col-4 col-xl-3">{translate text='Format'}</div>
+						<div class="result-value col-8 col-xl-9">{$record.format} - Hoopla</div>
 					</div>
 {* this star rating system isn't accessible. New star ratings can't be used due to checkouts being one long form. *}
 {*					{if $showRatings && $record.groupedWorkId && $record.ratingData}*}
 {*						<div class="row">*}
-{*							<div class="result-label col-tn-4 col-lg-3">Rating&nbsp;</div>*}
-{*							<div class="result-value col-tn-8 col-lg-9">*}
+{*							<div class="result-label col-4 col-xl-3">Rating&nbsp;</div>*}
+{*							<div class="result-value col-8 col-xl-9">*}
 {*								{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}*}
 {*							</div>*}
 {*						</div>*}
@@ -89,31 +89,31 @@
 
 					{if $hasLinkedUsers}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out To'}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-4 col-xl-3">{translate text='Checked Out To'}</div>
+							<div class="result-value col-8 col-xl-9">
 								{$record.user}
 							</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Expires'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>
+						<div class="result-label col-4 col-xl-3">{translate text='Expires'}</div>
+						<div class="result-value col-8 col-xl-9">{$record.dueDate|date_format}</div>
 					</div>
 
 
 					{if isset($record.borrowsRemaining)}
 						<div class="row">
-							<div class="col-tn-12">You can borrow <strong>{$record.borrowsRemaining}</strong> more Hoopla title{if $record.borrowsRemaining !=1}s{/if} this month.</div>
-							{*<div class="result-label col-tn-4 col-lg-3">{translate text='Expires'}</div>*}
-							{*<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>*}
+							<div class="col-12">You can borrow <strong>{$record.borrowsRemaining}</strong> more Hoopla title{if $record.borrowsRemaining !=1}s{/if} this month.</div>
+							{*<div class="result-label col-4 col-xl-3">{translate text='Expires'}</div>*}
+							{*<div class="result-value col-8 col-xl-9">{$record.dueDate|date_format}</div>*}
 						</div>
 					{/if}
 {* TODO: refactor or delete
 
 					<div class="row econtent-download-row">
-						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-						<div class="result-value col-md-8 col-lg-9">
+						<div class="result-label col-lg-4 col-xl-3">{translate text='Download'}</div>
+						<div class="result-value col-lg-8 col-xl-9">
 							{if $record.formatSelected}
 								You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
 							{else}
@@ -135,7 +135,7 @@
 				</div>
 
 				{* Actions for Title *}
-				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
+				<div class="col-sm-9 col-md-8 col-lg-4 col-xl-3">
 					<div class="btn-group btn-group-vertical btn-block">
 {* TODO: Add Hoopla Actions
 						{if $record.overdriveRead}

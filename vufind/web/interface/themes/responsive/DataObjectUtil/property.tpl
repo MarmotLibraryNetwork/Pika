@@ -15,23 +15,23 @@
 			</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
-			<div class="col-xs-11">
+			<div class="col-sm-11">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
 					{if $property.isIndexingSetting}
 						&nbsp;<span class="glyphicon glyphicon-time" title="This setting is a change to indexing"></span>
 					{/if}
 			</div>
-			<div class="col-xs-1">
+			<div class="col-sm-1">
 				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 			</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'checkboxWarn' && $property.type != 'header'}
 			{if !empty($property.helpLink)}
 				<div class="row">
-					<div class="col-xs-11">
+					<div class="col-sm-11">
 						<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
 					</div>
-					<div class="col-xs-1">
+					<div class="col-sm-1">
 						<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 					</div>
 				</div>
@@ -50,13 +50,13 @@
 			<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
 				<div class="panel panel-default">
 					<div class="panel-heading row">
-						<div class="panel-title col-tn-11">
+						<div class="panel-title col-11">
 							<a data-bs-toggle="collapse" data-bs-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
 								{$property.label}
 							</a>
 						</div>
 						{if $property.helpLink}
-							<div class="col-tn-1">
+							<div class="col-1">
 								<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
 							</div>
 						{/if}
@@ -168,7 +168,7 @@
 
 			{* Display a table of the association with the ability to add and edit new values *}
 			<div class="row">
-				<div class="col-md-12 custom-file">
+				<div class="col-lg-12 custom-file">
 					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input">
 					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}
 				</div>
@@ -177,8 +177,8 @@
 			<div class="row">
 				<br>
 
-				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
-				<div class="col-md-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
+				<div class="col-lg-2"><label for="fileName" class="label-left">File Name</label></div>
+				<div class="col-lg-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
 
 			</div>
 			{/if}
@@ -219,7 +219,7 @@
 					})
 						.done(function (data) {
 							if (data.exists == "true") {
-								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+								$("<br><div class='row'><div class='col-lg-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
 								$("#overWriteOverRide").change(function() {

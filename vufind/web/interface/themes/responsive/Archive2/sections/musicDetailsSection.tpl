@@ -5,8 +5,8 @@
 {include file="Archive2/partials/fieldRow.tpl" label="Total Discs" value=$total_discs}
 {if $music_genre}
 	<div class="row archive-field-row">
-		<div class="result-label col-sm-4">Genre:</div>
-		<div class="result-value col-sm-8">
+		<div class="result-label col-md-4">Genre:</div>
+		<div class="result-value col-md-8">
 			{if isset($music_genre.name)}
 				{$music_genre.name|escape}
 			{else}

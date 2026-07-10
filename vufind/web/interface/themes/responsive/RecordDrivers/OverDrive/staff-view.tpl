@@ -1,26 +1,26 @@
 {if $recordDriver}
 	<div class="row">
-		<div class="result-label col-xs-3">Grouped Work ID: </div>
-		<div class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
+		<div class="result-label col-sm-3">Grouped Work ID: </div>
+		<div class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">
 			<span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 		</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
+			<div class="col-sm-2">
 				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 	<div class="row">
-		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
-		<div id="recordIdCol" class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">{$id}</div>
+		<div class="result-label col-sm-3">{$recordDriver->getModule()} ID:</div>
+		<div id="recordIdCol" class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">{$id}</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
+			<div class="col-sm-2">
 				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('recordIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 				Work</a>
 			<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
@@ -63,65 +63,65 @@
 
 <h3>API Extraction Dates</h3>
 <div class="row">
-	<div class="result-label col-xs-6">Needs Update?: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Needs Update?: </div>
+	<div class="col-sm-6 result-value">
 		{if $overDriveProduct->needsUpdate}Yes{else}No{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Date Added: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Date Added: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 		{if $overDriveProduct->dateAdded}{$overDriveProduct->dateAdded|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Date Updated: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Date Updated: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 		{if $overDriveProduct->dateUpdated}{$overDriveProduct->dateUpdated|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
 	{if $overDriveProduct->deleted}
-		<div class="result-label col-xs-6">Deleted: </div>
-		<div class="col-xs-6 result-value">
+		<div class="result-label col-sm-6">Deleted: </div>
+		<div class="col-sm-6 result-value">
 				{* When the date is null, date_format displays the current time *}
 			{if $overDriveProduct->dateDeleted}{$overDriveProduct->dateDeleted|date_format:"%b %d, %Y %T"}{/if}
 		</div>
 	{/if}
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Last Metadata Check: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Last Metadata Check: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 		{if $overDriveProduct->lastMetadataCheck}{$overDriveProduct->lastMetadataCheck|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Last Metadata Change: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Last Metadata Change: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 			{if $overDriveProduct->lastMetadataChange}{$overDriveProduct->lastMetadataChange|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Last Availability Check: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Last Availability Check: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 		{if $overDriveProduct->lastAvailabilityCheck}{$overDriveProduct->lastAvailabilityCheck|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Last Availability Change: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Last Availability Change: </div>
+	<div class="col-sm-6 result-value">
 			{* When the date is null, date_format displays the current time *}
 		{if $overDriveProduct->lastAvailabilityChange}{$overDriveProduct->lastAvailabilityChange|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>
 <div class="row">
-	<div class="result-label col-xs-6">Last Grouped Work Modification Time: </div>
-	<div class="col-xs-6 result-value">
+	<div class="result-label col-sm-6">Last Grouped Work Modification Time: </div>
+	<div class="col-sm-6 result-value">
 		{if $lastGroupedWorkModificationTime == 'null'}Marked for re-index{else}{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %T"}{/if}
 	</div>
 </div>

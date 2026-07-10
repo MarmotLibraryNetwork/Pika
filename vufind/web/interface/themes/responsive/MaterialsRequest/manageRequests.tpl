@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-tn-12">
+<div id="main-content" class="col-12">
 	<h1 role="heading" aria-level="1" class="h2">Manage Materials Requests</h1>
 	{if $materialRequestStaffSettingsWarning}
 		<div class="alert alert-warning">
@@ -80,8 +80,8 @@
 								<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
 *}
 								<div class="form-group">
-									<label for="startDate" class="control-label col-sm-2">Start Date</label>
-									<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+									<label for="startDate" class="control-label col-md-2">Start Date</label>
+									<div class="input-group input-append date controls col-md-3" id="startDatePicker">
 										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control" >
@@ -94,8 +94,8 @@
 									</div>
 								</div>
 								<div class="form-group">
-									<label for="endDate" class="control-label col-sm-2">End Date</label>
-									<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+									<label for="endDate" class="control-label col-md-2">End Date</label>
+									<div class="input-group input-append date controls col-md-3" id="endDatePicker">
 										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control">
@@ -282,10 +282,10 @@
 				{if in_array('library_material_requests', $userRoles)}
 					<div id="materialsRequestActions">
 						<div class="row form-group">
-							<div class="col-sm-4">
+							<div class="col-md-4">
 								<label for="newAssignee" class="control-label">Assign selected to:</label>
 							</div>
-							<div class="col-sm-8">
+							<div class="col-md-8">
 								<div class="input-group">
 									{if $assignees}
 										<select name="newAssignee" id="newAssignee" class="form-control">
@@ -307,10 +307,10 @@
 							</div>
 						</div>
 						<div class="row form-group">
-							<div class="col-sm-4">
+							<div class="col-md-4">
 								<label for="newStatus" class="control-label">Change status of selected to:</label>
 							</div>
-							<div class="col-sm-8">
+							<div class="col-md-8">
 								<div class="input-group">
 									<select name="newStatus" id="newStatus" class="form-control">
 										<option value="unselected">Select One</option>
@@ -325,7 +325,7 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-xs-12">
+							<div class="col-sm-12">
 								<input class="btn btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return Pika.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>

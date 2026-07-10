@@ -6,7 +6,7 @@
 	</div>
 {/if}
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{if $shortPageTitle || $objectName}
 			<h1 role="heading" aria-level="1" class="h2">{if $shortPageTitle}{$shortPageTitle}{/if}{if $shortPageTitle && $objectName} - {/if}{$objectName}</h1>
 		{/if}

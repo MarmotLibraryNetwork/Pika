@@ -50,7 +50,7 @@
 
 					{if !$hasOnlyEContentCheckOuts}
 						<div class="row result">
-							<div class="col-sm-1">
+							<div class="col-md-1">
 								<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 							</div>
 						</div>

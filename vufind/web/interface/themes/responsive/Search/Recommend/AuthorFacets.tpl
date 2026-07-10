@@ -9,7 +9,7 @@
 	          <div class="row">
 				  {/if}
 				{/if}
-			  <div class="col-md-3">
+			  <div class="col-lg-3">
 				  <a href="{$author.url|escape}">{$author.value|escape}</a>
 				</div>
 		  {/foreach}

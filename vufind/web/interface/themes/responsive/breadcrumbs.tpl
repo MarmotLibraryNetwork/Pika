@@ -1,7 +1,7 @@
 {strip}
 	{if $showBreadcrumbs}
 		<nav aria-label="Breadcrumb" class="row breadcrumbs">
-			<div class="col-xs-12 col-sm-9">
+			<div class="col-sm-12 col-md-9">
 				<ol class="breadcrumb small">
 					{if !$archiveOnlyInterface}
 						<li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb">{translate text=$homeLinkText}</a> <span class="divider">&raquo;</span></li>

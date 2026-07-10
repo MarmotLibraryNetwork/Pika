@@ -8,7 +8,7 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<p>
 					<a class="btn btn-sm btn-default" href='/Admin/LoanRules?objectAction=list'>Return to List</a>
 				</p>
@@ -16,7 +16,7 @@
 		</div>
 
 		<div class="row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<div class="alert alert-info">
 					<strong>To reload loan rules:</strong>
 					<ol>
@@ -30,12 +30,12 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<form name="importLoanRules" action="/Admin/LoanRules" method="post">
 					<fieldset>
 						<input type="hidden" name="objectAction" value="doLoanRuleReload">
 						<div class="row">
-						<div class="col-tn-12">
+						<div class="col-12">
 							<label for="loanRuleData">Loan Rule data :</label>
 							<p>
 								<textarea rows="20" cols="80" name="loanRuleData" id="loanRuleData"></textarea>
@@ -43,7 +43,7 @@
 						</div>
 						</div>
 						<div class="row">
-						<div class="col-tn-12">
+						<div class="col-12">
 							<input type="submit" name="reload" value="Reload Data" class="btn btn-primary pull-right">
 						</div>
 						</div>

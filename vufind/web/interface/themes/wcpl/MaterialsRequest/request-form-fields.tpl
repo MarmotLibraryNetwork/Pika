@@ -10,8 +10,8 @@
                 {if $formField->fieldType == 'format'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label class="control-label col-sm-3" for="format">{$formField->fieldLabel}: <span class="required-input">*</span></label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="control-label col-md-3" for="format">{$formField->fieldLabel}: <span class="required-input">*</span></label>
+										<div class="request_detail_field_value col-md-9">
 
 											<select name="format" class="required form-control" id="format" onchange="Pika.MaterialsRequest.setFieldVisibility();" aria-required="true">
                           {* For New Requests, set the first format as the one selected by default *}
@@ -27,40 +27,40 @@
 
                     {* Article Fields *}
 									<div class="form-group specialFormatField articleField">
-										<label for="magazineTitle" class="col-sm-3 control-label">Magazine/Journal Title: <span class="required-input">*</span> </label>
-										<div class="col-sm-9">
+										<label for="magazineTitle" class="col-md-3 control-label">Magazine/Journal Title: <span class="required-input">*</span> </label>
+										<div class="col-md-9">
 											<input name="magazineTitle" id="magazineTitle" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->magazineTitle}" aria-required="true">
 										</div>
 									</div>
 									<div class="form-group specialFormatField articleField">
-										<label for="magazineDate" class="col-sm-3 control-label">Magazine Date: </label>
-										<div class="col-sm-9">
+										<label for="magazineDate" class="col-md-3 control-label">Magazine Date: </label>
+										<div class="col-md-9">
 											<input name="magazineDate" id="magazineDate" size="20" maxlength="20" value="{$materialsRequest->magazineDate}" class="form-control">
 										</div>
 									</div>
 									<div class="form-group specialFormatField articleField">
-										<label for="magazineVolume" class="col-sm-3 control-label">Magazine Volume: </label>
-										<div class="col-sm-9">
+										<label for="magazineVolume" class="col-md-3 control-label">Magazine Volume: </label>
+										<div class="col-md-9">
 											<input name="magazineVolume" id="magazineVolume" size="20" maxlength="20" value="{$materialsRequest->magazineVolume}" class="form-control">
 										</div>
 									</div>
 									<div class="form-group specialFormatField articleField">
-										<label for="magazineNumber" class="col-sm-3 control-label">Magazine Number: </label>
-										<div class="col-sm-9">
+										<label for="magazineNumber" class="col-md-3 control-label">Magazine Number: </label>
+										<div class="col-md-9">
 											<input name="magazineNumber" id="magazineNumber" size="20" maxlength="20" value="{$materialsRequest->magazineNumber}" class="form-control">
 										</div>
 									</div>
 									<div class="form-group specialFormatField articleField">
-										<label for="magazinePageNumbers" class="col-sm-3 control-label">Magazine Page Numbers: </label>
-										<div class="col-sm-9">
+										<label for="magazinePageNumbers" class="col-md-3 control-label">Magazine Page Numbers: </label>
+										<div class="col-md-9">
 											<input name="magazinePageNumbers" id="magazinePageNumbers" size="20" maxlength="20" value="{$materialsRequest->magazinePageNumbers}" class="form-control">
 										</div>
 									</div>
 
                     {* Season Fields *}
 									<div class="form-group seasonField specialFormatField">
-										<label for="season" class="col-sm-3 control-label">Season: </label>
-										<div class="col-sm-9">
+										<label for="season" class="col-md-3 control-label">Season: </label>
+										<div class="col-md-9">
 											<input name="season" id="season" size="90" maxlength="80" value="{$materialsRequest->season}" class="form-control">
 										</div>
 									</div>
@@ -68,8 +68,8 @@
                     {* Ebook Format Fields *}
                     {if $showEbookFormatField}
 											<div class="form-group ebookField specialFormatField">
-												<label for="ebookFormat" class="col-sm-3 control-label">E-book format: </label>
-												<div class="col-sm-9">
+												<label for="ebookFormat" class="col-md-3 control-label">E-book format: </label>
+												<div class="col-md-9">
 													<select name="ebookFormat" id="ebookFormat" class="form-control">
 														<option value="epub" {if $materialsRequest->subFormat=='epub'}selected='selected'{/if}>EPUB</option>
 														<option value="kindle" {if $materialsRequest->subFormat=='kindle'}selected='selected'{/if}>Kindle</option>
@@ -84,8 +84,8 @@
                     {* Hiding this option.
 												{if $showEaudioFormatField}
 													<div class="form-group eaudioField specialFormatField">{* eaudioField class used for both special field handling and the older format controlling * }
-														<label for="eaudioFormat" class="col-sm-3 control-label">E-audio format: </label>
-														<div class="col-sm-9">
+														<label for="eaudioFormat" class="col-md-3 control-label">E-audio format: </label>
+														<div class="col-md-9">
 															<select name="eaudioFormat" id="eaudioFormat" class="form-control">
 																<option value="wma" {if $materialsRequest->subFormat=='wma'}selected='selected'{/if}>WMA</option>
 																<option value="mp3" {if $materialsRequest->subFormat=='mp3'}selected='selected'{/if}>MP3</option>
@@ -97,8 +97,8 @@
 
                     {* Abridged Fields *}
 									<div class="form-group abridgedField specialFormatField">
-										<label class="control-label col-sm-3">Abridged: </label>
-										<div class="col-sm-9">
+										<label class="control-label col-md-3">Abridged: </label>
+										<div class="col-md-9">
 											<label for="unabridged" class="radio-inline"><input type="radio" name="abridged" value="unabridged" id="unabridged" {if $materialsRequest->abridged == 0}checked='checked'{/if}>Unabridged</label>
 											<label for="abridged" class="radio-inline"><input type="radio" name="abridged" value="abridged" id="abridged" {if $materialsRequest->abridged == 1}checked='checked'{/if}>Abridged</label>
 											<label for="na" class="radio-inline"><input type="radio" name="abridged" value="na" id="na" {if $materialsRequest->abridged == 2}checked='checked'{/if}>Not Applicable</label>
@@ -109,8 +109,8 @@
                 {elseif $formField->fieldType == 'bookType'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="form-group{* specialFormatField*}">
-										<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="col-sm-9">
+										<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="col-md-9">
 											<select name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" class="form-control">
 												<option value="fiction" {if $materialsRequest->bookType=='fiction'}selected='selected'{/if}>Fiction</option>
 												<option value="nonfiction" {if $materialsRequest->bookType=='nonfiction'}selected='selected'{/if}>Non-Fiction</option>
@@ -123,8 +123,8 @@
 
                     {if !$new && $useWorldCat}
 											<div class="form-group">
-												<label for="suggestIdentifiers" class="control-label col-sm-3">WorldCat Look up:</label>
-												<div class="col-sm-9">
+												<label for="suggestIdentifiers" class="control-label col-md-3">WorldCat Look up:</label>
+												<div class="col-md-9">
 													<input type="button" id="suggestIdentifiers" value="Find exact match" onclick="return Pika.MaterialsRequest.getWorldCatIdentifiers();" class="btn btn-primary">
 												</div>
 											</div>
@@ -140,8 +140,8 @@
                         {assign var="hasId" value=1}
                         {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 											<div class="request_detail_field row">
-												<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class="request_detail_field_value col-sm-9">
+												<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class="request_detail_field_value col-md-9">
                             {$materialsRequest->$materialRequestTableColumnName}
 													<input type="hidden" name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" value="{$materialsRequest->$materialRequestTableColumnName}">
 												</div>
@@ -151,8 +151,8 @@
                     {* Author Field *}
                 {elseif $formField->fieldType == 'author'}
 									<div class="row form-group">
-										<label id="authorFieldLabel1" class="control-label col-sm-3" for="author">Author: <span class="required-input">*</span></label>
-										<div class="request_detail_field_value col-sm-9">
+										<label id="authorFieldLabel1" class="control-label col-md-3" for="author">Author: <span class="required-input">*</span></label>
+										<div class="request_detail_field_value col-md-9">
 											<input name="author" id="author" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->author}" aria-required="true">
 										</div>
 									</div>
@@ -163,8 +163,8 @@
                 $formField->fieldType == 'publicationYear'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label class="control-label col-sm-3" for="{$materialRequestTableColumnName}">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="control-label col-md-3" for="{$materialRequestTableColumnName}">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
 															{if $formField->fieldType == 'publicationYear'}
 																size="4" maxlength="4"  data-rule-minlength="4" data-rule-maxlength="4"
@@ -181,8 +181,8 @@
                 $formField->fieldType == 'title'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: <span class="required-input">*</span></label>
-										<div class="request_detail_field_value col-sm-9">
+										<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: <span class="required-input">*</span></label>
+										<div class="request_detail_field_value col-md-9">
 											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"  {* space to preserve good parsing after strip *}
 											       size="90" maxlength="255" {* space to preserve good parsing after strip *}
 											       class="required form-control"  {* space to preserve good parsing after strip *}
@@ -201,8 +201,8 @@
                 $formField->fieldType == 'season'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 											<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
 											       size="90" maxlength="255" class="form-control"
 											       value="{$materialsRequest->$materialRequestTableColumnName}">
@@ -217,8 +217,8 @@
 
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 							<textarea name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" rows="3" cols="80"
 							          class="form-control {if $formField->fieldType == 'about' && $requireAboutField} required{/if}"{if $formField->fieldType == 'about' && $requireAboutField} aria-required="true"{/if}>
 								{$materialsRequest->$materialRequestTableColumnName}
@@ -229,8 +229,8 @@
                 {elseif $formField->fieldType == 'status'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="request_detail_field row">
-										<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class=" request_detail_field_value col-sm-9">
+										<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class=" request_detail_field_value col-md-9">
                         {if $isAdminUser}
 													<select name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" class="form-control">
                               {foreach from=$availableStatuses item=statusLabel key=status}
@@ -249,8 +249,8 @@
                     {* Date Fields *}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="request_detail_field row">
-										<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
                         {$materialsRequest->$materialRequestTableColumnName|date_format}
 										</div>
 									</div>
@@ -260,8 +260,8 @@
                     {* Yes / No Fields *}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 
 											<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
 												<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if}>Yes
@@ -279,8 +279,8 @@
                 {elseif $formField->fieldType == 'createdBy'}
                     {if $showUserInformation}
 											<div class="request_detail_field row">
-												<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class="request_detail_field_value col-sm-9">
+												<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class="request_detail_field_value col-md-9">
                             {$requestUser->firstname} {$requestUser->lastname}
 												</div>
 											</div>
@@ -294,8 +294,8 @@
                     {if $showUserInformation || $new}
                         {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 											<div class="row form-group">
-												<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class="request_detail_field_value col-sm-9">
+												<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class="request_detail_field_value col-md-9">
 													<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}"
 													       size="90" maxlength="255" class="form-control"
 													       value="{$materialsRequest->$materialRequestTableColumnName}">
@@ -310,8 +310,8 @@
                     {if $showUserInformation || $new}
                         {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 											<div class="row form-group ebookHideField eaudioHideField specialFormatHideField"{if $formField->fieldType == 'illItem'} id="illInfo"{/if}>
-												<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class="request_detail_field_value col-sm-9">
+												<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class="request_detail_field_value col-md-9">
 
 													<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
 														<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if} onchange="Pika.MaterialsRequest.updateHoldOptions()">Yes
@@ -328,8 +328,8 @@
                 {elseif $formField->fieldType == 'holdPickupLocation'}
                     {if $showUserInformation || $new} {* Not shown till placeHoldWhenAvailable is set to yes. *}
 											<div id="pickupLocationField" class="row form-group ebookHideField eaudioHideField" style="display: none">
-												<label for="pickupLocation" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class=" request_detail_field_value col-sm-9">
+												<label for="pickupLocation" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class=" request_detail_field_value col-md-9">
 													<select name="holdPickupLocation" id="pickupLocation" onchange="Pika.MaterialsRequest.updateHoldOptions();" class="form-control">
                               {foreach from=$pickupLocations item=location}
 																<option value="{$location.id}" {if $location.selected}selected="selected"{/if}>{$location.displayName}</option>
@@ -343,8 +343,8 @@
                         {assign var="materialRequestTableColumnName" value=$formField->fieldType}
                         {* Book Mobile Stop Field should be hidden by default, gets shown when holdPickUpLocation is set to bookmobile (done by Pika.MaterialsRequest.updateHoldOptions() *}
 											<div id="bookmobileStopField" class="row form-group ebookHideField eaudioHideField" style="display: none">
-												<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-												<div class="col-sm-9">
+												<label for="{$materialRequestTableColumnName}" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+												<div class="col-md-9">
 													<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" size="50" maxlength="50" class="form-control" value="{$materialsRequest->$materialRequestTableColumnName}">
 												</div>
 											</div>
@@ -354,8 +354,8 @@
                     {if $showUserInformation}
                         {if $barCodeColumn}
 													<div class="row form-group">
-														<label class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-														<div class="request_detail_field_value col-sm-9">
+														<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+														<div class="request_detail_field_value col-md-9">
                                 {$requestUser->$barCodeColumn}
 														</div>
 													</div>
@@ -367,8 +367,8 @@
                 {elseif $formField->fieldType == 'ageLevel'}
                     {assign var="materialRequestTableColumnName" value=$formField->fieldType}
 									<div class="row form-group">
-										<label for="ageLevel" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
-										<div class="request_detail_field_value col-sm-9">
+										<label for="ageLevel" class="control-label col-md-3">{$formField->fieldLabel}: </label>
+										<div class="request_detail_field_value col-md-9">
 											<select name="ageLevel" id="ageLevel" class="form-control">
 												<option value="adult" {if $materialsRequest->ageLevel=='adult'}selected='selected'{/if}>Adult</option>
 												<option value="teen" {if $materialsRequest->ageLevel=='teen'}selected='selected'{/if}>Teen</option>

@@ -1,5 +1,5 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h3>Available List Widgets</h3>
 		<div class="alert alert-info">
 			For more information on how to create List Widgets, please see the <a href="https://marmot-support.atlassian.net/l/c/CByg62XD">online documentation</a>

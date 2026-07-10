@@ -43,12 +43,12 @@
 <div class="enrichmentInfo"{if $novelistPrimaryISBN} style="display: none"{/if}>
 	<h3>Enrichment Information</h3>
 	<div class="row">
-		<div class="col-xs-6 col-sm-3"><strong>Novelist Primary ISBN</strong></div>
-		<div id="novelistPrimaryISBN" class="col-xs-6 col-sm-9">{$novelistPrimaryISBN}</div>
+		<div class="col-sm-6 col-md-3"><strong>Novelist Primary ISBN</strong></div>
+		<div id="novelistPrimaryISBN" class="col-sm-6 col-md-9">{$novelistPrimaryISBN}</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-6 col-sm-3"><strong>Review ISBN</strong></div>
-		<div id="isbnForReviews" class="col-xs-6 col-sm-9"></div>
+		<div class="col-sm-6 col-md-3"><strong>Review ISBN</strong></div>
+		<div id="isbnForReviews" class="col-sm-6 col-md-9"></div>
 	</div>
 </div>
 <h3>Solr Fields</h3>
@@ -57,8 +57,8 @@
 			{if strpos($field, "scoping_details") === false
 			&& strpos($field, "item_details") === false
 			&& strpos($field, "record_details") === false}
-				<div class="col-md-5 col-lg-4"><strong>{$field|escape}</strong></div>
-				<div class="col-md-7 col-lg-8">
+				<div class="col-lg-5 col-xl-4"><strong>{$field|escape}</strong></div>
+				<div class="col-lg-7 col-xl-8">
 				{implode subject=$values glue='<br>' sort=true}
 				</div>
 				<div class="clearfix d-none d-md-block d-lg-none-block"></div>
@@ -70,7 +70,7 @@
 		{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
 				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
 					<tr>
@@ -87,7 +87,7 @@
 				</table>
 				</div>
 			{elseif strpos($field, "item_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
 					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
@@ -104,7 +104,7 @@
 					</table>
 				</div>
 			{elseif strpos($field, "record_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
 					<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>

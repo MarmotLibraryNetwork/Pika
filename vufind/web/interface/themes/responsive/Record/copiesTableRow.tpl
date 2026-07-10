@@ -7,19 +7,19 @@
  *}
 	<div class="row">
 		{if $showVolume}
-			<div class="col-tn-2">
+			<div class="col-2">
 				{if $holding.volume}
 					<span title="Volume">{$holding.volume}</span>
 				{/if}
 			</div>
 		{/if}
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if}">
+		<div class="col-{if $showLastCheckIn && $showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if}">
 			<strong>
 				{$holding.shelfLocation|escape}
 				{if $holding.locationLink} (<a href='{$holding.locationLink}' target="_blank">Map</a>){/if}
 			</strong>
 		</div>
-		<div class="holdingsCallNumber col-tn-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
+		<div class="holdingsCallNumber col-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
 			{$holding.callNumber|escape}
 			{if $holding.link}
 				{foreach from=$holding.link item=link}
@@ -27,7 +27,7 @@
 				{/foreach}
 			{/if}
 		</div>
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
+		<div class="col-{if $showLastCheckIn && $showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
 			{if $holding.reserve == "Y"}
 				{translate text="On Reserve - Ask at Circulation Desk"}
 			{else}
@@ -38,7 +38,7 @@
 			{/if}
 		</div>
 		{if $showLastCheckIn}
-			<div class="col-tn-2">
+			<div class="col-2">
 				{if $holding.lastCheckinDate && $holding.available}
 					{* for debugging: *}
 					{*{$holding.lastCheckinDate}<br>*}

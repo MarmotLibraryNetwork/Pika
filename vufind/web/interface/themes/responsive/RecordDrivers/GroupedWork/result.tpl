@@ -9,7 +9,7 @@
 
 		{* Title Row *}
 		<div class="row result-title-row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<h2 class="h3">
 					<span class="result-index">{$resultIndex}.</span>&nbsp;
 					<a href="{$summUrl}" class="result-title notranslate">
@@ -30,12 +30,12 @@
 
 		<div class="row">
 			{if $showBookshelf}
-				<div class="col-tn-1 col-sm-1" aria-live="polite">
+				<div class="col-1 col-md-1" aria-live="polite">
 					<input type="checkbox" id="select_{$summId|escape}" class="checkbox checkbox-results" aria-label="Add title to bookshelf" title="Add title to bookshelf">
 				</div>
 			{/if}
 			{if $showCovers}
-				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
+				<div class="coversColumn col-sm-3 col-md-3{if !$viewingCombinedResults} col-lg-3 col-xl-2{/if} text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="Book cover{if $summTitle} for &quot;{$summTitle|escape}&quot;.{/if}">
@@ -65,15 +65,15 @@
 			{/if}
 
 			{if $showBookshelf}
-				<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8{if !$viewingCombinedResults} col-md-8 col-lg-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+				<div class="{if !$showCovers}col-sm-11{else}col-sm-8 col-md-8{if !$viewingCombinedResults} col-lg-8 col-xl-9{/if}{/if}">{* May turn out to be more than one situation to consider here *}
 			{else}
-				<div class="{if !$showCovers}col-tn-12{else}col-tn-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+				<div class="{if !$showCovers}col-12{else}col-9 col-md-9{if !$viewingCombinedResults} col-lg-9 col-xl-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
 			{/if}
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
-						<div class="result-value col-tn-8 notranslate">
+						<div class="result-label col-3">Author: </div>
+						<div class="result-value col-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
 									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
@@ -88,16 +88,16 @@
 				{if $seriesVolume}
 					{* For Grouped Work Series Page *}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Series Volume'}:</div>
-						<div class="col-tn-9 result-value">{$seriesVolume}</div>
+						<div class="result-label col-3">{translate text='Series Volume'}:</div>
+						<div class="col-9 result-value">{$seriesVolume}</div>
 					</div>
 				{/if}
 
 				{if $showSeries}
 					{if $summSeries}
 						<div class="series novelistSeries{$summISBN} row">
-							<div class="result-label col-tn-3">{translate text='NoveList Series'}:</div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">{translate text='NoveList Series'}:</div>
+							<div class="result-value col-8">
 								<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
 							</div>
 						</div>
@@ -106,8 +106,8 @@
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 					{if $indexedSeries}
 						<div class="series series{$summISBN} row">
-							<div class="result-label col-tn-3">Series: </div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">Series: </div>
+							<div class="result-value col-8">
 								{assign var=showMoreSeries value=false}
 								{if count($indexedSeries) > 4}
 									{assign var=showMoreSeries value=true}
@@ -132,8 +132,8 @@
 				{if $showPublisher}
 				{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 					<div class="row">
-						<div class="result-label col-tn-3">Publisher: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">Publisher: </div>
+						<div class="result-value col-8">
 							{if $summPublisher}
 								{$summPublisher}
 							{elseif $alwaysShowSearchResultsMainDetails}
@@ -147,8 +147,8 @@
 				{if $showPublicationDate}
 					{if $alwaysShowSearchResultsMainDetails || $summPubDate}
 						<div class="row">
-							<div class="result-label col-tn-3">Pub. Date: </div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">Pub. Date: </div>
+							<div class="result-value col-8">
 								{if $summPubDate}
 									{$summPubDate|escape}
 								{elseif $alwaysShowSearchResultsMainDetails}
@@ -162,8 +162,8 @@
 				{if $showEditions}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 						<div class="row">
-							<div class="result-label col-tn-3">Edition: </div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">Edition: </div>
+							<div class="result-value col-8">
 								{if $summEdition}
 									{$summEdition}
 								{elseif $alwaysShowSearchResultsMainDetails}
@@ -176,8 +176,8 @@
 
 				{if $showArInfo && $summArInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Accelerated Reader'}: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">{translate text='Accelerated Reader'}: </div>
+						<div class="result-value col-8">
 							{$summArInfo}
 						</div>
 					</div>
@@ -185,8 +185,8 @@
 
 				{if $showLexileInfo && $summLexileInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Lexile measure'}: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">{translate text='Lexile measure'}: </div>
+						<div class="result-value col-8">
 							{$summLexileInfo}
 						</div>
 					</div>
@@ -194,8 +194,8 @@
 
 				{if $showFountasPinnell && $summFountasPinnell}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">{translate text='Fountas &amp; Pinnell'}: </div>
+						<div class="result-value col-8">
 							{$summFountasPinnell}
 						</div>
 					</div>
@@ -204,8 +204,8 @@
 				{if $showPhysicalDescriptions}
 					{if $alwaysShowSearchResultsMainDetails || $summPhysicalDesc}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Physical Desc'}: </div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">{translate text='Physical Desc'}: </div>
+							<div class="result-value col-8">
 
 								{if $summPhysicalDesc}
 									{$summPhysicalDesc|escape}
@@ -219,8 +219,8 @@
 
 				{if $showLanguages && $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">Language: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">Language: </div>
+						<div class="result-value col-8">
 							{if is_array($summLanguage)}
 								{', '|implode:$summLanguage}
 							{else}
@@ -232,8 +232,8 @@
 
 				{if $showRatings && $summRating.average}
 					<div class="row">
-						<div class="result-label col-tn-3">Average Rating: </div>
-						<div class="result-value col-tn-8">
+						<div class="result-label col-3">Average Rating: </div>
+						<div class="result-value col-8">
 							{math equation="round(average_rating,1)" average_rating=$summRating.average} stars
 						</div>
 					</div>
@@ -242,8 +242,8 @@
 				{if $summSnippets}
 					{foreach from=$summSnippets item=snippet}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text=$snippet.caption}: </div>
-							<div class="result-value col-tn-8">
+							<div class="result-label col-3">{translate text=$snippet.caption}: </div>
+							<div class="result-value col-8">
 								{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br>{/if}
 							</div>
 						</div>
@@ -266,10 +266,10 @@
 					{* If there weren't hidden formats, show this short Entry (mobile view only). The exception is single format manifestations, they
 					   won't have any hidden formats and will be displayed *}
 					{if !$hasHiddenFormats && count($relatedManifestations) != 1}
-						<div class="hidethisdiv{$summId|escape} result-label col-tn-3">
+						<div class="hidethisdiv{$summId|escape} result-label col-3">
 							Formats:
 						</div>
-						<div class="hidethisdiv{$summId|escape} result-value col-tn-8">
+						<div class="hidethisdiv{$summId|escape} result-value col-8">
 							<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('d-sm-none d-md-block');return false;">
 									{implode subject=$relatedManifestations|@array_keys glue=",&nbsp;"}
 							</a>
@@ -281,7 +281,7 @@
 
 				{* Formats Section *}
 				<div class="row">
-					<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}d-sm-none d-md-block {/if}col-sm-12" id="relatedManifestationsValue{$summId|escape}">
+					<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}d-sm-none d-md-block {/if}col-md-12" id="relatedManifestationsValue{$summId|escape}">
 						{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 						{* relatedManifestationsValue ID is used by the Formats button *}
 
@@ -294,18 +294,18 @@
 					{* Description Section *}
 					{if $summDescription}
 						<div class="row d-none d-sm-block d-md-none">
-							<div class="result-label col-tn-3">Description:</div>
+							<div class="result-label col-3">Description:</div>
 						</div>
 
 						<div class="row">
-							<div class="result-value col-tn-12" id="descriptionValue{$summId|escape}">
+							<div class="result-value col-12" id="descriptionValue{$summId|escape}">
 								{$summDescription|highlight|truncate_html:450:"..."}
 							</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 							{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId ratingData=$summRating recordUrl=$summUrl}
 							{* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
 								summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}

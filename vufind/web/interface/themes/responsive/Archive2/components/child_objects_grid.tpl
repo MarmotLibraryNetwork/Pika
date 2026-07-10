@@ -1,7 +1,7 @@
 {* Child objects grid *}
 {if $collectionChildren}
 <div class="row">
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{if $recordCount}
 		<p>{$recordCount} items in this collection.</p>
 		{/if}

@@ -1,7 +1,7 @@
 {strip}
 	<div class="form-group">
-		<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><strong>{translate text='Receive notices by'}:</strong></div>
+		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm">
 					{if $treatPrintNoticesAsPhoneNotices}

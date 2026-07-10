@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-md-12">
+<div id="main-content" class="col-lg-12">
 	<h1 role="heading" aria-level="1" class="h2">Sierra Active Orders</h1>
 	{if $notSierra}
 		<div class="alert alert-info">Active Orders is only available for Sierra ILS systems.</div>

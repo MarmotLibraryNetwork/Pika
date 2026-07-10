@@ -18,24 +18,24 @@
 					<input type="hidden" id="myListPage" name="page" value="{$pageNum}">
 					<input type="hidden" id="myListPageSize" name="pagesize" value="{$pageSize}">
 					<input type="hidden" id="myListSort" name="sort" value="{$listSort}">
-					<div class = "col-sm-2">
+					<div class = "col-md-2">
 						<img src="{$recordDriver->getBookcoverUrl('medium')}" class="img-thumbnail img-responsive" alt="Thumbnail for {$recordDriver->getTitle()|escape:"html"}">
 					</div>
-						<div class="col-sm-10">
+						<div class="col-md-10">
 						<div class="form-group">
-							<label for="listName" class="col-xs-2">{translate text='List'}: </label>
-							<div class="col-xs-10">{$list->title|escape:"html"}</div>
+							<label for="listName" class="col-sm-2">{translate text='List'}: </label>
+							<div class="col-sm-10">{$list->title|escape:"html"}</div>
 						</div>
 
 						<div class="form-group">
-							<label for="listNotes" class="col-xs-2">{translate text='Notes'}: </label>
-							<div class="col-xs-10">
+							<label for="listNotes" class="col-sm-2">{translate text='Notes'}: </label>
+							<div class="col-sm-10">
 								<textarea id="listNotes" name="notes" rows="3" cols="50" class="form-control">{$listEntry->notes|escape:"html"}</textarea>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<div class="col-xs-offset-2 col-xs-10">
+							<div class="offset-sm-2 col-sm-10">
 								<input type="submit" name="submit" value="{translate text='Save'}" class="btn btn-primary">
 							</div>
 						</div>

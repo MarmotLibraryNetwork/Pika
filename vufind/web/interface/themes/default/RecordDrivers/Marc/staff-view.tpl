@@ -1,28 +1,28 @@
 {strip}
 {if $recordDriver}
 	<div class="row">
-		<div class="result-label col-xs-3">Grouped Work ID: </div>
-		<div class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
+		<div class="result-label col-sm-3">Grouped Work ID: </div>
+		<div class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">
 			<span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 		</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
+			<div class="col-sm-2">
 				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 	<div class="row">
-		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
-		<div id="recordIdCol" class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">{$id}</div>
+		<div class="result-label col-sm-3">{$recordDriver->getModule()} ID:</div>
+		<div id="recordIdCol" class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">{$id}</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
+			<div class="col-sm-2">
 				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('recordIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			<div class="btn-group" role="group" aria-label="...">
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-default">Reload Cover</button>
@@ -39,7 +39,7 @@
 		{if $loggedIn}
 				{if $userIsStaff}
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 {*							<div class="btn-group" role="group" aria-label="...">*}
 									{if $classicUrl}
 										<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Classic</a>
@@ -52,7 +52,7 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 {*							<div class="btn-group" role="group" aria-label="...">*}
 							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
 							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping
@@ -70,7 +70,7 @@
 					</div>
             {if $enableArchive && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 {*									<div class="btn-group" role="group" aria-label="...">*}
 									<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 {*									</div>*}

@@ -1,4 +1,4 @@
-<div class="col-tn-12">
+<div class="col-12">
 	<div class="alert alert-info">
 		Need help downloading a title or using the title on your device?  Please fill out this support form.
 	</div>

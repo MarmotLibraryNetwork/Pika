@@ -1,7 +1,7 @@
 {strip}
 	{foreach from=$productionTeam item=entity}
 		<div class="relatedPerson row">
-			<div class="col-tn-12">
+			<div class="col-12">
 				<a href='{$entity.link}'>
 					{$entity.label}
 				</a>

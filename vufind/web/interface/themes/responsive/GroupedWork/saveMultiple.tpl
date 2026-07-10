@@ -26,8 +26,8 @@
 
 	  {if $showLists}
 		  <div class="form-group">
-			  <label for="addToList-list" class="col-sm-3">{translate text='Choose a List'}</label>
-			  <div class="col-sm-9">
+			  <label for="addToList-list" class="col-md-3">{translate text='Choose a List'}</label>
+			  <div class="col-md-9">
 				  <select name="list" id="addToList-list">
 					  {foreach from=$nonContainingLists item="list"}
 						  <option value="{$list.id}">{$list.title|escape:"html"}</option>
@@ -45,8 +45,8 @@
 
 	  {if $showLists}
 			<div class="form-group">
-				<div class="col-sm-3"><strong>Titles To Add:</strong></div>
-				<div class="col-sm-9">
+				<div class="col-md-3"><strong>Titles To Add:</strong></div>
+				<div class="col-md-9">
 						<ul>
 					{foreach from=$titles item="title"}
 								<li class="list-unstyled list-striped">{$title.title|escape:"html"}</li>

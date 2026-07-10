@@ -2,8 +2,8 @@
 	{* CarlX Notification Options *}
 
 	<div class="form-group">
-		<div class="col-xs-4"><strong>{translate text='Email notices'}:</strong></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><strong>{translate text='Email notices'}:</strong></div>
+		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'send email'}active{/if}"><input type="radio" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}> Send Email</label>
@@ -18,8 +18,8 @@
 
 
 	<div class="form-group">
-		<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->emailReceiptFlag==1}checked='checked'{/if} data-switch="">
 			{else}
@@ -29,8 +29,8 @@
 	</div>
 
 	<div class="form-group">
-		<div class="col-xs-4"><label for="phoneType" class="">{translate text='Phone Carrier for SMS notices'}:</label></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><label for="phoneType" class="">{translate text='Phone Carrier for SMS notices'}:</label></div>
+		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
 				<select name="phoneType" id="phoneType" class="form-control">
 					{if count($phoneTypes) > 0}
@@ -50,8 +50,8 @@
 
 
 	<div class="form-group">
-		<div class="col-xs-4"><label for="availableHoldNotice" class="control-label">{translate text='SMS notices for available holds'}:</label></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><label for="availableHoldNotice" class="control-label">{translate text='SMS notices for available holds'}:</label></div>
+		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="availableHoldNotice" id="availableHoldNotice" {if $profile->availableHoldNotice==1}checked='checked'{/if} data-switch="">
 			{else}
@@ -61,8 +61,8 @@
 	</div>
 
 	<div class="form-group">
-		<div class="col-xs-4"><label for="comingDueNotice" class="control-label">{translate text='SMS notices for due date reminders'}:</label></div>
-		<div class="col-xs-8">
+		<div class="col-sm-4"><label for="comingDueNotice" class="control-label">{translate text='SMS notices for due date reminders'}:</label></div>
+		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="comingDueNotice" id="comingDueNotice" {if $profile->comingDueNotice==1}checked='checked'{/if} data-switch="">
 			{else}

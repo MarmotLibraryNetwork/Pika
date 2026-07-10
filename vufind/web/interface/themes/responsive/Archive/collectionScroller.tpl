@@ -1,5 +1,5 @@
 {strip}
-	<div class="nopadding col-sm-12">
+	<div class="nopadding col-md-12">
 		<div class="exhibitPage exploreMoreBar row">{* exhibitPage class overides some exploreMoreBar css*}
 			{*<div class="label-left">*}
 			<div class="label-top">

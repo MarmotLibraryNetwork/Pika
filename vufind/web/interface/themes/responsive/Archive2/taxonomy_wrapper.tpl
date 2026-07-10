@@ -2,14 +2,14 @@
 {include file="Archive/search-results-navigation.tpl"}
 <h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 
-<div class="col-xs-6 taxonomy-wrapper-thumbnail-col">
+<div class="col-sm-6 taxonomy-wrapper-thumbnail-col">
 	{if $thumbnail && $thumbnail.url}
 	<img src="{$thumbnail.url|escape}"
 	     alt="{$term_title|escape}"
 	     class="img-responsive taxonomy-thumbnail">
 	{/if}
 </div>
-<div class="col-xs-6">
+<div class="col-sm-6">
 
 	{if $term_description}
 		<div class="taxonomy-description well">

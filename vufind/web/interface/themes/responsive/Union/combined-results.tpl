@@ -11,7 +11,7 @@
 
 	<div id="combined-results-container">
 	{foreach [0, 1] as $column}
-		<div id="combined-results-column-{$column}" class="d-none d-lg-block col-md-6">
+		<div id="combined-results-column-{$column}" class="d-none d-lg-block col-lg-6">
 			{foreach from=$combinedResultSections item=combinedResultSection name=searchSection}
 				{if ($smarty.foreach.searchSection.index%2 == $column)}
 					<div class="combined-results-section combined-results-column-{$column}">

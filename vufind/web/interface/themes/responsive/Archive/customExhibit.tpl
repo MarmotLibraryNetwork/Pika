@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $parentExhibitUrl}
 		{* Search/Archive Navigation for Exhibits within an exhibit *}
 		{include file="Archive/search-results-navigation.tpl"}
@@ -18,7 +18,7 @@
 	</h1>
 
 	<div class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 		{if $thumbnail && !$main_image}
 			{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
 			<img src="{$thumbnail}" class="img-responsive exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>

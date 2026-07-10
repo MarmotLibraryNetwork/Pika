@@ -4,7 +4,7 @@
 	</h1>
 
 	<div class="row">
-		<div class="col-xs-12 col-sm-3">
+		<div class="col-sm-12 col-md-3">
 			<dl>
 				{if $locationInfo.address}
 					<dt>Address</dt>
@@ -19,7 +19,7 @@
 			</dl>
 		</div>
 		{if $locationInfo.address}
-			<div class="col-xs-12 col-sm-9">
+			<div class="col-sm-12 col-md-9">
 				<a href="{$locationInfo.map_link}"><img src="{$locationInfo.map_image}" alt="Map"></a>
 				<br><a href="{$locationInfo.map_link}">Directions</a>
 			</div>
@@ -29,7 +29,7 @@
 		<h2 class="h3">Hours</h2>
 		{foreach from=$locationInfo.hours item=curHours}
 			<div class="row">
-				<div class="col-xs-12 col-sm-4 result-label">
+				<div class="col-sm-12 col-md-4 result-label">
 					{if $curHours->day == 0}
 						Sunday
 					{elseif $curHours->day == 1}
@@ -46,7 +46,7 @@
 						Saturday
 					{/if}
 				</div>
-				<div class="col-xs-12 col-sm-8 text-left">
+				<div class="col-sm-12 col-md-8 text-left">
 					{if $curHours->closed}
 						Closed
 					{else}

@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-6 col-sm-4 col-md-3 collection-item">
+<div class="col-sm-6 col-md-4 col-lg-3 collection-item">
 	{* Grid view: restore original card styling — fixed height, plain caption *}
 	<a href="{$collectionChild.url}" class="thumbnail grid-view-item collection-item-grid-thumbnail">
 		{if $collectionChild.thumbnail}

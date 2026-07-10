@@ -1,5 +1,5 @@
 {* {strip} *}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
