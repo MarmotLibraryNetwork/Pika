@@ -66,7 +66,7 @@ Pika.Archive2 = (function(){
 				function(data) {
 					if (data.success) {
 						$('#explore-more-body').html(data.exploreMore);
-						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+						Pika.initCarousels('#explore-more-body .panel-collapse.show .jcarousel');
 					} else {
 						$('#explore-more-body').html(''); // remove the "loading" display on failure
 					}
@@ -135,7 +135,7 @@ Pika.Archive2 = (function(){
 				function(data) {
 					if (data.success) {
 						$('#explore-more-body').html(data.exploreMore);
-						Pika.initCarousels('#explore-more-body .panel-collapse.in .jcarousel');
+						Pika.initCarousels('#explore-more-body .panel-collapse.show .jcarousel');
 					}
 				}
 			).fail(Pika.ajaxFail);

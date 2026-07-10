@@ -384,7 +384,7 @@ Pika.Archive = (function(){
 			$.getJSON("/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
 				if (data.success){
 					$("#explore-more-body").html(data.exploreMore);
-					Pika.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
+					Pika.initCarousels("#explore-more-body .panel-collapse.show .jcarousel"); // Only initialize browse categories in open accordions (Bootstrap 5 open-state class is .show, was .in)
 				}
 			}).fail(Pika.ajaxFail);
 		},

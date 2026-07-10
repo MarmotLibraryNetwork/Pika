@@ -22,10 +22,6 @@
 	{/if}
 
 	{* Include all javascript *}
-	{if $ie8}
-		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in pika.min.js *}
-		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
-	{/if}
 	{if $debugJs}
 
 		<script src="/js/jquery-3.5.1.min.js?v={$gitBranch|urlencode}"></script>
@@ -47,7 +43,7 @@
 		{* Combined into ratings.js (part of the pika.min.js)*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.min.js"></script>*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.js"></script>*}
-		<script src="/interface/themes/responsive/js/lib/bootstrap.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/bootstrap.bundle.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jcarousel.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/bootstrap-datepicker.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.13.2.custom.js?v={$gitBranch|urlencode}"></script>
