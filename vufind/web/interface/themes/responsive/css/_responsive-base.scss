@@ -234,11 +234,11 @@ body {
   margin-right: 3px;
 }
 
-// top-right close button (legacy BS3 markup; Phase 4 replaces button.close with button.btn-close)
-.modal-header .close {
-  margin-top: -10px;
-  font-size: 43px; // 40px was too small to meet WCAG 2.2 standard : 2.5.8 Target Size (Minimum)
-  opacity: .4;
+// top-right close button: enlarge the hit area to meet WCAG 2.2 2.5.8 Target Size
+// (Minimum, 24x24px) — Bootstrap 5's default btn-close is 1em + .25em padding,
+// which lands just under 24px at our .9375rem base font size.
+.modal-header .btn-close {
+  padding: .75em;
 }
 
 .btn:active, .btn.active {

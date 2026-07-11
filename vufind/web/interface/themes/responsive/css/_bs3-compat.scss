@@ -188,6 +188,22 @@
   + .radio-inline, + .checkbox-inline { margin-left: 10px; }
 }
 .input-group-addon { @extend .input-group-text; }
+// BS3 grouped buttons inside input groups; BS5 places buttons directly in .input-group
+.input-group-btn {
+  display: flex;
+
+  > .btn { position: relative; }
+}
+
+// BS3's buttons plugin hid the radio/checkbox inside label.btn groups
+// (Archive/relatedObjects date filters re-render server-side, so only the
+// input-hiding is needed; active state comes from the rendered markup)
+.btn-group > label.btn input[type="radio"],
+.btn-group > label.btn input[type="checkbox"] {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+}
 // BS3 selects used .form-control; BS5 needs .form-select for the arrow/padding.
 // (The template pass swaps the class; nothing to shim safely here.)
 

@@ -352,6 +352,7 @@ a .header-button {
 // Applied to container divs, remove class to restore original width classes
 .collapsedSidebar {
   width: $vertical-menu-bar-width;
+  position: relative; // BS3 columns were position:relative; the left offsets below need it under BS5
 
   &.rightSidebar {
     // (LESS rounded the ratio to 4 decimals; Sass round() takes no precision argument
@@ -370,6 +371,7 @@ a .header-button {
 
 // Toggles Expanding Main Content when Sidebar is collapsed
 .mainContentWhenSiderbarCollapsed {
+  position: relative; // BS3 columns were position:relative; needed for the right offset below
 
   @media (min-width: $screen-sm) {
     width: 100% - percentage($vertical-menu-bar-width / ($container-sm - $grid-gutter-width));
