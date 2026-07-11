@@ -20490,6 +20490,20 @@ textarea.form-control-lg {
   margin-left: 10px;
 }
 
+.input-group-btn {
+  display: flex;
+}
+.input-group-btn > .btn {
+  position: relative;
+}
+
+.btn-group > label.btn input[type=radio],
+.btn-group > label.btn input[type=checkbox] {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+}
+
 .thumbnail {
   display: block;
   padding: 4px;
@@ -20768,10 +20782,8 @@ body > .container {
   margin-right: 3px;
 }
 
-.modal-header .close {
-  margin-top: -10px;
-  font-size: 43px;
-  opacity: 0.4;
+.modal-header .btn-close {
+  padding: 0.75em;
 }
 
 .btn:active, .btn.active {
@@ -21766,6 +21778,7 @@ a .header-button:visited {
 
 .collapsedSidebar {
   width: 40px;
+  position: relative;
 }
 @media (min-width: 768px) {
   .collapsedSidebar.rightSidebar {
@@ -21783,6 +21796,9 @@ a .header-button:visited {
   }
 }
 
+.mainContentWhenSiderbarCollapsed {
+  position: relative;
+}
 @media (min-width: 768px) {
   .mainContentWhenSiderbarCollapsed {
     width: 94.4444444444%;
