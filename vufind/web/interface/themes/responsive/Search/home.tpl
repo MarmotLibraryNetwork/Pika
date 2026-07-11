@@ -42,7 +42,7 @@
 
 			<div class="row" id="selected-browse-label">
 
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
+				<div class="btn-group btn-group-sm">
 					<button onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-outline-secondary browseMode">
 						<span class="thumbnail-icon"></span><span> Covers</span>
 					</button>

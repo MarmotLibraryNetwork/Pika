@@ -1,7 +1,7 @@
 {strip}
 <div class="modal-header">
-	<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close Window">&times;</button>
 	<h2 class="modal-title h3" id="myModalLabel">{translate text='Log into your account'}</h2>{* Sematically subheading of main page's h1 (for accessibility *}
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close Window"></button>
 </div>
 <div class="modal-body">
 	<p class="alert alert-danger" id="loginError" style="display: none"></p>

@@ -19,8 +19,8 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close Window">&times;</button>
 				<h2 class="modal-title h3" id="browseRelatedModalLabel{$browseRelatedId}">{$browseRelatedTitle}</h2>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close Window"></button>
 			</div>
 			<div class="modal-body">
 				{foreach from=$browseRelatedItems item=related}

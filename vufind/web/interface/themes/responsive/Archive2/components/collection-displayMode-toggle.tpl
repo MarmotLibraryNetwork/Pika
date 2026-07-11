@@ -65,7 +65,7 @@
 {strip}
 	<div class="row" id="collection-displayMode-toggle">
 		<div class="col-sm-12">
-			<div class="btn-group btn-group-sm" data-toggle="buttons">
+			<div class="btn-group btn-group-sm">
 				<button tabindex="0" title="Covers" aria-label="change results to grid layout"
 					onclick="Pika.Archive2.toggleCollectionDisplayMode('covers')" id="collectionModeGrid"
 					class="btn btn-sm btn-outline-secondary displayMode{if $collectionDisplayMode != 'list'} active{/if}">

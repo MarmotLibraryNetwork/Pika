@@ -9,21 +9,15 @@
 		<div class="row">
 			<div id="main-content" class="col-sm-12 text-center">
 				{if $canView}
-					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
+					<div id="view-toggle" class="btn-group" role="group">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('pdf', Pika.Archive.activeBookPage);">
-							View As PDF
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('pdf', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-pdf">View As PDF</label>
 						{/if}
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('image', Pika.Archive.activeBookPage);">
-							View As Image
-						</label>
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('transcription', Pika.Archive.activeBookPage);">
-							View Transcription
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-image" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('image', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-image">View As Image</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('transcription', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-transcription">View Transcription</label>
 					</div>
 
 					<div id="view-pdf" width="100%" height="600px">

@@ -12,7 +12,7 @@
 		</div>
 		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
 			<div class="row">
-				<div class="{if $displaySidebarMenu}col-md-12{else}col-md-10 col-lg-10 col-md-push-1 col-lg-push-1{/if}">
+				<div class="{if $displaySidebarMenu}col-md-12{else}col-md-10 col-lg-10 offset-md-1 offset-lg-1{/if}">
 					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 						<input type="hidden" name="basicType" id="basicType" value="">
 						<input type="hidden" name="genealogyType" id="genealogyType" value="">
@@ -45,7 +45,6 @@
 							<div class="input-group-btn" id="search-actions">
 								<button class="btn btn-outline-secondary" type="submit">GO</button>
 								<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
-									<span class="caret"></span>
 								</button>
 
 								<ul id="searchType" class="dropdown-menu text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
@@ -106,7 +105,7 @@
 
 			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
 				<div class="row text-center">
-					<div class="col-md-10 col-lg-10 col-md-push-1 col-lg-push-1">
+					<div class="col-md-10 col-lg-10 offset-md-1 offset-lg-1">
 						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
 							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
@@ -131,7 +130,7 @@
 				</div>
 			{/if}
 			<div class="row text-center">
-				<div class="col-md-10 col-lg-10 col-md-push-1 col-lg-push-1">
+				<div class="col-md-10 col-lg-10 offset-md-1 offset-lg-1">
 					{if $searchSources|@count == 1}
 						{* Use the actual source key so the form submits the correct value even on a fresh session *}
 						{foreach from=$searchSources key=singleSourceKey item=singleSource}

@@ -7,8 +7,8 @@
 				{foreach from=$widget->lists item=list name=listWidgetList}
 					{assign var="active" value=$smarty.foreach.listWidgetList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-						<li {if $active}class="active"{/if} role="presentation">
-							<a href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-bs-toggle="tab" data-index="{$smarty.foreach.listWidgetList.index}">{$list->name}</a>
+						<li class="nav-item" role="presentation">
+							<a class="nav-link{if $active} active{/if}" href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-bs-toggle="tab" data-index="{$smarty.foreach.listWidgetList.index}">{$list->name}</a>
 					</li>
 					{/if}
 				{/foreach}

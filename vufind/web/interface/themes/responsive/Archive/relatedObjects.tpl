@@ -73,7 +73,7 @@
 			{* Display selection of date ranges *}
 			<div class="row">
 				<div class="col-sm-12">
-					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
+					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates">
 						<label class="btn btn-outline-secondary btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
 								<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br>({$recordCount})
@@ -91,7 +91,7 @@
 							</label>
 						{/foreach}
 						{if $numObjectsWithUnknownDate > 0}
-							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date" data-toggle="buttons">
+							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date">
 								<label class="btn btn-outline-secondary btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 									{if $displayType == 'map'}
 										<input name="dateFilter" onchange="Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br>({$numObjectsWithUnknownDate})

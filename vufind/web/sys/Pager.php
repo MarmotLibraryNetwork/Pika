@@ -56,9 +56,10 @@ class VuFindPager {
 			'urlVar'                => 'page',
 			'curTag'                => 'li',
 			'linkContainer'         => 'li',
-			'curPageSpanPre'        => '<span>',
+			'linkClass'             => 'page-link',        // Bootstrap 5 pagination anchor class
+			'curPageSpanPre'        => '<span class="page-link">',
 			'curPageSpanPost'       => '</span>',
-			'curPageLinkClassName'  => 'active',
+			'curPageLinkClassName'  => 'page-item active', // Bootstrap 5 pagination item classes (current page)
 		];
 
 		// Override defaults with user-provided values:
@@ -79,6 +80,10 @@ class VuFindPager {
 	public function getLinks(){
 		$links        = $this->pager->getLinks();
 		$allLinks     = $links['all'];
+		// PEAR Pager has no option for a class on the plain <li> containers;
+		// Bootstrap 5 pagination requires li.page-item (current page gets its
+		// classes via curPageLinkClassName above)
+		$allLinks     = str_replace('<li>', '<li class="page-item">', $allLinks);
 		$links['all'] = (strlen($allLinks)) ? '<ul class="pagination">' . $allLinks . '</ul>' : null;
 		return $links;
 	}

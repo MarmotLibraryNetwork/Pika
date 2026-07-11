@@ -9,35 +9,21 @@
 		<div class="row">
 			<div id="main-content" class="col-sm-12 text-center">
 				{if $canView}
-					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
+					<div id="view-toggle" class="btn-group" role="group">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'pdf');">
-							{*TODO: set bookPID*}
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'pdf');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-pdf">{*TODO: set bookPID*}
 
-							View As PDF
-						</label>
+							View As PDF</label>
 						{/if}
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'image');">
-
-							View As Image
-						</label>
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'transcription');">
-
-							View Transcription
-						</label>
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-audio" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'audio');">
-
-							Listen to Audio
-						</label>
-						<label class="btn btn-group-small btn-outline-secondary">
-							<input type="radio" name="pageView" id="view-toggle-video" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'video');">
-
-							Watch Video
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'image');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-image">View As Image</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'transcription');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-transcription">View Transcription</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-audio" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'audio');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-audio">Listen to Audio</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-video" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'video');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-video">Watch Video</label>
 					</div>
 
 					<br>

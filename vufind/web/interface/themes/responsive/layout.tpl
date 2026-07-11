@@ -97,10 +97,10 @@
 					{if !empty($sidebar)} {* Main Content & Sidebars *}
 
 						{if $sideBarOnRight}  {*Sidebar on the right *}
-							<div role="region" aria-label="Sidebar" class="rightSidebar col-sm-12 col-md-4 col-md-push-8 col-lg-3 col-lg-push-9 col-xl-3 col-xl-push-9" id="side-bar">
+							<div role="region" aria-label="Sidebar" class="rightSidebar col-sm-12 col-md-4 col-lg-3 col-xl-3 order-md-2" id="side-bar">
 								{include file="sidebar.tpl"}
 							</div>
-							<div class="rightSidebar col-sm-12 col-md-8 col-md-pull-4 col-lg-9 col-lg-pull-3 col-xl-9 col-xl-pull-3" id="main-content-with-sidebar" style="overflow-x: auto;">
+							<div class="rightSidebar col-sm-12 col-md-8 col-lg-9 col-xl-9 order-md-1" id="main-content-with-sidebar" style="overflow-x: auto;">
 								{* If main content overflows, use a scrollbar *}
 								{include file="main-content.tpl"}
 							</div>

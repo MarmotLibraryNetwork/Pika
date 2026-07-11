@@ -60,7 +60,7 @@
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
-							<button type="button" class="btn btn-sm btn-outline-secondary btn-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Share <span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-outline-secondary btn-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Share</button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{if $favList->public}<li><a href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
 								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
@@ -85,7 +85,7 @@
 								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-outline-secondary" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Public</button>
 
 							{else}
-								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Admin Options <span class="caret"></span></button>
+								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Admin Options</button>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
 									<li><a href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Private</a></li>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
@@ -158,7 +158,7 @@
 
 						<div class="btn-group" role="group">
 
-							<button type="button" class="btn btn-sm btn-outline-secondary btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Sort &nbsp;<span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-outline-secondary btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Sort</button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
 									<li>
@@ -225,7 +225,7 @@
 
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
-					<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 					<strong>Drag-and-Drop!</strong> Just drag the list items into the order you like.
 				</div>
 			{/if}

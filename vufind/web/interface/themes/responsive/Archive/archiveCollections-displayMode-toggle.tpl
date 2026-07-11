@@ -1,7 +1,7 @@
 {strip}
 	{* User's viewing mode toggle switch *}
 	<div class="row" id="selected-browse-label">{* browse styling replicated here *}
-		<div class="btn-group btn-group-sm" data-toggle="buttons">
+		<div class="btn-group btn-group-sm">
 			<button tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-outline-secondary displayMode">
 				<span class="thumbnail-icon"></span><span> Covers</span>
 			</button>

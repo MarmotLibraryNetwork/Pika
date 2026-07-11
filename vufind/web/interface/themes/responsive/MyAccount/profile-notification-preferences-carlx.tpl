@@ -5,10 +5,10 @@
 		<div class="col-sm-4"><strong>{translate text='Email notices'}:</strong></div>
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="sendEmail" class="btn btn-sm btn-outline-secondary {if $profile->notices == 'send email'}active{/if}"><input type="radio" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}> Send Email</label>
-					<label for="dontSendEmail" class="btn btn-sm btn-outline-secondary {if $profile->notices == 'do not send email'}active{/if}"><input type="radio" value="do not send email" id="dontSendEmail" name="notices" {if $profile->notices == 'do not send email'}checked="checked"{/if}> Do not send email</label>
-					<label for="optOut" class="btn btn-sm btn-outline-secondary {if $profile->notices == 'opted out'}active{/if}"><input type="radio" value="opted out" id="optOut" name="notices" {if $profile->notices == 'opted out'}checked="checked"{/if}> Opt-out</label>
+				<div class="btn-group btn-group-sm">
+					<input type="radio" class="btn-check" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}><label for="sendEmail" class="btn btn-sm btn-outline-secondary">Send Email</label>
+					<input type="radio" class="btn-check" value="do not send email" id="dontSendEmail" name="notices" {if $profile->notices == 'do not send email'}checked="checked"{/if}><label for="dontSendEmail" class="btn btn-sm btn-outline-secondary">Do not send email</label>
+					<input type="radio" class="btn-check" value="opted out" id="optOut" name="notices" {if $profile->notices == 'opted out'}checked="checked"{/if}><label for="optOut" class="btn btn-sm btn-outline-secondary">Opt-out</label>
 				</div>
 			{else}
 				{$profile->notices}

@@ -82,7 +82,6 @@
 		<div class="dropdown float-end">
 			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 				{translate text="Search Tips"}
-				&nbsp;<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
 				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
