@@ -228,7 +228,7 @@
     box-shadow: white 0 0 0 0;
     border: 1px solid $explore-more-bar-label-bg-color;
 
-    .glyphicon {
+    .bi { // was .glyphicon
       // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
     }
   }

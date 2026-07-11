@@ -2,7 +2,7 @@
 @import "variables";
 
 #myFinesAlert,
-.myAccountLink .glyphicon-remove-circle // Delete My Tag icon
+.myAccountLink .bi-x-circle // Delete My Tag icon (was glyphicon-remove-circle)
 {
   color: $accessible-red;
   font-weight: bold;

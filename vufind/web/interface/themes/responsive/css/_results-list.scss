@@ -84,7 +84,7 @@
     line-height: 1.7;
     border-bottom: none;
 
-    .glyphicon-remove-circle {
+    .bi-x-circle { // was glyphicon-remove-circle
       color: $accessible-red;
     }
   }
