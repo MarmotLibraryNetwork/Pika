@@ -22586,7 +22586,7 @@ hr.menu {
 }
 
 #myFinesAlert,
-.myAccountLink .glyphicon-remove-circle {
+.myAccountLink .bi-x-circle {
   color: #D32522;
   font-weight: bold;
 }
@@ -23146,7 +23146,7 @@ img.x-twit {
   line-height: 1.7;
   border-bottom: none;
 }
-.facetValue a .glyphicon-remove-circle {
+.facetValue a .bi-x-circle {
   color: #D32522;
 }
 .facetValue:first-of-type {
