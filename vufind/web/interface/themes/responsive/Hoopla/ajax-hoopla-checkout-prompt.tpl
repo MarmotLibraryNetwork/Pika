@@ -1,10 +1,10 @@
 {strip}
 	<div>
 		{if count($hooplaUsers) > 1} {* Linked Users contains the active user as card card-body*}
-			<div id='pickupLocationOptions' class="form-group">
-				<label class="control-label" for="patronId">Please choose the account to check out from : </label>
+			<div id='pickupLocationOptions' class="mb-3">
+				<label class="form-label" for="patronId">Please choose the account to check out from : </label>
 				<div class="controls">
-					<select name="patronId" id="patronId" class="form-control">
+					<select name="patronId" id="patronId" class="form-select">
 						{foreach from=$hooplaUsers item=tmpUser}
 						{assign var="userId" value=$tmpUser->id}
 							<option value="{$tmpUser->id}"{* {if $location->selected == "selected"}selected="selected"{/if}*}>

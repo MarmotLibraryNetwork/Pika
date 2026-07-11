@@ -7,13 +7,13 @@
 		{*Reference to card number is removed to avoid confusion on login form labels. See D-4417 *}
 
 		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
-			<div class="form-group">
-				<label for="barcode" class="control-label col-sm-12 col-md-4">{if empty($barcodeLabel)}Card Number{else}{$barcodeLabel}{/if}<span class="required">*</span></label>
+			<div class="row mb-3">
+				<label for="barcode" class="col-form-label col-sm-12 col-md-4">{if empty($barcodeLabel)}Card Number{else}{$barcodeLabel}{/if}<span class="required">*</span></label>
 				<div class="col-sm-12 col-md-8">
 					<input id="barcode" name="barcode" type="text" size="14" maxlength="14" class="required form-control" aria-required="true">
 				</div>
 			</div>
-			<div class="form-group">
+			<div class="row mb-3">
 				<div class="col-sm-12 offset-md-4 col-md-8">
 					<input id="emailPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN'}">
 				</div>

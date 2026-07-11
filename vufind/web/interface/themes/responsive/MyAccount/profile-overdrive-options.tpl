@@ -2,13 +2,13 @@
 	<form action="" method="post" class="form-horizontal">
 		<input type="hidden" name="updateScope" value="overdrive">
 	{if isset($overDriveSettings.checkoutLimit)}
-		<div class="form-group">
+		<div class="row mb-3">
 			<div class="col-sm-4"><strong>Checkouts Limit</strong></div>
 			<div class="col-sm-8">{$overDriveSettings.checkoutLimit}</div>
 		</div>
 	{/if}
 	{if isset($overDriveSettings.holdLimit)}
-		<div class="form-group">
+		<div class="row mb-3">
 			<div class="col-sm-4"><strong>Holds Limit</strong></div>
 			<div class="col-sm-8">{$overDriveSettings.holdLimit}</div>
 		</div>
@@ -22,14 +22,14 @@
 			If you turn off the <em><strong>{translate text='Set Notification Email While Placing Hold'}</strong></em> switch, we will use this email automatically and skip prompting you for an email address when placing your holds.
 		</p>
 		</div>
-		<div class="form-group">
-			<div class="col-sm-4"><label for="overDriveEmail" class="control-label">{translate text='Email Address'}:</label></div>
+		<div class="row mb-3">
+			<div class="col-sm-4"><label for="overDriveEmail" class="form-label">{translate text='Email Address'}:</label></div>
 			<div class="col-sm-8">
 					{if !$offline}<input name="overDriveEmail" id="overDriveEmail" class="form-control" value='{$profile->overDriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overDriveEmail|escape}{/if}
 			</div>
 		</div>
-		<div class="form-group">
-			<div class="col-sm-4"><label for="promptForOverDriveEmail" class="control-label">{translate text='Set Notification Email While Placing Hold'}:</label></div>
+		<div class="row mb-3">
+			<div class="col-sm-4"><label for="promptForOverDriveEmail" class="form-label">{translate text='Set Notification Email While Placing Hold'}:</label></div>
 			<div class="col-sm-8">
 					{if !$offline}
 						<input type="checkbox" name="promptForOverDriveEmail" id="promptForOverDriveEmail" {if $profile->promptForOverDriveEmail==1}checked='checked'{/if} data-switch="">
@@ -47,8 +47,8 @@
 					{foreach from=$overDriveSettings.lendingPeriods item=lendingOption key="formatType"}
 						{if !empty($lendingOption->options)}
 							{* Magazines are listed here but there is no options available. So we won't display in this form *}
-							<div id="overdrive-lending-options" class="form-group">
-								<div class="col-sm-4"><label class="control-label">{$formatType}:</label></div>
+							<div id="overdrive-lending-options" class="row mb-3">
+								<div class="col-sm-4"><label class="form-label">{$formatType}:</label></div>
 								<div class="col-sm-8">
 									<div class="btn-group btn-group-sm"{* data-toggle="buttons"*}>
 											{foreach from=$lendingOption->options item=option}
@@ -64,8 +64,8 @@
 							</div>
 						{/if}
 					{/foreach}
-				<div class="form-group">
-					<div class="col-sm-4"><label for="promptForOverDriveLendingPeriods" class="control-label">{translate text='Set Lending Period During Checkout'}:</label></div>
+				<div class="row mb-3">
+					<div class="col-sm-4"><label for="promptForOverDriveLendingPeriods" class="form-label">{translate text='Set Lending Period During Checkout'}:</label></div>
 					<div class="col-sm-8">
 							{if !$offline}
 								<input type="checkbox" name="promptForOverDriveLendingPeriods" id="promptForOverDriveLendingPeriods" {if $profile->promptForOverDriveLendingPeriods==1}checked='checked'{/if} data-switch="">
@@ -78,7 +78,7 @@
 			{/if}
 
 			{if !$offline}
-				<div class="form-group">
+				<div class="row mb-3">
 					<div class="col-sm-8 offset-sm-4">
 						<input type="submit" value="Update OverDrive Options" name="updateOverDrive" class="btn btn-sm btn-primary">
 					</div>
@@ -86,7 +86,7 @@
 			{/if}
 
 			{if !empty($overDrivePreferencesNotice)}
-				<p class="help-block alert alert-info">
+				<p class="form-text alert alert-info">
 						{$overDrivePreferencesNotice}
 				</p>
 			{/if}

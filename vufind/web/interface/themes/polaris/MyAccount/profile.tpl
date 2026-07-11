@@ -46,33 +46,33 @@
 						<div id="basicPanel" class="panel-collapse collapse show">
 							<div class="panel-body">
 								<form action="" method="post" class="form-horizontal">
-									<div class="form-group">
+									<div class="row mb-3">
 										<div class="col-sm-4"><strong>{translate text='Full Name'}:</strong></div>
 										<div class="col-sm-8">{$profile->fullname|escape}</div>
 									</div>
 									{if !$offline && !is_null($profile->legalFullName)}
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4"><strong>{translate text='Full Legal Name'}:</strong></div>
 											<div class="col-sm-8">{$profile->legalFullName|escape}</div>
 										</div>
 									{/if}
 									{if !$offline}
 										{if $barcodePin}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4">
 													<strong>{translate text='Library Card Number'}:</strong>
 												</div>
 												<div class="col-sm-8">{$profile->barcode|escape}</div>
 											</div>
 										{/if}
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<strong>{translate text='Expiration Date'}:</strong>
 											</div>
 											<div class="col-sm-8">{$profile->expires|escape}</div>
 										</div>
 									{/if}
-									<div class="form-group">
+									<div class="row mb-3">
 										<div class="col-sm-4"><strong>{translate text='Home Library'}:</strong></div>
 										<div class="col-sm-8">{$profile->homeLocation|escape}</div>
 									</div>
@@ -96,7 +96,7 @@
 									<input type="hidden" name="updateScope" value="contact">
 
 									{if !$offline}
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<label for="address1">{translate text='Address'}:</label>
 											</div>
@@ -115,7 +115,7 @@
 												{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<label for="address2">{translate text='Address 2'}:</label>
 											</div>
@@ -134,7 +134,7 @@
 												{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4"><label for="city">{translate text='City'}:</label>
 											</div>
 											<div class="col-sm-8">
@@ -148,7 +148,7 @@
 												{else}{$profile->city|escape}{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4"><label for="state">{translate text='State'}:</label>
 											</div>
 											<div class="col-sm-8">
@@ -162,7 +162,7 @@
 												{else}{$profile->state|escape}{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4"><label for="zip">{translate text='Zip'}:</label></div>
 											<div class="col-sm-8">
 												{if $canUpdateContactInfo && $canUpdateAddress}
@@ -174,7 +174,7 @@
 												{else}{$profile->zip|escape}{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<label for="phone">{translate text='Primary Phone Number'}:</label>
 											</div>
@@ -188,13 +188,13 @@
 												{/if}
 											</div>
 										</div>
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<label for="Phone1CarrierID">{translate text='Primary Phone Carrier'}:</label>
 											</div>
 											{if $canUpdateContactInfo}
 												<div class="col-sm-8">
-													<select name="Phone1CarrierID" id="Phone1CarrierID" class="form-control">
+													<select name="Phone1CarrierID" id="Phone1CarrierID" class="form-select">
 														{if count($phoneCarriers) > 0}
 															{foreach from=$phoneCarriers key=k item=carrier}
 																<option value="{$k}"{if $k == $profile->phone_carrier_id} selected="selected"{/if}>{$carrier}</option>
@@ -207,7 +207,7 @@
 											{/if}
 										</div>
 										{if $showPhone2}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4">
 													<label for="phone2">{translate text='Secondary Phone Number'}:</label>
 												</div>
@@ -218,13 +218,13 @@
 														       class="form-control">{else}{$profile->phone2|escape}{/if}
 												</div>
 											</div>
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4">
 													<label for="Phone2">{translate text='Secondary Phone Carrier'}:</label>
 												</div>
 												{if $canUpdateContactInfo}
 													<div class="col-sm-8">
-														<select name="Phone2CarrierID" id="Phone2CarrierID" class="form-control">
+														<select name="Phone2CarrierID" id="Phone2CarrierID" class="form-select">
 															{if count($phoneCarriers) > 0}
 																{foreach from=$phoneCarriers key=k item=carrier}
 																	<option value="{$k}"{if $k == $profile->phone2_carrier_id} selected="selected"{/if}>{$carrier}</option>
@@ -239,7 +239,7 @@
 										{/if}
 
 										{if $showPhone3}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4">
 													<label for="phone3">{translate text='Alternate Phone Number'}:</label>
 												</div>
@@ -250,13 +250,13 @@
 														       class="form-control">{else}{$profile->phone3|escape}{/if}
 												</div>
 											</div>
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4">
 													<label for="Phone3CarrierID">{translate text='Alternate Phone Carrier'}:</label>
 												</div>
 												{if $canUpdateContactInfo}
 													<div class="col-sm-8">
-														<select name="Phone3CarrierID" id="Phone3CarrierID" class="form-control">
+														<select name="Phone3CarrierID" id="Phone3CarrierID" class="form-select">
 															{if count($phoneCarriers) > 0}
 																{foreach from=$phoneCarriers key=k item=carrier}
 																	<option value="{$k}"{if $k == $profile->phone3_carrier_id} selected="selected"{/if}>{$carrier}</option>
@@ -270,7 +270,7 @@
 											</div>
 										{/if}
 									{/if}
-									<div class="form-group">
+									<div class="row mb-3">
 										<div class="col-sm-4"><label for="email">{translate text='E-mail'}:</label>
 										</div>
 										<div class="col-sm-8">
@@ -288,13 +288,13 @@
 										</div>
 									</div>
 									{if $showPickupLocationInProfile}
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4">
 												<label for="pickupLocation" class="">{translate text='Pickup Location'}:</label>
 											</div>
 											<div class="col-sm-8">
 												{if !$offline && $canUpdateContactInfo == true}
-													<select name="pickupLocation" id="pickupLocation" class="form-control">
+													<select name="pickupLocation" id="pickupLocation" class="form-select">
 														{if count($pickupLocations) > 0}
 															{foreach from=$pickupLocations item=location}
 																<option value="{$location->ilsLocationId}"
@@ -312,7 +312,7 @@
 									{/if}
 
 									{if !$offline && $canUpdateContactInfo}
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-8 offset-sm-4">
 												<input type="submit" value="Update Contact Information"
 												       name="updateContactInfo" class="btn btn-sm btn-primary">
@@ -371,9 +371,9 @@
 									{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 									<form action="" method="post" class="form-horizontal">
 										<input type="hidden" name="updateScope" value="hoopla">
-										<div class="form-group">
+										<div class="row mb-3">
 											<div class="col-sm-4"><label for="hooplaCheckOutConfirmation"
-											                             class="control-label">{translate text='Ask for confirmation before checking out from Hoopla'}
+											                             class="form-label">{translate text='Ask for confirmation before checking out from Hoopla'}
 													:</label></div>
 											<div class="col-sm-8">
 												{if !$offline}
@@ -387,7 +387,7 @@
 											</div>
 										</div>
 										{if !$offline}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-8 offset-sm-4">
 													<input type="submit" value="Update Hoopla Options"
 													       name="updateHoopla" class="btn btn-sm btn-primary">
@@ -418,9 +418,9 @@
 										<input type="hidden" name="updateScope" value="userPreference">
 
 										{if $showAlternateLibraryOptions}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4"><label for="myLocation1"
-												                             class="control-label">{translate text='My First Alternate Library'}
+												                             class="form-label">{translate text='My First Alternate Library'}
 														:</label></div>
 												<div class="col-sm-8">
 													{if !$offline}
@@ -430,18 +430,18 @@
 													{/if}
 												</div>
 											</div>
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4"><label for="myLocation2"
-												                             class="control-label">{translate text='My Second Alternate Library'}
+												                             class="form-label">{translate text='My Second Alternate Library'}
 														:</label></div>
 												<div class="col-sm-8">{if !$offline}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
 											</div>
 										{/if}
 
 										{if $showRatings && $showComments}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-4"><label for="noPromptForUserReviews"
-												                             class="control-label">{translate text='Do not prompt me for reviews after rating titles'}
+												                             class="form-label">{translate text='Do not prompt me for reviews after rating titles'}
 														:</label></div>
 												<div class="col-sm-8">
 													{if !$offline}
@@ -452,7 +452,7 @@
 													{else}
 														{if $profile->noPromptForUserReviews==0}No{else}Yes{/if}
 													{/if}
-													<p class="help-block alert alert-warning">When you rate an item by
+													<p class="form-text alert alert-warning">When you rate an item by
 														clicking on the stars, you will be asked to review that item
 														also. Setting this option to <strong>&quot;on&QUOT;</strong>
 														lets us know you don't want to give reviews after you have rated
@@ -462,7 +462,7 @@
 										{/if}
 
 										{if !$offline}
-											<div class="form-group">
+											<div class="row mb-3">
 												<div class="col-sm-8 offset-sm-4">
 													<input type="submit" value="Update My Preferences"
 													       name="updateMyPreferences" class="btn btn-sm btn-primary">

@@ -22,8 +22,8 @@
 
     {* Copied from profile.tpl *}
 	<form action="/MyAccount/UpdatePin" method="post" class="form-horizontal" id="pinForm">
-	<div class="form-group">
-		<div class="col-sm-4"><label for="pin" class="control-label">{translate text='Default PIN'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="pin" class="form-label">{translate text='Default PIN'}:</label></div>
 		<div class="col-sm-8">
 			<div class="input-group">
 				<input type="password" name="pin" id="pin" value="" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
@@ -34,8 +34,8 @@
 			</div>
 		</div>
 	</div>
-	<div class="form-group">
-		<div class="col-sm-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="pin1" class="form-label">{translate text='New PIN'}:</label></div>
 		<div class="col-sm-8">
 			<div class="input-group">
 				<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
@@ -45,8 +45,8 @@
 			</div>
 		</div>
 	</div>
-	<div class="form-group">
-		<div class="col-sm-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="pin2" class="form-label">{translate text='Re-enter New PIN'}:</label></div>
 		<div class="col-sm-8">
 			<div class="input-group">
 				<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}" aria-required="true">
@@ -56,10 +56,10 @@
 			</div>
 		</div>
 	</div>
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-8 offset-sm-4">
 			{if $showForgotPinLink}
-				<p class="help-block">
+				<p class="form-text">
 					<strong>{translate text="Forgot PIN?"}</strong>&nbsp;
 					<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 				</p>

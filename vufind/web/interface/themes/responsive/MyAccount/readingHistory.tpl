@@ -94,7 +94,7 @@
 									<input type="search" name="searchTerm" id="searchTerm" class="form-control"  onkeydown="{literal}if(event.key == 'Enter') {return Pika.Account.ReadingHistory.searchReadingHistoryAction();}{/literal}" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 								</div>
 								<div class="col-sm-3">
-									<select name="searchBy" id="searchBy" class="form-control" aria-label="Search by">
+									<select name="searchBy" id="searchBy" class="form-select" aria-label="Search by">
 										<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
 										<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
 									</select>
@@ -105,9 +105,9 @@
 							{* Results Page Options *}
 							<div id="pager" class="col-sm-12">
 								<div class="row">
-									<div class="form-group col-md-5" id="recordsPerPage">
-										<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-										<select id="pagesize" class="pagesize form-control{* input-sm*}">
+									<div class="mb-3 col-md-5" id="recordsPerPage">
+										<label for="pagesize" class="form-label">Records Per Page&nbsp;</label>
+										<select id="pagesize" class="pagesize form-select{* input-sm*}">
 											<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 											<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 											<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
@@ -115,16 +115,16 @@
 											<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 										</select>
 									</div>
-									<div class="form-group col-md-5" id="sortOptions">
-										<label for="sortMethod" class="control-label">Sort By&nbsp;</label>
-										<select class="sortMethod form-control" id="sortMethod" name="accountSort">
+									<div class="mb-3 col-md-5" id="sortOptions">
+										<label for="sortMethod" class="form-label">Sort By&nbsp;</label>
+										<select class="sortMethod form-select" id="sortMethod" name="accountSort">
 											{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 												<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 											{/foreach}
 										</select>
 									</div>
-									<div class="form-group col-md-2" id="coverOptions">
-										<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+									<div class="mb-3 col-md-2" id="coverOptions">
+										<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 									</div>
 								</div>
 							</div>

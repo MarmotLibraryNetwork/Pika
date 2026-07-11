@@ -10,7 +10,7 @@
 			</button>
 		</div>
 		<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
-			<label for="hideCovers" class="checkbox{* control-label*}"> Hide Covers
+			<label for="hideCovers" class="checkbox{* form-label*}"> Hide Covers
 				<input id="hideCovers" type="checkbox" onclick="Pika.Archive.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
 			</label>
 		</div>

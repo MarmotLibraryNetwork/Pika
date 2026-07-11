@@ -14,8 +14,8 @@
 			{/if}
 
 			<input type="hidden" name="userAction" value="resetDisplayName">
-			<div class="row form-group">
-				<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+			<div class="row mb-3">
+				<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
 				<div class="col-md-6">
 					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
@@ -23,7 +23,7 @@
 					<button type="submit" class="btn btn-primary">Reset User's display name</button>
 				</div>
 			</div>
-			<div class="form-group">
+			<div class="mb-3">
 			</div>
 		</fieldset>
 	</form>
@@ -41,8 +41,8 @@
 					{/if}
 
 				<input type="hidden" name="userAction" value="showDuplicates">
-				<div class="row form-group">
-					<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+				<div class="row mb-3">
+					<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
 					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $duplicateBarcode} value="{$duplicateBarcode}"{/if}>
 					</div>
@@ -50,7 +50,7 @@
 						<button type="submit" class="btn btn-primary">Look up Accounts</button>
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="mb-3">
 				</div>
 			</fieldset>
 		</form>
@@ -116,8 +116,8 @@
 				<legend>Check User Reading History Actions <small>(after {$readingHistoryLogStartDate|date_format})</small></legend>
 
 				<input type="hidden" name="userAction" value="showReadingHistoryActions">
-				<div class="row form-group">
-					<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+				<div class="row mb-3">
+					<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
 					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
 					</div>
@@ -125,7 +125,7 @@
 						<button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="mb-3">
 				</div>
 			</fieldset>
 		</form>

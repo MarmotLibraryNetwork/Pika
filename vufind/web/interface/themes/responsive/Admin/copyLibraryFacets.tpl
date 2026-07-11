@@ -7,9 +7,9 @@
 				<div>
 					<input type="hidden" name="id" value="{$id}">
 					<input type="hidden" name="objectAction" value="{$objectAction}">
-					<div class="form-group">
+					<div class="mb-3">
 					<label for="libraryToCopyFrom">Select a library to copy {$facetType} facets from:</label>
-					<select id="libraryToCopyFrom" name="libraryToCopyFrom" class="form-control">
+					<select id="libraryToCopyFrom" name="libraryToCopyFrom" class="form-select">
 						{foreach from=$allLibraries item=library}
 							<option value="{$library->libraryId}">{$library->displayName}</option>
 						{/foreach}

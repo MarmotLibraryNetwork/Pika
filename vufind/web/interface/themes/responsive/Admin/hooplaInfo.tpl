@@ -8,8 +8,8 @@
 			<form id="HooplaInfoFilter">
 				<div class="form-horizontal">
 					{if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles)|| in_array('libraryManager', $userRoles))}
-						<div class="form-group">
-							<label for="startDate" class="control-label col-md-3">Start Date</label>
+						<div class="row mb-3">
+							<label for="startDate" class="col-form-label col-md-3">Start Date</label>
 							<div class="input-group input-append date controls col-md-3" id="startDatePicker">
 								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 								       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
@@ -22,8 +22,8 @@
 								</span>
 							</div>
 						</div>
-						<div class="form-group">
-							<label for="endDate" class="control-label col-md-3">End Date</label>
+						<div class="row mb-3">
+							<label for="endDate" class="col-form-label col-md-3">End Date</label>
 							<div class="input-group input-append date controls col-md-3" id="endDatePicker">
 								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 								       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
@@ -37,15 +37,15 @@
 							</div>
 						</div>
           {/if}
-					<div class="form-group">
-						<label for="hooplaId" class="control-label col-md-3">Hoopla Record Id</label>
+					<div class="row mb-3">
+						<label for="hooplaId" class="col-form-label col-md-3">Hoopla Record Id</label>
 						<div class="col-md-3">
 						<input type="text" name="hooplaId" id="hooplaId" class="form-control"{if ctype_digit($smarty.get.hooplaId)} value="{$smarty.get.hooplaId}"{/if}>
 						</div>
 					</div>
 					{if $userRoles && in_array('opacAdmin', $userRoles)}
-						<div class="form-group">
-							<label for="hooplaId" class="control-label col-md-3">Hoopla Library Id</label>
+						<div class="row mb-3">
+							<label for="hooplaId" class="col-form-label col-md-3">Hoopla Library Id</label>
 							<div class="col-md-3">
 							<input type="text" name="hooplaLibraryId" id="hooplaId" class="form-control"{if ctype_digit($smarty.get.hooplaLibraryId)} value="{$smarty.get.hooplaLibraryId}"{/if}>
 							</div>

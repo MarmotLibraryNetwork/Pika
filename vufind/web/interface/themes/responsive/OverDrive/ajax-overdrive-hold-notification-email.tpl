@@ -1,11 +1,11 @@
 {strip}
   {if $promptForEmail}
-		<div class="form-group">
-			<label for="overDriveEmail" class="control-label">{translate text="Enter an e-mail to be notified when the title is ready for you."}{* <span class="required-input">*</span>*}</label>
+		<div class="mb-3">
+			<label for="overDriveEmail" class="form-label">{translate text="Enter an e-mail to be notified when the title is ready for you."}{* <span class="required-input">*</span>*}</label>
 			<input type="text" class="email form-control{* required*}" name="overDriveEmail" id="overDriveEmail" value="{$overDriveEmail}" size="40" maxlength="250"{* aria-required="true"*}>
 		</div>
-		<div class="form-group">
-			<label for="rememberOverDriveEmail" class="control-label checkbox"><input type="checkbox" name="rememberOverDriveEmail" id="rememberOverDriveEmail"> {translate text="Save this email as my default for hold notifications"}</label>
+		<div class="mb-3">
+			<label for="rememberOverDriveEmail" class="form-label checkbox"><input type="checkbox" name="rememberOverDriveEmail" id="rememberOverDriveEmail"> {translate text="Save this email as my default for hold notifications"}</label>
 		</div>
 		<div class="alert alert-info">
 			<p>To use this email address for future hold requests, click <em><strong>{translate text="Save this email as my default for hold notifications"}</strong></em> above.</p>

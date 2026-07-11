@@ -12,7 +12,7 @@
 				<form action="" method="post" class="form-horizontal" id="usernameForm">
 					<input type="hidden" name="updateScope" value="contact">
 					<input type="hidden" name="profileUpdateAction" value="updatePatronUsername">
-					<div class="form-group">
+					<div class="row mb-3">
 						<div class="col-sm-4"><label for="alternate_username">Username:</label>
 						</div>
 						<div class="col-sm-8">
@@ -36,7 +36,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="row mb-3">
 						<div class="col-sm-8 offset-sm-4">
 							<input type="submit" value="Update Username" name="updateUsername" class="btn btn-sm btn-primary">
 						</div>

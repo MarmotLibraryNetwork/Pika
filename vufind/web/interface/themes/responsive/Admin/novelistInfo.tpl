@@ -2,7 +2,7 @@
 	<div id="main-content" class="col-lg-12">
 		<form name="cleanupNovelistCache" method="post">
 			<h1 role="heading" aria-level="1" class="h2">NoveList Information</h1>
-			<div class="form-group">
+			<div class="mb-3">
 				<div class="row">
 					<div class="col-md-4">
 						<label for="checkId">Lookup Novelist Data: </label>
@@ -30,7 +30,7 @@
 				cache.
 			</div>
 			{if in_array('opacAdmin', $userRoles)}
-				<div class="form-group">
+				<div class="mb-3">
 					<button type="submit" name="truncateData" class="btn btn-outline-secondary">Clear Cache</button>
 				</div>
 			{/if}

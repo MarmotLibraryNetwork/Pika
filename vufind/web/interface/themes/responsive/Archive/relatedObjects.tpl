@@ -36,7 +36,7 @@
 				{* Display information to sort the results (by date or by title *}
 				<div class="input-group">
 					<label for="results-sort" class="input-group-text">Sort By</label>
-				<select id="results-sort" name="sort" class="form-control">
+				<select id="results-sort" name="sort" class="form-select">
 					<option value="title" {if $sort=='title'}selected="selected"{/if}>Title</option>
 					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>Newest First</option>
 					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>Oldest First</option>

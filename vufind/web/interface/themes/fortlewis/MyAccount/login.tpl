@@ -33,18 +33,18 @@
 						<p><strong>Community Members</strong>, log in with your name and library card number.</p>
 						<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 						<div id="loginFormFields">
-							<div id="loginUsernameRow" class="form-group">
-								<label for="username" class="control-label col-sm-12 col-md-4">{$usernameLabel}: </label>
+							<div id="loginUsernameRow" class="row mb-3">
+								<label for="username" class="col-form-label col-sm-12 col-md-4">{$usernameLabel}: </label>
 								<div class="col-sm-12 col-md-8">
 									<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
 								</div>
 							</div>
-							<div id="loginPasswordRow" class="form-group">
-								<label for="password" class="control-label col-sm-12 col-md-4">{$passwordLabel}: </label>
+							<div id="loginPasswordRow" class="row mb-3">
+								<label for="password" class="col-form-label col-sm-12 col-md-4">{$passwordLabel}: </label>
 								<div class="col-sm-12 col-md-8">
 									<input type="password" name="password" id="password" size="28" onkeydown="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 									{if $showForgotPinLink}
-										<p class="help-block">
+										<p class="form-text">
 											<strong>{translate text="Forgot PIN?"}</strong>
 											<a href="/MyAccount/EmailResetPin">{translate text='Reset My PIN'}</a>
 										</p>
@@ -54,7 +54,7 @@
 								</div>
 
 							</div>
-							<div id="loginPasswordRow2" class="form-group">
+							<div id="loginPasswordRow2" class="row mb-3">
 								<div class="col-sm-12 offset-md-4 col-md-8">
 									<label for="showPwd" class="checkbox">
 										<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
@@ -70,7 +70,7 @@
 								</div>
 							</div>
 
-							<div id="loginPasswordRow2" class="form-group">
+							<div id="loginPasswordRow2" class="row mb-3">
 								<div class="col-sm-12 offset-md-4 col-md-8">
 									<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return Pika.Account.preProcessLogin();">
 									{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}

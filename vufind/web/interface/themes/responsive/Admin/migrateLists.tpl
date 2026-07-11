@@ -26,13 +26,13 @@
 			<fieldset>
 
 				<input type="hidden" name="objectAction" value="processListsFile">
-				<div class="row form-group">
-					<label for="file" class="col-md-5 control-label">List CSV File (one list per line): </label>
+				<div class="row mb-3">
+					<label for="file" class="col-md-5 col-form-label">List CSV File (one list per line): </label>
 					<div class="col-md-7">
 						<input type="file" name="listsFile" id="listsFile" accept=".csv,.txt" class="form-control">
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="mb-3">
 					<div class="controls">
 						<input type="submit" name="submit" value="Process Lists File" class="btn btn-primary">
 					</div>

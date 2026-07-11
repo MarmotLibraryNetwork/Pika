@@ -9,15 +9,15 @@
 				<div class="error">{$error}</div>
 			{/foreach}
 			<form class="form form-inline">
-				<label for="selectedReport" class="control-label">Available Reports&nbsp;</label>
-				<select name="selectedReport" id="selectedReport" class="form-control input-sm">
+				<label for="selectedReport" class="form-label">Available Reports&nbsp;</label>
+				<select name="selectedReport" id="selectedReport" class="form-select input-sm">
 					{foreach from=$availableReports item=curReport key=reportLocation}
 						<option value="{$reportLocation}" {if $curReport==$selectedReport}selected="selected"{/if}>{$curReport}</option>
 					{/foreach}
 				</select>
 				&nbsp;
-				<label for="showOverdueOnly" class="control-label">Include&nbsp;</label>
-				<select name="showOverdueOnly" id="showOverdueOnly" class="form-control input-sm">
+				<label for="showOverdueOnly" class="form-label">Include&nbsp;</label>
+				<select name="showOverdueOnly" id="showOverdueOnly" class="form-select input-sm">
 					<option value="overdue" {if $showOverdueOnly}selected="selected"{/if}>Overdue Items</option>
 					<option value="checkedOut" {if !$showOverdueOnly}selected="selected"{/if}>Checked Out Items</option>
 				</select>

@@ -3,9 +3,9 @@
 {assign var=propNameYear value=$property.propNameYear}
 <div class="form-inline">
 	{*Somthing about our Styling messes up bootstap's inline form, the <br> make display consistent with the textboxes though *}
-	<div class="form-group">
+	<div class="mb-3">
 		<label for="{$propNameMonth}">Month</label><br>
-		<select name='{$propNameMonth}' id='{$propNameMonth}' class="form-control">
+		<select name='{$propNameMonth}' id='{$propNameMonth}' class="form-select">
 		<option value=""></option>
 		<option value="1" {if $object->$propNameMonth == '1'}selected='selected'{/if}>January</option>
 		<option value="2" {if $object->$propNameMonth == '2'}selected='selected'{/if}>February</option>
@@ -21,11 +21,11 @@
 		<option value="12" {if $object->$propNameMonth == '12'}selected='selected'{/if}>December</option>
 		</select>
 	</div>
-	<div class="form-group">
+	<div class="mb-3">
 		<label for="{$propNameDay}">Day</label>
 		<input type='text' name='{$propNameDay}' id='{$propNameDay}' value='{$object->$propNameDay}' maxLength='2' size='2' class="form-control">
 	</div>
-	<div class="form-group">
+	<div class="mb-3">
 		<label for="{$propNameYear}">Year</label>
 		<input type='text' name='{$propNameYear}' id='{$propNameYear}' value='{$object->$propNameYear}' maxLength='4' size='4' class="form-control">
 	</div>

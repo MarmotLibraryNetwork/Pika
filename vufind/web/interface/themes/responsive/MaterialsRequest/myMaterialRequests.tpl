@@ -13,8 +13,8 @@
 			<legend>Filters:</legend>
 			<form action="/MaterialsRequest/MyRequests" method="get" class="form-inline">
 				<div>
-					<div class="form-group">
-						<label class="control-label">Show:</label>
+					<div class="mb-3">
+						<label class="form-label">Show:</label>
 						<label for="openRequests" class="radio-inline">
 							{*<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if $showOpen}checked="checked"{/if}> Open {translate text='materials_request_short'|capitalize}s*}
 							<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if $showOpen}checked="checked"{/if}> Open {'materials_request_short'|translate|capitalize}s
@@ -23,7 +23,7 @@
 							<input type="radio" id="allRequests" name="requestsToShow" value="allRequests" {if !$showOpen}checked="checked"{/if}> All {'materials_request_short'|translate|capitalize}s
 						</label>
 					</div>
-					<div class="form-group">
+					<div class="mb-3">
 						<input type="submit" name="submit" value="Update Filters" class="btn btn-sm btn-outline-secondary">
 					</div>
 				</div>

@@ -39,13 +39,13 @@
 					<form action="/MaterialsRequest/ManageRequests" method="get">
 						<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">
 							<legend>Statuses to Show:</legend>
-							<div class="form-group checkbox">
+							<div class="mb-3 checkbox">
 								<label for="selectAllStatusFilter">
 									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');" aria-label="Select or Unselect all statuses to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
-							<div class="form-group"><strong>Default Status</strong>
+							<div class="mb-3"><strong>Default Status</strong>
 								{foreach from=$defaultStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -54,7 +54,7 @@
 									</div>
 								{/foreach}
 							</div>
-							<div class="form-group"><strong>Open Statuses</strong>
+							<div class="mb-3"><strong>Open Statuses</strong>
 								{foreach from=$openStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -63,7 +63,7 @@
 									</div>
 								{/foreach}
 							</div>
-							<div class="form-group"><strong>Closed Statuses</strong>
+							<div class="mb-3"><strong>Closed Statuses</strong>
 								{foreach from=$closedStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -73,14 +73,14 @@
 								{/foreach}
 							</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
+						<fieldset class="mb-3 fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
 							<legend>Date:</legend>
 {*
 								<label for="startDate">From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
 								<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
 *}
-								<div class="form-group">
-									<label for="startDate" class="control-label col-md-2">Start Date</label>
+								<div class="row mb-3">
+									<label for="startDate" class="col-form-label col-md-2">Start Date</label>
 									<div class="input-group input-append date controls col-md-3" id="startDatePicker">
 										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
@@ -93,8 +93,8 @@
 										</span>
 									</div>
 								</div>
-								<div class="form-group">
-									<label for="endDate" class="control-label col-md-2">End Date</label>
+								<div class="row mb-3">
+									<label for="endDate" class="col-form-label col-md-2">End Date</label>
 									<div class="input-group input-append date controls col-md-3" id="endDatePicker">
 										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
@@ -108,21 +108,21 @@
 									</div>
 								</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible{if $idsToShow} fieldset-init-open{/if}">
+						<fieldset class="mb-3 fieldset-collapsible{if $idsToShow} fieldset-init-open{/if}">
 							<legend>Request IDs to Show (separated by commas):</legend>
-							<div class="form-group">
+							<div class="mb-3">
 								<label for="idsToShow">Request IDs</label> <input type="text" id="idsToShow" name="idsToShow" value="{$idsToShow}" size="60" class="form-control">
 							</div>
 						</fieldset>
-						<fieldset class="form-group fieldset-collapsible {if !empty($formatFilter)} fieldset-init-open{/if}">
+						<fieldset class="mb-3 fieldset-collapsible {if !empty($formatFilter)} fieldset-init-open{/if}">
 							<legend>Format:</legend>
-							<div class="form-group checkbox">
+							<div class="mb-3 checkbox">
 								<label for="selectAllFormatFilter">
 									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="Pika.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');" aria-label="Select or Unselect all formats to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
-							<div class="form-group">
+							<div class="mb-3">
 								{foreach from=$availableFormats item=formatLabel key=format}
 									<div class="checkbox">
 										<label><input type="checkbox" name="formatFilter[]" value="{$format}" {if in_array($format, $formatFilter)}checked="checked"{/if} class="formatFilter">{$formatLabel}</label>
@@ -132,19 +132,19 @@
 						</fieldset>
 						<fieldset class="fieldset-collapsible {if $showUnassigned || !empty($assigneesFilter)} fieldset-init-open{/if}">
 							<legend>Assigned To:</legend>
-							<div class="form-group checkbox">
+							<div class="mb-3 checkbox">
 								<label for="showUnassigned">
 									<input type="checkbox" name="showUnassigned" id="showUnassigned"{if $showUnassigned} checked{/if}>
 									<strong>Unassigned</strong>
 								</label>
 							</div>
-								<div class="form-group checkbox">
+								<div class="mb-3 checkbox">
 								<label for="selectAllAssigneesFilter">
 									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="Pika.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');"  aria-label="Select or Unselect all assignees to filter by">
 									<strong>Select All</strong>
 								</label>
 							</div>
-							<div class="form-group">
+							<div class="mb-3">
 								{foreach from=$assignees item=displayName key=assigneeId}
 									<div class="checkbox">
 										<label>
@@ -281,14 +281,14 @@
 				</table>
 				{if in_array('library_material_requests', $userRoles)}
 					<div id="materialsRequestActions">
-						<div class="row form-group">
+						<div class="row mb-3">
 							<div class="col-md-4">
-								<label for="newAssignee" class="control-label">Assign selected to:</label>
+								<label for="newAssignee" class="form-label">Assign selected to:</label>
 							</div>
 							<div class="col-md-8">
 								<div class="input-group">
 									{if $assignees}
-										<select name="newAssignee" id="newAssignee" class="form-control">
+										<select name="newAssignee" id="newAssignee" class="form-select">
 											<option value="unselected">Select One</option>
 											<option value="unassign">Un-assign (remove assignee)</option>
 
@@ -306,13 +306,13 @@
 								</div>
 							</div>
 						</div>
-						<div class="row form-group">
+						<div class="row mb-3">
 							<div class="col-md-4">
-								<label for="newStatus" class="control-label">Change status of selected to:</label>
+								<label for="newStatus" class="form-label">Change status of selected to:</label>
 							</div>
 							<div class="col-md-8">
 								<div class="input-group">
-									<select name="newStatus" id="newStatus" class="form-control">
+									<select name="newStatus" id="newStatus" class="form-select">
 										<option value="unselected">Select One</option>
 										{foreach from=$availableStatuses item=statusLabel key=status}
 											<option value="{$status}">{$statusLabel}</option>

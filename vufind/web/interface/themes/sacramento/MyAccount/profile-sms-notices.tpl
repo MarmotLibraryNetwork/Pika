@@ -13,12 +13,12 @@
 				<form action="" method="post" class="form-horizontal">
 					<input type="hidden" name="updateScope" value="contact">
 					<input type="hidden" name="profileUpdateAction" value="updateSms">
-					<div class="form-group">
+					<div class="row mb-3">
 						<div class="col-sm-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
 						<div class="col-sm-8">
 							{if !$offline && $canUpdateContactInfo == true}
 								<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
-								<p class="help-block alert alert-warning">
+								<p class="form-text alert alert-warning">
 									SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
 									<br><br>
 									To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
@@ -33,7 +33,7 @@
 							{/if}
 						</div>
 					</div>
-					<div class="form-group">
+					<div class="row mb-3">
 						<div class="col-sm-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
 						<div class="col-sm-8">
 							{if !$offline && $canUpdateContactInfo == true}
@@ -45,7 +45,7 @@
 					</div>
 
 					{if !$offline}
-						<div class="form-group">
+						<div class="row mb-3">
 							<div class="col-sm-8 offset-sm-4">
 								<input type="submit" value="Update SMS Settings" name="updateContactInfo" class="btn btn-sm btn-primary">
 							</div>

@@ -166,11 +166,11 @@
 														<td>
 															{if $facetInfo.facetName == "publishDate"}
 															<div class="form-inline">
-																<div class="form-group">
+																<div class="mb-3">
 																	<label for="publishDateyearfrom" class="yearboxlabel">From: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearfrom" id="publishDateyearfrom" value="{$facetInfo.from}">
 																</div>
-																<div class="form-group">
+																<div class="mb-3">
 																	<label for="publishDateyearto" class="yearboxlabel">To: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearto" id="publishDateyearto" value="{$facetInfo.to}">
 																</div>
@@ -185,28 +185,28 @@
 															{elseif $facetInfo.facetName == "lexile_score"}
 																<div id="lexile-range"></div>
 																<div class="form-inline">
-																	<div class="form-group">
+																	<div class="mb-3">
 																		<label for="lexile_scorefrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom" id="lexile_scorefrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="form-group">
+																	<div class="mb-3">
 																		<label for="lexile_scoreto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto" id="lexile_scoreto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
 																<div class="form-inline">
-																	<div class="form-group">
+																	<div class="mb-3">
 																		<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="form-group">
+																	<div class="mb-3">
 																		<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{else}
-																<select id="{$facetInfo.facetName}" name="filter[]" class="form-control">
+																<select id="{$facetInfo.facetName}" name="filter[]" class="form-select">
 																	{foreach from=$facetInfo.values item="value" key="display"}
 																		{if strlen($display) > 0}
 																			<option value="{$value.filter|escape}"{if $value.selected && !empty($value.filter)} selected="selected"{/if}>{$display|escape|truncate:80}</option>

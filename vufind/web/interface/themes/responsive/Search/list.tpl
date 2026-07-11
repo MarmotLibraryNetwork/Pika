@@ -6,7 +6,7 @@
 {*				<h5>Advanced Search Query : </h5>*}
 				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
 				<br>
-				<div class="help-block">
+				<div class="form-text">
 				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 				</div>
 			</div>

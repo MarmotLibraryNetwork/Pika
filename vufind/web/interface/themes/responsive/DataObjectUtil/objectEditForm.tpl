@@ -36,7 +36,7 @@
 
 		{* Show Recaptcha spam control if set. *}
 		{if $captcha}
-			<div class="form-group">
+			<div class="mb-3">
 				{$captcha}
 			</div>
 		{/if}

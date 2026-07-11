@@ -7,8 +7,8 @@
 		<fieldset>
 			<legend><h1 role="heading" aria-level="1" class="h2">Add a New Administrator</h1></legend>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
-			<div class="row form-group">
-				<label for="barcode" class="col-md-2 control-label">Barcode: </label>
+			<div class="row mb-3">
+				<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
 				<div class="col-md-10">
 					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
@@ -24,10 +24,10 @@
 			</div>
 			</div>
 
-			<div class="form-group">
+			<div class="mb-3">
 				{assign var=property value=$structure.roles}
 				{assign var=propName value=$property.property}
-				<label for='{$propName}' class="control-label">Roles</label>
+				<label for='{$propName}' class="form-label">Roles</label>
 				<div class="controls">
 					{* Display the list of roles to add *}
 					{if isset($property.listStyle) && $property.listStyle == 'checkbox'}
@@ -45,7 +45,7 @@
 					{/if}
 				</div>
 			</div>
-			<div class="form-group">
+			<div class="mb-3">
 				<div class="controls">
 					<input type="submit" name="submit" value="Add Administrator" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-outline-secondary">Return to List</a>
 				</div>

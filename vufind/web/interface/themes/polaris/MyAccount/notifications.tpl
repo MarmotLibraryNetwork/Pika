@@ -12,7 +12,7 @@
                 <form action="" method="post" class="form-horizontal" id="notificationsForm">
                     <input type="hidden" name="updateScope" value="contact">
                     <input type="hidden" name="profileUpdateAction" value="updateNotificationsPreferences">
-                    <div class="form-group">
+                    <div class="row mb-3">
                         <div class="col-sm-4">
                             <label for="notification_method">Receive Library Notifications By:</label>
                         </div>
@@ -20,7 +20,7 @@
                             {html_options name="notification_method" id="notification_method" class="form-control" options=$notificationOptions selected=$profile->noticePreferenceId}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="row mb-3">
                         <div class="col-sm-4">
                             <label for="ereceipt_method">Receive E-receipts by:</label>
                         </div>
@@ -28,7 +28,7 @@
                             {html_options name="ereceipt_method" id="ereceipt_method" class="form-control" options=$eReceiptOptions selected=$profile->ereceiptId}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="row mb-3">
                         <div class="col-sm-4">
                             <label for="email_format">Email Format:</label>
                         </div>
@@ -36,7 +36,7 @@
                             {html_options name="email_format" id="email_format" class="form-control" options=$emailFormatOptions selected=$profile->emailFormatId}
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="row mb-3">
                         <div class="col-sm-8 offset-sm-4">
                             <input type="submit" value="Update Notifications" name="updateNotifications" class="btn btn-sm btn-primary">
                         </div>

@@ -2,9 +2,9 @@
 	<form{* role="form" Assigning form role to html form tags is not neccessary *}>
 		<input type="hidden" name="holdId" value="{$holdId}" id="holdId">
 		<input type="hidden" name="patronId" value="{$patronId}" id="patronId">
-		<div class="rateTitle form-group">
+		<div class="rateTitle mb-3">
 			<label for="newPickupLocation">Select a new location to pickup your hold</label>
-			<select name="newPickupLocation" id="newPickupLocation" class="form-control">
+			<select name="newPickupLocation" id="newPickupLocation" class="form-select">
 				{if count($pickupLocations) > 0}
 					{foreach from=$pickupLocations item=location key=locationCode}
 					<option value="{$locationCode}">{$location}</option>

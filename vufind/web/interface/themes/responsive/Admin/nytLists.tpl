@@ -16,11 +16,11 @@
 	{/if}
 
 	<form action="" method="post" id="buildList">
-		<div class="form-group">
+		<div class="mb-3">
 			<p>Next Publish Date for Lists: {$availableLists->results->published_date}</p>
 		<label for="selectedList">Pick a New York Times list to build a Pika list for: </label>
 		<!-- Give the user a list of all available lists from NYT -->
-		<select name="selectedList" id="selectedList" class="form-control">
+		<select name="selectedList" id="selectedList" class="form-select">
 			{foreach from=$availableLists->results->lists item="listInfo"}
 				<option value="{$listInfo->list_name_encoded}" {if $selectedListName == $listInfo->list_name_encoded}selected="selected"{/if}>{$listInfo->display_name}</option>
 			{/foreach}

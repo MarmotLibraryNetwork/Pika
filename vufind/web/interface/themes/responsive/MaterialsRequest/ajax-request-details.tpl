@@ -252,8 +252,8 @@
 							{elseif $formField->fieldType == 'libraryCardNumber'}
 							{if $showUserInformation}
 								{if $barCodeColumn}
-									<div class="row form-group">
-										<label class="control-label col-md-3">{$formField->fieldLabel}: </label>
+									<div class="row mb-3">
+										<label class="col-form-label col-md-3">{$formField->fieldLabel}: </label>
 										<div class="request_detail_field_value col-md-9">
 											{$requestUser->$barCodeColumn}
 										</div>

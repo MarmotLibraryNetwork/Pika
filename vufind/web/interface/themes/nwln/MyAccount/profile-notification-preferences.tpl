@@ -1,5 +1,5 @@
 {strip}
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-4"><strong>{translate text='Receive notices by'}:</strong></div>
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
@@ -21,7 +21,7 @@
 	We will use the language translation for the label so that if the $showWorkPhoneInProfile is
 	turned on, it is more evident to Admins what is going on here "under the hood"
 	 *}
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-4"><label for="workPhone">{translate text='Work Phone Number'}:</label></div>
 		<div class="col-sm-8">{if !$offline && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control simplePhoneFormat">
 				<p class='alert alert-warning'><strong>(Format: xxx-xxx-xxxx) &nbsp; Be sure to include the dashes.</strong></p>

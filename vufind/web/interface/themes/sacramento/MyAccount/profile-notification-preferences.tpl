@@ -1,5 +1,5 @@
 {strip}
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-4"><strong>{translate text='Receive notices by'}:</strong></div>
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}

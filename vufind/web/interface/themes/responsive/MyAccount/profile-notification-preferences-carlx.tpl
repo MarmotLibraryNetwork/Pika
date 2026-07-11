@@ -1,7 +1,7 @@
 {strip}
 	{* CarlX Notification Options *}
 
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-4"><strong>{translate text='Email notices'}:</strong></div>
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
@@ -17,8 +17,8 @@
 	</div>
 
 
-	<div class="form-group">
-		<div class="col-sm-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="emailReceiptFlag" class="form-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
 		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->emailReceiptFlag==1}checked='checked'{/if} data-switch="">
@@ -28,11 +28,11 @@
 		</div>
 	</div>
 
-	<div class="form-group">
+	<div class="row mb-3">
 		<div class="col-sm-4"><label for="phoneType" class="">{translate text='Phone Carrier for SMS notices'}:</label></div>
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
-				<select name="phoneType" id="phoneType" class="form-control">
+				<select name="phoneType" id="phoneType" class="form-select">
 					{if count($phoneTypes) > 0}
 						{foreach from=$phoneTypes item=phoneTypeLabel key=phoneType}
 							<option value="{$phoneType}" {if $phoneType == $profile->phoneType}selected="selected"{/if}>{$phoneTypeLabel}</option>
@@ -49,8 +49,8 @@
 	</div>
 
 
-	<div class="form-group">
-		<div class="col-sm-4"><label for="availableHoldNotice" class="control-label">{translate text='SMS notices for available holds'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="availableHoldNotice" class="form-label">{translate text='SMS notices for available holds'}:</label></div>
 		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="availableHoldNotice" id="availableHoldNotice" {if $profile->availableHoldNotice==1}checked='checked'{/if} data-switch="">
@@ -60,8 +60,8 @@
 		</div>
 	</div>
 
-	<div class="form-group">
-		<div class="col-sm-4"><label for="comingDueNotice" class="control-label">{translate text='SMS notices for due date reminders'}:</label></div>
+	<div class="row mb-3">
+		<div class="col-sm-4"><label for="comingDueNotice" class="form-label">{translate text='SMS notices for due date reminders'}:</label></div>
 		<div class="col-sm-8">
 			{if !$offline}
 				<input type="checkbox" name="comingDueNotice" id="comingDueNotice" {if $profile->comingDueNotice==1}checked='checked'{/if} data-switch="">

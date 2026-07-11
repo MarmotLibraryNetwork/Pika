@@ -7,10 +7,10 @@
 			If you would like a call number and location included, please select an edition below.
 		</p>
 	</div>
-	<div class="form-group">
+	<div class="row mb-3">
 		<label for="related_record" class="col-md-3">{translate text="Edition"}: </label>
 		<div class="col-md-9">
-			<select name="related_record" id="related_record" class="form-control">
+			<select name="related_record" id="related_record" class="form-select">
 				<option selected="selected" value="">{translate text="Select an edition for more details"}</option>
 				{foreach from=$relatedRecords key=val item=details}
 					<option value="{$details.id}">{$details.format|escape}{if $details.edition} {$details.edition}{/if}{if $details.publisher} {$details.publisher}{/if}{if $details.publicationDate} {$details.publicationDate}{/if}</option>
@@ -18,7 +18,7 @@
 			</select>
 		</div>
 	</div>
-	<div class="form-group">
+	<div class="row mb-3">
 		<label for="sms_phone_number" class="col-md-3">{translate text="Number"}: </label>
 		<div class="col-md-9">
       <input type="text" name="to" id="sms_phone_number" {*value="{translate text="sms_phone_number"}"*}
@@ -30,10 +30,10 @@
 
     </div>
   </div>
-	<div class="form-group">
+	<div class="row mb-3">
 		<label for="provider" class="col-md-3">{translate text="Provider"}: </label>
 		<div class="col-md-9">
-      <select name="provider" id="provider" class="form-control">
+      <select name="provider" id="provider" class="form-select">
         <option selected="selected" value="">{translate text="Select your carrier"}</option>
         {foreach from=$carriers key=val item=details}
         <option value="{$val}">{$details.name|escape}</option>

@@ -29,7 +29,7 @@
 		{/if}
 
 	  {if $showLists}
-		  <div class="form-group">
+		  <div class="row mb-3">
 			  <label for="addToList-list" class="col-md-3">{translate text='Choose a List'}</label>
 			  <div class="col-md-9">
 				  <select name="list" id="addToList-list">
@@ -48,7 +48,7 @@
 	  {/if}
 
 	  {if $showLists}
-			<div class="form-group">
+			<div class="row mb-3">
 				<label for="addToList-notes" class="col-md-3">{translate text='Add a Note'}</label>
 				<div class="col-md-9">
 					<textarea name="notes" rows="3" cols="50" class="form-control" id="addToList-notes"></textarea>

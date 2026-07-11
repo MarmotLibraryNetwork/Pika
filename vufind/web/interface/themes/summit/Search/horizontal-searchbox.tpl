@@ -69,14 +69,14 @@
 					{if $archiveOnlyInterface}
 						<input type="hidden" name="basicType" id="basicSearchTypes" value="Keyword" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results.">
 					{else}
-						<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora'}style="display:none"{/if}>
+						<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-select catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora'}style="display:none"{/if}>
 							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
 
 						{*TODO: How to chose the Genealogy Search type initially *}
-						<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+						<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-select genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
@@ -86,7 +86,7 @@
 
 					{if !$hiddenSearchSource}
 						<div class="col-xl-3 col-lg-3 col-md-5 col-sm-7">
-							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
+							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-select">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource} selected="selected"{/if}

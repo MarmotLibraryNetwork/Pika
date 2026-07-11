@@ -22,19 +22,19 @@
 						<img src="{$recordDriver->getBookcoverUrl('medium')}" class="img-thumbnail img-fluid" alt="Thumbnail for {$recordDriver->getTitle()|escape:"html"}">
 					</div>
 						<div class="col-md-10">
-						<div class="form-group">
+						<div class="row mb-3">
 							<label for="listName" class="col-sm-2">{translate text='List'}: </label>
 							<div class="col-sm-10">{$list->title|escape:"html"}</div>
 						</div>
 
-						<div class="form-group">
+						<div class="row mb-3">
 							<label for="listNotes" class="col-sm-2">{translate text='Notes'}: </label>
 							<div class="col-sm-10">
 								<textarea id="listNotes" name="notes" rows="3" cols="50" class="form-control">{$listEntry->notes|escape:"html"}</textarea>
 							</div>
 						</div>
 
-						<div class="form-group">
+						<div class="row mb-3">
 							<div class="offset-sm-2 col-sm-10">
 								<input type="submit" name="submit" value="{translate text='Save'}" class="btn btn-primary">
 							</div>

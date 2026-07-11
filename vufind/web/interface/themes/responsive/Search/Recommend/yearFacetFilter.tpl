@@ -1,11 +1,11 @@
 <form id="{$title}Filter" action="{$cluster.list.url|escape}" class="form-inline" method="post">
 	<div class="facet-form">
-		<div class="form-group">
-			<label for="{$title}yearfrom" class="yearboxlabel visually-hidden control-label">From</label>
+		<div class="mb-3">
+			<label for="{$title}yearfrom" class="yearboxlabel visually-hidden form-label">From</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="from" name="{$title}yearfrom" id="{$title}yearfrom" value="">
 		</div>
-		<div class="form-group">
-			<label for="{$title}yearto" class="yearboxlabel visually-hidden control-label">To</label>
+		<div class="mb-3">
+			<label for="{$title}yearto" class="yearboxlabel visually-hidden form-label">To</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}yearto" id="{$title}yearto" value="">
 		</div>
 

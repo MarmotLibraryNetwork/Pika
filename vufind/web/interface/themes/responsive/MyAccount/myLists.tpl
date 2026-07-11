@@ -16,9 +16,9 @@
 	</div>
 	<hr>
 	<div class="row">
-		<div class="form-group col-md-4" id="sortOptions">
-			<label for="sort" class="control-label">Sort Lists By&nbsp;</label>
-			<select class="sortMethod form-control" id="sort" name="sort">
+		<div class="mb-3 col-md-4" id="sortOptions">
+			<label for="sort" class="form-label">Sort Lists By&nbsp;</label>
+			<select class="sortMethod form-select" id="sort" name="sort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 					{/foreach}

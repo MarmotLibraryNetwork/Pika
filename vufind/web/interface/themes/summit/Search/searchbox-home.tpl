@@ -106,22 +106,22 @@
 			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
 				<div class="row text-center">
 					<div class="col-md-10 col-lg-10 offset-md-1 offset-lg-1">
-						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
+						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-select catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
 							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of genealogy search" name="genealogyType" class="searchTypeHome form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+						<select aria-label="Select type of genealogy search" name="genealogyType" class="searchTypeHome form-select genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
+						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-select islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
 							{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of EBSCO search" name="ebscoType" class="searchTypeHome form-control ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
+						<select aria-label="Select type of EBSCO search" name="ebscoType" class="searchTypeHome form-select ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
 							{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $ebscoSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
@@ -137,7 +137,7 @@
 							<input type="hidden" name="searchSource" id="searchSource" value="{$singleSourceKey}" data-catalog_type="{$singleSource.catalogType}">
 						{/foreach}
 					{else}
-					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-control">
+					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-select">
 						{foreach from=$searchSources item=searchOption key=searchKey}
 							<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 								{if $searchKey == $searchSource} selected="selected"{/if}

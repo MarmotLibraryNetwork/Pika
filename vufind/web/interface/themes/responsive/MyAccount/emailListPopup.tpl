@@ -4,28 +4,28 @@
 
 
 	<form id="emailListForm" class="form form-horizontal">
-		<div class="form-group">
+		<div class="mb-3">
 			<input type="hidden" name="listId" value="{$listId|escape}">
-			<label for="to" class="control-label col-sm-2">{translate text='To'} <span class="required-input">*</span></label>
+			<label for="to" class="col-form-label col-sm-2">{translate text='To'} <span class="required-input">*</span></label>
 			<div class="col-sm-10">
 				<input type="text" name="to" id="to" size="40" class="required email form-control" aria-required="true">
 			</div>
 		</div>
-		<div class="form-group">
-			<label for="from" class="control-label col-sm-2">{translate text='From'} <span class="required-input">*</span></label>
+		<div class="row mb-3">
+			<label for="from" class="col-form-label col-sm-2">{translate text='From'} <span class="required-input">*</span></label>
 			<div class="col-sm-10">
 				<input type="text" name="from" id="from" size="40" class="required email form-control" aria-required="true"{if $from} value="{$from}"{/if}>
 			</div>
 		</div>
-		<div class="form-group">
-			<label for="message" class="control-label col-sm-2">{translate text='Message'}</label>
+		<div class="row mb-3">
+			<label for="message" class="col-form-label col-sm-2">{translate text='Message'}</label>
 			<div class="col-sm-10">
 				<textarea name="message" id="message" rows="3" cols="40" class="form-control"></textarea>
 			</div>
 		</div>
       {* Show Recaptcha spam control if set. *}
       {if $captcha}
-				<div class="form-group">
+				<div class="row mb-3">
 					<div class="col-sm-10 offset-sm-2">
               {$captcha}
 					</div>

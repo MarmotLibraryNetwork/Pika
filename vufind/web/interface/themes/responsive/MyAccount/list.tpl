@@ -29,18 +29,18 @@
 				{if $favList->description}<div class="listDescription card card-body" id="listDescription">{$favList->description|escape}</div>{/if}
 				{if $allowEdit}
 					<div id="listEditControls" style="display:none" class="collapse">
-						<div class="form-group">
-							<label for="listTitleEdit" class="control-label">Title: </label>
+						<div class="mb-3">
+							<label for="listTitleEdit" class="form-label">Title: </label>
 							<input type="text" id="listTitleEdit" name="newTitle" value="{$favList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 						</div>
-						<div class="form-group">
-							<label for="listDescriptionEdit" class="control-label">Description: </label>&nbsp;
+						<div class="mb-3">
+							<label for="listDescriptionEdit" class="form-label">Description: </label>&nbsp;
 							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$favList->description|escape:"html"}</textarea>
 						</div>
-						<div class="form-group">
+						<div class="mb-3">
 
-							<label for="defaultSort" class="control-label">Default Sort: </label>
-							<select id="defaultSort" name="defaultSort" class="form-control">
+							<label for="defaultSort" class="form-label">Default Sort: </label>
+							<select id="defaultSort" name="defaultSort" class="form-select">
 								{foreach from=$defaultSortList item=sortValue key=sortLabel}
 									<option value="{$sortLabel}"{if $sortLabel == $defaultSort} selected="selected"{/if}>
 										{translate text=$sortValue}
@@ -192,15 +192,15 @@
 	{if $favList->deleted == 0}
 		{if $resourceList}
 			<form class="navbar form-inline">
-				<label for="pagesize" class="control-label">Records Per Page</label>&nbsp;
-				<select id="pagesize" class="pagesize form-control{* input-sm*}">
+				<label for="pagesize" class="form-label">Records Per Page</label>&nbsp;
+				<select id="pagesize" class="pagesize form-select{* input-sm*}">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
 					<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
 					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 				</select>
-				<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+				<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
 

@@ -167,6 +167,24 @@ const passes = {
 		for (const [re, to] of SIMPLE_RENAMES) c = c.replace(re, to);
 		return c;
 	},
+	forms: (c, warn) => {
+		// form-group wrappers that directly contain grid columns must become rows
+		// (BS3 floated col-* anywhere; BS5 columns need a flex .row parent)
+		c = c.replace(/class="form-group([^"]*)">(\s*(?:\{[^}]*\}\s*)*<(?:div|label|span)[^>]*class="[^"]*\bcol-)/g,
+			'class="row mb-3$1">$2');
+		// remaining form-groups just carry the margin
+		c = c.replace(/\bform-group\b/g, 'mb-3');
+		// labels: col-form-label when the label itself sits in/next to grid columns
+		c = c.replace(/class="([^"]*\bcol-[^"]*)\bcontrol-label\b/g, 'class="$1col-form-label');
+		c = c.replace(/class="\bcontrol-label\b([^"]*\bcol-[^"]*)"/g, 'class="col-form-label$1"');
+		c = c.replace(/\bcontrol-label\b/g, 'form-label');
+		// selects use form-select in BS5 (arrow + padding)
+		c = c.replace(/(<select\b[^>]*?class="[^"]*?)\bform-control\b/g, '$1form-select');
+		// input help text
+		c = c.replace(/\bhelp-block\b/g, 'form-text');
+		if (/form-horizontal/.test(c)) warn('form-horizontal present (inert in BS5) — verify layout');
+		return c;
+	},
 	icons: (c, warn) => {
 		c = c.replace(/\bglyphicon-([\w-]+)\b/g, (m, name) => {
 			if (!ICON_MAP[name]) { warn(`unmapped glyphicon: ${m}`); return m; }

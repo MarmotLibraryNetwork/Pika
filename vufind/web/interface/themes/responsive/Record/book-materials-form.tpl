@@ -8,9 +8,9 @@
 		<input type="hidden" name="id" value="{$id|replace:'ils:':''}">
 	<fieldset>
 		<div class="row">
-			{*<div class="form-group col-md-5">*}
-			<div class="form-group col-md-6 offset-md-3">
-				<label for="startDate" class="control-label">Start Date</label>
+			{*<div class="mb-3 col-md-5">*}
+			<div class="mb-3 col-md-6 offset-md-3">
+				<label for="startDate" class="form-label">Start Date</label>
 				<div class="input-group">
 					<input id="startDate" name="startDate" type="text" class="form-control required" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.startDate} value="{$smarty.request.startDate}" {/if}
@@ -20,8 +20,8 @@
 					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-md-5 ui-front">
-				<label for="startTime" class="control-label">Start Time</label>
+			{*<div class="mb-3 col-md-5 ui-front">
+				<label for="startTime" class="form-label">Start Time</label>
 				<input id="startTime" name="startTime" type="text" class="form-control bookingTime required"  placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.startTime} value="{$smarty.request.startTime}" {/if}
 								>
@@ -30,10 +30,10 @@
 		</div>
 		<hr>
 		<div class="row">
-			{*<div class="form-group col-md-5">*}
-			<div class="form-group col-md-6 offset-md-3">
+			{*<div class="mb-3 col-md-5">*}
+			<div class="mb-3 col-md-6 offset-md-3">
 
-			<label for="endDate" class="control-label" >End Date</label>
+			<label for="endDate" class="form-label" >End Date</label>
 				<div class="input-group input-append date">
 					<input id="endDate" name="endDate" type="text" class="form-control" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.endDate} value="{$smarty.request.endDate}" {/if}
@@ -43,8 +43,8 @@
 					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-md-5 ui-front">
-				<label for="endTime" class="control-label">End Time</label>
+			{*<div class="mb-3 col-md-5 ui-front">
+				<label for="endTime" class="form-label">End Time</label>
 				<input id="endTime" name="endTime" type="text" class="form-control bookingTime required" placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.endTime} value="{$smarty.request.endTime}" {/if}
 								>
@@ -88,10 +88,10 @@
 					Pika.Record.submitBookMaterialForm();
 				},
 				highlight: function(e){
-					$(e).closest('.form-group').addClass('has-error')
+					$(e).closest('.mb-3').addClass('has-error')
 				},
 				unhighlight: function(e){
-					$(e).closest('.form-group').removeClass('has-error')
+					$(e).closest('.mb-3').removeClass('has-error')
 				}
  			});
 

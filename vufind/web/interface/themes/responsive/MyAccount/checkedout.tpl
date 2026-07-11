@@ -21,8 +21,8 @@
 
 			{if $transList}
 {*				<form action="/MyAccount/CheckedOut" method="get">*}
-{*				<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>*}
-{*				<select name="accountSort" id="accountSort" class="form-control">*}
+{*				<label for="accountSort" class="form-label">{translate text='Sort by'}:&nbsp;</label>*}
+{*				<select name="accountSort" id="accountSort" class="form-select">*}
 {*					{foreach from=$sortOptions item=sortDesc key=sortVal}*}
 {*						<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>*}
 {*					{/foreach}*}
@@ -31,13 +31,13 @@
 {*				</form>*}
 				<form id="renewForm" action="/MyAccount/RenewMultiple">
 					<div id="pager" class="navbar form-inline">
-						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control">
+						<label for="accountSort" class="form-label">{translate text='Sort by'}:&nbsp;</label>
+						<select name="accountSort" id="accountSort" class="form-select">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
 								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected" data-selected=""{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
-						<label for="hideCovers" class="control-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
 					<div class="btn-group">

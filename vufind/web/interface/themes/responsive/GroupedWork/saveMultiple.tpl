@@ -25,7 +25,7 @@
 		{/if}
 
 	  {if $showLists}
-		  <div class="form-group">
+		  <div class="row mb-3">
 			  <label for="addToList-list" class="col-md-3">{translate text='Choose a List'}</label>
 			  <div class="col-md-9">
 				  <select name="list" id="addToList-list">
@@ -44,7 +44,7 @@
 	  {/if}
 
 	  {if $showLists}
-			<div class="form-group">
+			<div class="row mb-3">
 				<div class="col-md-3"><strong>Titles To Add:</strong></div>
 				<div class="col-md-9">
 						<ul>

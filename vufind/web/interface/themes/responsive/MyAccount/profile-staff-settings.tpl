@@ -54,8 +54,8 @@
 			<div class="row">
 				<div class="col-12 lead">Staff Auto Logout Bypass</div>
 			</div>
-			<div class="form-group row">
-				<div class="col-sm-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout'}:</label></div>
+			<div class="row mb-3 row">
+				<div class="col-sm-4"><label for="bypassAutoLogout" class="form-label">{translate text='Bypass Automatic Logout'}:</label></div>
 				<div class="col-sm-8">
 					{if !$offline}
 						<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
@@ -70,9 +70,9 @@
 			<div class="row">
 				<div class="lead col-12">Materials Request Management</div>
 			</div>
-			<div class="form-group row">
+			<div class="row mb-3 row">
 				<div class="col-sm-4">
-					<label for="materialsRequestReplyToAddress" class="control-label">Reply-To Email Address:</label>
+					<label for="materialsRequestReplyToAddress" class="form-label">Reply-To Email Address:</label>
 				</div>
 				<div class="col-sm-8">
 					{if !$offline}
@@ -82,9 +82,9 @@
 					{/if}
 				</div>
 			</div>
-			<div class="form-group row">
+			<div class="row mb-3 row">
 				<div class="col-sm-4">
-					<label for="materialsRequestEmailSignature" class="control-label">Email Signature:</label>
+					<label for="materialsRequestEmailSignature" class="form-label">Email Signature:</label>
 				</div>
 				<div class="col-sm-8">
 					{if !$offline}
@@ -98,7 +98,7 @@
 
 
 		{if !$offline}
-			<div class="form-group">
+			<div class="row mb-3">
 				<div class="col-sm-8 offset-sm-4">
 					<input type="submit" value="Update My Staff Settings" name="updateStaffSettings" class="btn btn-sm btn-primary">
 				</div>

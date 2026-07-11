@@ -10,13 +10,13 @@
 					<fieldset class="fieldset-collapsible">
 {*					<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">*}
 						<legend>Statuses to Show:</legend>
-						<div class="form-group checkbox">
+						<div class="mb-3 checkbox">
 							<label for="selectAllStatusFilter">
 								<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onclick="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
 								<strong>Select All</strong>
 							</label>
 						</div>
-						<div class="form-group"><strong>Default Status</strong>
+						<div class="mb-3"><strong>Default Status</strong>
 								{foreach from=$defaultStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -25,7 +25,7 @@
 									</div>
 								{/foreach}
 						</div>
-						<div class="form-group"><strong>Open Statuses</strong>
+						<div class="mb-3"><strong>Open Statuses</strong>
 								{foreach from=$openStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -34,7 +34,7 @@
 									</div>
 								{/foreach}
 						</div>
-						<div class="form-group"><strong>Closed Statuses</strong>
+						<div class="mb-3"><strong>Closed Statuses</strong>
 								{foreach from=$closedStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -44,10 +44,10 @@
 								{/foreach}
 						</div>
 					</fieldset>
-					<fieldset class="form-group fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
+					<fieldset class="mb-3 fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
 						<legend>Date:</legend>
-						<div class="form-group">
-							<label for="startDate" class="control-label col-md-2">Start Date</label>
+						<div class="row mb-3">
+							<label for="startDate" class="col-form-label col-md-2">Start Date</label>
 							<div class="input-group input-append date controls col-md-3" id="startDatePicker">
 								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
@@ -57,8 +57,8 @@
 								</span>
 							</div>
 						</div>
-						<div class="form-group">
-							<label for="endDate" class="control-label col-md-2">End Date</label>
+						<div class="row mb-3">
+							<label for="endDate" class="col-form-label col-md-2">End Date</label>
 							<div class="input-group input-append date controls col-md-3" id="endDatePicker">
 								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
