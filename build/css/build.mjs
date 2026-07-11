@@ -31,7 +31,16 @@ const loadPaths = [path.join(repoRoot, 'node_modules')];
 
 const args = process.argv.slice(2);
 const watchMode = args.includes('--watch');
-const themeArg = args.find(a => a.startsWith('--theme='))?.split('=')[1];
+let themeArg = args.find(a => a.startsWith('--theme='))?.split('=')[1];
+// --file=<path to any .scss in a theme's css dir> compiles that file's theme
+// (lets IDE file watchers pass $FilePath$; a change in responsive/css affects
+// every theme, but for save-time feedback compiling the edited theme suffices)
+const fileArg = args.find(a => a.startsWith('--file='))?.split('=')[1];
+if (fileArg && !themeArg) {
+	const m = fileArg.replace(/\\/g, '/').match(/themes\/([^/]+)\/css\//);
+	if (!m) { console.error(`--file path is not inside a theme css dir: ${fileArg}`); process.exit(1); }
+	themeArg = m[1];
+}
 
 const prefixer = postcss([autoprefixer]);
 const minifier = postcss([autoprefixer, cssnano({ preset: 'default' })]);
