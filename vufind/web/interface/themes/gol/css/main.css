@@ -22310,6 +22310,37 @@ hr.menu {
   padding: 0 8px;
 }
 
+#collection-displayMode-toggle div.btn-group span.thumbnail-icon {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -0.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#collection-displayMode-toggle div.btn-group span.thumbnail-icon::before {
+  content: "\f3f8";
+}
+#collection-displayMode-toggle div.btn-group span.list-icon {
+  display: inline-block;
+  font-family: bootstrap-icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -0.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#collection-displayMode-toggle div.btn-group span.list-icon::before {
+  content: "\f478";
+}
+
 .selected-browse-label-search {
   font-size: 20px;
   color: #50A647;
