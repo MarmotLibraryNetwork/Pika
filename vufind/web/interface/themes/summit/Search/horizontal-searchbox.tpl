@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
+	<form method="get" action="/Union/Search" id="searchForm" class="row" onsubmit="Pika.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
 
