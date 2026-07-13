@@ -23533,6 +23533,7 @@ img.x-twit {
   display: inline;
 }
 .share-tools-list li {
+  display: inline-block;
   padding-left: 2px;
   padding-right: 3px;
 }
