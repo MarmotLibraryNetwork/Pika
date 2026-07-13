@@ -9,7 +9,7 @@
 		{$instructions}
 	</div>
 {/if}
-{* Display Standard buttons at top of table as card card-body as below *}
+{* Display Standard buttons at top of table as well as below *}
 {if $canAddNew}
 	<form action="" method="get" id="addNewFormTop">
 		<div>

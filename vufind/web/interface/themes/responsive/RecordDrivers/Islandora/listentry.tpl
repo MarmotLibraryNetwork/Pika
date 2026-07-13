@@ -2,7 +2,7 @@
 	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
 		{* the data-order attribute is used for user-defined ordering in user lists  *}
-		<a id="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as card card-body *}
+		<a id="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
 
 		{* Title row *}
 		<div class="row result-title-row">

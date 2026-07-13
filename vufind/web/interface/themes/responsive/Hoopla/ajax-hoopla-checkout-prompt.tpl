@@ -1,6 +1,6 @@
 {strip}
 	<div>
-		{if count($hooplaUsers) > 1} {* Linked Users contains the active user as card card-body*}
+		{if count($hooplaUsers) > 1} {* Linked Users contains the active user as well*}
 			<div id='pickupLocationOptions' class="mb-3">
 				<label class="form-label" for="patronId">Please choose the account to check out from : </label>
 				<div class="controls">

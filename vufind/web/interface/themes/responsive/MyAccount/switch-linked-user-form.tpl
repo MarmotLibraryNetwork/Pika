@@ -1,7 +1,7 @@
 {strip}
 	{* Supply $label & $actionPath for this template *}
 
-	{if !empty($linkedUsers) && count($linkedUsers) > 1} {* Linked Users contains the active user as card card-body *}
+	{if !empty($linkedUsers) && count($linkedUsers) > 1} {* Linked Users contains the active user as well *}
 		<form action="{$actionPath}" method="get" class="form form-inline" id="switchLinkedUsers">
 			<div id="linkedUserOptions" class="mb-3">
 				<label class="form-label" for="patronId">{translate text="$label"}: </label>
