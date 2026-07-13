@@ -12,8 +12,10 @@
 <div class="col-sm-6">
 
 	{if $term_description}
-		<div class="taxonomy-description card card-body">
+		<div class="taxonomy-description card">
+			<div class="card-body">
 			{$term_description}
+			</div>
 		</div>
 	{/if}
 	{if $address}

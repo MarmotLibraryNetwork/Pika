@@ -1,6 +1,7 @@
 {strip}
     {if $showSearchTools || ($loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles)))}
-			<div class="searchtools card card-body small d-block">
+			<div class="searchtools card">
+			<div class="card-body small">
 				<strong>{translate text='Search Tools'}:</strong>
           {if $showSearchTools}
 						&nbsp;&nbsp;<a class="text-nowrap" href="{$rssLink|escape}"><span class="bi bi-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
@@ -20,6 +21,7 @@
 	          {/if}
 						&nbsp;&nbsp;<a class="text-nowrap" href="#" onclick="return Pika.Browse.addToHomePage('{$searchId}', '{$addToHomePageSearchSource|default:"catalog"}')"><span class="bi bi-house" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
           {/if}
+			</div>
 			</div>
     {/if}
 {/strip}

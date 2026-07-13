@@ -58,7 +58,8 @@
 	</div>
 
 </form>
-<div class="card card-body" style="margin:10px 0;">
+<div class="card" style="margin:10px 0;">
+<div class="card-body">
 	<p>This Offline Circulation functionality is intended to be used to check out titles to patrons while connectivity to the ILS is not available or not ready for usage.</p>
 	<p>To use this functionality, enter the same {$ILSname} username {*and password *}that you use while logging in to the {$ILSname} Client. You will only need to do this once per session.</p>
 	<p>When a patron arrives at the circulation desk, first enter their barcode either by typing it in or scanning it. If you do not have their barcode or the patron does not know it, enter their name and the transaction can be manually processed once the system is back online.</p>
@@ -66,6 +67,7 @@
 	<p>After submitting the form, check the page to ensure that no errors occurred saving the checkout transaction. If errors occurred, they are displayed at the top of the screen in red.</p>
 	<p>When the ILS is back online, all transactions will be processed and library staff will be given a list of exceptions that need to be handled manually.</p>
 	<p class="alert alert-warning">Note: This form does not check that the barcodes that were entered are correct or properly formatted. Those errors will only be detected once the ILS is online and the transactions are processed.</p>
+</div>
 </div>
 
 {literal}

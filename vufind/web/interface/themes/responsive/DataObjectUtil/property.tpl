@@ -269,5 +269,5 @@
 {/if}
 
 {if $property.showDescription}
-	<div class="card card-body card card-body-sm">{$property.description}</div>
+	<div class="card"><div class="card-body p-2">{$property.description}</div></div>
 {/if}

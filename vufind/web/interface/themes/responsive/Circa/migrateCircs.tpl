@@ -16,7 +16,8 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-12 card card-body">
+			<div class="col-12 card">
+				<div class="card-body">
 				<p>This will load circs into the Pika Offline Circ tables to be processed as check outs.</p>
 			<p>Circs can be loaded from either an INI formatted text
 				or from a CSV formatted text.
@@ -34,6 +35,7 @@
 				</ul>
 			</div>
 
+		</div>
 		</div>
 		</div>
 		<div class="row">

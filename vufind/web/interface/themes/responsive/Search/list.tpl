@@ -2,13 +2,15 @@
 	<h1 role="heading" aria-level="1" class="h2">Search Results</h1>
 
 		{if $searchType == 'advanced'}
-			<div id="advanced-search" class="card card-body card card-body-sm">
+			<div id="advanced-search" class="card">
+			<div class="card-body p-2">
 {*				<h5>Advanced Search Query : </h5>*}
 				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
 				<br>
 				<div class="form-text">
 				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 				</div>
+			</div>
 			</div>
 		{/if}
 

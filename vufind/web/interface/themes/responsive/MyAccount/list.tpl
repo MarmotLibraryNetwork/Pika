@@ -26,7 +26,7 @@
 			{if $favList->deleted == 1}
 				<p class="alert alert-danger">Sorry, this list has been deleted.</p>
 			{else}
-				{if $favList->description}<div class="listDescription card card-body" id="listDescription">{$favList->description|escape}</div>{/if}
+				{if $favList->description}<div class="listDescription card"><div class="card-body" id="listDescription">{$favList->description|escape}</div></div>{/if}
 				{if $allowEdit}
 					<div id="listEditControls" style="display:none" class="collapse">
 						<div class="mb-3">

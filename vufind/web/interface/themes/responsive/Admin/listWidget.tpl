@@ -1,7 +1,8 @@
 {strip}
 <div id="listWidgetHelp">
 	<h2 class="h3">List Widget Integration Notes</h2>
-	<div class="card card-body">
+	<div class="card">
+		<div class="card-body">
 		<p>To integrate this widget into another site, insert an iFrame into your site with a source of :</p>
 		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
 		<p>
@@ -20,6 +21,7 @@
 		<blockquote class="alert-warning"> Note: Please avoid using percentages for the iframe width &amp; height as these values are not respected on iPads and other iOS devices & browsers.</blockquote>
 		<blockquote class="alert-warning"> Note: Text Only List Widgets use the iframe's scrollbar.</blockquote>
 		<blockquote class="alert-warning"> Recommend: Set iframe attribute frameborder="0" and put border any desired styling in your Style Sheet. The attribute frameborder is now deprecated.</blockquote>
+		</div>
 	</div>
 </div>
 
@@ -30,7 +32,8 @@
 </iframe>
 <hr>
 <h2 class="h3">List Widget with Resizing Integration Notes</h2>
-<div class="card card-body">
+<div class="card">
+<div class="card-body">
 	<p>
 		To have a list widget which adjusts its height based on the html content within the list widget use the source url :
 	</p>
@@ -97,6 +100,7 @@
 		(<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#accessibility_concerns">Developer documentation with more information.</a>)
 	</blockquote>
 
+</div>
 </div>
 <h3 class="h4">Live Preview</h3>
 <iframe id="listWidget{$object->id}" title="{$object->name}" onload="setWidgetSizing(this, 30)" src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&resizeIframe=on&reload=true" width="{$width}" {*height="{$height}"*} scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}">

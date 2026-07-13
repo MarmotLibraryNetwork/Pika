@@ -11,7 +11,8 @@
 		</div>
 	{/if}
 	{if $importResults.errors}
-		<div class="card card-body">
+		<div class="card">
+		<div class="card-body">
 			<p class="alert alert-warning">The following errors occurred. For any titles that failed to import, you can search the catalog for these titles to re-add to your lists.</p>
 			<ul class="list-group">
 				{foreach from=$importResults.errors item=error}
@@ -19,8 +20,10 @@
 				{/foreach}
 			</ul>
 		</div>
+		</div>
 {* TODO: use with newer bootstrap
-		<div class="card card-body">
+		<div class="card">
+		<div class="card-body">
 			<p>The following errors occurred. For titles that failed to import, you can search the catalog for these titles to re-add them to your lists.</p>
 			<p>
 			<ul class="list-group">
@@ -29,6 +32,7 @@
 				{/foreach}
 			</ul>
 			</p>
+		</div>
 		</div>
 *}
 	{/if}

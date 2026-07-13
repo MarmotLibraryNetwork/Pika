@@ -11,7 +11,8 @@
 		<a class="btn btn-sm btn-outline-secondary" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
 	<h1 role="heading" aria-level="1" class="h2">{$mapName}</h1>
-	<div class="card card-body">
+	<div class="card">
+		<div class="card-body">
 		<p>Translation map values can be loaded from either an INI formatted record
 			or from a CSV formatted record.
 		</p>
@@ -30,6 +31,7 @@
 			</ul>
 		</div>
 
+		</div>
 	</div>
 	<form name="importTranslationMaps" action="/Admin/TranslationMaps" method="post" id="importTranslationMaps">
 		<div>
