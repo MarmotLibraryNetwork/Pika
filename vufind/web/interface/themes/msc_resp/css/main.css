@@ -21560,6 +21560,9 @@ table.dataTable.display tbody tr.odd > .sorting_1 a, table.dataTable.display tbo
   border-bottom: 0 solid #b7b7b7;
   margin-bottom: 0;
 }
+#header-container .logoutOptions {
+  display: contents;
+}
 
 #header-logo {
   padding: 10px 10px 0 0;
