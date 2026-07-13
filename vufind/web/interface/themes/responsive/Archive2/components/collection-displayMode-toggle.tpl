@@ -19,47 +19,6 @@
 			margin-bottom: 1em;
 			border-bottom: 1px solid #ddd;
 		}
-
-		div.btn-group span.thumbnail-icon {
-			position: relative;
-			top: 1px;
-			display: inline-block;
-			font-family: 'Glyphicons Halflings';
-			font-style: normal;
-			font-weight: normal;
-			line-height: 1;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-		}
-
-		div.btn-group span.thumbnail-icon:empty {
-			width: 1em;
-		}
-
-		div.btn-group span.thumbnail-icon:before {
-			content: "\e011";
-		}
-		div.btn-group span.list-icon {
-			position: relative;
-			top: 1px;
-			display: inline-block;
-			font-family: 'Glyphicons Halflings';
-			font-style: normal;
-			font-weight: normal;
-			line-height: 1;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-		}
-
-		div.btn-group span.list-icon:empty {
-			width: 1em;
-		}
-
-		div.btn-group span.list-icon:before {
-			content: "\e012";
-		}
-
-
 	{/literal}
 </style>
 {strip}

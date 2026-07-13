@@ -292,6 +292,17 @@
   }
 }
 
+// Archive2 Collection page Covers/List toggle (same icon pair as #selected-browse-label above)
+#collection-displayMode-toggle {
+  div.btn-group span.thumbnail-icon {
+    @include bi-icon("grid-3x3-gap-fill"); // was glyphicon-th
+  }
+
+  div.btn-group span.list-icon {
+    @include bi-icon("list-ul"); // was glyphicon-th-list
+  }
+}
+
 .selected-browse-label-search {
   font-size: 20px;
   color: $selected-browse-label-search-color;
