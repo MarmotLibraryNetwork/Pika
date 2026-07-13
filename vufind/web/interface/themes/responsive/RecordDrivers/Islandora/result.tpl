@@ -1,7 +1,7 @@
 {strip}
 <div id="record{if $jquerySafeId}{$jquerySafeId}{*{else}{$summId|escape}*}{/if}" class="resultsList">
 	{if isset($summExplain)}
-		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
+		<div class="d-none" id="scoreExplanationValue{$jquerySafeId|escape}">
 			<samp style="overflow-wrap: break-word">{$summExplain}</samp>
 		</div>
 	{/if}

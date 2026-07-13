@@ -2,7 +2,7 @@
 <div id="record{$summId|escape}" class="{*result *}resultsList{* TODO: what's the difference? *}">
 
 	{if isset($summExplain)}
-		<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+		<div class="d-none" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
 	{/if}
 
 	{* Title Row *}

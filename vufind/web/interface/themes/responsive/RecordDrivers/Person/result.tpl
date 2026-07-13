@@ -1,7 +1,7 @@
 {strip}
 <div id="record{$summId|escape}" class="resultsList">
     {if isset($summExplain)}
-			<div class="hidden" id="scoreExplanationValue{$summId|escape}">
+			<div class="d-none" id="scoreExplanationValue{$summId|escape}">
 				<samp  style="overflow-wrap: break-word">{$summExplain}</samp>
 			</div>
     {/if}
