@@ -61,7 +61,7 @@
 						</div>
 				  </div>
 					<div class="row">
-						<div class="col-md-12{*{if $relatedManifestation.numRelatedRecords != 1}*} hidden{*{/if}*}" id="relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}">
+						<div class="col-md-12 d-none" id="relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}">
 							{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation.relatedRecords relatedManifestation=$relatedManifestation}
 						</div>
 					</div>
