@@ -12,7 +12,7 @@
 		</div>
 
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-			<div class="d-sm-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0">
+			<div class="d-sm-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0 mx-3">
 				<a id="headerMyAccountLink" href="/MyAccount/Home">
 					<div class="header-button header-primary">
 						{translate text="Your Account"}
@@ -20,7 +20,7 @@
 				</a>
 			</div>
 
-			<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2">
+			<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2 mx-3">
 				<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as card card-body. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
