@@ -39,7 +39,7 @@
 						*}
 
 						{if $result.description}
-							<div class="row card card-body-small">
+							<div class="row">
 								<div class="col-12 result-value">{$result.description|truncate_html:450:"..."|strip_tags|htmlentities}</div>
 							</div>
 						{/if}

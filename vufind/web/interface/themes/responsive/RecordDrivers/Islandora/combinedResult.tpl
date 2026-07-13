@@ -73,7 +73,7 @@
 		{/if}
 	*}
 
-		<div class="row card card-body-small">
+		<div class="row">
 			<div class="col-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>
 		</div>
 

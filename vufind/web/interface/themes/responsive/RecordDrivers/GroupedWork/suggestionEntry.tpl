@@ -42,7 +42,7 @@ Only used by un-used method SearchObject_Solr->getSuggestionListHTML() *}
 				</div>
 			{/if}
 
-			<div class="row card card-body-small">
+			<div class="row">
 				<div class="col-lg-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|truncate_html:450:"..."}</div>
 			</div>
 
