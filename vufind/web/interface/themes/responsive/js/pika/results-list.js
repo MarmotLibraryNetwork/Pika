@@ -72,15 +72,7 @@ Pika.ResultsList = (function(){
 		//
 		toggleRelatedManifestations: function(manifestationId){
 			$('#relatedRecordPopup_' + manifestationId).toggleClass('d-none');
-			var manifestationToggle = $('#manifestation-toggle-' + manifestationId);
-			manifestationToggle.toggleClass('collapsed');
-			if (manifestationToggle.hasClass('collapsed')){
-				manifestationToggle.html('+');
-			}else{
-				manifestationToggle.html('-');
-			}
 			return false;
-
 		}
 
 	};
