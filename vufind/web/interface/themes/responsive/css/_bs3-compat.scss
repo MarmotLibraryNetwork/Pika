@@ -159,22 +159,20 @@
   color: $accessible-gray-light;
 }
 .radio, .checkbox {
-  position: relative;
   display: block;
   margin-top: 10px;
   margin-bottom: 10px;
+  padding-left: 20px;
 
   label {
-    min-height: 20px;
-    padding-left: 20px;
+    display: inline;
     margin-bottom: 0;
     font-weight: normal;
     cursor: pointer;
   }
   input[type="radio"], input[type="checkbox"] {
-    position: absolute;
+    float: left;
     margin-left: -20px;
-    margin-top: 4px;
   }
 }
 .radio-inline, .checkbox-inline {
