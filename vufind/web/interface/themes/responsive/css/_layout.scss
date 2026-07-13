@@ -60,6 +60,17 @@
   //background: linear-gradient(to bottom, $header-top-color, $header-middle-color 85%, $header-bottom-color);
   border-bottom: $header-bottom-border-width solid $header-bottom-border-color;
   margin-bottom: 0;
+
+  // .logoutOptions has no col-* class of its own; its Your Account/Log Out children carry
+  // col-md-2/offset-md-* classes assuming they're direct .row children. BS3's float grid let
+  // that "pass through" a non-positioned wrapper; BS5's flex grid does not, so without this the
+  // wrapper (being an unstyled .row > * flex item) takes 100% width and forces its own line.
+  // display:contents removes the wrapper from the box model so its children become real flex
+  // items of the outer .row again. Scoped to #header-container since .logoutOptions is reused
+  // with unrelated markup in login-sidebar.tpl.
+  .logoutOptions {
+    display: contents;
+  }
 }
 
 #header-logo {
