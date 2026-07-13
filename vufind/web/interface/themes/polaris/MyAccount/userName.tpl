@@ -25,7 +25,7 @@
 								       size="25"
 								       maxlength="25" class="form-control">
 							{/if}
-							<button class="btn-link" onclick="$('#usernameHelp').toggle(); return false">What is this?</button>
+							<button class="btn btn-link" onclick="$('#usernameHelp').toggle(); return false">What is this?</button>
 							<div id="usernameHelp" style="display:none">
 								A username is an optional feature. If you set one, your username&nbsp;
 								will be your alias on hold slips and can also be used to log into&nbsp;

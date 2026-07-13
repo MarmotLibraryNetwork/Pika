@@ -30,7 +30,7 @@
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 			{if $numRemainingCopies > 0}
 				<div class="row text-center">
-				<button class="itemSummary btn-link" onclick="return Pika.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{/if});">
+				<button class="itemSummary btn btn-link" onclick="return Pika.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{/if});">
 					{translate text="Quick Copy View"}
 				</button>
 				</div>

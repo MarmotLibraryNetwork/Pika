@@ -14,8 +14,8 @@
 				<div class="col-md-12">
 				  <div class="row">
 						<div class="col-5 col-sm-4{if !$viewingCombinedResults} col-lg-4{/if} manifestation-format">
-{*							<button class="btn-link" onclick="return Pika.showElementInPopup('Edition', '#relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">*}
-							<button class="btn-link" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+{*							<button class="btn btn-link" onclick="return Pika.showElementInPopup('Edition', '#relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">*}
+							<button class="btn btn-link" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 								{$relatedManifestation.format}<br>
 								{if $relatedManifestation.numRelatedRecords == 1}
 									<span class="manifestation-toggle-text badge text-bg-secondary" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
@@ -81,7 +81,7 @@
 		{if $hasHiddenFormats}
 			<div class="row related-manifestation" id="formatToggle_{$summId}">
 				<div class="col-md-12">
-					<button class="btn-link" onclick="$('.hiddenManifestation_{$summId}').show();$('#formatToggle_{$summId}').hide();return false;">View all Formats</button>
+					<button class="btn btn-link" onclick="$('.hiddenManifestation_{$summId}').show();$('#formatToggle_{$summId}').hide();return false;">View all Formats</button>
 				</div>
 			</div>
 		{/if}
