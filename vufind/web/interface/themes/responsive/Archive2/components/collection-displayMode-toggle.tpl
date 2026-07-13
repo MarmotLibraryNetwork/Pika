@@ -1,4 +1,4 @@
-<style>
+<style>{*TODO: Move to _repository.scss *}
 	{literal}
 		.list-view-item {
 			display: none;
