@@ -25,8 +25,7 @@
 								       class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
 								       aria-required="true">
 								{*                            No size limits in case previously set password doesn't meet current restrictions*}
-								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays *}>
-									<button aria-label="{translate text='PIN'} is hidden, click to show"
+								<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin');"
 									        class="btn btn-outline-secondary" type="button">
 										<span class="bi bi-eye-slash" aria-hidden="true"
@@ -38,7 +37,6 @@
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>
 									</button>
-							</span>
 							</div>
 						</div>
 					</div>
@@ -54,8 +52,7 @@
 								       maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}"
 								       class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
 								       aria-required="true">
-								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays *}>
-									<button aria-label="{translate text='PIN'} is hidden, click to show"
+								<button aria-label="{translate text='PIN'} is hidden, click to show"
 									        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')"
 									        class="btn btn-outline-secondary" type="button">
 										<span class="bi bi-eye-slash" aria-hidden="true"
@@ -67,7 +64,6 @@
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>
 									</button>
-							</span>
 							</div>
 						</div>
 					</div>
@@ -82,8 +78,7 @@
 								       maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}"
 								       class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}"
 								       aria-required="true">
-								<span class="input-group-btn" style="vertical-align: top" {* Override so button stays in place when input requirement message displays*}>
-									<button aria-label="{translate text='PIN'} is hidden, click to show"
+								<button aria-label="{translate text='PIN'} is hidden, click to show"
 								        onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')"
 								        class="btn btn-outline-secondary" type="button">
 										<span class="bi bi-eye-slash"
@@ -95,7 +90,6 @@
 												<div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div>
 										</span>
 									</button>
-								</span>
 							</div>
 						</div>
 						<div class="col-12">

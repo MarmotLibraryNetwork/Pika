@@ -13,9 +13,7 @@
 						<option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected="selected"{/if}>{translate text=$sortData.desc}</option>
 					{/foreach}
 				</select>
-				<span class="input-group-btn">
-					<button class="btn btn-primary" onclick="document.location.href = document.getElementById('results-sort').options[document.getElementById('results-sort').selectedIndex ].value">GO</button>
-				</span>
+				<button class="btn btn-primary" onclick="document.location.href = document.getElementById('results-sort').options[document.getElementById('results-sort').selectedIndex ].value">GO</button>
 			</div>
 		</div>
 	{/if}

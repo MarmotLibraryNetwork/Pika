@@ -11,9 +11,7 @@
 						<form action="/Archive/Results" id="searchComponentForm">
 							<div class="input-group">
 								<input aria-labelledby="archiveCollectionSearchLabel" type="text" name="lookfor" size="25" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="">
-								<div class="input-group-btn" id="search-actions">
-									<button class="btn btn-primary" type="submit">GO</button>
-								</div>
+								<button class="btn btn-primary" type="submit" id="search-actions">GO</button>
 								<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 								<input type="hidden" name="filter[]" value='ancestors_ms:"{$pid}"'>
 							</div>

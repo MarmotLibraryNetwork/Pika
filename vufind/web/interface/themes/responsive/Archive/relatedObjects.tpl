@@ -12,9 +12,7 @@
 					<form action="/Archive/Results">
 						<div class="input-group">
 							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
-							<span class="input-group-btn" id="search-actions">
-								<button class="btn btn-primary" type="submit">GO</button>
-							</span>
+							<button class="btn btn-primary" type="submit" id="search-actions">GO</button>
 							<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 							<input type="hidden" name="filter[]" value='RELS_EXT_isMemberOfCollection_uri_ms:"info:fedora/{$exhibitPid}"'>
 						</div>
@@ -23,9 +21,7 @@
 					<form action="/Archive/Results">
 						<div class="input-group">
 							<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection" aria-label="Search this collection">
-							<span class="input-group-btn" id="search-actions">
-								<button class="btn btn-primary" type="submit">GO</button>
-							</span>
+							<button class="btn btn-primary" type="submit" id="search-actions">GO</button>
 							<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 							<input type="hidden" name="filter[]" value='ancestors_ms:"{$exhibitPid}"'>
 						</div>
@@ -43,8 +39,7 @@
 					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>Date Added</option>
 					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>Date Modified</option>
 				</select>
-					<span class="input-group-btn">
-						<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;
+					<button class="btn btn-primary" onclick="el=document.getElementById('results-sort');Pika.Archive.sort = el.options[el.selectedIndex ].value;
 						{if $displayType == 'map'}
 										Pika.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
 						{elseif $displayType == 'mapNoTimeline'}
@@ -56,7 +51,6 @@
 						{elseif $displayType == 'basic'}
 										Pika.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
 						{/if}">GO</button>
-					</span>
 				</div>
 			</div>
 		</div>

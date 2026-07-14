@@ -7,7 +7,7 @@
 	<div class="col-12">
 		<div class="row">
 			<div class="d-sm-none d-md-block-inline col-lg-12 text-center">
-				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></label></span>
+				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></span></label>
 			</div>
 		</div>
 		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
@@ -25,7 +25,6 @@
 
 					<fieldset>
 						<div class="input-group input-group-sm">
-							<div class="input-group-sm">
 							<textarea class="form-control"{/strip}
 							       id="lookfor"
 							          placeholder="Find books, movies, and more..." {* changed cj 8/31/24 *}
@@ -41,13 +40,12 @@
 											{strip}>
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
-							</div>
-							<div class="input-group-btn" id="search-actions">
-								<button class="btn btn-outline-secondary" type="submit">GO</button>
-								<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
-								</button>
 
-								<ul id="searchType" class="dropdown-menu text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
+							<button class="btn btn-outline-secondary" type="submit" id="search-actions">GO</button>
+							<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
+							</button>
+
+							<ul id="searchType" class="dropdown-menu dropdown-menu-end text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
 									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
@@ -96,7 +94,6 @@
 										</a>
 									</li>
 								</ul>
-							</div>
 						</div>
 
 					</fieldset>

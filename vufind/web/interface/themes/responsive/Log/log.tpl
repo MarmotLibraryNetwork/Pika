@@ -34,7 +34,7 @@
 					<div class="input-group">
 					<label for="filterCount" class="form-label input-group-text">{$filterLabel}</label>
 					<input id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
-					<span class="input-group-btn"><button class="btn btn-primary" type="submit">Go</button></span>
+					<button class="btn btn-primary" type="submit">Go</button>
 				</div>
 				</div>
       {/if}
