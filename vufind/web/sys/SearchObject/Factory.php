@@ -54,6 +54,47 @@ class SearchObjectFactory {
 	}
 
 	/**
+	 * deminifySerialized
+	 *
+	 * Safely reconstitute a search object from the serialized minSO data stored in
+	 * SearchEntry::$search_object. Restricts unserialize() to the minSO class to
+	 * prevent PHP object injection, and fails cleanly (logging and returning false)
+	 * if the stored data is missing, corrupt, or not a valid minSO instance.
+	 *
+	 * @access  public
+	 * @param   string|null  $serializedMinSO   Serialized minSO data from the database.
+	 * @return  mixed                           The search object on success, false otherwise
+	 */
+	static function deminifySerialized($serializedMinSO){
+		global $pikaLogger;
+		$logger = $pikaLogger->withName(__CLASS__);
+
+		if (empty($serializedMinSO)){
+			$logger->error('Cannot load saved search: no serialized search data was stored');
+			return false;
+		}
+
+		try {
+			$minSO = unserialize($serializedMinSO, ['allowed_classes' => ['minSO']]);
+		} catch (\Throwable $e){
+			$logger->error('Failed to unserialize saved search: ' . $e->getMessage());
+			return false;
+		}
+
+		if (!($minSO instanceof minSO)){
+			$logger->error('Failed to load saved search: stored data is not a valid minSO object');
+			return false;
+		}
+
+		try {
+			return self::deminify($minSO);
+		} catch (\Throwable $e){
+			$logger->error('Failed to deminify saved search: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
 	 * deminify
 	 *
 	 * Construct an appropriate Search Object from a MinSO object.

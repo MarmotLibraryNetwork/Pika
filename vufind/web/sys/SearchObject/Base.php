@@ -1496,8 +1496,11 @@ abstract class SearchObject_Base {
 		$dupSaved  = false;
 		foreach ($searchHistory as $oldSearch) {
 			// Deminify the old search
-			$minSO     = unserialize($oldSearch->search_object);
-			$dupSearch = SearchObjectFactory::deminify($minSO);
+			$dupSearch = SearchObjectFactory::deminifySerialized($oldSearch->search_object);
+			if ($dupSearch === false){
+				// Corrupt or unreadable entry; can't compare it for duplication, skip it
+				continue;
+			}
 			// See if the classes and urls match
 			if (get_class($dupSearch) && get_class($this) &&
 			$dupSearch->renderSearchUrl() == $this->renderSearchUrl()) {
@@ -1552,8 +1555,10 @@ abstract class SearchObject_Base {
 			$currentSessionId = session_id();
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
-				$minSO = unserialize($search->search_object);
-				$savedSearch = SearchObjectFactory::deminify($minSO);
+				$savedSearch = SearchObjectFactory::deminifySerialized($search->search_object);
+				if ($savedSearch === false){
+					return null;
+				}
 				return $savedSearch;
 			} else {
 				// Just get out, we don't need to show an error
@@ -1589,8 +1594,12 @@ abstract class SearchObject_Base {
 				//   rights to view this search
 				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())){
 					// They do, deminify it to a new object.
-					$minSO       = unserialize($search->search_object);
-					$restoredSearch = SearchObjectFactory::deminify($minSO);
+					$restoredSearch = SearchObjectFactory::deminifySerialized($search->search_object);
+					if ($restoredSearch === false){
+						global $pikaLogger;
+						$pikaLogger->withName(__CLASS__)->error("Failed to restore search using $search->id, could not deminify saved search data");
+						return new PEAR_Error('Attempt to access invalid search ID');
+					}
 
 					// Now redirect to the URL associated with the saved search;
 					// this simplifies problems caused by mixing different classes

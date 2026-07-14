@@ -649,8 +649,10 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				$interface->assign('page', $page);
 
 				/** @var SearchObject_Islandora2 $searchObject */
-				$minSO        = unserialize($s->search_object);
-				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+				if ($searchObject === false){
+					return;
+				}
 				$searchObject->setPage($page);
 				$searchObject->setLimit(24); // Assume 24 for Archive Searches; or // TODO: Add pagelimit to saved search?
 				//Run the search

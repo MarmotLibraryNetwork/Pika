@@ -2405,9 +2405,11 @@ class SearchObject_Solr extends SearchObject_Base {
 				$interface->assign('searchId', $_REQUEST['searchId']);
 				$interface->assign('page', $currentPage);
 
-				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_Solr $searchObject */
-				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+				if ($searchObject === false){
+					return;
+				}
 				$searchObject->setPage($currentPage);
 				//Run the search
 				$result = $searchObject->processSearch(true);
