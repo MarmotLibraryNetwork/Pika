@@ -13,9 +13,9 @@
 			{* the form itself carries the row class: col-* children must be DIRECT children of the flex row in BS5 *}
 			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form row">
 				<div class="col-md-6">
-				<div class="mb-3">
-					<label for="availableDates">Available Dates</label>
-					<select id="availableDates" name="day" class="form-select" onchange="$('#indexingDateSelection').submit()">
+				<div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+					<label for="availableDates" class="col-form-label">Available Dates</label>
+					<select id="availableDates" name="day" class="form-select w-auto" onchange="$('#indexingDateSelection').submit()">
 						{foreach from=$availableDates item=date}
 							<option value="{$date}"{if $date == $indexingStatsDate} selected="selected"{/if}>{$date}</option>
 						{/foreach}
@@ -24,9 +24,9 @@
 	{*			<button type="submit" class="btn btn-outline-secondary btn-sm">Set Date</button>*}
 				</div>
 				<div class="col-md-6">
-				<div class="mb-3">
-					<label for="compareTo">Compare To</label>
-					<select id="compareTo" name="compareTo" class="form-select" onchange="$('#indexingDateSelection').submit()">
+				<div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+					<label for="compareTo" class="col-form-label">Compare To</label>
+					<select id="compareTo" name="compareTo" class="form-select w-auto" onchange="$('#indexingDateSelection').submit()">
 						<option></option>
 						{foreach from=$availableDates item=date}
 							<option value="{$date}"{if $date == $indexingStatsDate} disabled="disabled"}{elseif $date == $compareTo} selected="selected"{/if}>{$date}</option>
