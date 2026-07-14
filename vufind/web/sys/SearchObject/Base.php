@@ -2543,7 +2543,7 @@ class minSO {
 	public $f = [];  // search filters
 	public $hf = []; // hidden search filters
 	public $fc = []; // facet configurations
-	public $id, $i, $s, $r, $ty, $sr;
+	public $id, $i, $s, $r, $ty, $sr, $q;
 
 	/**
 	 * Constructor. Building minified object from the
