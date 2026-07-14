@@ -28,7 +28,7 @@
 				{assign var=property value=$structure.roles}
 				{assign var=propName value=$property.property}
 				<label for='{$propName}' class="form-label">Roles</label>
-				<div class="controls">
+				<div>
 					{* Display the list of roles to add *}
 					{if isset($property.listStyle) && $property.listStyle == 'checkbox'}
 						{foreach from=$property.values item=propertyName key=propertyValue}
@@ -46,7 +46,7 @@
 				</div>
 			</div>
 			<div class="mb-3">
-				<div class="controls">
+				<div>
 					<input type="submit" name="submit" value="Add Administrator" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-outline-secondary">Return to List</a>
 				</div>
 			</div>

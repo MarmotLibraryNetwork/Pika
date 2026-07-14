@@ -7,7 +7,7 @@
 		{if count($overDriveUsers) > 1} {* Linked Users contains the active user as well*}
 			<div class="mb-3">
 				<label class="form-label" for="patronId">{translate text="Checkout to account"}: </label>
-				<div class="controls">
+				<div>
 					<select name="patronId" id="patronId" class="form-select" onchange="$('.lendingPeriods').hide();$('#lendingPeriod' + $(this).val()).show()">
 						{foreach from=$overDriveUsers item=tmpUser}
 							<option value="{$tmpUser->id}">{$tmpUser->displayName} - {$tmpUser->getHomeLibrarySystemName()}</option>

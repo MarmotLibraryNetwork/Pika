@@ -1,5 +1,5 @@
 {strip}
-<div class="controls table-responsive">
+<div class="table-responsive">
 	<table id="{$propName}" class="{if $property.sortable}sortableProperty{/if} table table-striped">
 		<thead>
 			<tr>

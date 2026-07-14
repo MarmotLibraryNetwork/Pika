@@ -48,7 +48,7 @@
 			<div id="holdOptions">
 				<div id="pickupLocationOptions" class="mb-3">
 					<label class="form-label" for="campus">{translate text="I want to pick this up at"}: </label>
-					<div class="controls">
+					<div>
 						<select name="campus" id="campus" class="form-select">
 							{if count($pickupLocations) > 0}
 								{foreach from=$pickupLocations item=location}
@@ -68,7 +68,7 @@
 					{*<div id="userOption" class="mb-3"{*if count($pickupLocations[0]->pickupUsers) < 2} style="display: none"{/if* }>{* display if the first location will need a user selected*}
 					<div id="userOption" class="mb-3"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
 						<label for="user" class="form-label">{translate text="Place hold for the chosen location using account"}: </label>
-						<div class="controls">
+						<div>
 							<select name="user" id="user" class="form-select">
 								{* Built by jQuery below *}
 							</select>
@@ -102,7 +102,7 @@
           {if $allowStaffPlacedHoldRequest}
 						<div id="staffPlacedHolds" class="mb-3 has-success">
 							<label for="patronBarcode" class="form-label">Or place hold for patron with {$patronBarcodeLabel} :</label>
-							<div class="controls">
+							<div>
 								<input type="text" name="patronBarcode" id="patronBarcode" class="form-control" size="10">
 							</div>
 						</div>
@@ -110,7 +110,7 @@
           {if $showHoldCancelDate}
 					<div id="cancelHoldDate" class="mb-3">
 						<label class="form-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
-						<div class="input-group input-append date controls" id="cancelDatePicker">
+						<div class="input-group input-append date" id="cancelDatePicker">
 							{* data-provide attribute loads the datepicker through bootstrap data api *}
 							{* start date sets minimum, end date sets maximum, date sets initial value: days from today, eg +8d is 8 days from now. *}
 							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10"

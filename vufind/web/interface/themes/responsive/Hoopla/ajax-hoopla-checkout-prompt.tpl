@@ -3,7 +3,7 @@
 		{if count($hooplaUsers) > 1} {* Linked Users contains the active user as well*}
 			<div id='pickupLocationOptions' class="mb-3">
 				<label class="form-label" for="patronId">Please choose the account to check out from : </label>
-				<div class="controls">
+				<div>
 					<select name="patronId" id="patronId" class="form-select">
 						{foreach from=$hooplaUsers item=tmpUser}
 						{assign var="userId" value=$tmpUser->id}

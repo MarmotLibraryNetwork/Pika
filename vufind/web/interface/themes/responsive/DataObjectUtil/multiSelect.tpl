@@ -1,4 +1,4 @@
-<div class="controls">
+<div>
 	{if isset($property.listStyle)}
 		{if $property.listStyle == 'checkbox'}
 			<div class="checkbox">

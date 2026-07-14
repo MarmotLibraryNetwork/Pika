@@ -33,7 +33,7 @@
 					</div>
 				</div>
 				<div class="mb-3">
-					<div class="controls">
+					<div>
 						<input type="submit" name="submit" value="Process Lists File" class="btn btn-primary">
 					</div>
 				</div>
