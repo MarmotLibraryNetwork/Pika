@@ -4,7 +4,7 @@
 
 
 	<form id="emailListForm" class="form form-horizontal">
-		<div class="mb-3">
+		<div class="row mb-3">
 			<input type="hidden" name="listId" value="{$listId|escape}">
 			<label for="to" class="col-form-label col-sm-2">{translate text='To'} <span class="required-input">*</span></label>
 			<div class="col-sm-10">

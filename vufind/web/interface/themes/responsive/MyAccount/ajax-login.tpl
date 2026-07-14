@@ -21,7 +21,7 @@
 	{else}
 		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *} onsubmit="return Pika.Account.processAjaxLogin()">
 			<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
-			<div id="loginUsernameRow" class="mb-3">
+			<div id="loginUsernameRow" class="row mb-3">
 				{if $offline && $allowUsername}
 					<div class="alert alert-warning">Due to the system being offline you must use your <strong>barcode</strong> to login.</div>
 					<label for="username" class="col-form-label col-sm-12 col-md-4">Barcode:</label>
