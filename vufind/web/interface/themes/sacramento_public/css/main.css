@@ -24385,10 +24385,6 @@ img.x-twit {
   text-overflow: ellipsis ellipsis;
 }
 
-.editor .panel-group .panel-body > .form-group > .controls {
-  overflow-x: auto;
-}
-
 #browseCategories tr td:nth-child(3) > select {
   max-width: 400px;
 }
