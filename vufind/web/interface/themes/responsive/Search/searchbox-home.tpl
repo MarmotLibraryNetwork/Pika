@@ -10,7 +10,7 @@
 				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></span></label>
 			</div>
 		</div>
-		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
+		<form method="get" action="/Union/Search" id="searchForm" onsubmit="Pika.Searches.processSearchForm();">
 			<div class="row">
 				<div class="{if $displaySidebarMenu}col-md-12{else}col-md-10 col-lg-10 offset-md-1 offset-lg-1{/if}">
 					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}

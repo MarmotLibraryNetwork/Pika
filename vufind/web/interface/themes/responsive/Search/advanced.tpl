@@ -70,7 +70,7 @@
 		margin-left: auto;
 		margin-right: auto;
 	}
-	#facetTable .form-inline .form-control {
+	#facetTable .range-filter .form-control {
 		width: auto;
 		margin: auto 4px;
 	}
@@ -165,12 +165,12 @@
 														<th><label for="{$facetInfo.facetName}">{translate text=$label}:</label></th>
 														<td>
 															{if $facetInfo.facetName == "publishDate"}
-															<div class="form-inline">
-																<div class="mb-3">
+															<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																<div class="mb-3 d-flex align-items-center gap-1">
 																	<label for="publishDateyearfrom" class="yearboxlabel">From: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearfrom" id="publishDateyearfrom" value="{$facetInfo.from}">
 																</div>
-																<div class="mb-3">
+																<div class="mb-3 d-flex align-items-center gap-1">
 																	<label for="publishDateyearto" class="yearboxlabel">To: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearto" id="publishDateyearto" value="{$facetInfo.to}">
 																</div>
@@ -184,23 +184,23 @@
 																</div>
 															{elseif $facetInfo.facetName == "lexile_score"}
 																<div id="lexile-range"></div>
-																<div class="form-inline">
-																	<div class="mb-3">
+																<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="lexile_scorefrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom" id="lexile_scorefrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="mb-3">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="lexile_scoreto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto" id="lexile_scoreto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
-																<div class="form-inline">
-																	<div class="mb-3">
+																<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="mb-3">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="{$facetInfo.to}">
 																	</div>

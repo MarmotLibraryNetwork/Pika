@@ -1,5 +1,5 @@
-<form id="{$title}Filter" action="{$cluster.list.url|escape}" class="form-inline" method="post">
-	<div class="facet-form">
+<form id="{$title}Filter" action="{$cluster.list.url|escape}" method="post">
+	<div class="facet-form d-flex flex-wrap align-items-center gap-2">
 		<div class="mb-3">
 			<label for="{$title}yearfrom" class="yearboxlabel visually-hidden form-label">From</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="from" name="{$title}yearfrom" id="{$title}yearfrom" value="">
@@ -12,7 +12,7 @@
 		<input type="submit" value="Go" class="goButton btn btn-primary">
 
 		{if $title == 'publishDate'}
-			<div id="yearDefaultLinks">
+			<div id="yearDefaultLinks" class="w-100">
 				{assign var=thisyear value=$smarty.now|date_format:"%Y"}
 				Published in the last:<br>
 				<a onclick="$('#{$title}yearfrom').val('{$thisyear-1}');$('#{$title}yearto').val('');" href='javascript:void(0);'>year</a>

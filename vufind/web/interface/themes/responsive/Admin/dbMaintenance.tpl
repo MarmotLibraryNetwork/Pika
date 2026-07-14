@@ -37,12 +37,11 @@
 					{/foreach}
 				</tbody>
 			</table>
-			<div class="form-inline">
+			<div class="d-flex flex-wrap align-items-center gap-2">
 				<div class="mb-3">
 					<input type="submit" name="submit" class="btn btn-primary" value="Run Selected Updates">
 				</div>
 				<div class="mb-3 checkbox checkbox-inline">
-					&nbsp; &nbsp;
 					<label for="hideUpdatesThatWereRun">
 						<input type="checkbox" name="hideUpdatesThatWereRun" id="hideUpdatesThatWereRun" checked="checked"
 						       onclick="$('.updateRun').toggle();"> Hide updates that have been run

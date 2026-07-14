@@ -13,16 +13,17 @@
 							{if $supplementalTitle.isFormatSelected && isset($supplementalTitle.selectedFormat)}
 								The <strong>{$supplementalTitle.selectedFormat.name}</strong> format is available.
 							{elseif !empty($supplementalTitle.formats)}
-								<div class="form-inline">
+								<div>
 									<label for="downloadFormat_{$supplementalTitle.overDriveId}">Select one format to download.</label>
-									<br>
-									<select name="downloadFormat_{$supplementalTitle.overDriveId}" id="downloadFormat_{$supplementalTitle.overDriveId}" class="input-sm form-select">
-										<option value="-1">Select a Format</option>
-											{foreach from=$supplementalTitle.formats item=format}
-												<option value="{$format.formatType}">{$format.name}</option>
-											{/foreach}
-									</select>
-									<button onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</button>
+									<div class="d-flex flex-wrap align-items-center gap-2">
+										<select name="downloadFormat_{$supplementalTitle.overDriveId}" id="downloadFormat_{$supplementalTitle.overDriveId}" class="input-sm form-select w-auto">
+											<option value="-1">Select a Format</option>
+												{foreach from=$supplementalTitle.formats item=format}
+													<option value="{$format.formatType}">{$format.name}</option>
+												{/foreach}
+										</select>
+										<button onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</button>
+									</div>
 								</div>
 							{/if}
 					</div>

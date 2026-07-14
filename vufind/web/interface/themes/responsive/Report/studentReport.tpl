@@ -8,22 +8,19 @@
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
 			{/foreach}
-			<form class="form form-inline">
-				<label for="selectedReport" class="form-label">Available Reports&nbsp;</label>
-				<select name="selectedReport" id="selectedReport" class="form-select input-sm">
+			<form class="form d-flex flex-wrap align-items-center gap-2">
+				<label for="selectedReport" class="col-form-label">Available Reports</label>
+				<select name="selectedReport" id="selectedReport" class="form-select w-auto input-sm">
 					{foreach from=$availableReports item=curReport key=reportLocation}
 						<option value="{$reportLocation}" {if $curReport==$selectedReport}selected="selected"{/if}>{$curReport}</option>
 					{/foreach}
 				</select>
-				&nbsp;
-				<label for="showOverdueOnly" class="form-label">Include&nbsp;</label>
-				<select name="showOverdueOnly" id="showOverdueOnly" class="form-select input-sm">
+				<label for="showOverdueOnly" class="col-form-label">Include</label>
+				<select name="showOverdueOnly" id="showOverdueOnly" class="form-select w-auto input-sm">
 					<option value="overdue" {if $showOverdueOnly}selected="selected"{/if}>Overdue Items</option>
 					<option value="checkedOut" {if !$showOverdueOnly}selected="selected"{/if}>Checked Out Items</option>
 				</select>
-				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary">
-				&nbsp;
 				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info">
 			</form>
 

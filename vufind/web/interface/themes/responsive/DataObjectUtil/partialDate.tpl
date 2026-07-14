@@ -1,11 +1,11 @@
 {assign var=propNameMonth value=$property.propNameMonth}
 {assign var=propNameDay value=$property.propNameDay}
 {assign var=propNameYear value=$property.propNameYear}
-<div class="form-inline">
+<div class="d-flex flex-wrap gap-3">
 	{*Somthing about our Styling messes up bootstap's inline form, the <br> make display consistent with the textboxes though *}
 	<div class="mb-3">
 		<label for="{$propNameMonth}">Month</label><br>
-		<select name='{$propNameMonth}' id='{$propNameMonth}' class="form-select">
+		<select name='{$propNameMonth}' id='{$propNameMonth}' class="form-select w-auto">
 		<option value=""></option>
 		<option value="1" {if $object->$propNameMonth == '1'}selected='selected'{/if}>January</option>
 		<option value="2" {if $object->$propNameMonth == '2'}selected='selected'{/if}>February</option>
@@ -23,10 +23,10 @@
 	</div>
 	<div class="mb-3">
 		<label for="{$propNameDay}">Day</label>
-		<input type='text' name='{$propNameDay}' id='{$propNameDay}' value='{$object->$propNameDay}' maxLength='2' size='2' class="form-control">
+		<input type='text' name='{$propNameDay}' id='{$propNameDay}' value='{$object->$propNameDay}' maxLength='2' size='2' class="form-control w-auto">
 	</div>
 	<div class="mb-3">
 		<label for="{$propNameYear}">Year</label>
-		<input type='text' name='{$propNameYear}' id='{$propNameYear}' value='{$object->$propNameYear}' maxLength='4' size='4' class="form-control">
+		<input type='text' name='{$propNameYear}' id='{$propNameYear}' value='{$object->$propNameYear}' maxLength='4' size='4' class="form-control w-auto">
 	</div>
 </div>

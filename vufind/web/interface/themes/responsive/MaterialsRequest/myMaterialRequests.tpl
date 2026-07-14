@@ -11,8 +11,8 @@
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>Filters:</legend>
-			<form action="/MaterialsRequest/MyRequests" method="get" class="form-inline">
-				<div>
+			<form action="/MaterialsRequest/MyRequests" method="get">
+				<div class="d-flex flex-wrap align-items-center gap-3">
 					<div class="mb-3">
 						<label class="form-label">Show:</label>
 						<label for="openRequests" class="radio-inline">

@@ -9,8 +9,9 @@
 			<br><br>
 		</div>
 
-		<div class="row">
-			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
+		<div>
+			{* the form itself carries the row class: col-* children must be DIRECT children of the flex row in BS5 *}
+			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form row">
 				<div class="col-md-6">
 				<div class="mb-3">
 					<label for="availableDates">Available Dates</label>

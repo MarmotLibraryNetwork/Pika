@@ -1,4 +1,4 @@
-<form action="/MyAccount/MyLists" id="myListFormHead" class="form form-inline">
+<form action="/MyAccount/MyLists" id="myListFormHead" class="form">
 		<h1 role="heading" aria-level="1" class="h2" id="listsTitle">My Lists</h1>
 	<div class="alert alert-info">
 		For more information about User Lists, see the <a href="https://marmot-support.atlassian.net/l/c/NVtFyBaG">online documentation</a>.
@@ -16,9 +16,9 @@
 	</div>
 	<hr>
 	<div class="row">
-		<div class="mb-3 col-md-4" id="sortOptions">
-			<label for="sort" class="form-label">Sort Lists By&nbsp;</label>
-			<select class="sortMethod form-select" id="sort" name="sort">
+		<div class="mb-3 col-md-4 d-flex flex-wrap align-items-center gap-2" id="sortOptions">
+			<label for="sort" class="col-form-label">Sort Lists By</label>
+			<select class="sortMethod form-select w-auto" id="sort" name="sort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 					{/foreach}

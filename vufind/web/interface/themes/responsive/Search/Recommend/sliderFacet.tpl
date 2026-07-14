@@ -1,5 +1,5 @@
-<form id="{$title}Filter" action="{$cluster.list.url|escape}" class="form-inline" method="post">
-	<div class="facet-form">
+<form id="{$title}Filter" action="{$cluster.list.url|escape}" method="post">
+	<div class="facet-form d-flex flex-wrap align-items-center gap-2">
 		{if $title == 'lexile_score'}
 			<div id="lexile-range"></div>
 		{/if}

@@ -7,9 +7,9 @@
 		<div class="alert alert-warning">No active_orders.csv found in any indexing profile's MARC path.</div>
 	{else}
 		{if $profiles|@count > 1}
-			<form method="get" action="/Admin/ActiveOrders" class="form-inline" style="margin-bottom:1em;">
-				<label for="profileSelect">Indexing Profile: </label>
-				<select id="profileSelect" name="id" class="form-select" onchange="this.form.submit()">
+			<form method="get" action="/Admin/ActiveOrders" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+				<label for="profileSelect" class="col-form-label">Indexing Profile: </label>
+				<select id="profileSelect" name="id" class="form-select w-auto" onchange="this.form.submit()">
 					{foreach from=$profiles key=pid item=pname}
 						<option value="{$pid}"{if $pid == $selectedId} selected="selected"{/if}>{$pname|escape}</option>
 					{/foreach}
