@@ -16,19 +16,6 @@
   text-overflow: ellipsis ellipsis;
 }
 
-// Keep Tables within an Admin panel section navigable with a scroll bar
-.editor {
-  .panel-group {
-    .panel-body {
-      &>.form-group{
-        &>.controls {
-          overflow-x: auto;
-        }
-      }
-    }
-  }
-}
-
 #browseCategories {
   tr td:nth-child(3) > select {
     max-width: 400px;
