@@ -50,7 +50,7 @@
 					{/if}
 
 					{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-					<form id="readingListForm" class="form-inline readingHistoryActionForm">
+					<form id="readingListForm" class="readingHistoryActionForm">
 						{* Reading History Actions *}
 						<div class="row">
 							<input type="hidden" name="page" value="{$page}">
@@ -90,15 +90,20 @@
 								<div class="col-sm-3">
 									<label for="searchTerm">Search Reading History</label>
 								</div>
-								<div class="col-sm-6">
+								<div class="col-sm-5">
 									<input type="search" name="searchTerm" id="searchTerm" class="form-control"  onkeydown="{literal}if(event.key == 'Enter') {return Pika.Account.ReadingHistory.searchReadingHistoryAction();}{/literal}" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 								</div>
-								<div class="col-sm-3">
-									<select name="searchBy" id="searchBy" class="form-select" aria-label="Search by">
-										<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
-										<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
-									</select>
-									<button class="btn btn-outline-secondary" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+								{* col-auto sizes this column to its content so the select and Search button
+								   wrap to the next line together as a unit when the row runs out of room,
+								   instead of the button wrapping alone inside a fixed-width column *}
+								<div class="col-auto">
+									<div class="input-group">
+										<select name="searchBy" id="searchBy" class="form-select" aria-label="Search by">
+											<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
+											<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
+										</select>
+										<button class="btn btn-outline-secondary" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+									</div>
 								</div>
 							</div>
 							<hr>
