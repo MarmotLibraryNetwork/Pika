@@ -22100,10 +22100,6 @@ hr.menu {
   min-height: 24px;
 }
 
-#search-actions.input-group-btn {
-  vertical-align: top;
-}
-
 #descriptionPanelBody > .panel-body {
   white-space: pre-line;
 }
