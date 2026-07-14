@@ -475,73 +475,45 @@ function pika_autoloader($class) {
 	}
 }
 
-// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
-//	if (str_starts_with($class, 'CAS_')) {
-//		return CAS_autoload($class);
-//	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
 	}
-	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
-	try{
-		if (file_exists('sys/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Library/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Library/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Location/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Location/' . $class . '.php';
-			require_once $className;
-		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Covers/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Archive2/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Archive2/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Archive/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Archive/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Account/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Account/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/' . $nameSpaceClass)){
-			require_once 'sys/' . $nameSpaceClass;
-		}else{
-			// Appears to be for root directory classes: Action, AJAXHandler,
-			// CatalogConnection, CatalogFactory
-			@include_once $nameSpaceClass;
-			// Ignore failures, presuming we are loading classes for other auto-loaders after thism
-//			if (!class_exists($class, false)){
-//				global $pikaLogger;
-//				if ($pikaLogger){
-//					$pikaLogger->debug("vufind_autoloader: failed to load class '$class' (tried '$nameSpaceClass' via include path)");
-//				}
-//			}
-//			else {
-//				global $pikaLogger;
-//				if ($pikaLogger){
-//					$pikaLogger->debug(__FUNCTION__ . " : loaded class '$class' (tried '$nameSpaceClass' via include path)");
-//				}
-//			}
+
+	$searchDirs = [
+		'sys',
+		'Drivers',
+		'sys/Library',
+		'sys/Location',
+		'RecordDrivers',
+		'services/MyAccount/lib',
+		'services',
+		'sys/Covers',
+		'sys/Authentication',
+		'sys/Archive2',
+		'sys/Archive',
+		'sys/Account',
+	];
+
+	foreach ($searchDirs as $dir) {
+		$filePath = ROOT_DIR . '/' . $dir . '/' . $class . '.php';
+		if (file_exists($filePath)) {
+			require_once $filePath;
+			return;
 		}
-	}catch (Exception $e){
-		// Fail over to next loader instead of throwing error.
+	}
+
+	// Try underscore-to-directory mapping (e.g., Some_Class => sys/Some/Class.php)
+	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
+	$filePath = ROOT_DIR . '/sys/' . $nameSpaceClass;
+	if (file_exists($filePath)) {
+		require_once $filePath;
+		return;
+	}
+
+	// Root directory classes: Action, AJAXHandler, CatalogConnection, CatalogFactory
+	$filePath = ROOT_DIR . '/' . $nameSpaceClass;
+	if (file_exists($filePath)) {
+		require_once $filePath;
 	}
 }
