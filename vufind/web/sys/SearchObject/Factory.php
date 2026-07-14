@@ -82,6 +82,7 @@ class SearchObjectFactory {
 		}
 
 		if (!($minSO instanceof minSO)){
+			// This catches both corrupted data (false) and disallowed classes (which has result : __PHP_Incomplete_Class)
 			$logger->error('Failed to load saved search: stored data is not a valid minSO object');
 			return false;
 		}
