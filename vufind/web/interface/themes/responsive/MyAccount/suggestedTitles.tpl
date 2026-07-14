@@ -10,8 +10,9 @@
 		{* Internal Grid *}
 		<h1 role="heading" aria-level="1" class="h2 myAccountTitle">{translate text='Recommended for you'}</h1>
 
-		<div id="pager" class="navbar form-inline">
-			<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+		<div id="pager" class="navbar">
+			{* ms-auto keeps Hide Covers right-aligned in the BS5 flex navbar (float has no effect on flex items) *}
+			<label for="hideCovers" class="form-label checkbox ms-auto"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 		</div>
 
       {if !empty($resourceList)}

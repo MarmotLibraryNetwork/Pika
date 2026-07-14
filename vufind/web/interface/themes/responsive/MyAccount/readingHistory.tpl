@@ -110,9 +110,9 @@
 							{* Results Page Options *}
 							<div id="pager" class="col-sm-12">
 								<div class="row">
-									<div class="mb-3 col-md-5" id="recordsPerPage">
-										<label for="pagesize" class="form-label">Records Per Page&nbsp;</label>
-										<select id="pagesize" class="pagesize form-select{* input-sm*}">
+									<div class="mb-3 col-md-5 d-flex flex-wrap align-items-center gap-2" id="recordsPerPage">
+										<label for="pagesize" class="col-form-label">Records Per Page</label>
+										<select id="pagesize" class="pagesize form-select w-auto{* input-sm*}">
 											<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 											<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 											<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
@@ -120,9 +120,9 @@
 											<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 										</select>
 									</div>
-									<div class="mb-3 col-md-5" id="sortOptions">
-										<label for="sortMethod" class="form-label">Sort By&nbsp;</label>
-										<select class="sortMethod form-select" id="sortMethod" name="accountSort">
+									<div class="mb-3 col-md-5 d-flex flex-wrap align-items-center gap-2" id="sortOptions">
+										<label for="sortMethod" class="col-form-label">Sort By</label>
+										<select class="sortMethod form-select w-auto" id="sortMethod" name="accountSort">
 											{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 												<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 											{/foreach}

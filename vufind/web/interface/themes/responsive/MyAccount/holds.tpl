@@ -37,17 +37,20 @@
 				{/if}
 			</p>
 			{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
-				<div id="pager" class="navbar form-inline">
-					<label for="{$sectionKey}HoldSort" class="form-label">{translate text='Sort by'}:&nbsp;</label>
-					<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-select">
-						{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
-							<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
-						{/foreach}
-					</select>
+				<div id="pager" class="navbar">
+					{* BS5 .navbar is a flex row with justify-content: space-between — the sort group sits left, Hide Covers right *}
+					<div class="d-flex flex-wrap align-items-center gap-2">
+						<label for="{$sectionKey}HoldSort" class="col-form-label">{translate text='Sort by'}:</label>
+						<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-select w-auto">
+							{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
+								<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+							{/foreach}
+						</select>
+					</div>
 
 					{if !$hideCoversFormDisplayed}
 						{* Display the Hide Covers switch above the first section that has holds; and only display it once *}
-						<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="form-label checkbox"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 						{assign var="hideCoversFormDisplayed" value=true}
 					{/if}
 				</div>

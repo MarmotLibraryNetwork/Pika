@@ -30,14 +30,17 @@
 {*					<button type="submit" class="visuallyhidden">Sort</button>*}
 {*				</form>*}
 				<form id="renewForm" action="/MyAccount/RenewMultiple">
-					<div id="pager" class="navbar form-inline">
-						<label for="accountSort" class="form-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-select">
-							{foreach from=$sortOptions item=sortDesc key=sortVal}
-								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected" data-selected=""{/if}>{translate text=$sortDesc}</option>
-							{/foreach}
-						</select>
-						<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+					<div id="pager" class="navbar">
+						{* BS5 .navbar is a flex row with justify-content: space-between — the sort group sits left, Hide Covers right *}
+						<div class="d-flex flex-wrap align-items-center gap-2">
+							<label for="accountSort" class="col-form-label">{translate text='Sort by'}:</label>
+							<select name="accountSort" id="accountSort" class="form-select w-auto">
+								{foreach from=$sortOptions item=sortDesc key=sortVal}
+									<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected" data-selected=""{/if}>{translate text=$sortDesc}</option>
+								{/foreach}
+							</select>
+						</div>
+						<label for="hideCovers" class="form-label checkbox"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
 					<div class="btn-group">
