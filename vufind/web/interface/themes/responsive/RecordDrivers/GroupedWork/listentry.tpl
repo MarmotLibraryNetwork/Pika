@@ -115,7 +115,7 @@
 			{/if}
 
 			{* Short Mobile Entry for Formats when there aren't hidden formats *}
-			<div class="row d-none d-sm-block d-md-none">
+			<div class="row d-none d-sm-flex d-md-none">
 
 				{* TODO: Is this every needed on lists. Don't think formats get hidden *}
 				{* Determine if there were hidden Formats for this entry *}
@@ -154,7 +154,7 @@
 
 			{* Description Section *}
 			{if $summDescription}
-				<div class="row d-none d-sm-block d-md-none">
+				<div class="row d-none d-sm-flex d-md-none">
 					<div class="result-label col-3 col-sm-3">Description:</div>
 				</div>
 			{/if}

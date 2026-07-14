@@ -1,7 +1,7 @@
 {strip}
 	{* taken from MyAccount/menu.tpl*}
 	{* id attributes have prefix 'mobileHeader-' added *}
-	<div class="row d-none d-sm-block d-md-none">
+	<div class="row d-none d-sm-flex d-md-none">
 		<div id="mobileHeader" class="col-12 col-sm-12">
 
 			<div id="mobileHeader-myAccountFines">

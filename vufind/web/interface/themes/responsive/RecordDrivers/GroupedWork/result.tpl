@@ -253,7 +253,7 @@
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 {*				{if !empty($relatedManifestations)}*}
-				<div class="row d-none d-sm-block d-md-none">
+				<div class="row d-none d-sm-flex d-md-none">
 
 					{* Determine if there were hidden Formats for this entry *}
 					{assign var=hasHiddenFormats value=false}
@@ -293,7 +293,7 @@
 				{if !$viewingCombinedResults}
 					{* Description Section *}
 					{if $summDescription}
-						<div class="row d-none d-sm-block d-md-none">
+						<div class="row d-none d-sm-flex d-md-none">
 							<div class="result-label col-3">Description:</div>
 						</div>
 

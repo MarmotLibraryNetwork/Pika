@@ -137,7 +137,9 @@
 							{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 							{* Header Row with Column Labels *}
-							<div class="row d-sm-none d-md-block">
+							{* d-md-flex (not d-md-block) so the row keeps flex layout and the column labels line up;
+							   hidden below md where the col-md-* grid is inactive and records show their own labels *}
+							<div class="row d-none d-md-flex">
 								<div class="col-md-1">
 									<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 								</div>
