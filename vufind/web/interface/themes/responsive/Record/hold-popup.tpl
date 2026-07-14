@@ -110,7 +110,7 @@
           {if $showHoldCancelDate}
 					<div id="cancelHoldDate" class="mb-3">
 						<label class="form-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
-						<div class="input-group input-append date" id="cancelDatePicker">
+						<div class="input-group date" id="cancelDatePicker">
 							{* data-provide attribute loads the datepicker through bootstrap data api *}
 							{* start date sets minimum, end date sets maximum, date sets initial value: days from today, eg +8d is 8 days from now. *}
 							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10"

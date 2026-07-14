@@ -81,7 +81,7 @@
 *}
 								<div class="row mb-3">
 									<label for="startDate" class="col-form-label col-md-2">Start Date</label>
-									<div class="input-group input-append date col-md-3" id="startDatePicker">
+									<div class="input-group date col-md-3" id="startDatePicker">
 										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control" >
@@ -95,7 +95,7 @@
 								</div>
 								<div class="row mb-3">
 									<label for="endDate" class="col-form-label col-md-2">End Date</label>
-									<div class="input-group input-append date col-md-3" id="endDatePicker">
+									<div class="input-group date col-md-3" id="endDatePicker">
 										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 													 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 													 class="form-control">

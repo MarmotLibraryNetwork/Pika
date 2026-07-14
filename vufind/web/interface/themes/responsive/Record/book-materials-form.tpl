@@ -34,7 +34,7 @@
 			<div class="mb-3 col-md-6 offset-md-3">
 
 			<label for="endDate" class="form-label" >End Date</label>
-				<div class="input-group input-append date">
+				<div class="input-group date">
 					<input id="endDate" name="endDate" type="text" class="form-control" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.endDate} value="{$smarty.request.endDate}" {/if}
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
