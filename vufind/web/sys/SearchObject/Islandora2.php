@@ -18,12 +18,12 @@
 
 //namespace SearchObject;
 
-use ArchivePrivateCollection;
-use minSO;
-use PEAR_Singleton;
+//use ArchivePrivateCollection;
+//use minSO;
+//use PEAR_Singleton;
 use Pika\Logger;
-use RecordDriverFactory;
-use Solr;
+//use RecordDriverFactory;
+//use Solr;
 
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 
@@ -43,7 +43,8 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
 	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
 	// The remaining fields mirror Islandora2Driver's solrFields map.
-	private $fields = 'ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
+	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
+	// Include doucment Id field for the solr explaination matching, which keys of id field
 	//TODO: modified date field
 	//TODO: which created date field should we use?
 	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
@@ -1068,7 +1069,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$validFacets = array_keys($filter);
 
 		// merge date and regular facets
-		if (is_array($this->indexResult['facet_counts']['facet_dates'])){
+		if (!empty($this->indexResult['facet_counts']['facet_dates']) && is_array($this->indexResult['facet_counts']['facet_dates'])){
 			$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
 		} else {
 			$allFacets = $this->indexResult['facet_counts']['facet_fields'];

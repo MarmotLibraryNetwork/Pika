@@ -15,13 +15,59 @@
       border: 1px solid #c5c5c5;
       border-radius: 6px 6px 0 0;
     }
-    #openseadragon-strip {
+    #openseadragon-strip-row {
       height: 130px;
       display: flex;
-      justify-content: center;
+      align-items: stretch;
+      /* This row is a grid item; without this, its automatic minimum size is the
+         reference strip's full content width, which forces the whole grid column
+         (viewer included) thousands of pixels wide. */
+      min-width: 0;
       background-color: #fff;
       border: 1px solid #c5c5c5;
       border-radius: 0 0 6px 6px;
+    }
+    #openseadragon-strip {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      /* OpenSeadragon gives .referencestrip an explicit width of panel-width times
+         image count and scrolls it by shifting margin-left, so this container must
+         clip it or a long strip stretches the whole page. Center the strip only
+         when it fits ("safe" falls back to start alignment on overflow; the
+         flex-start line covers browsers without safe-alignment support). */
+      overflow: hidden;
+      justify-content: flex-start;
+      justify-content: safe center;
+    }
+    .osd-strip-arrow {
+      /* Shown only when the strip overflows; see the has-overflow toggle below. */
+      display: none;
+      flex: 0 0 34px;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #555;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #openseadragon-strip-row.has-overflow .osd-strip-arrow {
+      display: flex;
+    }
+    .osd-strip-arrow:hover,
+    .osd-strip-arrow:focus {
+      background-color: #eee;
+      color: #000;
+    }
+    #osd-strip-prev {
+      border-right: 1px solid #c5c5c5;
+      border-radius: 0 0 0 6px;
+    }
+    #osd-strip-next {
+      border-left: 1px solid #c5c5c5;
+      border-radius: 0 0 6px 0;
     }
     #openseadragon-strip .referencestrip {
       background: transparent !important;
@@ -42,7 +88,11 @@
 {/literal}
   <div class="osd-multi-wrap">
     <div id="openseadragon-viewer"></div>
-    <div id="openseadragon-strip"></div>
+    <div id="openseadragon-strip-row">
+      <button type="button" id="osd-strip-prev" class="osd-strip-arrow" aria-label="Scroll thumbnails backward"><i class="glyphicon glyphicon-chevron-left" aria-hidden="true"></i></button>
+      <div id="openseadragon-strip"></div>
+      <button type="button" id="osd-strip-next" class="osd-strip-arrow" aria-label="Scroll thumbnails forward"><i class="glyphicon glyphicon-chevron-right" aria-hidden="true"></i></button>
+    </div>
   </div>
 
   <script>
@@ -65,12 +115,39 @@
             loadTilesWithAjax: true,
           });
 
+          var stripRow = document.getElementById('openseadragon-strip-row');
+
           viewer.addHandler('open', function () {
             var strip = viewer.referenceStrip && viewer.referenceStrip.element;
             if (strip && stripContainer && strip.parentNode !== stripContainer) {
               stripContainer.appendChild(strip);
             }
+            if (strip && stripRow) {
+              var stripWidth = parseFloat(strip.style.width) || 0;
+              stripRow.classList.toggle('has-overflow', stripWidth > stripContainer.clientWidth + 1);
+            }
           });
+
+          // Advance the strip by dispatching wheel events at it: OpenSeadragon's own
+          // scroll handler then does the 60px-per-tick movement, bounds checking, and
+          // lazy thumbnail loading. deltaY < 0 scrolls forward (later thumbnails).
+          function scrollStrip(deltaY) {
+            var strip = viewer.referenceStrip && viewer.referenceStrip.element;
+            if (!strip) {
+              return;
+            }
+            // Enough ticks to move about 80% of the visible strip, one per frame so
+            // it slides instead of teleporting.
+            var ticks = Math.max(2, Math.round((stripContainer.clientWidth * 0.8) / 60));
+            (function step() {
+              strip.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY, cancelable: true }));
+              if (--ticks > 0) {
+                window.requestAnimationFrame(step);
+              }
+            })();
+          }
+          document.getElementById('osd-strip-prev').addEventListener('click', function () { scrollStrip(1); });
+          document.getElementById('osd-strip-next').addEventListener('click', function () { scrollStrip(-1); });
         {/literal}
       </script>
     {/if}

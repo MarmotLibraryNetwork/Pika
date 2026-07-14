@@ -110,23 +110,17 @@ class Islandora2Driver extends RecordInterface
 	private $solrFields = [
 		'id'          => 'its_node_id',
 		//'title'       => 'tm_X3b_en_title', //test
-		'title'       => 'twm_X3b_en_title_ws_token', // production TODO: use this field, it has punctuation, whereas the field above does not
+		'title'       => 'twm_X3b_en_title_ws_token', // production
 		'description' => 'twm_X3b_en_field_description_long_ws_token',
 		//'description' => 'tm_X3b_en_field_description_long',
 		'memberOf'    => 'itm_field_member_of', //node ids
 		'legacyPID'   => 'ss_legacy_pid',
 		//'legacyPID'   => 'tm_X3b_en_field_pid',
-		//'genre'       => 'sm_name_2',
 		'genre'       => 'sm_genre',
-		//'model'       => 'ss_name_1', //TODO remove
 		'model'       => 'ss_model',
-		//'legacyResourceType' => 'sm_name_22',
 		'legacyResourceType' => 'sm_legacy_resource_type',
-		//'format'      => 'sm_name_43',
 		'format'      => 'sm_format',
-		//'library'     => 'ss_name_23', // TODO remove
 		'library'     => 'ss_library',
-		//'rightsCreator' => 'tm_X3b_en_name_41',
 		'rightsCreator' => 'sm_rights_creator',
 	];
 
@@ -137,7 +131,7 @@ class Islandora2Driver extends RecordInterface
 	 * @return mixed
 	 */
 	private function getSolrFieldValue(array $solrDoc, string $field){
-		return $solrDoc[$this->solrFields[$field]];
+		return $solrDoc[$this->solrFields[$field]] ?? null;
 	}
 
 	/**

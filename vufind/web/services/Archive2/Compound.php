@@ -54,6 +54,7 @@ class Compound extends ArchiveObject
         $childrenData = [];
         $allAudio = true;
         $allVideo = true;
+        $allImage = true;
         $firstObjectModel = null;
 
         // get child objects
@@ -74,6 +75,10 @@ class Compound extends ArchiveObject
 
                 if ($objectModel !== 'video') {
                     $allVideo = false;
+                }
+
+                if ($objectModel !== 'image') {
+                    $allImage = false;
                 }
             }
 
@@ -142,6 +147,17 @@ class Compound extends ArchiveObject
                 $interface->assign('videoChildren', $videoChildren);
                 $interface->assign('useCompoundVideo', true);
                 $interface->assign('viewer', 'compound');
+
+                $title = $this->mediaObject->getTitle();
+                return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
+            }
+
+            // If all children are images and there's more than one, display them
+            // like a postcard: one OpenSeadragon viewer in sequence mode with a
+            // reference strip, instead of a stack of individual viewers
+            if ($allImage && count($childObjects) > 1) {
+                $interface->assign('service_file_url', $this->buildChildImageServiceUrls());
+                $interface->assign('viewer', 'open_seadragon_multi');
 
                 $title = $this->mediaObject->getTitle();
                 return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');

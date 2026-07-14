@@ -28,7 +28,8 @@ class SearchSuggestions {
 		'Author'
 	];
     
-    public static $disallowedSearchSuggestionWords = ['the']; 
+    public static $disallowedSearchSuggestionWords = ['a', 'an', 'be', 'in', 'is', 'it', 'of', 'on', 'or', 'the', 'to'];
+		//TODO: read stopwords.txt; store in memcache
     
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
         $searchTerm = str_ireplace(self::$disallowedSearchSuggestionWords, '', $searchTerm);

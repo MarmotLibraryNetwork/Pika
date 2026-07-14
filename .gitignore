@@ -152,6 +152,7 @@ vufind/web/interface/themes/responsive/Archive2/mirador.init.complete.tpl
 CLAUDE.md
 .claude
 .claude/*
+.mcp.json
 
 # NPM
 ###############################
