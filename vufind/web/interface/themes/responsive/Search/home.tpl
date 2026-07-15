@@ -29,7 +29,7 @@
 				{*<div class="clearfix"></div> // Doesn't seem to be needed *}
 
 			</div>
-			<div id="browse-sub-category-menu" class="row text-center">
+			<div id="browse-sub-category-menu" class="text-center">
 				{* Initial load of content done by AJAX call on page load, unless sub-category is specified via URL *}
 				{if $subCategoryTextId}
 					{include file="Search/browse-sub-category-menu.tpl"}
