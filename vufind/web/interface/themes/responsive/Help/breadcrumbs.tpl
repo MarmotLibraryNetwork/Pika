@@ -1,4 +1,4 @@
-<li class="breadcrumb-item">
+<li class="breadcrumb-item active" aria-current="page">
 	{if $shortPageTitle}
 	<em>{$shortPageTitle}</em>
 	{else}

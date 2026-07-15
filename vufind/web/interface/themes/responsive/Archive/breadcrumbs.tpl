@@ -8,9 +8,9 @@
 
 		{/if}
 	</li>
-	<li class="breadcrumb-item">
+	<li class="breadcrumb-item active" aria-current="page">
 		{if $breadcrumbText}
-			<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em>
+			<em>{$breadcrumbText|truncate:30:"..."|escape}</em>
 
 		{/if}
 	</li>

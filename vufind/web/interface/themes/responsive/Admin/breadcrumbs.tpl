@@ -2,7 +2,7 @@
 	<li class="breadcrumb-item">
 		<a href="/MyAccount/Home">{translate text='Your Account'}</a>
 	</li>
-	<li class="breadcrumb-item">
+	<li class="breadcrumb-item active" aria-current="page">
 		{if $pageTitle}
 			<em>{$pageTitle}</em>
 		{else}

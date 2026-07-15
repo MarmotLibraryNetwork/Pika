@@ -7,8 +7,8 @@
 		{/if}
 	</li>
 	{if $recordDriver}
-		<li class="breadcrumb-item">
-			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" aria-current="page">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
+		<li class="breadcrumb-item active" aria-current="page">
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
 		</li>
 		<li class="breadcrumb-item">
 			<em>{$groupedWorkDriver->getFormatCategory()}</em>

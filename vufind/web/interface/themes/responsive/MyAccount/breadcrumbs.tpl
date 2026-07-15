@@ -7,11 +7,11 @@
 			<a href="/MyAccount/MyLists">{translate text='My Lists'}</a>
 		</li>
 	{/if}
-	<li class="breadcrumb-item">
+	<li class="breadcrumb-item active" aria-current="page">
 		{if $shortPageTitle}
-			<em aria-current="page">{$shortPageTitle}</em>
+			<em>{$shortPageTitle}</em>
 		{else}
-			<em aria-current="page">{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
+			<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 		{/if}
 
 	</li>
