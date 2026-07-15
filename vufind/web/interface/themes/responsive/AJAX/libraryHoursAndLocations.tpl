@@ -3,7 +3,7 @@
 	<form{* role="form" Assigning form role to html form tags is not neccessary *}>
 		<div class="mb-3">
 			<label for="selectLibrary">Select a Location</label>
-			<select name="selectLibrary" id="selectLibrary" onchange="return Pika.showLocationHoursAndMap();" class="form-select">
+			<select name="selectLibrary" id="selectLibrary" onchange="return Pika.showLocationHoursAndMap();" class="form-select w-auto">
 				{foreach from=$libraryLocations item=curLocation}
 					<option value="{$curLocation.id}">{$curLocation.name}</option>
 				{/foreach}
