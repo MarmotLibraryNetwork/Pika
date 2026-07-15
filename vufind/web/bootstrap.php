@@ -17,7 +17,7 @@
  */
 
 define ('ROOT_DIR', __DIR__);
-set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
+set_include_path(get_include_path() . PATH_SEPARATOR . '/usr/share/composer');
 
 // autoloader stack
 // Composer autoloader
@@ -46,14 +46,21 @@ $memoryWatcher = new MemoryWatcher();
 $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime('Initialized Pika\Logger');
 
-// TODO: how does this interact with other error reporting?
-if ($configArray['System']['debug']) {
-	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED);
-} else {
-	ini_set('display_errors', 0);
-	ini_set('html_errors', 0);
-}
+// Report everything except deprecations, but never render errors to the page.
+// PHP notices/warnings/errors are forwarded into the Monolog stream by
+// Pika\Logger (see sys/Pika/Logger.php), which is the single destination for
+// them. error_reporting must include warnings here so Monolog's error handler
+// (which only logs levels within error_reporting()) actually captures them.
+// log_errors is left on as a fallback for failures that happen before the
+// logger is initialized or that are too fatal for the Monolog handler to catch;
+// with display_errors off, nothing is written to the web output.
+error_reporting(E_ALL & ~E_DEPRECATED);
+ini_set('display_errors', 0);
+ini_set('html_errors', 0);
+ini_set('log_errors', 1);
+//NOTE: the Logger is shared by CLI/cron, so PHP warnings there now go to the log
+//  rather than echoing to the terminal.
+
 
 // Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called

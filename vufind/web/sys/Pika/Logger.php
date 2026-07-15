@@ -53,7 +53,15 @@ class Logger extends MonoLogger {
 		$this->pushHandler(new StreamHandler($logFile, constant(MonoLogger::class . '::' . $logLevel))); //constant(MonoLogger::class . '::' . $logLevel)
 
 		if($registerErrorHandler) {
-			ErrorHandler::register($this);
+			// Route PHP warnings/notices/errors, uncaught exceptions, and fatal
+			// errors into this Monolog logger. registerErrorHandler() is called
+			// with $callPrevious = false so PHP's built-in handler does not also
+			// run after Monolog logs the error -- that keeps warnings out of the
+			// web output (display_errors) and avoids double-logging.
+			$errorHandler = new ErrorHandler($this);
+			$errorHandler->registerErrorHandler([], false);
+			$errorHandler->registerExceptionHandler();
+			$errorHandler->registerFatalHandler();
 		}
 	}
     
