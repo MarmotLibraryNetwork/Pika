@@ -208,7 +208,7 @@
 		<form action="" method="get">
 			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-				<button type="submit" value='{$customAction.action}' class="btn btn-small btn-outline-secondary">{$customAction.label}</button>
+				<button type="submit" value='{$customAction.action}' class="btn btn-sm btn-outline-secondary">{$customAction.label}</button>
 			</div>
 		</form>
 	{/if}

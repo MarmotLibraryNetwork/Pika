@@ -168,16 +168,16 @@
 				</a>
 				<div id="staffViewPanelBody" class="panel-collapse collapse {*show*}{*toggle on for open*}">
 					<div class="panel-body">
-						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}" target="_blank">
 							View in Islandora
 						</a>
-						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
 							View MODS Record
 						</a>
-						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-outline-secondary" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>

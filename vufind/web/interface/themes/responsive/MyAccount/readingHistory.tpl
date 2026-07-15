@@ -277,7 +277,7 @@
 													{if $record.permanentId}
 														<div class="row">
 															<div class="col-12 result-tools-horizontal{*to get the brown gradient to apply to button*}">
-																<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-small">Add To List</button>
+																<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-sm">Add To List</button>
 															</div>
 														</div>
 													{/if}
