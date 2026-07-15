@@ -59,25 +59,25 @@
 													<a class="dropdown-item catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 												</li>
 											{/foreach}
-											<li class="divider catalogType"></li>
+											<li class="catalogType"><hr class="dropdown-divider"></li>
 											{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 												<li>
 													<a class="dropdown-item genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 												</li>
 											{/foreach}
-											<li class="divider genealogyType"></li>
+											<li class="genealogyType"><hr class="dropdown-divider"></li>
 											{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 												<li>
 													<a class="dropdown-item islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 												</li>
 											{/foreach}
-											<li class="divider islandoraType"></li>
+											<li class="islandoraType"><hr class="dropdown-divider"></li>
 											{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 												<li>
 													<a class="dropdown-item ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 												</li>
 											{/foreach}
-											<li class="divider ebscoType"></li>
+											<li class="ebscoType"><hr class="dropdown-divider"></li>
 										{/if}
 									{/if}
 									{if $showAdvancedSearchbox}
