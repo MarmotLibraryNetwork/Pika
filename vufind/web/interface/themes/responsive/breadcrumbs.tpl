@@ -1,12 +1,12 @@
 {strip}
 	{if $showBreadcrumbs}
 		<nav aria-label="Breadcrumb" class="row breadcrumbs">
-			<div class="col-sm-12 col-md-9">
+			<div class="col-tn-12">
 				<ol class="breadcrumb small">
 					{if !$archiveOnlyInterface}
-						<li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb">{translate text=$homeLinkText}</a> <span class="divider">&raquo;</span></li>
+						<li class="breadcrumb-item"><a href="{$homeBreadcrumbLink}" id="home-breadcrumb">{translate text=$homeLinkText}</a></li>
 					{else}
-						<li><a href="/">Home</a> <span class="divider">&raquo;</span></li>
+						<li class="breadcrumb-item"><a href="/">Home</a></li>
 					{/if}
 					{include file="$module/breadcrumbs.tpl"}
 				</ol>

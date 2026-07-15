@@ -1,38 +1,38 @@
 {strip}
-	<li>
+	<li class="breadcrumb-item">
 		<a href="/Archive2/Home">{translate text="Archive Home"}</a>
-		<span class="divider">&raquo;</span>
+
 	</li>
 	{if $lastsearch}
-		<li>
+		<li class="breadcrumb-item">
 			<a href="{$lastsearch|escape}">{translate text="Archive Search Results"}</a>
-			<span class="divider">&raquo;</span>
+
 		</li>
 	{/if}
 	{if $parent_title}
-		<li>
+		<li class="breadcrumb-item">
 			<span>
 				{if $parent_rel_url}<a href="{$parent_rel_url}">{/if}
 				{$parent_title|escape}
 				{if $parent_rel_url}</a>{/if}
 			</span>
-			<span class="divider">&raquo;</span>
+
 		</li>
 	{/if}
 	{if $display_model}
-		<li>
+		<li class="breadcrumb-item">
 			<span>{$display_model|escape}</span>
-			<span class="divider">&raquo;</span>
+
 		</li>
 	{elseif $vocabulary_label}
-		<li>
+		<li class="breadcrumb-item">
 			<span>{$vocabulary_label|escape}</span>
-			<span class="divider">&raquo;</span>
+
 		</li>
 	{/if}
 
 	{if $breadcrumbText}
-		<li>
+		<li class="breadcrumb-item">
 			<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em>
 		</li>
 	{/if}

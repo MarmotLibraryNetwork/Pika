@@ -1,1 +1,1 @@
-<li>{translate text=$pageTitleShort|capitalize|translate} <span class="divider">&raquo;</span></li>
+<li class="breadcrumb-item">{translate text=$pageTitleShort|capitalize|translate}</li>
