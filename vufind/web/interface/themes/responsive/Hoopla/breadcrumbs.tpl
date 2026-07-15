@@ -12,7 +12,6 @@
 	{if $recordDriver}
 		<li class="breadcrumb-item active" aria-current="page">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
-
 		</li>
 		{if $recordDriver->getFormats()}
 			<li class="breadcrumb-item">

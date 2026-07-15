@@ -12,7 +12,6 @@
 		{else}
 			<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 		{/if}
-
 	</li>
 {/if}
 
