@@ -9,7 +9,7 @@
 						</h2>
 					</div>
 				</a>
-				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse{if $moreDetailsOption.openByDefault} in{/if}">
+				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse{if $moreDetailsOption.openByDefault} show{/if}">
 					<div class="panel-body">
 						{if is_array($moreDetailsOption.body)}
 							{foreach from=$moreDetailsOption.body item=bodyPart}

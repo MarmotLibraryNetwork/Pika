@@ -9,7 +9,7 @@
 						</h2>
 					</div>
 				</a>
-				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse {if $moreDetailsOption.openByDefault}in{/if}">
+				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse {if $moreDetailsOption.openByDefault}show{/if}">
 					<div class="panel-body">
 						{if $moreDetailsKey == 'description'}
 							{* make text-full items easier to read by placing an empty line where linebreaks exist *}

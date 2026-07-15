@@ -24,7 +24,7 @@
 				</div>
 		{/if}
 
-		<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
+		<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}show{/if}{/if}">
 			<div class="accordion-inner">
 				<div class="striped">
 				{include file="Record/copiesTableHeader.tpl"}

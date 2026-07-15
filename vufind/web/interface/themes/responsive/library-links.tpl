@@ -12,7 +12,7 @@
 								</div>
 							</div>
 						</a>
-						<div id="{$categoryName|escapeCSS}{$section}Panel" class="panel-collapse collapse {if array_key_exists($categoryName, $expandedLinkCategories)}in{/if}">
+						<div id="{$categoryName|escapeCSS}{$section}Panel" class="panel-collapse collapse {if array_key_exists($categoryName, $expandedLinkCategories)}show{/if}">
 							<div class="panel-body">
 								{foreach from=$linkCategory item=link key=linkName}
 									{if $link->htmlContents}

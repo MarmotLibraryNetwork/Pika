@@ -48,7 +48,7 @@
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
-				<div class="panel panel-default">
+				<div class="panel panel-default{if $property.open} active{/if}">
 					<div class="panel-heading row">
 						<div class="panel-title col-11">
 							<a data-bs-toggle="collapse" data-bs-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
@@ -62,7 +62,7 @@
 						{/if}
 					</div>
 
-					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse {if $property.open}active{else}collapse{/if}">
+					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse collapse{if $property.open} show{/if}">
 						<div class="panel-body">
 							{if $property.instructions}
 								<div class="alert alert-info">

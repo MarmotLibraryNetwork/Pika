@@ -24,7 +24,7 @@
 					</div>
 				</a>
 				{*  This content is duplicated in MyAccount/mobilePageHeader.tpl; Update any changes there as well *}
-				<div id="myAccountPanel" class="panel-collapse collapse{if  $displaySidebarMenu || $curSection} in{/if}">
+				<div id="myAccountPanel" class="panel-collapse collapse{if  $displaySidebarMenu || $curSection} show{/if}">
 					<div class="panel-body">
 						<span class="expirationFinesNotice-placeholder"></span>
 
@@ -104,7 +104,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="pikaMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="pikaMenuGroup" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							{* Library Admin Actions *}
 							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('partnerAdmin', $userRoles) || in_array('libraryManager', $userRoles))}
@@ -176,7 +176,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="adminMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="adminMenuGroup" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							{if in_array('userAdmin', $userRoles)}
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="/Admin/Administrators">Administrators</a></div>
@@ -208,7 +208,7 @@
 							<div class="panel-title">System Migration</div>
 						</div>
 					</a>
-					<div id="migrationMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="migrationMenuGroup" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 								<div class="adminMenuLink {if $action == "UserMigration"} active{/if}"><a href="/Admin/UserMigration">User Migration</a></div>
 								<div class="adminMenuLink {if $action == "ListMigration"} active{/if}"><a href="/Admin/ListMigration">List Migration</a></div>
@@ -231,7 +231,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="/Admin/IndexingStats">Indexing Statistics</a></div>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
@@ -257,7 +257,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="materialsRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="materialsRequestMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "ManageRequests"} active{/if}"><a href="/MaterialsRequest/ManageRequests">Manage Requests</a></div>
 							<div class="adminMenuLink{if $action == "SummaryReport"} active{/if}"><a href="/MaterialsRequest/SummaryReport">Summary Report</a></div>
@@ -283,7 +283,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="/Admin/NonGroupedRecords">Records To Not Merge</a></div>
@@ -331,7 +331,7 @@
 										</div>
 									</div>
 								</a>
-								<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+								<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 									<div class="panel-body">
 											{if $showOverDriveAPIlink}
 												<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
@@ -359,7 +359,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="LogMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="LogMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							{if in_array('opacAdmin', $userRoles)}
 									<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
@@ -393,7 +393,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="archivesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="archivesMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "ArchiveRequests"} active{/if}"><a href="/Admin/ArchiveRequests">Archive Material Requests</a></div>
 							<div class="adminMenuLink{if $action == "AuthorshipClaims"} active{/if}"><a href="/Admin/AuthorshipClaims">Archive Authorship Claims</a></div>
@@ -426,7 +426,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="circulationMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="circulationMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							{if $loggedIn && $userRoles && in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "MigrateCircs" && $module == "Circa"} active{/if}"><a href="/Circa/MigrateCircs">Migrate Circs</a></div>
@@ -453,7 +453,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="editorialReviewMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="editorialReviewMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "LibrarianReviews"} active{/if}"><a href="/Admin/LibrarianReviews">Librarian Reviews</a></div>
 							<div class="adminMenuLink"><a href="/Admin/LibrarianReviews?objectAction=addNew">New Review</a></div>
@@ -476,7 +476,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="reportsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="reportsMenu" class="panel-collapse collapse {if $curSection}show{/if}">
 						<div class="panel-body">
 							{if ($ils == 'CarlX' || $ils == 'Sierra') && $loggedIn && $userRoles && (in_array('locationReports', $userRoles))}
 								<div class="adminMenuLink{if $action == "StudentReport"} active{/if}"><a href="/Report/StudentReport">Student Reports</a></div>

@@ -146,7 +146,7 @@
 						</h2>
 					</div>
 				</a>
-				<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
+				<div id="staffViewPanelBody" class="panel-collapse collapse {*show*}{*toggle on for open*}">
 					<div class="panel-body">
 						<a class="btn btn-small btn-outline-secondary" href="{$repositoryLink}" target="_blank">
 							View in Islandora

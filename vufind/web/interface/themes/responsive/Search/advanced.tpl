@@ -129,7 +129,7 @@
 									</div>
 								</a>
 
-								<div id="facetPanel" class="panel-collapse collapse{if !empty($searchFilters)} in{/if}">
+								<div id="facetPanel" class="panel-collapse collapse{if !empty($searchFilters)} show{/if}">
 									<div class="panel-body">
 
 									<div class="alert alert-info">

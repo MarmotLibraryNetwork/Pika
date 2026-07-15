@@ -25,7 +25,7 @@
 				</div>
 			</a>
 
-			<div id="exploreMoreSideBar-{$sectionId}PanelBody" class="panel-collapse collapse{if $exploreMoreSection->openByDefault} in{/if}">
+			<div id="exploreMoreSideBar-{$sectionId}PanelBody" class="panel-collapse collapse{if $exploreMoreSection->openByDefault} show{/if}">
 				<div class="panel-body">
 
 		{if $section.format == 'scroller'}

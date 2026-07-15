@@ -33,7 +33,7 @@
 						</div>
 					</div>
 				</a>
-			<div id="filterPanel" class="panel-collapse collapse{if $filterError} in{/if}">
+			<div id="filterPanel" class="panel-collapse collapse{if $filterError} show{/if}">
 				<div class="panel-body">
 
 					<form action="/MaterialsRequest/ManageRequests" method="get">
