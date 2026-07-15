@@ -28,16 +28,9 @@
 .breadcrumb {
   padding: 0;
   margin-bottom: 0;
-
-  > li {
-    display: inline-block;
-
-    + li:before {
-      content: ""; // Override default separator since we add one in code
-      padding: 0 5px;
-      color: $breadcrumb-color;
-    }
-  }
+  // Separators are Bootstrap 5's default `.breadcrumb-item::before` ("/") --
+  // no custom override; the old `> li + li:before { content: "" }` rule that
+  // suppressed it (for the removed `.divider` spans) has been dropped.
 }
 
 //System message
