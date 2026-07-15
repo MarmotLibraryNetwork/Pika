@@ -21531,14 +21531,6 @@ table.dataTable.display tbody tr.odd > .sorting_1 a, table.dataTable.display tbo
   padding: 0;
   margin-bottom: 0;
 }
-.breadcrumb > li {
-  display: inline-block;
-}
-.breadcrumb > li + li:before {
-  content: "";
-  padding: 0 5px;
-  color: #ccc;
-}
 
 .system-message-header {
   background-color: #fff;
