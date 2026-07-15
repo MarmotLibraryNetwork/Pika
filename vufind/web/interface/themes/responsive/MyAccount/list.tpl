@@ -60,7 +60,7 @@
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
-							<button type="button" class="btn btn-sm btn-outline-secondary btn-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Share</button>
+							<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Share</button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{if $favList->public}<li><a href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
 								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
