@@ -6,7 +6,7 @@
 <search id="home-page-search" class="home-page-search row"{if $displaySidebarMenu} style="display: none"{/if}>
 	<div class="col-12">
 		<div class="row">
-			<div class="d-sm-none d-md-block-inline col-lg-12 text-center">
+			<div class="d-block-inline col-lg-12 text-center">
 				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></span></label>
 			</div>
 		</div>
