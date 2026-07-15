@@ -84,8 +84,8 @@
 				{translate text="Search Tips"}
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
-				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
-				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
+				<li><a href="/Help/Home?topic=advsearch" class="dropdown-item modalDialogTrigger" data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
+				<li><a href="/Help/Home?topic=search" class="dropdown-item modalDialogTrigger" data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
 			</ul>
 		</div>
 

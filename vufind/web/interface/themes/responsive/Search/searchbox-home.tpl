@@ -49,32 +49,32 @@
 									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 									{else}
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider catalogType"></li>
 										{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider genealogyType"></li>
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider islandoraType"></li>
 										{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider ebscoType"></li>
@@ -82,7 +82,7 @@
 									{/if}
 									{if $showAdvancedSearchbox}
 										<li class="catalogType">
-											<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
+											<a class="dropdown-item" id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
 												{translate text="Advanced"}
 											</a>
 										</li>
@@ -90,7 +90,7 @@
 
 									{* Link to Search Tips Help *}
 									<li>
-										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="modalDialogTrigger">
+										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="dropdown-item modalDialogTrigger">
 											{*<i class="icon-question-sign"></i>*} {translate text='Search Tips'}
 										</a>
 									</li>
