@@ -61,7 +61,7 @@
 				<div class="col-lg-7 col-xl-8">
 				{implode subject=$values glue='<br>' sort=true}
 				</div>
-				<div class="clearfix d-none d-md-block d-lg-none-block"></div>
+				<div class="clearfix d-none d-md-block"></div>
       {/if}
 			</div>
 	{/foreach}
