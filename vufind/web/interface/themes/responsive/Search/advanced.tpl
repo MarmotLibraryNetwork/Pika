@@ -19,7 +19,7 @@
 		padding-left: 0;
 	}
 	.group .groupSearchDetails {
-		width: 100%
+		width: 100%;
 		/*text-align: right;*/
 		padding: 3px 5px;
 	}
