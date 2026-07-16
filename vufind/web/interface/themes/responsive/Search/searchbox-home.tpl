@@ -183,30 +183,6 @@
 
 			</div>
 
-{* Original *}{*<!--
-			<div class="row text-center">
-				{if $filterList}
-					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
-				{/if}
-			</div>
-			{* Return to Advanced Search Link * }
-			{if $searchType == 'advanced'}
-				<div class="row text-center">
-					<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
-				</div>
-			{elseif $showAdvancedSearchbox}
-				<div class="row text-center">
-					<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
-				</div>
-			{/if}
-
-			{* Show/Hide Search Facets & Sort Options * }
-			{if $recordCount || $sideRecommendations}
-				<div class="row text-center d-none d-sm-block d-md-none">
-					<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
-				</div>
-			{/if}-->*}
-
 			{if $filterList}
 				{* Data for searching within existing results *}
 				<div id="keepFilters" style="display:none;">
