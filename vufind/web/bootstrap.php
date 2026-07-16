@@ -475,6 +475,12 @@ function pika_autoloader($class) {
 	}
 }
 
+/**
+ * Last autoloader. composer and pika loaders come first.
+ *
+ * @param $class
+ * @return void
+ */
 function vufind_autoloader($class) {
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
