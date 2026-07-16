@@ -156,7 +156,7 @@
 
 						{* Keep Filters Switch *}
 						{if $filterList && $action != 'MyList'}
-							<div class="row">
+							<div>
 								<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 							</div>
 						{/if}
