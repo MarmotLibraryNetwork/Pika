@@ -133,7 +133,7 @@
 						Formats:
 					</div>
 					<div class="hidethisdiv{$summId|escape} result-value col-9 col-sm-9">
-						<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('d-sm-none d-md-block');return false;">
+						<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('d-none d-md-block');return false;">
 							{implode subject=$relatedManifestations|@array_keys glue=", "}
 						</a>
 					</div>
@@ -143,7 +143,7 @@
 
 			{* Formats Section *}
 			<div class="row">
-				<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}d-sm-none d-md-block {/if}col-md-12" id="relatedManifestationsValue{$summId|escape}">
+				<div class="{if !$hasHiddenFormats && count($relatedManifestations) != 1}d-none d-md-block {/if}col-md-12" id="relatedManifestationsValue{$summId|escape}">
 					{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 					{* relatedManifestationsValue ID is used by the Formats button *}
 

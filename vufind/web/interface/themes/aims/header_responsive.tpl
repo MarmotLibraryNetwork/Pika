@@ -12,7 +12,7 @@
 		</div>
 
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-			<div class="d-sm-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0 mx-3">
+			<div class="d-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0 mx-3">
 				<a id="headerMyAccountLink" href="/MyAccount/Home">
 					<div class="header-button header-primary">
 						{translate text="Your Account"}
@@ -20,7 +20,7 @@
 				</a>
 			</div>
 
-			<div class="d-sm-none d-md-block col-md-2 col-lg-2 col-xl-2 mx-3">
+			<div class="d-none d-md-block col-md-2 col-lg-2 col-xl-2 mx-3">
 				<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}
@@ -32,7 +32,7 @@
 		<div class="loginOptions col-md-2 offset-md-7 col-lg-2 offset-lg-2 offset-xl-2 col-xl-2"{if $loggedIn} style="display: none;"{/if}>
 			{if $showLoginButton == 1}
 				<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this);{/if}">
-					<div class="d-sm-none d-md-block header-button header-primary">
+					<div class="d-none d-md-block header-button header-primary">
 						{translate text="LOGIN"}
 					</div>
 				</a>

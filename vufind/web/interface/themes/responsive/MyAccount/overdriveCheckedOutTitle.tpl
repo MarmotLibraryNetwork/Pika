@@ -25,7 +25,7 @@
 		{if $showCovers}
 		<div class="col-sm-3 col-md-4 col-lg-3 checkedOut-covers-column">
 			<div class="row">
-				<div class="selectTitle d-sm-none d-md-block col-md-1">
+				<div class="selectTitle d-none d-md-block col-md-1">
 					&nbsp;{* Can't renew overdrive titles*}
 				</div>
 				<div class="{*coverColumn *}text-center col-sm-12 col-md-10">
