@@ -62,9 +62,6 @@
 	#groupJoin strong {
 		font-size: 125%;
 	}
-	.keepFilters input {
-		vertical-align: middle;
-	}
 	#facetTable {
 		width: auto;
 		margin-left: auto;
