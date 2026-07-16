@@ -98,8 +98,8 @@ var Pika = (function(){
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
 				if (callback != undefined){
-					var closeLightboxListener = modalDialog.on('hidden.bs.modal', function (e) {
-						modalDialog.off('hidden.bs.modal');
+					var closeLightboxListener = modalDialog.on('hidden.bs.modal.closeLightbox', function (e) {
+						modalDialog.off('hidden.bs.modal.closeLightbox');
 						callback();
 					});
 				}
