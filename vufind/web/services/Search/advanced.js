@@ -8,18 +8,18 @@ function addSearch(group, term, field)
 
 	var newSearch = "";
 
-	newSearch += "<div class='row form-inline'>";
+	newSearch += "<div class='row gx-2 align-items-center'>";
 	// Label
-	newSearch += "<div class='searchLabel col-sm-2'>"
+	newSearch += "<div class='searchLabel col-md-2'>"
 			+ ((groupSearches[group] == 0) ? searchLabel+' :' : '&nbsp;')
 			+ '</div>';
 
 	// Terms
-	newSearch += "<div class='input-group col-sm-10'><input type='text' aria-label='search phrase' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "'>";
+	newSearch += "<div class='col-md-10'><div class='input-group'><input type='text' aria-label='search phrase' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "'>";
 
 	// Field
-	newSearch += "<span class='input-group-addon'>" + searchFieldLabel + " </span>";
-	newSearch += "<select aria-label='type of search' class='form-control' name='type" + group + "[]'>";
+	newSearch += "<span class='input-group-text'>" + searchFieldLabel + " </span>";
+	newSearch += "<select aria-label='type of search' class='form-select' name='type" + group + "[]'>";
 	for (key in searchFields) {
 			newSearch += "<option value='" + key + "'";
 			if (key == field) {
@@ -29,7 +29,7 @@ function addSearch(group, term, field)
 	}
 	newSearch += "</select>";
 
-	newSearch += "</div>";
+	newSearch += "</div></div>";
 
 	// Add to Search Group
 	$('#group' + group + 'SearchHolder').append(newSearch) // add new search
@@ -77,7 +77,7 @@ function addGroup(firstTerm, firstField, join)
 	// Holder for all the search fields
 	newGroup += "<div id='group" + nextGroupNumber + "SearchHolder' class='groupSearchHolder'></div>";
 	// Add search term link
-	newGroup += "<div class='addSearch row'><div class='col-sm-4 col-sm-offset-2'><button class='add btn btn-sm btn-default' id='add_search_link_" + nextGroupNumber + "' onclick='return addSearchJS(this);'>" + addSearchString + "</button></div></div>";
+	newGroup += "<div class='addSearch row'><div class='col-md-4 offset-md-2'><button class='add btn btn-sm btn-outline-secondary' id='add_search_link_" + nextGroupNumber + "' onclick='return addSearchJS(this);'>" + addSearchString + "</button></div></div>";
 
 	newGroup += "</div>";
 
