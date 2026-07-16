@@ -230,8 +230,9 @@
 			.on('hide.bs.collapse', function () {
 				$(this).removeClass('active');
 			})
+					/* Only run this once, .one() */
 			.one('shown.bs.collapse', function () {
-				Pika.initCarousels( $(this).children('.panel-collapse.in').find('.jcarousel') );
+				Pika.initCarousels( $(this).children('.panel-collapse.show').find('.jcarousel') );
 			});
 	{/literal}
 	{/if}
