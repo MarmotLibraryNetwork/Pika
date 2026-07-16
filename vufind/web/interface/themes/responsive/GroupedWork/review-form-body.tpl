@@ -1,7 +1,7 @@
 {strip}
 	<form class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *}>
 		{if $showRatings}
-		<div class="rateTitle mb-3">
+		<div class="rateTitle row mb-3">
 			<label for="rating{$id}" class="col-md-3">Rate the Title</label>
 			<div class="col-md-9">
 				<select name="rating" id="rating{$id}" class="form-select">
