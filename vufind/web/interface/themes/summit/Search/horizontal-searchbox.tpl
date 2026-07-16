@@ -110,7 +110,6 @@
 					<button class="btn btn-outline-secondary" type="submit">
 						<span class="bi bi-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
-						{*<span class="d-none d-sm-block d-md-none-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
 					</button>
 				</div>
 
