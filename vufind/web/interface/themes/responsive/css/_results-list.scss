@@ -164,6 +164,7 @@
 
 .result-tools-horizontal {
   margin-top: 6px;
+  gap: 5px; // Bootstrap 5 dropped the BS3 .btn-toolbar 5px inter-group margin; restore it as a flex gap
 
   & .btn {
     background-color: #4F5253; // passes AAA for normal text https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4F5253
