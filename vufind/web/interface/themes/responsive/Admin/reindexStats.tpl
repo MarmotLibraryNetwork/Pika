@@ -77,7 +77,7 @@
 					{foreach from=$indexingStats item=statsRow}
 						<tr>
 							{foreach from=$statsRow item=statCell name=statsLoop}
-								<td{if !empty($compareTo)}{if $statCell > 0} class="success"{elseif $statCell < 0} class="danger"{/if}{/if}>{$statCell}</td>
+								<td{if !empty($compareTo)}{if $statCell > 0} class="table-success"{elseif $statCell < 0} class="table-danger"{/if}{/if}>{$statCell}</td>
 							{/foreach}
 						</tr>
 					{/foreach}

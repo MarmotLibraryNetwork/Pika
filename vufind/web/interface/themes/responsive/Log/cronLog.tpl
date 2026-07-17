@@ -7,7 +7,7 @@
 		</thead>
 		<tbody>
 			{foreach from=$logEntries item=logEntry}
-				<tr{if $logEntry->getHadErrors()} class="danger"{/if}>
+				<tr{if $logEntry->getHadErrors()} class="table-danger"{/if}>
 					<td><a href="#" class="accordion-toggle collapsed" id="cronEntry{$logEntry->id}" onclick="Pika.Log.toggleCronProcessInfo('{$logEntry->id}');return false;">{$logEntry->id}</a></td>
 					<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 					<td>{$logEntry->endTime|date_format:"%D %T"}</td>
