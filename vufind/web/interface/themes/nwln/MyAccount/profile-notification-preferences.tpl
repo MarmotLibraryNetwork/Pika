@@ -4,10 +4,10 @@
 		<div class="col-sm-8">
 			{if !$offline && $canUpdateContactInfo == true}
 				<div class="btn-group btn-group-sm">
-					<label for="noticesTel" class="btn btn-sm btn-outline-secondary{* {if $profile->notices == 'p'}active{/if}*}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
-					<label for="noticesText" class="btn btn-sm btn-outline-secondary{* {if $profile->notices == 't'}active{/if}*}"><input type="radio" value="t" id="noticesText" name="notices" {if $profile->notices == 't'}checked="checked"{/if}> Text</label>
-					<label for="noticesEmail" class="btn btn-sm btn-outline-secondary{* {if $profile->notices == 'z'}active{/if}*}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
-					<label for="noticesNone" class="btn btn-sm btn-outline-secondary{* {if $profile->notices == '-'}active{/if}*}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
+					<input type="radio" class="btn-check" value="p" id="noticesTel" name="notices" autocomplete="off"{if $profile->notices == 'p'} checked="checked"{/if}><label for="noticesTel" class="btn btn-sm btn-outline-secondary">Telephone</label>
+					<input type="radio" class="btn-check" value="t" id="noticesText" name="notices" autocomplete="off"{if $profile->notices == 't'} checked="checked"{/if}><label for="noticesText" class="btn btn-sm btn-outline-secondary">Text</label>
+					<input type="radio" class="btn-check" value="z" id="noticesEmail" name="notices" autocomplete="off"{if $profile->notices == 'z'} checked="checked"{/if}><label for="noticesEmail" class="btn btn-sm btn-outline-secondary">Email</label>
+					<input type="radio" class="btn-check" value="-" id="noticesNone" name="notices" autocomplete="off"{if $profile->notices == '-'} checked="checked"{/if}><label for="noticesNone" class="btn btn-sm btn-outline-secondary">No Preference</label>
 				</div>
 			{else}
 				{$profile->noticePreferenceLabel|escape}
