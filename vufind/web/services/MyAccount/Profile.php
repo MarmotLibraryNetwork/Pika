@@ -199,7 +199,7 @@ class MyAccount_Profile extends MyAccount {
 				//Get the list of locations for display in the user interface.
 
 				$locationList      = [];
-				$locationList['0'] = "No Alternate Location Selected";
+				$locationList['0'] = 'No Alternate Location Selected';
 				foreach ($pickupLocations as $pickupLocation){
 					if (!is_string($pickupLocation)){
 						$locationList[$pickupLocation->locationId] = $pickupLocation->displayName;
