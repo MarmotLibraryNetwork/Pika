@@ -424,7 +424,7 @@
 														:</label></div>
 												<div class="col-sm-8">
 													{if !$offline}
-														{html_options name="myLocation1" id="myLocation1" class="form-control" options=$locationList selected=$profile->myLocation1Id}
+														{html_options name="myLocation1" id="myLocation1" class="form-select" options=$locationList selected=$profile->myLocation1Id}
 													{else}
 														{$profile->myLocation1|escape}
 													{/if}
@@ -434,7 +434,7 @@
 												<div class="col-sm-4"><label for="myLocation2"
 												                             class="form-label">{translate text='My Second Alternate Library'}
 														:</label></div>
-												<div class="col-sm-8">{if !$offline}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
+												<div class="col-sm-8">{if !$offline}{html_options name="myLocation2" id="myLocation2" class="form-select" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
 											</div>
 										{/if}
 

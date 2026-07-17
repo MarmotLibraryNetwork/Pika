@@ -17,7 +17,7 @@
                             <label for="notification_method">Receive Library Notifications By:</label>
                         </div>
                         <div class="col-sm-8">
-                            {html_options name="notification_method" id="notification_method" class="form-control" options=$notificationOptions selected=$profile->noticePreferenceId}
+                            {html_options name="notification_method" id="notification_method" class="form-select" options=$notificationOptions selected=$profile->noticePreferenceId}
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -25,7 +25,7 @@
                             <label for="ereceipt_method">Receive E-receipts by:</label>
                         </div>
                         <div class="col-sm-8">
-                            {html_options name="ereceipt_method" id="ereceipt_method" class="form-control" options=$eReceiptOptions selected=$profile->ereceiptId}
+                            {html_options name="ereceipt_method" id="ereceipt_method" class="form-select" options=$eReceiptOptions selected=$profile->ereceiptId}
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -33,7 +33,7 @@
                             <label for="email_format">Email Format:</label>
                         </div>
                         <div class="col-sm-8">
-                            {html_options name="email_format" id="email_format" class="form-control" options=$emailFormatOptions selected=$profile->emailFormatId}
+                            {html_options name="email_format" id="email_format" class="form-select" options=$emailFormatOptions selected=$profile->emailFormatId}
                         </div>
                     </div>
                     <div class="row mb-3">
