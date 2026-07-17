@@ -47,7 +47,7 @@
 					{foreach from=$overDriveSettings.lendingPeriods item=lendingOption key="formatType"}
 						{if !empty($lendingOption->options)}
 							{* Magazines are listed here but there is no options available. So we won't display in this form *}
-							<div id="overdrive-lending-options" class="row mb-3">
+							<div class="overdrive-lending-options row mb-3">
 								<div class="col-sm-4"><label class="form-label">{$formatType}:</label></div>
 								<div class="col-sm-8">
 									<div class="btn-group btn-group-sm" role="group">
