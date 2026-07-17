@@ -30,7 +30,7 @@
 				<p>Large numbers of order records will take a while to load.</p>
 			</div>
 			<div class="table-responsive">
-				<table class="table table-striped table-bordered table-condensed" id="activeOrdersTable">
+				<table class="table table-striped table-bordered table-sm" id="activeOrdersTable">
 					<thead>
 						<tr>
 							{foreach from=$headers item=header}

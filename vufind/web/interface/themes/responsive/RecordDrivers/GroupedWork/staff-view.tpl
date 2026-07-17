@@ -24,7 +24,7 @@
 	{include file="Record/qrcode.tpl"}
 
 <h3>Grouping Information</h3>
-<table class="table-striped table table-condensed notranslate">
+<table class="table-striped table table-sm notranslate">
 	<tr>
 		<th>Grouped Work ID</th>
 		<td><span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
@@ -72,7 +72,7 @@
 			{if strpos($field, "scoping_details") !== false}
 				<div class="col-12">
 				<h4>{$field|escape}</h4>
-				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
+				<table id="scoping_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Is Home Pick Up Only</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Home Pick Up PTypes</th><th>Local Url</th>
 					</tr>
@@ -89,7 +89,7 @@
 			{elseif strpos($field, "item_details") !== false}
 				<div class="col-12">
 				<h4>{$field|escape}</h4>
-					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
+					<table id="item_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
 							<th>Bib Id</th><th>Item Id</th><th>Shelf Location</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>Item URL</th>{*<th>subformat</th>*}<th>Detailed Status</th><th>Last Checkin</th><th>Location</th>
 						</tr>
@@ -106,7 +106,7 @@
 			{elseif strpos($field, "record_details") !== false}
 				<div class="col-12">
 				<h4>{$field|escape}</h4>
-					<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
+					<table id="record_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
 							<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
 						</tr>

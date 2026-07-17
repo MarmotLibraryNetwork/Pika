@@ -31,7 +31,7 @@
 		</div>
 		<br>
 		{if count($allRequests) > 0}
-			<table id="requestedMaterials" class="table stripe table-condensed">
+			<table id="requestedMaterials" class="table stripe table-sm">
 				<thead>
 					<tr>
 						<th>Title</th>

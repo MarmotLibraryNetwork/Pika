@@ -65,7 +65,7 @@
 					</table>
 					<br>
 				{/if}
-				<table class="table table-condensed stripe order-column table-hover" id="reindexingStats">
+				<table class="table table-sm stripe order-column table-hover" id="reindexingStats">
 					<thead>
 					<tr>
 						{foreach from=$indexingStatHeader item=itemHeader}

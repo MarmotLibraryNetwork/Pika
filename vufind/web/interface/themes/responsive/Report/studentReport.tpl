@@ -30,7 +30,7 @@
 					{assign var=reportCount value=$reportData|@count}
 					There are a total of <strong>{$reportCount-1}</strong> rows that meet your criteria.
 				</p>
-				<table id="studentReportTable" class="table table-condensed stripe">
+				<table id="studentReportTable" class="table table-sm stripe">
 					{foreach from=$reportData item=dataRow name=studentData}
 						{if $smarty.foreach.studentData.index == 0}
 							<thead>

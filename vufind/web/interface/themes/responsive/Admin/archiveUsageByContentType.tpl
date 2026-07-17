@@ -1,7 +1,7 @@
 {strip}
 	<h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 	<div class="adminTableRegion">
-		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
+		<table class="adminTable table table-striped order-column table-sm" id="adminTable">
 			<thead>
 			<tr>
 				<th><label title="Content Type">Content Type</label></th>

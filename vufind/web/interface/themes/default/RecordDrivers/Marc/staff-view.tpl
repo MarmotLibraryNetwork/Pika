@@ -92,7 +92,7 @@
 			{if $matchedByAccessUrl}
 				<div class="alert alert-warning">Extract Information was matched by id in access url instead of record id.</div>
 			{/if}
-			<table class="table-striped table table-condensed notranslate">
+			<table class="table-striped table table-sm notranslate">
 					{foreach from=$hooplaExtract key='field' item='values'}
 							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
 								<tr>
@@ -112,7 +112,7 @@
 
     {if $marcRecord}
 			<h3>Record Information</h3>
-			<table class="table-striped table table-condensed notranslate">
+			<table class="table-striped table table-sm notranslate">
 			{if isset($lastRecordExtractTime)}
 				<tr>
 					<th>Last {$ils} Extract Time</th>
@@ -138,7 +138,7 @@
 
 			<div id="formattedMarcRecord">
 				<h3>MARC Record</h3>
-				<table class="table table-condensed table-bordered notranslate">
+				<table class="table table-sm table-bordered notranslate">
 					<tbody>
 						{*Output leader*}
 						<tr><th colspan="3">LEADER</th><td>{$marcRecord->getLeader()}</td></tr>

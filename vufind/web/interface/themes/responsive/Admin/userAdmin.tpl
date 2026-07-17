@@ -56,7 +56,7 @@
 		</form>
 
 		{if !empty($duplicateUsers)}
-			<table class="table-condensed">
+			<table class="table-sm">
 			<tr>
 				<th>#</th>
 				<th>First Name</th>

@@ -1,5 +1,5 @@
 {strip}
-	<table class="table table-striped table-condensed">
+	<table class="table table-striped table-sm">
 		<thead>
 		<tr>
 			{display_if_inconsistent array=$relatedRecords key="publicationDate"}

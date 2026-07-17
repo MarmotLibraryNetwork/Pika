@@ -35,7 +35,7 @@
 				</button>
 				</div>
 				<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" class="itemSummaryPopup" style="display: none">
-					<table class="table table-striped table-condensed itemSummaryTable">
+					<table class="table table-striped table-sm itemSummaryTable">
 						<thead>
 						<tr>
 							<th>Available Copies</th>

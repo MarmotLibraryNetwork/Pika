@@ -1,6 +1,6 @@
 {strip}
 	<div class="table-responsive">
-		<table class="logEntryDetails table table-condensed table-hover">
+		<table class="logEntryDetails table table-sm table-hover">
 			<thead>
 			<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th>
 				<th>Records Added</th>
