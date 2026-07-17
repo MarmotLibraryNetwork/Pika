@@ -65,6 +65,7 @@
 					</table>
 					<br>
 				{/if}
+				<div class="table-responsive">
 				<table class="table table-sm stripe order-column table-hover" id="reindexingStats">
 					<thead>
 					<tr>
@@ -83,6 +84,7 @@
 					{/foreach}
 					</tbody>
 				</table>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -90,13 +92,14 @@
 <script>
 	{literal}
 	$(function(){
-/* Close side bar menu
+/* Close sidebar menu
 		$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();
 */
 
 		var table = $('#reindexingStats').DataTable({
 			"order": [[0, "asc"]],
-			"paging": false
+			"paging": false,
+			"autoWidth": false /* This keeps the columns at reasonable widths after Bootstrap 5 upgrade */
 		});
 
 		$('.toggle-vis').on( 'click', function (e) {
