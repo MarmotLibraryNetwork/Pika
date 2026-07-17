@@ -20910,6 +20910,9 @@ nav.breadcrumbs [aria-current=page] {
   font-style: italic !important;
   color: #222;
 }
+nav.breadcrumbs [aria-current=page]::before {
+  font-style: normal !important;
+}
 
 .categoryValue:focus-within {
   outline: 1px solid #E15F15 !important;
