@@ -50,10 +50,11 @@
 							<div id="overdrive-lending-options" class="row mb-3">
 								<div class="col-sm-4"><label class="form-label">{$formatType}:</label></div>
 								<div class="col-sm-8">
-									<div class="btn-group btn-group-sm"{* data-toggle="buttons"*}>
+									<div class="btn-group btn-group-sm" role="group">
 											{foreach from=$lendingOption->options item=option}
 													{if !$offline}
-														<label for="{$formatType}_{$option}" class="btn btn-sm btn-outline-secondary{* {if $lendingOption->lendingPeriod == $option}active{/if}*}"><input type="radio" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" {if $lendingOption->lendingPeriod  == $option}checked="checked"{/if}{* class="form-control"*}>&nbsp; {$option}</label>
+														<input type="radio" class="btn-check" name="lendingPeriods[{$formatType}]" value="{$option}" id="{$formatType}_{$option}" autocomplete="off"{if $lendingOption->lendingPeriod == $option} checked="checked"{/if}>
+														<label for="{$formatType}_{$option}" class="btn btn-sm btn-outline-secondary">{$option}</label>
 													{elseif $lendingOption->lendingPeriod == $option}
 															{$option}
 													{/if}
