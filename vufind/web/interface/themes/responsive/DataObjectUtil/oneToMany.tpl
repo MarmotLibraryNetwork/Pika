@@ -172,7 +172,7 @@
 		var numAdditional{$propName} = 0;
 		function addNew{$propName}{literal}(){
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} -1;
-			var newRow = "<tr class='newRow success'>"; /*success class makes the new row visually distinct from the other rows */
+			var newRow = "<tr class='newRow table-success'>"; /*success class makes the new row visually distinct from the other rows */
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}

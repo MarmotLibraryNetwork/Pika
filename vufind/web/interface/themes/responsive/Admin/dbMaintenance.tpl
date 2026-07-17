@@ -22,7 +22,7 @@
 				<tbody>
 					{foreach from=$sqlUpdates item=update key=updateKey}
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
-					{if isset($update.success)}{if $update.success} success{elseif $update.continueOnError} warning{else} danger{/if}{/if}"
+					{if isset($update.success)}{if $update.success} table-success{elseif $update.continueOnError} table-warning{else} table-danger{/if}{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
 						<td>{$update.release}</td>
