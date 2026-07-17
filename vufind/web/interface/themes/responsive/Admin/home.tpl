@@ -5,7 +5,7 @@
 	{if $PikaStatus}
 	<h1 class="h2" role="heading" aria-level="1">Pika Status</h1>
 		<table id="pika-status" class="table table-bordered">
-			<tr class="{if $PikaStatus == 'critical'}danger{elseif $PikaStatus == 'warning'}warning{else}success{/if}">
+			<tr class="{if $PikaStatus == 'critical'}table-danger{elseif $PikaStatus == 'warning'}table-warning{else}table-success{/if}">
 				<th>{$PikaStatus|capitalize}</th>
 			</tr>
 			{foreach from=$PikaStatusMessages item=message}

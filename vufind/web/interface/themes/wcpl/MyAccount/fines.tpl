@@ -72,7 +72,7 @@
 					{/foreach}
 				</tbody>
 				<tfoot>
-				<tr class="info">
+				<tr class="table-info">
 					<th>Total</th>
 					{if $showDate}
 						<td></td>

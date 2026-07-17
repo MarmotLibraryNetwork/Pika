@@ -59,8 +59,8 @@
 					<br>
 					<table class="table">
 						<tr>
-							<th class="success">Increased since {$pastDate}</th>
-							<th class="danger">Decreased since {$pastDate}</th>
+							<th class="table-success">Increased since {$pastDate}</th>
+							<th class="table-danger">Decreased since {$pastDate}</th>
 						</tr>
 					</table>
 					<br>

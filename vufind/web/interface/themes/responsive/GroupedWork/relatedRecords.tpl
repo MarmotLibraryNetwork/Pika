@@ -34,7 +34,7 @@
 		</tr>
 		</thead>
 		{foreach from=$relatedRecords item=relatedRecord key=index}
-			<tr{if $promptAlternateEdition && $index===0} class="danger"{/if}>
+			<tr{if $promptAlternateEdition && $index===0} class="table-danger"{/if}>
 				{* <td>
 				{$relatedRecord.holdRatio}
 				</td> *}
