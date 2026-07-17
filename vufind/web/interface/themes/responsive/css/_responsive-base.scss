@@ -357,6 +357,12 @@ nav.breadcrumbs [aria-current="page"] {
   text-decoration: none !important;
   font-style: italic !important;
   color: #222;
+
+  // Bootstrap 5's "/" separator is this item's ::before; keep it upright
+  // instead of inheriting the current-page italic.
+  &::before {
+    font-style: normal !important;
+  }
 }
 
 .categoryValue:focus-within {
