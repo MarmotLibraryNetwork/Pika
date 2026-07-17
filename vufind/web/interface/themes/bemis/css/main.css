@@ -23226,6 +23226,7 @@ img.x-twit {
 
 .result-tools-horizontal {
   margin-top: 6px;
+  gap: 5px;
 }
 .result-tools-horizontal .btn {
   background-color: #4F5253;
