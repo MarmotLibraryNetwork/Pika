@@ -17,7 +17,7 @@
  */
 
 define ('ROOT_DIR', __DIR__);
-set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
+set_include_path(get_include_path() . PATH_SEPARATOR . '/usr/share/composer');
 
 // autoloader stack
 // Composer autoloader
@@ -521,5 +521,11 @@ function vufind_autoloader($class) {
 	$filePath = ROOT_DIR . '/' . $nameSpaceClass;
 	if (file_exists($filePath)) {
 		require_once $filePath;
+		return;
 	}
+
+	// Last resort: search PHP's include_path (e.g. Composer-managed classes outside
+	// ROOT_DIR, or local dev-environment class shims). Failures are ignored so the
+	// next registered autoloader gets a chance.
+	@include_once $nameSpaceClass;
 }
