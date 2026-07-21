@@ -105,10 +105,10 @@ Pika.Record = (function(){
 			return false;
 		},
 
-		submitBookClubKitRequestForm: function(){
-			$.post('/Record/AJAX?method=submitBookClubKitRequestForm', $('#bookClubKitRequestForm').serialize(),
+		submitBookClubKitRequestForm: function(module, id){
+			$.post('/' + module + '/' + id + '/AJAX?method=submitBookClubKitRequestForm', $('#bookClubKitRequestForm').serialize(),
 					function(data){
-						Pika.showMessage(data.title, data.message, 0, true);
+						Pika.showMessage(data.title, data.message);
 					},
 					'json').fail(Pika.ajaxFail);
 			return false;

@@ -1,0 +1,1 @@
+{include file="Record/breadcrumbs.tpl"}

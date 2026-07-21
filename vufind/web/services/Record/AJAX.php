@@ -32,8 +32,6 @@ class Record_AJAX extends AJAXHandler {
 	 'reloadCover',
 	 'forceReExtract',
 	 'getCheckInGrid',
-	 'getBookClubKitRequestForm',
-	 'submitBookClubKitRequestForm',
 	];
 
 	protected array $methodsThatRespondWithHTML = [
@@ -457,100 +455,6 @@ class Record_AJAX extends AJAXHandler {
 			];
 		}
 		return $results;
-	}
-
-	function getBookClubKitRequestForm(){
-		global $interface;
-		$user = UserAccount::getLoggedInUser();
-		if ($user){
-			$id = $_REQUEST['id'];
-			/** @var MarcRecord $marcRecord */
-			$marcRecord  = RecordDriverFactory::initRecordDriverById($id);
-			$author      = $marcRecord->getPrimaryAuthor();
-			$title       = $marcRecord->getTitle() . (!empty($author) ? ' by ' . $author : '');
-			$homeLibrary = $user->getHomeLibrary();
-
-			$interface->assign('name', trim($user->firstname . ' ' . $user->lastname));
-			$interface->assign('email', $user->email);
-			$interface->assign('libraryCardNumber', $user->getBarcode());
-			$interface->assign('homeLibraryId', $homeLibrary->libraryId);
-			$interface->assign('title', $title);
-			$interface->assign('recordId', $id);
-
-			$results = [
-				'title'        => 'Request Book Club Kit',
-				'modalBody'    => $interface->fetch('Record/bookClubKitRequestForm.tpl'),
-				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookClubKitRequestForm\').submit()">Submit Request</button>',
-				// Clicking invokes submit event, which allows the validator to act before calling the ajax handler
-			];
-		}else{
-			$results = [
-				'title'        => 'Please log in',
-				'modalBody'    => 'You must be logged in.  Please close this dialog and login before requesting a Book Club Kit.',
-				'modalButtons' => '',
-			];
-		}
-		return $results;
-	}
-
-	function submitBookClubKitRequestForm(){
-		global $configArray;
-		$user = UserAccount::getLoggedInUser();
-		if (!$user){
-			return [
-				'title'   => 'Error',
-				'message' => "<p class='alert alert-danger'>You must be logged in to submit a Book Club Kit request.</p>",
-			];
-		}
-
-		$homeLibrary = $user->getHomeLibrary();
-		if (empty($homeLibrary->bookClubKitContactEmail)){
-			return [
-				'title'   => 'Request Not Sent',
-				'message' => "<p class='alert alert-danger'>Sorry, {$homeLibrary->displayName} does not offer Book Club Kit requests through this form. Please contact your library directly.</p>",
-			];
-		}
-
-		require_once ROOT_DIR . '/sys/BookClubKit/BookClubKitRequest.php';
-		$request            = new BookClubKit\BookClubKitRequest();
-		$request->libraryId = $homeLibrary->libraryId;
-		$request->userId    = $user->id;
-		$request->barcode   = $user->getBarcode();
-		$request->name      = strip_tags($_REQUEST['name']);
-		$request->email     = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: $user->email;
-		$request->recordId  = strip_tags($_REQUEST['recordId']);
-		$request->title     = strip_tags($_REQUEST['title']);
-		$request->insert();
-
-		global $interface;
-		$interface->assign('name', $request->name);
-		$interface->assign('email', $request->email);
-		$interface->assign('libraryCardNumber', $request->barcode);
-		$interface->assign('title', $request->title);
-		$interface->assign('libraryName', $homeLibrary->displayName);
-		$subject = 'Book Club Kit Request From: ' . $request->name;
-		$body    = $interface->fetch('Record/bookClubKitRequestEmail.tpl');
-
-		require_once ROOT_DIR . '/sys/Mailer.php';
-		$mail          = new VuFindMailer();
-		$to            = $homeLibrary->bookClubKitContactEmail;
-		$siteEmail     = $configArray['Site']['email'] ?? null;
-		$sendingAddress = !empty($siteEmail) ? $siteEmail : $request->email;
-		$emailResult   = $mail->send($to, $sendingAddress, $subject, $body, $request->email, $siteEmail);
-
-		if (PEAR::isError($emailResult)){
-			$this->logger->error('Book Club Kit request email not sent: ' . $emailResult->getMessage());
-			return [
-				'title'   => 'Book Club Kit request email not sent',
-				'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your request.</p>",
-			];
-		}
-
-		$this->logger->notice('Book Club Kit request email was sent successfully for library ' . $homeLibrary->displayName);
-		return [
-			'title'   => 'Book Club Kit Requested',
-			'message' => '<p class="alert alert-success">Thank you for your request. Your library will follow up with you when your kit is ready.</p>',
-		];
 	}
 
 	function getBookingCalendar(){
