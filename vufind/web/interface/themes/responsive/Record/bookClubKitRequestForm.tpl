@@ -1,4 +1,17 @@
 {strip}
+	<div class="alert alert-info">
+		<p>
+			Thank you for your interest in this book club set from the <a href="https://www.coloradovirtuallibrary.org/resource-sharing/co-book-clubs/cooler-climes-call-for-cozy-characters/">Colorado Book Club Resource</a>. Please note, this collection is owned and operated by the Colorado State Library. {if $librarySystemName}{$librarySystemName}{else}Your library{/if} has access to the collection and library staff will request the set on your behalf.
+		</p>
+		<h3 class="h4">Borrowing Guidelines:</h3>
+		<ul>
+			<li>Please allow up to <strong>two weeks</strong> for an <strong>available</strong> set to be delivered to your library. You will be notified when it’s ready to pick up. You will receive a due date when you pick up your set.</li>
+			<li>The loan period for the sets is <strong>eight weeks</strong>, and renewals are available if no other holds are waiting.</li>
+			<li>There may be a wait for a set to become available. Search the <a href="https://csl.catalog.aspencat.info/">standalone catalog</a> to see whether a set is checked out or currently available.</li>
+			<li>The library cannot guarantee sets for a future date as all items are shared on a first-come-first-served basis.</li>
+			<li>Find resources, policies, and FAQs on the <a href="https://www.coloradovirtuallibrary.org/uncategorized/key-information-for-users-of-kits-book-club-sets/">Colorado Virtual Library website</a>.</li>
+		</ul>
+	</div>
 	<form id="bookClubKitRequestForm">
 		<input type="hidden" name="submit" value="submitted">
 		<input type="hidden" name="homeLibraryId" value="{$homeLibraryId}">
