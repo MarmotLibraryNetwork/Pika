@@ -466,7 +466,7 @@ class Record_AJAX extends AJAXHandler {
 			$id = $_REQUEST['id'];
 			/** @var MarcRecord $marcRecord */
 			$marcRecord  = RecordDriverFactory::initRecordDriverById($id);
-			$author      = $marcRecord->getAuthor();
+			$author      = $marcRecord->getPrimaryAuthor();
 			$title       = $marcRecord->getTitle() . (!empty($author) ? ' by ' . $author : '');
 			$homeLibrary = $user->getHomeLibrary();
 
