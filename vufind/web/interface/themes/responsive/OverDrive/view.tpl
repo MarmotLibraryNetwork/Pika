@@ -29,15 +29,7 @@
 
 			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
 
-				{if $error}{* TODO: Does this get used? *}
 					<div class="row">
-						<div class="alert alert-danger">
-							{$error}
-						</div>
-					</div>
-				{/if}
-
-				<div class="row">
 					<div id="record-details-column" class="col-xs-12 col-sm-8">
 {*					<div id="record-details-column" class="col-xs-12 col-sm-9">*}
 						{include file="OverDrive/view-title-details.tpl"}

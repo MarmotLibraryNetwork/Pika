@@ -3,14 +3,6 @@
 	{* Search Navigation *}
 	{include file="GroupedWork/search-results-navigation.tpl"}
 
-	{if $error}
-		<div class="row">
-			<div class="alert alert-danger">
-				{$error}
-			</div>
-		</div>
-	{/if}
-
 	<h1 role="heading" aria-level="1" class="h2">
 	{$person->firstName|escape} {$person->middleName|escape}{if $person->nickName} "{$person->nickName|escape}"{/if}{if $person->maidenName} ({$person->maidenName}){/if} {$person->lastName|escape}
 	</h1>
