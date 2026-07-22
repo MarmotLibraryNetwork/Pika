@@ -2506,6 +2506,20 @@ abstract class SearchObject_Base {
 		return $url;
 	}
 
+	/**
+	 * Escape a filter value for safe inclusion inside a double-quoted Solr/Lucene
+	 * phrase query. Without this, a value containing a literal '"' (e.g., a subject
+	 * heading like Anderson, E. E. "Ernie".) truncates the phrase early, and the
+	 * remaining unescaped quote breaks the query, silently returning no results.
+	 *
+	 * @param   string  $value
+	 * @return  string
+	 */
+	protected function escapeSolrPhraseValue(string $value): string{
+		$value = str_replace('\\', '\\\\', $value);  // escape backslashes first
+		return str_replace('"', '\\"', $value);      // then escape quotes
+	}
+
 }//End of SearchObject_Base
 
 /**
