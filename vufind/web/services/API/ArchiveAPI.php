@@ -34,10 +34,20 @@ class API_ArchiveAPI extends AJAXHandler {
 		'getDPLACounts',
 	];
 
+	/**
+	 * I2 stores relator roles as machine values on the 'relation' key, in the form
+	 * "local:<3-letter code>" (e.g. 'local:pbl' for Publisher) — see
+	 * Islandora2Driver::relatedTermLabels(). These are the same "local:" relator
+	 * codes used elsewhere for relation comparisons (ArchiveObject.php 'local:sup',
+	 * correspondenceSection.tpl 'local:pml'); 'ack' also matches the Acknowledgement
+	 * code in ArchiveObject::PRODUCTION_TEAM_ROLES_RELATOR_CODES.
+	 */
+	private const RELATOR_CODE_PUBLISHER = 'local:pbl';
+
 	private $organizationRolesToIncludeInDPLA = [
-		'owner',
-		'donor',
-		'acknowledgement',
+		'local:own', // Owner
+		'local:dnr', // Donor
+		'local:ack', // Acknowledgement
 	];
 
 	/**
@@ -188,7 +198,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			$publishers    = [];
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
-				if (($relatedPerson['role'] ?? '') == 'publisher'){
+				if (($relatedPerson['role'] ?? '') === self::RELATOR_CODE_PUBLISHER){
 					$publishers[] = $relatedPerson['label'];
 				} else {
 					// Include related Entities as Subjects
@@ -199,7 +209,7 @@ class API_ArchiveAPI extends AJAXHandler {
 			// Add organizations that are Publishers & related organizations as DPLA Subjects
 			$relatedOrganizations = $record->getRelatedOrganizations();
 			foreach ($relatedOrganizations as $relatedOrganization){
-				if (($relatedOrganization['role'] ?? '') == 'publisher'){
+				if (($relatedOrganization['role'] ?? '') === self::RELATOR_CODE_PUBLISHER){
 					$publishers[] = $relatedOrganization['label'];
 				} else {
 					// Include related Entities as Subjects

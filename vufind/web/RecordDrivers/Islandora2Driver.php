@@ -805,10 +805,12 @@ class Islandora2Driver extends RecordInterface
 				'tid'   => $entry['tid'] ?? null,
 			];
 			if ($withRole) {
-				// I2 stores the relator as the machine value in 'relation' (e.g. 'local:pbl');
-				// the DPLA feed compares against role names like 'publisher'.
-				// TODO: confirm the relation vocabulary values against production data so the
-				//       DPLA role comparisons (publisher / owner / donor / acknowledgement) match.
+				// I2 stores the relator as the machine value in 'relation', e.g. 'local:pbl'.
+				// API_ArchiveAPI compares this directly against its 'local:<code>' relator
+				// constants (RELATOR_CODE_PUBLISHER / organizationRolesToIncludeInDPLA) —
+				// still worth spot-checking against production data since these codes were
+				// inferred from the 'local:sup' / 'local:pml' comparisons used elsewhere
+				// (ArchiveObject.php, correspondenceSection.tpl) rather than confirmed live.
 				$item['role'] = $entry['relation'] ?? ($entry['relation_label'] ?? null);
 			}
 			$out[] = $item;
