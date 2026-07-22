@@ -68,7 +68,7 @@ class API_ArchiveAPI extends AJAXHandler {
 
 			// Identifier: the archive migration to Islandora 2 breaks PID continuity, so the DPLA
 			// identifier is now node-based. The legacy PID is retained separately for traceability.
-			$dplaDoc['identifier'] = $record->getUniqueID();
+			$dplaDoc['identifier'] = $record->getUniqueID(false);
 			$legacyPid             = $doc['ss_legacy_pid'] ?? null;
 			if (is_array($legacyPid)){
 				$legacyPid = reset($legacyPid);
@@ -239,8 +239,13 @@ class API_ArchiveAPI extends AJAXHandler {
 		'Academic Paper'  => 'Text',
 		'Art'             => 'Image',
 		'Article'         => 'Text',
+		'Audio'           => 'Sound',
 		'Book'            => 'Text',
+		//'Collection' => '', //TODO: determine format
+		//'Compound Object => '', //TODO: determine format
 		'Document'        => 'Text',
+		'Digital document' => 'Text',
+		'Digital Document' => 'Text',
 		'Image'           => 'Still Image',
 		'Magazine'        => 'Text',
 		'Music Recording' => 'Sound',

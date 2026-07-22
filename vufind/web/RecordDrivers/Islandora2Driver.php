@@ -500,10 +500,15 @@ class Islandora2Driver extends RecordInterface
         return $label !== '' ? $label : 'Digital Resource';
     }
 
-    public function getUniqueID(): string
+    public function getUniqueID(bool $includePrefix = true): string
     {
-        return $this->nodeId > 0 ? 'islandora2-' . $this->nodeId : 'islandora2-unknown';
-				// using dash to avoid html DOM problems when using a : colon character
+			//TODO: the use-cases that require the prefix are likely limited. Most uses probably just need the node Id.
+			if ($includePrefix){
+				return $this->nodeId > 0 ? 'islandora2-' . $this->nodeId : 'islandora2-unknown';
+				// using dash to avoid html DOM problems when using a colon (:) character
+			} else {
+				return $this->nodeId > 0 ? $this->nodeId : 'unknown';
+			}
     }
 
     public function hasFullText(): bool
