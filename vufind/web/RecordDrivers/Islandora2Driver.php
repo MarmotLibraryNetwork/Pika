@@ -23,6 +23,7 @@ require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Islandora2\I2Object;
 use Islandora2\I2ObjectFactory;
+use Islandora2\TaxonomyFactory;
 use Pika\Logger;
 
 /**
@@ -49,6 +50,16 @@ class Islandora2Driver extends RecordInterface
 	private ?string $format = null;
 	private ?string $model = null;
 	private ?string $contributingLibrary = null;
+
+	/**
+	 * Per-request cache of resolved contributing-library info, keyed by library taxonomy tid.
+	 * Static so it's shared across the many Islandora2Driver instances created while paging
+	 * through a large result set (e.g. the DPLA feed export), avoiding a repeat
+	 * DB + taxonomy lookup for every record from the same library.
+	 *
+	 * @var array<int, array{libraryName:string, baseUrl:?string, orgTid:?int}|null>
+	 */
+	private static array $contributingLibraryInfoCache = [];
 
     /**
      * @param int|string|array $recordData
@@ -864,6 +875,17 @@ class Islandora2Driver extends RecordInterface
 	 * the name/tid from the library's Corporate Body taxonomy term and the base URL
 	 * from the matching Pika Library row (keyed by libraryTid rather than namespace).
 	 *
+	 * Not every contributing library has a matching Pika Library row (or a populated
+	 * corporateBodyTid on that row) — e.g. partner institutions hosted on a different
+	 * Pika server. When that lookup comes up empty we fall back to the library's own
+	 * Islandora taxonomy term, which carries a field_related_organization pointing at
+	 * the equivalent Corporate Body term (same fallback used by
+	 * Archive2\ExploreMore::getExploreMoreData() for the "Contributed by" tile).
+	 *
+	 * Results are cached per libraryTid for the lifetime of the request: this driver
+	 * is re-instantiated for every record in a search result, but a DPLA feed page
+	 * covers many records from the same handful of libraries.
+	 *
 	 * @return array{libraryName:string, baseUrl:?string, orgTid:?int}|null
 	 */
 	public function getContributingLibraryInfo(): ?array {
@@ -872,27 +894,78 @@ class Islandora2Driver extends RecordInterface
 			return null;
 		}
 
-		$orgTerm    = $obj->getLibraryOrganization();
 		$libraryTid = isset($obj->library['tid']) ? (int)$obj->library['tid'] : 0;
+		if ($libraryTid <= 0) {
+			return null;
+		}
+
+		if (array_key_exists($libraryTid, self::$contributingLibraryInfoCache)) {
+			return self::$contributingLibraryInfoCache[$libraryTid];
+		}
+
+		return self::$contributingLibraryInfoCache[$libraryTid] = $this->resolveContributingLibraryInfo($libraryTid);
+	}
+
+	/**
+	 * Resolve (uncached) the contributing-library info for a given library taxonomy tid.
+	 * See getContributingLibraryInfo() for the primary/fallback strategy.
+	 *
+	 * @param int $libraryTid
+	 * @return array{libraryName:string, baseUrl:?string, orgTid:?int}|null
+	 */
+	private function resolveContributingLibraryInfo(int $libraryTid): ?array {
+		$pikaLibrary             = new Library();
+		$pikaLibrary->libraryTid = $libraryTid;
+		$libraryRowFound         = $pikaLibrary->find(true);
 
 		$baseUrl = null;
-		if ($libraryTid > 0) {
-			$pikaLibrary             = new Library();
-			$pikaLibrary->libraryTid = $libraryTid;
-			if ($pikaLibrary->find(true) && !empty($pikaLibrary->catalogUrl)) {
-				$scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
-				$baseUrl = $scheme . '://' . $pikaLibrary->catalogUrl;
+		if ($libraryRowFound && !empty($pikaLibrary->catalogUrl)) {
+			$scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+			$baseUrl = $scheme . '://' . $pikaLibrary->catalogUrl;
+		}
+
+		$taxonomy    = new TaxonomyFactory();
+		$libraryName = null;
+		$orgTid      = null;
+
+		// Primary: resolve via the Pika Library DB row → corporateBodyTid
+		if ($libraryRowFound && !empty($pikaLibrary->corporateBodyTid)) {
+			$orgTerm = $taxonomy->fromTid((int)$pikaLibrary->corporateBodyTid);
+			if ($orgTerm !== null) {
+				$libraryName = $orgTerm->getTitle();
+				$orgTid      = $orgTerm->getTid();
+			}
+		} elseif ($libraryRowFound) {
+			$this->logger->warn("Contributing library $pikaLibrary->subdomain does not have the Corporate Body TID set");
+		}
+
+		// Fallback for libraries with no matching Pika Library row or corporateBodyTid
+		// (e.g., partner institutions on a different Pika server): the library
+		// vocabulary term in Islandora carries a field_related_organization pointing
+		// to the equivalent Corporate Body term; use the first entry.
+		if ($libraryName === null) {
+			$libraryTerm = $taxonomy->fromTid($libraryTid);
+			if ($libraryTerm !== null) {
+				$relatedOrgs = $libraryTerm->getRelatedOrganization();
+				if (!empty($relatedOrgs)) {
+					$org         = $relatedOrgs[0];
+					$libraryName = $org['name'] ?? null;
+					$orgTid      = isset($org['tid']) ? (int)$org['tid'] : null;
+				} else {
+					$this->logger->warn("Islandora2Driver: library term $libraryTid has no related organization; cannot resolve contributing library name.");
+				}
+			} else {
+				$this->logger->warn("Islandora2Driver: library term $libraryTid not found in Islandora; cannot resolve contributing library name.");
 			}
 		}
 
-		$libraryName = ($orgTerm && !empty($orgTerm->name)) ? $orgTerm->name : '';
-		if ($libraryName === '' && $baseUrl === null) {
+		if (empty($libraryName) && $baseUrl === null) {
 			return null; // nothing useful to report
 		}
 		return [
-			'libraryName' => $libraryName,
+			'libraryName' => $libraryName ?? '',
 			'baseUrl'     => $baseUrl,
-			'orgTid'      => $orgTerm ? $orgTerm->getTid() : null,
+			'orgTid'      => $orgTid,
 		];
 	}
 

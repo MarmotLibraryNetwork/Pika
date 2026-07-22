@@ -726,10 +726,10 @@ class ExploreMore {
 				if ($libraryTerm !== null) {
 					$relatedOrgs = $libraryTerm->getRelatedOrganization();
 					if (!empty($relatedOrgs)) {
-						$org      = $relatedOrgs[0];
-						$orgTerm       = $factory->fromTid((int)($org['tid'] ?? 0));
-						$orgThumbnail  = $orgTerm?->getThumbnail();
-						$values[] = [
+						$org          = $relatedOrgs[0];
+						$orgTerm      = $factory->fromTid((int)($org['tid'] ?? 0));
+						$orgThumbnail = $orgTerm?->getThumbnail();
+						$values[]     = [
 							'label' => 'Contributed by ' . ($org['name'] ?? ''),
 							'image' => $orgThumbnail['url'] ?? null,
 							'link'  => $org['url'] ?? '#',
