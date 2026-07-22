@@ -1602,7 +1602,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 					}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
 						$filterQuery[] = "$field:$value";
 					}elseif (!empty($value)){
-						$filterQuery[] = "$field:\"$value\"";
+						$filterQuery[] = "$field:\"" . $this->escapeSolrPhraseValue($value) . '"';
 					}
 				}
 			}
