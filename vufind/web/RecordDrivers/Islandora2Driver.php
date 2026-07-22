@@ -708,6 +708,19 @@ class Islandora2Driver extends RecordInterface
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Alternative title for the object, or '' when none is set.
+	 * @return string
+	 */
+	public function getAlternativeTitle(): string{
+			$obj = $this->ensureI2Object();
+			if (!$obj) {
+				return '';
+			}
+			$alternativeTitle = $this->firstNonEmptyString($obj->alternative_title); // magic __get → field_alternative_title
+			return $alternativeTitle;
+	}
+
+	/**
 	 * Subtitle for the object, or '' when none is set.
 	 */
 	public function getSubTitle(): string {
@@ -717,6 +730,27 @@ class Islandora2Driver extends RecordInterface
 		}
 		$subtitle = $obj->subtitle; // magic __get → field_subtitle
 		return (is_string($subtitle) && $subtitle !== '') ? $subtitle : '';
+	}
+
+	/**
+	 * Normalize a raw node field value that may be a plain string or a list of
+	 * strings (Drupal multi-value field) down to its first non-empty string.
+	 *
+	 * @param mixed $raw
+	 * @return string
+	 */
+	private function firstNonEmptyString($raw): string {
+		if (is_string($raw)){
+			return $raw;
+		}
+		if (is_array($raw)){
+			foreach ($raw as $item){
+				if (is_string($item) && $item !== ''){
+					return $item;
+				}
+			}
+		}
+		return '';
 	}
 
 	/**

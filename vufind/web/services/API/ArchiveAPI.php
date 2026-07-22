@@ -61,7 +61,7 @@ class API_ArchiveAPI extends AJAXHandler {
 		$pageSize     = $_REQUEST['pageSize'] ?? 100;
 		$changesSince = $_REQUEST['changesSince'] ?? null;
 		$namespace    = $_REQUEST['namespace'] ?? null;
-		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
+		[$searchObject, $collectionsToInclude, $searchResult] = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		$dplaDocs = [];
 
@@ -102,9 +102,14 @@ class API_ArchiveAPI extends AJAXHandler {
 				$dplaDoc['language'] = $language;
 			}
 
-			$subTitle = $record->getSubTitle();
-			if (strlen($subTitle) > 0){
-				$dplaDoc['alternativeTitle'] = $subTitle;
+			$alternativeTitle = $record->getAlternativeTitle();
+			if (!empty($alternativeTitle)){
+				$dplaDoc['alternativeTitle'] = $alternativeTitle;
+			} else {
+				$subTitle = $record->getSubTitle();
+				if (strlen($subTitle) > 0){
+					$dplaDoc['alternativeTitle'] = $subTitle;
+				}
 			}
 
 			// Extent (physical description of the digital object)
@@ -400,7 +405,7 @@ class API_ArchiveAPI extends AJAXHandler {
 		$pageSize     = $_REQUEST['pageSize'] ?? 100;
 		$changesSince = $_REQUEST['changesSince'] ?? null;
 		$namespace    = $_REQUEST['namespace'] ?? null;
-		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
+		[$searchObject, $collectionsToInclude, $searchResult] = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		return $this->extractRecordsByLibrary($searchResult);
 	}
