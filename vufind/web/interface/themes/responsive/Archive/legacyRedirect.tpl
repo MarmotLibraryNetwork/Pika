@@ -20,7 +20,7 @@
       <strong><span id="legacy-redirect-countdown">5</span></strong>
       seconds.
     </p>
-
+{literal}
     <script>
       (function () {
         'use strict';
@@ -40,7 +40,7 @@
         }, 1000);
       }());
     </script>
-
+  {/literal}
   {else}
 
     <p>This page has been permanently moved, but the new address could not be determined automatically.</p>
