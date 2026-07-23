@@ -368,6 +368,7 @@ class API_ArchiveAPI extends AJAXHandler {
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
+		$searchObject->addFilter('!ss_model:Collection'); // Exclude Collections from feed
 
 		if (!empty($collectionsToInclude)){
 			$ancestors = 'itm_field_member_of:(' . implode(' OR ', $collectionsToInclude) . ')';
