@@ -137,7 +137,7 @@ class Archive_RequestCopy extends Action{
 
 		// Set up captcha to limit spam self-registrations
         if (isset($configArray['ReCaptcha']['siteKey'])) {
-            $captchaCode = recaptchaGetQuestion('requestcopy');
+            $captchaCode = recaptchaGetQuestion('archive-requestcopy');
             $interface->assign('captcha', $captchaCode);
         }
 

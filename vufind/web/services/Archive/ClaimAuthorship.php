@@ -135,7 +135,7 @@ class Archive_ClaimAuthorship extends Action{
 
 		// Set up captcha to limit spam authorship claims
 		if (isset($configArray['ReCaptcha']['siteKey'])) {
-			$captchaCode = recaptchaGetQuestion('claimauthorship');
+			$captchaCode = recaptchaGetQuestion('archive-claimauthorship');
 			$interface->assign('captcha', $captchaCode);
 		}
 

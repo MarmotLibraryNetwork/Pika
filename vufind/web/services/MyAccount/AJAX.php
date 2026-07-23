@@ -1379,7 +1379,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion('email');
+				$captchaCode = recaptchaGetQuestion('email-userlist');
 				$interface->assign('captcha', $captchaCode);
 			}
 

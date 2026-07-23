@@ -180,7 +180,7 @@ class AJAX extends AJAXHandler {
 	function getEmailForm(){
 		global $interface;
 		if (!UserAccount::isLoggedIn()){
-			$captchaCode = recaptchaGetQuestion('email');
+			$captchaCode = recaptchaGetQuestion('email-search-results');
 			$interface->assign('captcha', $captchaCode);
 		}
 		if (UserAccount::isLoggedIn()){

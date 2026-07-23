@@ -706,7 +706,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion('email');
+				$captchaCode = recaptchaGetQuestion('email-grouped-work');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [
@@ -731,7 +731,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion('email');
+				$captchaCode = recaptchaGetQuestion('email-series');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [

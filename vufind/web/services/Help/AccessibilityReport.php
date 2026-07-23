@@ -28,7 +28,7 @@ class AccessibilityReport extends Action {
 		global $configArray;
 		global $interface;
 		if (isset($configArray['ReCaptcha']['siteKey'])) {
-			$captchaCode = recaptchaGetQuestion('accessibilityReport');
+			$captchaCode = recaptchaGetQuestion('accessibility-report');
 			$interface->assign('captcha', $captchaCode);
 		}
 		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');
