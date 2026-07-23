@@ -71,7 +71,15 @@
     }
     #openseadragon-strip .referencestrip {
       background: transparent !important;
-      
+      /* .referencestrip is a flex item here, and flex items shrink by default.
+         OpenSeadragon scrolls the strip by making margin-left more negative,
+         which shrinks the outer size the flex algorithm needs to fill, so
+         without flex-shrink:0 the browser grows the strip's own width to
+         compensate every time margin-left changes. That makes the strip's
+         width unstable and wraps thumbnails onto hidden extra rows instead of
+         keeping them in the single clipped, scrollable row this layout
+         requires. Pin it to its OSD-assigned width instead. */
+      flex-shrink: 0;
     }
     #openseadragon-strip .referencestrip:focus,
     #openseadragon-strip .referencestrip:focus-visible {
