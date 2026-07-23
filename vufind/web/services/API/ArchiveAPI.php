@@ -256,9 +256,8 @@ class API_ArchiveAPI extends AJAXHandler {
 		'Article'         => 'Text',
 		'Audio'           => 'Sound',
 		'Book'            => 'Text',
-		//'Collection' => '', //TODO: determine format
-		'Compound object' => 'Compound', //Wasn't mapped in the legacy system. We will try Compound til we get negative feedback
-		'Compound Object' => 'Compound', //Wasn't mapped in the legacy system. We will try Compound til we get negative feedback
+		'Compound object' => 'Compound', // Wasn't mapped in the legacy system. We will try Compound till we get negative feedback
+		'Compound Object' => 'Compound', // Wasn't mapped in the legacy system. We will try Compound till we get negative feedback
 		'Document'        => 'Text',
 		'Digital document' => 'Text',
 		'Digital Document' => 'Text',
