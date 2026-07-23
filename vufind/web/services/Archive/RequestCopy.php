@@ -58,7 +58,7 @@ class Archive_RequestCopy extends Action{
         if (isset($_REQUEST['submit'])) {
             if (isset($configArray['ReCaptcha']['secretKey'])){
                 try {
-                    $recaptchaValid = recaptchaCheckAnswer(false, 'requestcopy');
+                    $recaptchaValid = recaptchaCheckAnswer(false, 'archive-requestcopy');
                 } catch (Exception $e) {
                     $recaptchaValid = false;
                 }

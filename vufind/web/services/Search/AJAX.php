@@ -46,7 +46,7 @@ class AJAX extends AJAXHandler {
 	// Email Search Results
 	function sendEmail(){
 		global $interface;
-		$recaptchaValid = recaptchaCheckAnswer(false, 'email');
+		$recaptchaValid = recaptchaCheckAnswer(false, 'email-search-results');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 
 			$subject = translate('Library Catalog Search Result');

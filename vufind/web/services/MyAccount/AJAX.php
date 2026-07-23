@@ -1275,7 +1275,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			$recaptchaValid = recaptchaCheckAnswer(false, 'email');
+			$recaptchaValid = recaptchaCheckAnswer(false, 'email-userlist');
 
 			if (UserAccount::isLoggedIn() || $recaptchaValid){
 				$listId = $_REQUEST['listId'];

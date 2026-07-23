@@ -56,7 +56,7 @@ class Archive_ClaimAuthorship extends Action{
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'claimauthorship');
+					$recaptchaValid = recaptchaCheckAnswer(false, 'archive-claimauthorship');
 				} catch (Exception $e) {
 					$recaptchaValid = false;
 				}

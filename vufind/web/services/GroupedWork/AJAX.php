@@ -746,7 +746,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer(false, 'email');
+		$recaptchaValid = recaptchaCheckAnswer(false, 'email-grouped-work');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$id = $_REQUEST['id'];
 			if (GroupedWork::validGroupedWorkId($id)){
@@ -824,7 +824,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendSeriesEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer(false, 'email');
+		$recaptchaValid = recaptchaCheckAnswer(false, 'email-series');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){

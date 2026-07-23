@@ -93,7 +93,6 @@ function recaptchaGetQuestion(string $action = 'submit') {
  */
 function recaptchaCheckAnswer($recaptchaResponse = false, string $expectedAction = '') {
 	global $configArray;
-	$logger = new Logger('reCaptcha');
 
 	if (empty($configArray['ReCaptcha']['secretKey'])) {
 		throw new \RuntimeException('No reCaptcha key provided');
@@ -116,7 +115,8 @@ function recaptchaCheckAnswer($recaptchaResponse = false, string $expectedAction
 	}
 	$recaptcha->setScoreThreshold($threshold);
 
-	$r = $recaptcha->verify($recaptchaResponse, $remoteIp);
+	$logger = new Logger('reCaptcha');
+	$r      = $recaptcha->verify($recaptchaResponse, $remoteIp);
 	if ($r->isSuccess()) {
 		$logger->info('reCaptcha passed', ['score' => $r->getScore(), 'action' => $expectedAction]);
 		return true;
