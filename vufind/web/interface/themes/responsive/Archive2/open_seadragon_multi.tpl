@@ -71,7 +71,15 @@
     }
     #openseadragon-strip .referencestrip {
       background: transparent !important;
-      
+      /* .referencestrip is a flex item here, and flex items shrink by default.
+         OpenSeadragon scrolls the strip by making margin-left more negative,
+         which shrinks the outer size the flex algorithm needs to fill, so
+         without flex-shrink:0 the browser grows the strip's own width to
+         compensate every time margin-left changes. That makes the strip's
+         width unstable and wraps thumbnails onto hidden extra rows instead of
+         keeping them in the single clipped, scrollable row this layout
+         requires. Pin it to its OSD-assigned width instead. */
+      flex-shrink: 0;
     }
     #openseadragon-strip .referencestrip:focus,
     #openseadragon-strip .referencestrip:focus-visible {
@@ -83,6 +91,17 @@
       float: none !important;
       display: inline-block !important;
       vertical-align: middle;
+      /* OpenSeadragon sizes each panel as width + 2px padding and assumes the
+         browser's default content-box model, so its click handler divides by
+         (panelWidth + 4) to figure out which thumbnail was clicked. Our global
+         Bootstrap reset forces border-box on every element, which pulls that
+         padding back inside the declared width and shrinks each panel's real
+         on-screen pitch by 4px. Left uncorrected, that 4px-per-panel gap
+         accumulates across the strip, so clicks land increasingly right of
+         the intended thumbnail on strips with many images. Restoring
+         content-box here keeps the real geometry matching what OpenSeadragon's
+         click math expects. */
+      box-sizing: content-box;
     }
 </style>
 {/literal}
