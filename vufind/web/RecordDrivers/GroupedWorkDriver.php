@@ -3011,6 +3011,11 @@ class GroupedWorkDriver extends RecordInterface {
 		$anyLocalStatusBetterThanShelving = false;
 		$localShelvingStatus              = '';
 
+		// booleans to be used together to determine if the best status among local items is
+		// 'On Display'; and no local item has a better status (i.e. 'On Shelf')
+		$anyLocalOnDisplay                 = false;
+		$anyLocalStatusBetterThanOnDisplay = false;
+
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
 			$itemId        = $curItem->itemIdentifier;
@@ -3206,12 +3211,19 @@ class GroupedWorkDriver extends RecordInterface {
 				$sectionId                     = 1;
 				$section                       = 'In this library';
 
-				// Check if the best status is Shelving; only check while the relevant flags aren't true.
+				// Check if the best local status is Shelving; only check while the relevant flags aren't true.
 				if (!$anyLocalStatusBetterThanShelving && self::$statusRankings[$groupedStatus] > self::$statusRankings['Shelving']){
 					$anyLocalStatusBetterThanShelving = true;
 				} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
 					$anyLocalShelving    = true;
 					$localShelvingStatus = $groupedStatus;
+				}
+
+				// Check if the best local status is On Display; only check while the relevant flags aren't true.
+				if (!$anyLocalStatusBetterThanOnDisplay && self::$statusRankings[$groupedStatus] > self::$statusRankings['On Display']){
+					$anyLocalStatusBetterThanOnDisplay = true;
+				} elseif (!$anyLocalStatusBetterThanOnDisplay && !$anyLocalOnDisplay && $groupedStatus == 'On Display'){
+					$anyLocalOnDisplay = true;
 				}
 			}elseif ($libraryOwned){
 				if ($libraryShelfLocation == null){
@@ -3233,6 +3245,13 @@ class GroupedWorkDriver extends RecordInterface {
 					} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
 						$anyLocalShelving    = true;
 						$localShelvingStatus = $groupedStatus;
+					}
+
+					// Check if the best status is On Display; only check while the relevant flags aren't true.
+					if (!$anyLocalStatusBetterThanOnDisplay && self::$statusRankings[$groupedStatus] > self::$statusRankings['On Display']){
+						$anyLocalStatusBetterThanOnDisplay = true;
+					} elseif (!$anyLocalStatusBetterThanOnDisplay && !$anyLocalOnDisplay && $groupedStatus == 'On Display'){
+						$anyLocalOnDisplay = true;
 					}
 				}
 				$sectionId = 5;
@@ -3331,6 +3350,10 @@ class GroupedWorkDriver extends RecordInterface {
 				// display override status when the most available local item is being shelved
 				$relatedRecord['localShelvingItem']   = true;
 				$relatedRecord['localShelvingStatus'] = $localShelvingStatus;
+			}
+			if ($anyLocalOnDisplay && !$anyLocalStatusBetterThanOnDisplay){
+				// display override status when the best status among local items is 'On Display'
+				$relatedRecord['localOnDisplayItem'] = true;
 			}
 			if ($anyLocalStatusBetterThanShelving){
 				$relatedRecord['anyLocalStatusBetterThanShelving'] = true;

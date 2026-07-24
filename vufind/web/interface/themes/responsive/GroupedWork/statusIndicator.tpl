@@ -10,11 +10,21 @@
 			{/if}
 		{else}
 			{if $showItsHere && $isOpac}
-				<div class="related-manifestation-shelf-status available">It's Here{if (!empty($statusInformation.groupedStatus) && $statusInformation.groupedStatus != "On Shelf")} ({$statusInformation.groupedStatus}){/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+				{if $statusInformation.localOnDisplayItem}
+					<div class="related-manifestation-shelf-status available">It's Here ({translate text='On Display'}) {include file='GroupedWork/homePickupbutton.tpl'}</div>
+					{* Best Local Status is "On Display" while on OPAC device *}
+				{else}
+					<div class="related-manifestation-shelf-status available">It's Here{if (!empty($statusInformation.groupedStatus) && $statusInformation.groupedStatus != "On Shelf")} ({$statusInformation.groupedStatus}){/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 				{* This allows for other available statuses, like "On Display";
 				like "Shelving"; or "Recently Returned" for Clearview *}
+					{/if}
 			{else}
-				<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+				{if $statusInformation.localOnDisplayItem}
+					<div class="related-manifestation-shelf-status available">{translate text='On Display'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+					{* Best Local Status is "On Display" *}
+				{else}
+					<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
+				{/if}
 			{/if}
 		{/if}
 	{elseif $statusInformation.availableLocally}
