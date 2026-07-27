@@ -9742,6 +9742,10 @@ img.x-twit {
   color: green;
   font-weight: bold;
 }
+.itemSummaryTable tr.availableOther {
+  color: #A60489;
+  font-weight: bold;
+}
 .itemSummary {
   text-indent: -10px;
   padding-left: 10px;
