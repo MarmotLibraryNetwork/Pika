@@ -9906,6 +9906,9 @@ img.x-twit {
     width: 20px;
   }
 }
+.exploreMoreItemsContainer.jcarousel {
+  min-height: 225px;
+}
 .result-value a,
 .similar-authors a,
 .facetDetails a,
@@ -10596,9 +10599,9 @@ img.x-twit {
 .archive-audio-poster-image {
   -o-object-fit: contain;
      object-fit: contain;
-  width: 100%;
   max-width: 600px;
   max-height: 600px;
+  width: 100%;
 }
 .archive-audio-player {
   width: 100%;
