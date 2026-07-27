@@ -815,7 +815,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			// logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 		return $result;
@@ -878,7 +878,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}else{ // logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 		return $result;

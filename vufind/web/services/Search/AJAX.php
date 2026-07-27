@@ -55,7 +55,7 @@ class AJAX extends AJAXHandler {
 			$from    = $_REQUEST['from'];
 			$message = $_REQUEST['message'];
 			$interface->assign('from', $from);
-			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+			if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)){
 				$interface->assign('message', $message);
 				$interface->assign('msgUrl', $url);
 				$body = $interface->fetch('Emails/share-link.tpl');
@@ -91,7 +91,7 @@ class AJAX extends AJAXHandler {
 		}else{ // logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 
