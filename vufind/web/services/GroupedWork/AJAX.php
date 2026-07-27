@@ -1173,7 +1173,7 @@ function getCreateSeriesForm(){
 	return [
 		'title'        => 'Create new List',
 		'modalBody'    => $interface->fetch("GroupedWork/series-list-form.tpl"),
-		'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</span>",
+		'modalButtons' => "<button class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</button>",
 	];
 }
 

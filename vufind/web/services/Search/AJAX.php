@@ -194,7 +194,7 @@ class AJAX extends AJAXHandler {
 		return [
 			'title'        => 'E-Mail Search',
 			'modalBody'    => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</button>",
 		];
 	}
 
