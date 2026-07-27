@@ -80,7 +80,7 @@ class SelfReg extends Action {
 				}
 			}
 			if (!$recaptchaValid){
-				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
+				$interface->assign('captchaMessage', "Sorry, we couldn't confirm you're not a bot. Please try again in a moment.");
 			}else{
 				//Submit the form to ILS
 				$result = $this->catalog->selfRegister();
