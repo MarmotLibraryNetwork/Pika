@@ -407,7 +407,7 @@ Pika.GroupedWork = (function(){
 				, message: $('#message').val()
 				, related_record: $('#related_record').val()
 			};
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email-grouped-work', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_grouped_work', function(token) {
 				params['g-recaptcha-response'] = token;
 				$.getJSON(url, params,
 						function (data){
@@ -430,7 +430,7 @@ Pika.GroupedWork = (function(){
 				, to: $('#to').val()
 				, message: $('#message').val()
 			};
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email-series', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_series', function(token) {
 				params['g-recaptcha-response'] = token;
 				$.getJSON(url, params,
 						function (data){

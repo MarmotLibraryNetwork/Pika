@@ -56,7 +56,7 @@ class Archive_ClaimAuthorship extends Action{
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'archive-claimauthorship');
+					$recaptchaValid = recaptchaCheckAnswer(false, 'archive_claimauthorship');
 				} catch (Exception $e) {
 					$recaptchaValid = false;
 				}
@@ -135,7 +135,7 @@ class Archive_ClaimAuthorship extends Action{
 
 		// Set up captcha to limit spam authorship claims
 		if (isset($configArray['ReCaptcha']['siteKey'])) {
-			$captchaCode = recaptchaGetQuestion('archive-claimauthorship');
+			$captchaCode = recaptchaGetQuestion('archive_claimauthorship');
 			$interface->assign('captcha', $captchaCode);
 		}
 

@@ -58,7 +58,7 @@ class Archive_RequestCopy extends Action{
         if (isset($_REQUEST['submit'])) {
             if (isset($configArray['ReCaptcha']['secretKey'])){
                 try {
-                    $recaptchaValid = recaptchaCheckAnswer(false, 'archive-requestcopy');
+                    $recaptchaValid = recaptchaCheckAnswer(false, 'archive_requestcopy');
                 } catch (Exception $e) {
                     $recaptchaValid = false;
                 }
@@ -137,7 +137,7 @@ class Archive_RequestCopy extends Action{
 
 		// Set up captcha to limit spam self-registrations
         if (isset($configArray['ReCaptcha']['siteKey'])) {
-            $captchaCode = recaptchaGetQuestion('archive-requestcopy');
+            $captchaCode = recaptchaGetQuestion('archive_requestcopy');
             $interface->assign('captcha', $captchaCode);
         }
 

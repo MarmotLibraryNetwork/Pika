@@ -706,7 +706,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion('email-grouped-work');
+				$captchaCode = recaptchaGetQuestion('email_grouped_work');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [
@@ -731,7 +731,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion('email-series');
+				$captchaCode = recaptchaGetQuestion('email_series');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [
@@ -746,7 +746,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer(false, 'email-grouped-work');
+		$recaptchaValid = recaptchaCheckAnswer(false, 'email_grouped_work');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$id = $_REQUEST['id'];
 			if (GroupedWork::validGroupedWorkId($id)){
@@ -824,7 +824,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendSeriesEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer(false, 'email-series');
+		$recaptchaValid = recaptchaCheckAnswer(false, 'email_series');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){

@@ -476,7 +476,7 @@ var Pika = (function(){
 		},
 
 		submitAccessibilityReport: function(){
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'accessibility-report', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'accessibility_report', function(token) {
 				var $form = $('#accessibilityReport');
 				$form.find('input[name="g-recaptcha-response"]').remove();
 				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);
@@ -490,7 +490,7 @@ var Pika = (function(){
 		},
 
 		submitOverDriveForm: function() {
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive-support', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive_support', function(token) {
 				var $form = $('#overdriveSupport');
 				$form.find('input[name="g-recaptcha-response"]').remove();
 				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);
@@ -504,7 +504,7 @@ var Pika = (function(){
 		},
 
 		submitOverDrivePurchaseRequest: function() {
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive-purchase', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive_purchase', function(token) {
 				var $form = $('#overdrivePurchaseRequest');
 				$form.find('input[name="g-recaptcha-response"]').remove();
 				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);

@@ -28,7 +28,7 @@ class OverDriveSupport extends Action {
 		global $configArray;
 		global $interface;
 		if (isset($configArray['ReCaptcha']['siteKey'])){
-			$captchaCode = recaptchaGetQuestion('overdrive-support');
+			$captchaCode = recaptchaGetQuestion('overdrive_support');
 			$interface->assign('captcha', $captchaCode);
 		}
 		$this->display('overdriveSupportForm.tpl', 'Report OverDrive Issue');

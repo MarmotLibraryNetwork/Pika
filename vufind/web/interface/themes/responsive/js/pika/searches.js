@@ -197,7 +197,7 @@ Pika.Searches = (function(){
 				, message: $('#message').val()
 				, sourceUrl: window.location.href
 			};
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email-search-results', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_search_results', function(token) {
 				params['g-recaptcha-response'] = token;
 				$.getJSON(url, params,
 						function (data){

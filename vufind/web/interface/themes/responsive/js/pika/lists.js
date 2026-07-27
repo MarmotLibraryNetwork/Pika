@@ -166,7 +166,7 @@ Pika.Lists = (function(){
 				,message : $('#emailListForm textarea[name="message"]').val()
 				,method  : 'sendMyListEmail'
 			};
-			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email-userlist', function(token) {
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_userlist', function(token) {
 				params['g-recaptcha-response'] = token;
 				$.getJSON(url, params,
 					function(data) {

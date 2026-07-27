@@ -36,7 +36,7 @@ class Help_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['submit'])){
 			if (isset($configArray['ReCaptcha']['secretKey'])) {
 				try{
-					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive-support');
+					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive_support');
 				}catch (Exception $ex){
 					$recaptchaValid = false;
 				}
@@ -137,7 +137,7 @@ class Help_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['submit'])){
 			if (isset($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive-purchase');
+					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive_purchase');
 				} catch (Exception $ex){
 					$recaptchaValid = false;
 				}
@@ -237,7 +237,7 @@ class Help_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['submit'])){
 			if (isset($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'accessibility-report');
+					$recaptchaValid = recaptchaCheckAnswer(false, 'accessibility_report');
 				} catch (Exception $e){
 					$this->logger->error('ReCaptcha validation failed: ' . $e->getMessage());
 					$recaptchaValid = false;
