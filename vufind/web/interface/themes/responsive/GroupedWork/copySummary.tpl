@@ -46,7 +46,7 @@
 						<tbody>
 						{assign var=numRowsShown value=0}
 						{foreach from=$summary item="item"}
-							<tr{if $item.availableCopies} class="available"{/if}>
+							<tr{if $item.shelvingCopies || $item.recentlyReturnedCopies} class="availableOther"{elseif $item.availableCopies} class="available"{/if}>
 								{if $item.onOrderCopies > 0}
 									{if $showOnOrderCounts}
 										<td>{$item.onOrderCopies} on order</td>
@@ -56,7 +56,7 @@
 								{else}
 									<td>{$item.availableCopies} of {$item.totalCopies}</td>
 								{/if}
-								<td class="notranslate">{$item.shelfLocation}</td>
+								<td class="notranslate">{$item.shelfLocation}{if $item.shelvingCopies} ({$item.shelvingCopies} {if $item.shelvingCopies == 1}copy{else}copies{/if} being shelved){/if}{if $item.recentlyReturnedCopies} ({$item.recentlyReturnedCopies} {if $item.recentlyReturnedCopies == 1}copy{else}copies{/if} recently returned){/if}</td>
 								<td class="notranslate">
 									{if !$item.isEContent}
 										{$item.callNumber}

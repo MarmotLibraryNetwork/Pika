@@ -2502,8 +2502,10 @@ class GroupedWorkDriver extends RecordInterface {
 	private function mergeItemSummary($localCopies, $itemSummary){
 		foreach ($itemSummary as $key => $item){
 			if (isset($localCopies[$key])){
-				$localCopies[$key]['totalCopies']     += $item['totalCopies'];
-				$localCopies[$key]['availableCopies'] += $item['availableCopies'];
+				$localCopies[$key]['totalCopies']            += $item['totalCopies'];
+				$localCopies[$key]['availableCopies']        += $item['availableCopies'];
+				$localCopies[$key]['shelvingCopies']         += $item['shelvingCopies'];
+				$localCopies[$key]['recentlyReturnedCopies'] += $item['recentlyReturnedCopies'];
 				if ($item['displayByDefault']){
 					$localCopies[$key]['displayByDefault'] = true;
 				}
@@ -3281,6 +3283,8 @@ class GroupedWorkDriver extends RecordInterface {
 				'allLibraryUseOnly'  => $inLibraryUseOnly,
 				'displayByDefault'   => $displayByDefault,
 				'onOrderCopies'      => $isOrderItem ? $numCopies : 0,
+				'shelvingCopies'         => $groupedStatus == 'Shelving' ? $numCopies : 0,
+				'recentlyReturnedCopies' => $groupedStatus == 'Recently Returned' ? $numCopies : 0,
 //				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
 				'status'             => $groupedStatus,
 				'statusFull'         => $status,
@@ -3315,6 +3319,8 @@ class GroupedWorkDriver extends RecordInterface {
 					$relatedRecord['itemSummary'][$itemSummaryKey]['available'] = true;
 				}
 				$relatedRecord['itemSummary'][$itemSummaryKey]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
+				$relatedRecord['itemSummary'][$itemSummaryKey]['shelvingCopies']         += $itemSummaryInfo['shelvingCopies'];
+				$relatedRecord['itemSummary'][$itemSummaryKey]['recentlyReturnedCopies'] += $itemSummaryInfo['recentlyReturnedCopies'];
 				$lastStatus                                                     = $relatedRecord['itemSummary'][$itemSummaryKey]['status'];
 				$relatedRecord['itemSummary'][$itemSummaryKey]['status']        = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
 				if ($lastStatus != $relatedRecord['itemSummary'][$itemSummaryKey]['status']){
