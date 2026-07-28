@@ -19,7 +19,7 @@
 		<input type="hidden" name="status" value="Open">
 		<div class="form-group">
 			<label for="title" class="control-label">Title:</label>
-			<input type="text" name="title" id="title" class="form-control" maxlength="255" size="60" disabled="disabled" aria-disabled="true" value="{$title}">
+			<input type="text" name="title" id="title" class="form-control" maxlength="255" size="60" readonly aria-readonly="true" value="{$title}">
 		</div>
 		<div class="form-group">
 			<label for="name" class="control-label">Name: <span class="required-input">*</span></label>
@@ -27,7 +27,7 @@
 		</div>
 		<div class="form-group">
 			<label for="libraryCardNumber" class="control-label">Library Card Number:</label>
-			<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="form-control" maxlength="20" size="20" disabled="disabled" aria-disabled="true" value="{$libraryCardNumber}">
+			<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="form-control" maxlength="20" size="20" readonly aria-readonly="true" value="{$libraryCardNumber}">
 		</div>
 		<div class="form-group">
 			<label for="email" class="control-label">E-mail: <span class="required-input">*</span></label>
