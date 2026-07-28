@@ -53,5 +53,15 @@ function getBookClubKitUpdates() {
 			]
 		],
 
+		'2026.03.0_add_book_club_kit_requests_status' => [
+			'release'         => '2026.03.0',
+			'title'           => 'Add status to Book Club Kit requests',
+			'description'     => 'Add a status column so library staff can track Book Club Kit requests as Open, Requested, or Closed',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE `book_club_kit_requests` ADD COLUMN `status` VARCHAR(20) NOT NULL DEFAULT \'Open\';'
+			]
+		],
+
 	];
 }

@@ -113,6 +113,7 @@ class ColoradoBookClub_AJAX extends Record_AJAX {
 		$request->email     = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: $user->email;
 		$request->recordId  = $recordId->getSourceAndId(); //TODO just store the shortId?
 		$request->title     = substr(strip_tags($_REQUEST['title']), 0, 255);
+		$request->status    = 'Open';
 		$request->insert();
 
 		global $interface;

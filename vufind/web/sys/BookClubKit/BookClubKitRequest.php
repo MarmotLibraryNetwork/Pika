@@ -36,15 +36,24 @@ class BookClubKitRequest extends DB_DataObject
 	public $email;
 	public $recordId;
 	public $title;
+	public $status;
 	public $dateCreated;
+
+	public static $statusOptions = [
+		'Open'      => 'Open',
+		'Requested' => 'Requested',
+		'Closed'    => 'Closed',
+	];
 
 	public static function getObjectStructure()
 	{
 		$structure = [
-			['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name of the patron making the request', 'maxLength' => 120, 'required' => true],
-			['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address of the patron making the request', 'maxLength' => 120, 'required' => true],
-			['property' => 'barcode', 'type' => 'text', 'label' => 'Library Card Number', 'description' => 'Library card number of the patron making the request', 'maxLength' => 20, 'required' => true],
-			['property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The Book Club Kit title being requested', 'maxLength' => 120, 'required' => true],
+			'id'          => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
+			'status'      => ['property' => 'status', 'type' => 'enum', 'values' => self::$statusOptions, 'label' => 'Status', 'description' => 'The status of the request', 'default' => 'Open', 'required' => true],
+			'name'        => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name of the patron making the request', 'maxLength' => 120, 'required' => true],
+			'email'       => ['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address of the patron making the request', 'maxLength' => 120, 'required' => true],
+			'barcode'     => ['property' => 'barcode', 'type' => 'text', 'label' => 'Library Card Number', 'description' => 'Library card number of the patron making the request', 'maxLength' => 20, 'required' => true],
+			'title'       => ['property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The Book Club Kit title being requested', 'maxLength' => 120, 'required' => true],
 			'recordId'    => ['property' => 'recordId', 'type' => 'hidden', 'label' => 'Record Id', 'description' => 'The id of the record being requested', 'hideInLists' => true],
 			'userId'      => ['property' => 'userId', 'type' => 'hidden', 'label' => 'Patron Id', 'description' => 'The id of the patron making the request', 'hideInLists' => true],
 			'libraryId'   => ['property' => 'libraryId', 'type' => 'hidden', 'label' => 'Library Id', 'description' => 'The id of the patron\'s home library', 'hideInLists' => true],

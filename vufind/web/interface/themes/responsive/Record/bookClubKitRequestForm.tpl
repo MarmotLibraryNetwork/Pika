@@ -16,6 +16,7 @@
 		<input type="hidden" name="submit" value="submitted">
 		<input type="hidden" name="homeLibraryId" value="{$homeLibraryId}">
 		<input type="hidden" name="recordId" value="{$recordId}">
+		<input type="hidden" name="status" value="Open">
 		<div class="form-group">
 			<label for="title" class="control-label">Title:</label>
 			<input type="text" name="title" id="title" class="form-control" maxlength="255" size="60" disabled="disabled" aria-disabled="true" value="{$title}">

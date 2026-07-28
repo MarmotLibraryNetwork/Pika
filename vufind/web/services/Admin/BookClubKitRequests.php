@@ -41,7 +41,9 @@ class Admin_BookClubKitRequests extends ObjectEditor {
 		$list = [];
 
 		$object = new BookClubKit\BookClubKitRequest();
-		$object->orderBy($orderBy ?? 'dateCreated desc');
+		$object->orderBy($orderBy ?? '(status = "Closed") asc, dateCreated desc');
+		// Put Closed requests at the bottom of the listing
+		//TODO: This likely will need absolute time limit in the long run, like within the last two years.
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			$homeLibrary = $user->getHomeLibrary();
