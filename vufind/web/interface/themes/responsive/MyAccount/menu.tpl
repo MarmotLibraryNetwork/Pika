@@ -122,10 +122,6 @@
 								<div class="adminMenuLink{if $action == "UserAdmin"} active{/if}"><a href="/Admin/UserAdmin">User Administration</a></div>
 							{/if}
 
-							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('bookClubKitAdmin', $userRoles))}
-								<div class="adminMenuLink{if $action == "BookClubKitRequests"} active{/if}"><a href="/Admin/BookClubKitRequests">Book Club Kit Requests</a></div>
-							{/if}
-
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "IPAddresses"} active{/if}"><a href="/Admin/IPAddresses">IP Addresses</a></div>
@@ -144,9 +140,13 @@
 									<div class="adminMenuLink{if $action == "NPRBestBooksLists"} active{/if}"><a href="/Admin/NPRBestBooksLists">NPR Books We Love Lists</a></div>
 								{/if}
 							{/if}
+
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('bookClubKitAdmin', $userRoles))}
+								<div class="adminMenuLink{if $action == "BookClubKitRequests"} active{/if}"><a href="/Admin/BookClubKitRequests">Book Club Kit Requests</a></div>
+								<hr class="menu">
+							{/if}
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
-								<hr class="menu">
 								{* OPAC Admin Actions*}
 								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'Polaris' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="/Admin/PTypes">P-Types</a></div>
