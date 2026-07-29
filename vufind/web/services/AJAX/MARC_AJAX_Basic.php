@@ -41,6 +41,7 @@ trait MARC_AJAX_Basic {
 		$this->methodsThatRespondWithHTML             = array_merge($this->methodsThatRespondWithHTML, array());
 		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());*/
 		$this->methodsThatRespondThemselves = !is_null($this->methodsThatRespondThemselves) ? array_merge($this->methodsThatRespondThemselves, ['downloadMarc']) : ['downloadMarc'];
+		parent::__construct(); // ensure calling Class AJAX Handler constructor
 	}
 
 	function downloadMarc(){
