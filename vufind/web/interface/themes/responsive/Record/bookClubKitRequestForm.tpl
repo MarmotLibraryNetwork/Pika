@@ -11,6 +11,8 @@
 			<li>The library cannot guarantee sets for a future date as all items are shared on a first-come-first-served basis.</li>
 			<li>Find resources, policies, and FAQs on the <a href="https://www.coloradovirtuallibrary.org/uncategorized/key-information-for-users-of-kits-book-club-sets/">Colorado Virtual Library website</a>.</li>
 		</ul>
+		<br>
+		<p>All fields marked <span class="required-input">*</span> are required.</p>
 	</div>
 	<form id="bookClubKitRequestForm">
 		<input type="hidden" name="submit" value="submitted">
@@ -32,6 +34,10 @@
 		<div class="form-group">
 			<label for="email" class="control-label">E-mail: <span class="required-input">*</span></label>
 			<input type="text" name="email" id="email" class="required email form-control" aria-required="true" maxlength="120" size="60" value="{$email}">
+		</div>
+		<div class="form-group">
+			<label for="phone" class="control-label">Contact number:</label>
+			<input type="text" name="phone" id="phone" class="form-control" maxlength="30" size="30" value="{$phone}">
 		</div>
 	</form>
 {/strip}

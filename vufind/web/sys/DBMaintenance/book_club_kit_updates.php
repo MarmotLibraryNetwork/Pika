@@ -63,5 +63,15 @@ function getBookClubKitUpdates() {
 			]
 		],
 
+		'2026.03.0_add_book_club_kit_requests_phone' => [
+			'release'         => '2026.03.0',
+			'title'           => 'Add phone number to Book Club Kit requests',
+			'description'     => 'Add an optional contact phone number column to Book Club Kit requests',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE `book_club_kit_requests` ADD COLUMN `phone` VARCHAR(30) DEFAULT NULL;'
+			]
+		],
+
 	];
 }

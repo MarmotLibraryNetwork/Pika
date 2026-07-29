@@ -46,6 +46,7 @@ class ColoradoBookClub_AJAX extends Record_AJAX {
 
 				$interface->assign('name', trim($user->firstname . ' ' . $user->lastname));
 				$interface->assign('email', $user->email);
+				$interface->assign('phone', $user->phone);
 				$interface->assign('libraryCardNumber', $user->getBarcode());
 				$interface->assign('homeLibraryId', $homeLibrary->libraryId);
 				$interface->assign('title', $title);
@@ -111,6 +112,7 @@ class ColoradoBookClub_AJAX extends Record_AJAX {
 		$request->barcode   = $user->getBarcode();
 		$request->name      = substr(strip_tags($_REQUEST['name']), 0, 120);
 		$request->email     = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL) ?: $user->email;
+		$request->phone     = substr(strip_tags($_REQUEST['phone'] ?? ''), 0, 30) ?: null;
 		$request->recordId  = $recordId->getSourceAndId(); //TODO just store the shortId?
 		$request->title     = substr(strip_tags($_REQUEST['title']), 0, 255);
 		$request->status    = 'Open';
@@ -119,6 +121,7 @@ class ColoradoBookClub_AJAX extends Record_AJAX {
 		global $interface;
 		$interface->assign('name', $request->name);
 		$interface->assign('email', $request->email);
+		$interface->assign('phone', $request->phone);
 		$interface->assign('libraryCardNumber', $request->barcode);
 		$interface->assign('title', $request->title);
 		$interface->assign('libraryName', $homeLibrary->displayName);

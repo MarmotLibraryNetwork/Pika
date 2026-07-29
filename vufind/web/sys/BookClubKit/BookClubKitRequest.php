@@ -34,6 +34,7 @@ class BookClubKitRequest extends DB_DataObject
 	public $barcode;
 	public $name;
 	public $email;
+	public $phone;
 	public $recordId;
 	public $title;
 	public $status;
@@ -52,6 +53,7 @@ class BookClubKitRequest extends DB_DataObject
 			'status'      => ['property' => 'status', 'type' => 'enum', 'values' => self::$statusOptions, 'label' => 'Status', 'description' => 'The status of the request', 'default' => 'Open', 'required' => true],
 			'name'        => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'Name of the patron making the request', 'maxLength' => 120, 'required' => true],
 			'email'       => ['property' => 'email', 'type' => 'email', 'label' => 'E-mail Address', 'description' => 'E-mail Address of the patron making the request', 'maxLength' => 120, 'required' => true],
+			'phone'       => ['property' => 'phone', 'type' => 'text', 'label' => 'Contact Number', 'description' => 'Contact phone number of the patron making the request', 'maxLength' => 30, 'required' => false],
 			'barcode'     => ['property' => 'barcode', 'type' => 'text', 'label' => 'Library Card Number', 'description' => 'Library card number of the patron making the request', 'maxLength' => 20, 'required' => true],
 			'title'       => ['property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The Book Club Kit title being requested', 'maxLength' => 120, 'required' => true],
 			'recordId'    => ['property' => 'recordId', 'type' => 'hidden', 'label' => 'Record Id', 'description' => 'The id of the record being requested', 'hideInLists' => true],

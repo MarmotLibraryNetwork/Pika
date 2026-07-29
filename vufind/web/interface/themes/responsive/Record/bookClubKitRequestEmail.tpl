@@ -1,5 +1,7 @@
 From: {$name}
 Email: {$email}
+{if $phone}Contact Number: {$phone}{/if}
+
 Home Library: {$libraryName}
 User Barcode: {$libraryCardNumber}
 
