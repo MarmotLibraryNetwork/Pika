@@ -11114,6 +11114,9 @@ a.btn.btn-sm.btn-default {
 .breadcrumbs {
   background-color: #ffffff;
 }
+.breadcrumbs a {
+  color: #2d619d;
+}
 #content-container .breadcrumbs {
   background: #EBE9DF;
 }
