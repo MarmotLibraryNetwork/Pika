@@ -5,7 +5,8 @@
     </div>
     </div>
 {/if}
-<audio src="{$audioUrl}" type="{$audioMime}" controls controlslist="nodownload" class="archive-audio-player" id="archive-audio-player" controls>
+{* Temporary fix: block the right-click context menu on all browsers to hide "Save Audio As", since controlslist="nodownload" only works in Chromium. *}
+<audio src="{$audioUrl}" type="{$audioMime}" controls controlslist="nodownload" class="archive-audio-player" id="archive-audio-player" oncontextmenu="return false;">
     {if count($captions) >= 1}
         {foreach from=$captions item=i}
             <track kind="captions" src="/Archive2/AJAX?method=fetchVtt&path={$i.filePath|escape:'url'}&nid={$nid|intval}" label="{$i.langName}"

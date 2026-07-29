@@ -2,7 +2,8 @@
 
 {* Audio Player *}
 <div class="archive-compound-player-wrapper">
-    <audio class="archive-audio-player" id="compound-audio-player" controls crossorigin="">
+    {* Temporary fix: block the right-click context menu on all browsers to hide "Save Audio As", since controlslist="nodownload" only works in Chromium. *}
+    <audio class="archive-audio-player" id="compound-audio-player" controls controlslist="nodownload" crossorigin="" oncontextmenu="return false;">
         {* Tracks will be dynamically loaded via JavaScript *}
     </audio>
     <div id="compound-vtt-text" class="archive-caption archive-caption--compound">
