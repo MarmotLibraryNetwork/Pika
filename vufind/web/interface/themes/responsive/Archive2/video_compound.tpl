@@ -2,9 +2,12 @@
 
 {* Video Player *}
 <div class="archive-compound-player-wrapper">
-    <video width="100%" controls controlslist="nodownload" id="compound-video-player" crossorigin="anonymous" class="archive-video-player">
-        {* Source and tracks will be dynamically loaded via JavaScript *}
-    </video>
+	<video width="100%" controls controlslist="nodownload" id="compound-video-player" crossorigin="anonymous" class="archive-video-player"  oncontextmenu="return false;">
+		{* controlslist="nodownload" only works on Chromium browsers; Firefox and Safari don't support it.*}
+		{* Disabling the right click context menu is the only way to prevent the "Save Video as" option in those browsers. *}
+
+		{* Source and tracks will be dynamically loaded via JavaScript *}
+	</video>
 </div>
 
 {* Grid of Video Items *}
