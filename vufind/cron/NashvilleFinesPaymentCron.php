@@ -5,7 +5,7 @@
 	purge sqlite once a week (or month?) via ./nplcron.php 1 admin@email.com
 	find/credit orphaned invoices often. (hourly or daily) via ./nplcron.php 2 
 */
-
+exit;
 define("ROOT_DIR", "/usr/local/VuFind-Plus/vufind/web");
 require_once ROOT_DIR . '/services/MyAccount/PayOnlineNashville.php';
 date_default_timezone_set('America/Chicago');
