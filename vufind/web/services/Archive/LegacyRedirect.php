@@ -304,8 +304,13 @@ class Archive_LegacyRedirect extends Action
      * Resolve the display model name from a JSON:API node resource and its included terms.
      *
      * Prefers field_legacy_resource_type (the Islandora 1 content model name) so that
-     * postcard, magazine, and other legacy types map correctly. Falls back to field_model
-     * (the Islandora 2 media type) when the legacy field is absent.
+     * postcard, magazine, and other legacy types map correctly, but only when that name is
+     * itself a recognized key in ISLANDORA2_DISPLAY_MODEL_URL_MAP — field_legacy_resource_type
+     * also carries plain MODS genre/subject terms (e.g. "Art", "Article") that were never
+     * meant to route the URL, so trusting it unconditionally sends those objects to the
+     * Node fallback instead of their real segment. Falls back to field_model (the
+     * Islandora 2 structural media type) whenever the legacy field is absent or unmapped,
+     * mirroring I2Object::getDisplayModel().
      *
      * @param  array       $node     JSON:API node resource object (single item from data[]).
      * @param  array       $included JSON:API top-level included array.
@@ -313,17 +318,17 @@ class Archive_LegacyRedirect extends Action
      */
     private function resolveDisplayModel(array $node, array $included): ?string
     {
-        $name = $this->resolveRelationshipName($node, 'field_legacy_resource_type', $included);
-        if ($name !== null) {
-            return strtolower($name);
+        $legacyResourceType = $this->resolveRelationshipName($node, 'field_legacy_resource_type', $included);
+        if ($legacyResourceType !== null && array_key_exists(strtolower($legacyResourceType), ISLANDORA2_DISPLAY_MODEL_URL_MAP)) {
+            return strtolower($legacyResourceType);
         }
 
-        $name = $this->resolveRelationshipName($node, 'field_model', $included);
-        if ($name !== null) {
-            return strtolower($name);
+        $model = $this->resolveRelationshipName($node, 'field_model', $included);
+        if ($model !== null) {
+            return strtolower($model);
         }
 
-        return null;
+        return $legacyResourceType !== null ? strtolower($legacyResourceType) : null;
     }
 
     /**
