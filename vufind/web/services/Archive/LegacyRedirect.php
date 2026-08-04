@@ -135,11 +135,11 @@ class Archive_LegacyRedirect extends Action
         [$nid, $displayModel] = $node;
         $segment = ISLANDORA2_DISPLAY_MODEL_URL_MAP[strtolower($displayModel)] ?? null;
         if ($segment === null) {
-            $this->logger->warning('No Archive2 URL segment found for display model; using ArchiveObject fallback.', [
+            $this->logger->warning('No Archive2 URL segment found for display model; using Node fallback.', [
                 'pid'          => $pid,
                 'displayModel' => $displayModel,
             ]);
-            $segment = 'ArchiveObject';
+            $segment = 'Node';
         }
         return [$segment, (int)$nid];
     }
