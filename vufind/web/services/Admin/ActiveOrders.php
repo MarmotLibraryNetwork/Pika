@@ -84,8 +84,14 @@ class Admin_ActiveOrders extends Admin_Admin {
 		$rowCount = 0;
 		$fh = fopen($csvPath, 'r');
 		if ($fh) {
-			$headers = fgetcsv($fh);
-			while (($row = fgetcsv($fh)) !== false) {
+			// Read as RFC 4180; the default escape of "\" makes fgetcsv treat a value
+			// ending in a backslash as an escaped quote and swallow the next field
+			$headers = fgetcsv($fh, 0, ',', '"', '');
+			while (($row = fgetcsv($fh, 0, ',', '"', '')) !== false) {
+				// fgetcsv returns array(null) for a blank line
+				if ($row === [null]) {
+					continue;
+				}
 				$rowCount++;
 				if ($rowCount <= $rowLimit) {
 					$rows[] = $row;

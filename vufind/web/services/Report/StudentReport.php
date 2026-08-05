@@ -72,7 +72,13 @@ class Report_StudentReport extends Report_Report {
 			$interface->assign('reportDateTime', $filemtime);
 			$fhnd = fopen($reportDir . '/' . $selectedReport, 'r');
 			if ($fhnd){
-				while (($data = fgetcsv($fhnd)) !== false){
+				//Read as RFC 4180; the default escape of "\" makes fgetcsv treat a title
+				//ending in a backslash as an escaped quote and swallow the next field
+				while (($data = fgetcsv($fhnd, 0, ',', '"', '')) !== false){
+					//fgetcsv returns array(null) for a blank line
+					if ($data === [null]){
+						continue;
+					}
 					$okToInclude = true;
 					if ($showOverdueOnly){
 						$dueDate = $data[12];
