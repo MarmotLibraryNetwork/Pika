@@ -2,10 +2,10 @@
 	{* All CSS should be come before javascript for better browser performance *}
 	{if $debugCss}
     {css filename="main.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.css">
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/datatables.css">
 	{else}
 		{css filename="main.min.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.min.css">
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/datatables.min.css">
 	{/if}
 
 	{if $additionalCss}
@@ -78,14 +78,12 @@
 		<script src="/interface/themes/responsive/js/pika/searches.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/title-scroller.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/wikipedia.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/datatables.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/datatables.min.js?v={$gitBranch|urlencode}"></script>
 		{if ($action == 'Covers')}
 			<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
 		{/if}

@@ -230,9 +230,11 @@
 			}
 			$(function(){
 				$('.table').DataTable({
-					columnDefs: [{orderable: true, targets: [1,2,3,4,5]}],
 					pageLength: 100,
-					"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+					"columnDefs": [
+						{"orderDataType": "dom-numeric", "type": "num", "targets": 0},
+						{"orderable": true, "targets": [1,2,3,4,5]}
+					],
 					initComplete: function(){
 						this.api().columns([1,2,3,4]).every( function(){
 							var column = this;
@@ -278,7 +280,7 @@
 			{/literal}{/if}{literal}
 			$('#adminTable').DataTable({
 				pageLength: 100,
-				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+				"columnDefs": [{"orderDataType": "dom-numeric", "type": "num", "targets": 0}],
 					{/literal}
 				{if $objectType == "LoanRule" || $objectType == "LoanRuleDeterminer" }
 					{literal}

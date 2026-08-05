@@ -280,7 +280,7 @@
 					"render": function(data, type, row, meta){
 						// Only override for filtering; display/sort use other handlers
 						if (type === 'filter') {
-							var td = meta.settings.aoData[meta.row].anCells[meta.col];
+							var td = new $.fn.dataTable.Api(meta.settings).cell(meta.row, meta.col).node();
 							var select = $('select', td);
 							if (select.length) {
 								// Dropdown: return only the selected option's text
