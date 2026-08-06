@@ -20917,8 +20917,63 @@ nav.breadcrumbs [aria-current=page]::before {
   outline: 1px solid #E15F15 !important;
 }
 
-table.dataTable.display tbody tr.odd > .sorting_1 a, table.dataTable.display tbody tr.odd > .sorting_2 a, table.dataTable.display tbody tr.odd > .sorting_3 a, table.dataTable.order-column.stripe tbody tr.odd > .sorting_1 a, table.dataTable.order-column.stripe tbody tr.odd > .sorting_2 a, table.dataTable.order-column.stripe tbody tr.odd > .sorting_3 a {
-  color: rgb(58.9285714286, 102.6785714286, 153.5714285714);
+table.dataTable > thead > tr > th,
+table.dataTable > tbody > tr > td,
+table.dataTable > tbody > tr > th {
+  position: relative;
+}
+table.dataTable > thead > tr > th.dt-ordering-asc::before, table.dataTable > thead > tr > th.dt-ordering-asc::after,
+table.dataTable > thead > tr > th.dt-ordering-desc::before,
+table.dataTable > thead > tr > th.dt-ordering-desc::after,
+table.dataTable > tbody > tr > td.sorting_1::before,
+table.dataTable > tbody > tr > td.sorting_1::after,
+table.dataTable > tbody > tr > th.sorting_1::before,
+table.dataTable > tbody > tr > th.sorting_1::after,
+table.dataTable > tbody > tr > td.sorting_2::before,
+table.dataTable > tbody > tr > td.sorting_2::after,
+table.dataTable > tbody > tr > th.sorting_2::before,
+table.dataTable > tbody > tr > th.sorting_2::after,
+table.dataTable > tbody > tr > td.sorting_3::before,
+table.dataTable > tbody > tr > td.sorting_3::after,
+table.dataTable > tbody > tr > th.sorting_3::before,
+table.dataTable > tbody > tr > th.sorting_3::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #0A75E3;
+  pointer-events: none;
+}
+table.dataTable > thead > tr > th.dt-ordering-asc::before,
+table.dataTable > thead > tr > th.dt-ordering-desc::before,
+table.dataTable > tbody > tr > td.sorting_1::before,
+table.dataTable > tbody > tr > th.sorting_1::before,
+table.dataTable > tbody > tr > td.sorting_2::before,
+table.dataTable > tbody > tr > th.sorting_2::before,
+table.dataTable > tbody > tr > td.sorting_3::before,
+table.dataTable > tbody > tr > th.sorting_3::before {
+  left: 0;
+}
+table.dataTable > thead > tr > th.dt-ordering-asc::after,
+table.dataTable > thead > tr > th.dt-ordering-desc::after,
+table.dataTable > tbody > tr > td.sorting_1::after,
+table.dataTable > tbody > tr > th.sorting_1::after,
+table.dataTable > tbody > tr > td.sorting_2::after,
+table.dataTable > tbody > tr > th.sorting_2::after,
+table.dataTable > tbody > tr > td.sorting_3::after,
+table.dataTable > tbody > tr > th.sorting_3::after {
+  right: 0;
+}
+table.dataTable > tbody > tr > td.sorting_2::before, table.dataTable > tbody > tr > td.sorting_2::after,
+table.dataTable > tbody > tr > th.sorting_2::before,
+table.dataTable > tbody > tr > th.sorting_2::after {
+  background-color: rgba(10, 117, 227, 0.55);
+}
+table.dataTable > tbody > tr > td.sorting_3::before, table.dataTable > tbody > tr > td.sorting_3::after,
+table.dataTable > tbody > tr > th.sorting_3::before,
+table.dataTable > tbody > tr > th.sorting_3::after {
+  background-color: rgba(10, 117, 227, 0.3);
 }
 
 .jcarousel-control-prev:focus, .jcarousel-control-next:focus {
