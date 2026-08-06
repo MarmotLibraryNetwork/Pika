@@ -98,8 +98,7 @@
 
 		var table = $('#reindexingStats').DataTable({
 			"order": [[0, "asc"]],
-			"paging": false,
-			"autoWidth": false /* This keeps the columns at reasonable widths after Bootstrap 5 upgrade */
+			"paging": false
 		});
 
 		$('.toggle-vis').on( 'click', function (e) {
