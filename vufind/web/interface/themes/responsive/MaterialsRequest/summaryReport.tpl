@@ -9,7 +9,6 @@
 
 						<form action="/MaterialsRequest/SummaryReport" method="get">
 							<fieldset class="fieldset-collapsible form-horizontal">
-{*					<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">*}
 								<legend>Statuses to Show:</legend>
 								<div class="mb-3 checkbox">
 									<label for="selectAllStatusFilter">
@@ -79,7 +78,7 @@
 				<legend>Chart</legend>
 
 				<div id="chart">
-				<img src="{$chartPath}" alt="Summary Report Chart">
+					<img src="{$chartPath}" alt="Summary Report Chart">
 				</div>
 
 				<br>
@@ -112,7 +111,7 @@
 								{/if}
 							</td>
 							{foreach from=$statuses key=status item=statusLabel}
-								<th>{if $periodInfo.$status}{$periodInfo.$status}{else}0{/if}</th>
+								<td><strong>{if $periodInfo.$status}{$periodInfo.$status}{else}0{/if}</strong></td>
 							{/foreach}
 						</tr>
 					{/foreach}
