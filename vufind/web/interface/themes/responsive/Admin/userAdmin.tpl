@@ -130,22 +130,38 @@
 			</fieldset>
 		</form>
 		{if !empty($readingHistoryActions) && $readingHistorySuccess}
-			<table class="table-responsive table-striped dataTable">
-				<thead>
-				<tr>
-					<th>Date</th>
-					<th>Action</th>
-				</tr>
-				</thead>
-			{foreach from=$readingHistoryActions item=historyAction}
-				<tr>
-					<td><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
-					<td>{$historyAction.action}</td>
-				</tr>
-			{/foreach}
-			</table>
+			<div class="table-responsive">
+				<table id="readingHistoryActionsTable" class="table table-striped table-sm">
+					<thead>
+					<tr>
+						<th scope="col">Date</th>
+						<th scope="col">Action</th>
+					</tr>
+					</thead>
+					{* data-order carries the raw timestamp so the column sorts chronologically;
+					   the displayed m/d/Y format is not one DataTables recognises as a date *}
+					<tbody>
+					{foreach from=$readingHistoryActions item=historyAction}
+						<tr>
+							<td data-order="{$historyAction.date}"><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
+							<td>{$historyAction.action}</td>
+						</tr>
+					{/foreach}
+					</tbody>
+				</table>
+			</div>
+			<script>
+				{literal}
+				$(function(){
+					$('#readingHistoryActionsTable').DataTable({
+						"order": [[0, "desc"]],
+						pageLength: 25
+					});
+				});
+				{/literal}
+			</script>
 		{elseif $readingHistoryError}
-			<p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
+			<p class="alert alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
 		{/if}
 	{/if}
 </div>
