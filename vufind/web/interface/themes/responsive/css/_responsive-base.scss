@@ -376,13 +376,14 @@ nav.breadcrumbs [aria-current="page"] {
 // column, and sorting_2 / sorting_3 for the second and third columns of a multi
 // column sort, but its Bootstrap 5 build has no rules for them.
 //
-// The rails are drawn as positioned pseudo elements rather than as borders. Bootstrap
-// tables are border-collapse: collapse, where neighbouring cells share a single border
-// and a conflict of equal width and style is resolved in favour of the leftmost cell.
-// A border on the sorted cell's left edge therefore always lost to the transparent
-// right edge of the cell before it, so only the right rail ever appeared, except on
-// the first column where there is no neighbour to lose to. Pseudo elements are also
-// out of flow, so nothing has to be reserved to keep the table from reflowing on sort.
+// The rails are drawn on a pseudo element overlaying each sorted cell, rather than on
+// the cell itself. Bootstrap tables are border-collapse: collapse, where neighboring
+// cells share a single border and a conflict of equal width and style is resolved in
+// favor of the leftmost cell, so a border on the sorted cell's own left edge always
+// lost to the right edge of the cell before it and only the right rail ever appeared,
+// except on the first column where there is no neighbor to lose to. An overlay does
+// not take part in that, and being out of flow it also means no width has to be
+// reserved to keep the table from reflowing when the sort changes.
 table.dataTable {
   > thead > tr > th,
   > tbody > tr > td,
@@ -390,7 +391,11 @@ table.dataTable {
     position: relative;
   }
 
-  // Some report tables use th rather than td for their body cells, so match both
+  // One overlay per sorted cell, carrying the rails as its own borders. Keeping it
+  // to a single box means the caps at the head and foot of the column are just two
+  // more edges of the same element.
+  //
+  // Some report tables use th rather than td for their body cells, so match both.
   > thead > tr > th.dt-ordering-asc,
   > thead > tr > th.dt-ordering-desc,
   > tbody > tr > td.sorting_1,
@@ -399,40 +404,43 @@ table.dataTable {
   > tbody > tr > th.sorting_2,
   > tbody > tr > td.sorting_3,
   > tbody > tr > th.sorting_3 {
-    &::before,
-    &::after {
+    &::before {
       content: "";
       position: absolute;
       top: 0;
+      right: 0;
       bottom: 0;
-      width: $dt-sorted-rail-width;
-      background-color: $dt-sorted-rail-color;
+      left: 0;
+      border: 0 solid $dt-sorted-rail-color;
+      border-left-width: $dt-sorted-rail-width;
+      border-right-width: $dt-sorted-rail-width;
       pointer-events: none;
     }
-
-    &::before {
-      left: 0;
-    }
-
-    &::after {
-      right: 0;
-    }
   }
 
-  > tbody > tr > td.sorting_2,
-  > tbody > tr > th.sorting_2 {
-    &::before,
-    &::after {
-      background-color: $dt-sorted-rail-color-secondary;
-    }
+  // Close the column off at the top of the table and under its last row
+  > thead > tr > th.dt-ordering-asc::before,
+  > thead > tr > th.dt-ordering-desc::before {
+    border-top-width: $dt-sorted-rail-width;
   }
 
-  > tbody > tr > td.sorting_3,
-  > tbody > tr > th.sorting_3 {
-    &::before,
-    &::after {
-      background-color: $dt-sorted-rail-color-tertiary;
-    }
+  > tbody > tr:last-child > td.sorting_1::before,
+  > tbody > tr:last-child > th.sorting_1::before,
+  > tbody > tr:last-child > td.sorting_2::before,
+  > tbody > tr:last-child > th.sorting_2::before,
+  > tbody > tr:last-child > td.sorting_3::before,
+  > tbody > tr:last-child > th.sorting_3::before {
+    border-bottom-width: $dt-sorted-rail-width;
+  }
+
+  > tbody > tr > td.sorting_2::before,
+  > tbody > tr > th.sorting_2::before {
+    border-color: $dt-sorted-rail-color-secondary;
+  }
+
+  > tbody > tr > td.sorting_3::before,
+  > tbody > tr > th.sorting_3::before {
+    border-color: $dt-sorted-rail-color-tertiary;
   }
 }
 .jcarousel-control-prev:focus, .jcarousel-control-next:focus{

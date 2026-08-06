@@ -352,7 +352,7 @@ $focus-ring-color: #E15F15 !default;
 // for them, so Pika draws its own. Rails are used rather than a background tint
 // because Bootstrap striping paints cells with a full coverage inset box-shadow,
 // which would cover a background but cannot cover a border.
-$dt-sorted-rail-width: 2px !default;
+$dt-sorted-rail-width: 1px !default;
 $dt-sorted-rail-color: $primary !default;
 $dt-sorted-rail-color-secondary: rgba($primary, 0.55) !default;
 $dt-sorted-rail-color-tertiary: rgba($primary, 0.3) !default;
