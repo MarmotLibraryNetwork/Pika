@@ -93,20 +93,20 @@
 				<div class="alert alert-warning">Extract Information was matched by id in access url instead of record id.</div>
 			{/if}
 			<table class="table-striped table table-sm notranslate">
-					{foreach from=$hooplaExtract key='field' item='values'}
-							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
-								<tr>
-									<th>{$field|escape}</th>
-									<td>
-											{if $field == 'dateLastUpdated'}
-												{$values|date_format:"%b %d, %Y %r"}
-											{elseif !empty($values)}
-												{implode subject=$values glue=', ' sort=true}
-											{/if}
-									</td>
-								</tr>
-							{/if}
-					{/foreach}
+				{foreach from=$hooplaExtract key='field' item='values'}
+					{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
+						<tr>
+							<th>{$field|escape}</th>
+							<td>
+									{if $field == 'dateLastUpdated'}
+										{$values|date_format:"%b %d, %Y %r"}
+									{elseif !empty($values)}
+										{implode subject=$values glue=', ' sort=true}
+									{/if}
+							</td>
+						</tr>
+					{/if}
+				{/foreach}
 			</table>
 		{/if}
 
