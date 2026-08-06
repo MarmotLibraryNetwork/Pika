@@ -80,7 +80,7 @@
 			<h2 class="h3">Table</h2>
 
 			{* Display results in table*}
-			<table id="summaryTable" class="table stripe table-bordered">
+			<table id="summaryTable" class="table table-striped table-bordered">
 				<thead>
 					<tr>
 						<th>Last Name</th>

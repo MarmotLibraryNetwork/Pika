@@ -89,7 +89,7 @@
 
 			<legend>Table</legend>
 
-			<table id="summaryTable" class="table stripe table-bordered">
+			<table id="summaryTable" class="table table-striped table-bordered">
 				<thead>
 					<tr>
 						<th>Date</th>

@@ -66,7 +66,7 @@
 					<br>
 				{/if}
 				<div class="table-responsive">
-				<table class="table table-sm stripe order-column table-hover" id="reindexingStats">
+				<table class="table table-sm table-striped order-column table-hover" id="reindexingStats">
 					<thead>
 					<tr>
 						{foreach from=$indexingStatHeader item=itemHeader}

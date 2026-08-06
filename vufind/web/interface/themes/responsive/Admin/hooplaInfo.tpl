@@ -90,7 +90,7 @@
 					<div class="row">
 						<div class="col-12">
 							<h3 class="h4">Hoopla Library Statistics</h3>
-							<table class="table stripe" id="hooplaCheckoutsReport">
+							<table class="table table-striped" id="hooplaCheckoutsReport">
 								<thead>
 								<tr>
 									<th>Hoopla Library Id</th>

@@ -110,7 +110,7 @@
 				</pre>
 			{elseif count($offlineCirculation) > 0}
 				<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
-				<table class="table stripe" id="offlineCirculationReport">
+				<table class="table table-striped" id="offlineCirculationReport">
 					<thead>
 					<tr><th>#</th><th>Login</th><th>Stat Group</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>

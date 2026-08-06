@@ -164,7 +164,7 @@
 		</div>
 		{if count($allRequests) > 0}
 			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
-				<table id="requestedMaterials" class="table order-column stripe table-hover">
+				<table id="requestedMaterials" class="table order-column table-striped table-hover">
 					<thead>
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="Pika.toggleCheckboxes('.select', '#selectAll');" aria-label="Select or Unselect all requests"></th>

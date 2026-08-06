@@ -49,7 +49,7 @@
 		<div id="main-content">
 			<h1 role="heading" aria-level="1" class="h2">Offline Holds</h1>
 			{if count($offlineHolds) > 0}
-				<table class="citation stripe" id="offlineHoldsReport">
+				<table class="table citation table-striped" id="offlineHoldsReport">
 					<thead>
 						<tr><th>Patron Barcode</th><th>Record Id</th><th>Title</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
