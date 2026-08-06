@@ -1,6 +1,6 @@
 {strip}
 <div class="table-responsive">
-	<table id="{$propName}" class="{if $property.sortable}sortableProperty{/if} table table-striped">
+	<table id="{$propName}" class="{if $property.sortable}sortableProperty{/if} table table-bordered table-striped">
 		<thead>
 			<tr>
 				{if $property.sortable}
