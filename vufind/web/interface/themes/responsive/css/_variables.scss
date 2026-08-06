@@ -345,6 +345,18 @@ $archiveComponentControl-background-color: $menu-bar-background-color !default;
 // Keyboard Focus colors
 $focus-ring-color: #E15F15 !default;
 
+// DataTables sorted-column highlight
+// Replaces the "order-column" feature of DataTables 1.x. The Bootstrap 5 build of
+// DataTables 3 still marks the sorted column's body cells with sorting_1 (and
+// sorting_2 / sorting_3 for the second and third sort columns) but ships no styling
+// for them, so Pika draws its own. Rails are used rather than a background tint
+// because Bootstrap striping paints cells with a full coverage inset box-shadow,
+// which would cover a background but cannot cover a border.
+$dt-sorted-rail-width: 2px !default;
+$dt-sorted-rail-color: $primary !default;
+$dt-sorted-rail-color-secondary: rgba($primary, 0.55) !default;
+$dt-sorted-rail-color-tertiary: rgba($primary, 0.3) !default;
+
 // Item/Record/Work Status colors
 $available-status-color: green !default; // (#008000;) (5.13:1) https://webaim.org/resources/contrastchecker/?fcolor=008000&bcolor=FFFFFF
         //$accessible-success-green; // #128A0B; // (4.5:1) https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
