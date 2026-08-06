@@ -81,10 +81,18 @@ class Report_StudentReport extends Report_Report {
 					}
 					$okToInclude = true;
 					if ($showOverdueOnly){
+						//A patron who owes a fine but has nothing checked out still gets a row, 
+						//so the amount owed is reported; see the "No items are checked out"
+						//branch of SierraReports.java. Every item column on those rows is blank,
+						//including the due date, so there is nothing to test, and they are always
+						//kept. Around a sixth of all rows are these, and for some schools all of
+						//them are, so do not fold this into the comparison below
 						$dueDate = $data[12];
-						$dueTime = strtotime($dueDate);
-						if ($dueTime >= $now){
-							$okToInclude = false;
+						if ($dueDate !== ''){
+							$dueTime = strtotime($dueDate);
+							if ($dueTime >= $now){
+								$okToInclude = false;
+							}
 						}
 					}
 					if ($okToInclude || count($fileData) == 0){
