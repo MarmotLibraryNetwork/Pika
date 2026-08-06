@@ -99,23 +99,22 @@ class Report_StudentReport extends Report_Report {
 		}
 
 		if (isset($_REQUEST['download'])){
+			//Build the file from the filtered rows rather than streaming it from disk,
+			//so the length has to be measured from what is actually sent
+			$csvHnd = fopen('php://temp', 'r+');
+			foreach ($fileData as $row){
+				//An empty escape keeps this RFC 4180, so quotes are doubled rather than
+				//backslash escaped and a value ending in a backslash still reads back
+				fputcsv($csvHnd, $row, ',', '"', '', "\r\n");
+			}
+			rewind($csvHnd);
+			$csvContents = stream_get_contents($csvHnd);
+			fclose($csvHnd);
+
 			header('Content-Type: text/csv');
 			header('Content-Disposition: attachment; filename=' . $selectedReport);
-			header('Content-Length:' . filesize($reportDir . '/' . $selectedReport));
-			foreach ($fileData as $row){
-				foreach ($row as $index => $cell){
-					if ($index != 0){
-						echo ',';
-					}
-					if (str_contains($cell, ',')){
-						echo '"' . $cell . '"';
-					}else{
-						echo $cell;
-					}
-
-				}
-				echo "\r\n";
-			}
+			header('Content-Length:' . strlen($csvContents));
+			echo $csvContents;
 			exit;
 		}
 
