@@ -196,8 +196,19 @@ public class SierraReports implements IProcessHandler {
 							barcode        = barcode == null ?        "" : barcode.trim();
 							locationCode   = locationCode == null ?   "" : locationCode.trim();
 							dueDate        = dueDate == null ?        "" : dueDate.replaceAll("04:00:00.0", "").trim();
-							// Remove unwanted timestamp portion, which appears to always be "04:00:00.0"
+							// Remove the unwanted timestamp portion, which appears to always be "04:00:00.0"
 							itemStatusCode = itemStatusCode == null ? "" : itemStatusCode.trim();
+							// Strip any trailing backslashes. They carry no meaning in the report and land
+							// immediately before the closing quote of the CSV field, where a reader that treats
+							// "\" as an escape character (PHP's fgetcsv, by default) swallows the quote and
+							// merges the following fields into the one being written.
+							title          = title.replaceAll("\\\\+$", "").trim();
+							if (callNumber.endsWith("\\")) {
+								// Unlike titles, call numbers are not expected to carry one; log it so the
+								// underlying item record can be corrected
+								logger.info("Call number for item barcode {} ends with a backslash, stripping it: {}", barcode, callNumber);
+								callNumber = callNumber.replaceAll("\\\\+$", "").trim();
+							}
 							patronInfo[8]  = callNumber;
 							patronInfo[9]  = title;
 							patronInfo[10] = barcode;
