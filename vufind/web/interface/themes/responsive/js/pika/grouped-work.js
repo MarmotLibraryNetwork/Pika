@@ -399,67 +399,72 @@ Pika.GroupedWork = (function(){
 		},
 
 		sendEmail: function (id){
-			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-					params = {
-						'method': 'sendEmail'
-						, from: $('#from').val()
-						, to: $('#to').val()
-						, message: $('#message').val()
-						, related_record: $('#related_record').val()
-						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
-					};
-			$.getJSON(url, params,
-					function (data){
-						if (data.result){
-							Pika.showMessage("Success", data.message);
-						}else{
-							Pika.showMessage("Error", data.message);
+			var url    = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = {
+				'method': 'sendEmail'
+				, from: $('#from').val()
+				, to: $('#to').val()
+				, message: $('#message').val()
+				, related_record: $('#related_record').val()
+			};
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_grouped_work', function(token) {
+				params['g-recaptcha-response'] = token;
+				$.getJSON(url, params,
+						function (data){
+							if (data.result){
+								Pika.showMessage("Success", data.message);
+							}else{
+								Pika.showMessage("Error", data.message);
+							}
 						}
-					}
-			).fail(Pika.ajaxFail);
+				).fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 
 		sendSeriesEmail: function(id){
-
-			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-					params = {
-						'method': 'sendSeriesEmail'
-						, from: $('#from').val()
-						, to: $('#to').val()
-						, message: $('#message').val()
-						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
-					};
-			$.getJSON(url, params,
-					function (data){
-				if (data.result){
-					Pika.showMessage("Success", data.message);
-				}else{
-					Pika.showMessage("Error", data.message);
-				}
-			}
-			).fail(Pika.ajaxFail);
+			var url    = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = {
+				'method': 'sendSeriesEmail'
+				, from: $('#from').val()
+				, to: $('#to').val()
+				, message: $('#message').val()
+			};
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_series', function(token) {
+				params['g-recaptcha-response'] = token;
+				$.getJSON(url, params,
+						function (data){
+							if (data.result){
+								Pika.showMessage("Success", data.message);
+							}else{
+								Pika.showMessage("Error", data.message);
+							}
+						}
+				).fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 
 		sendSMS: function (id){
-			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-					params = {
-						'method': 'sendSMS'
-						, provider: $('#provider').val()
-						, sms_phone_number: $('#sms_phone_number').val()
-						, related_record: $('#related_record').val()
-						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
-					};
-			$.getJSON(url, params,
-					function (data){
-						if (data.result){
-							Pika.showMessage("Success", data.message);
-						}else{
-							Pika.showMessage("Error", data.message);
+			var url    = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = {
+				'method': 'sendSMS'
+				, provider: $('#provider').val()
+				, sms_phone_number: $('#sms_phone_number').val()
+				, related_record: $('#related_record').val()
+			};
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'sms', function(token) {
+				params['g-recaptcha-response'] = token;
+				$.getJSON(url, params,
+						function (data){
+							if (data.result){
+								Pika.showMessage("Success", data.message);
+							}else{
+								Pika.showMessage("Error", data.message);
+							}
 						}
-					}
-			).fail(Pika.ajaxFail);
+				).fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 

@@ -36,9 +36,29 @@
 
 		{* Show Recaptcha spam control if set. *}
 		{if $captcha}
-			<div class="form-group">
-				{$captcha}
-			</div>
+			{$captcha}
+			{* reCAPTCHA v3 is invisible — there is no widget to submit. Instead, intercept the
+			   form's submit event, obtain a token asynchronously via pikaExecuteRecaptcha(), inject
+			   it as a hidden field, then re-submit using the native DOM method (bypasses jQuery's
+			   submit handler to avoid an infinite loop). *}
+			<script>
+			{literal}
+			(function() {
+				var submitted = false;
+				$('#objectEditor').on('submit', function(e) {
+					if (!submitted) {
+						e.preventDefault();
+						submitted = true;
+						var form = this;
+						pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'submit', function(token) {
+							$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo(form);
+							form.submit();
+						});
+					}
+				});
+			})();
+			{/literal}
+			</script>
 		{/if}
 
 		{if $saveButtonText}

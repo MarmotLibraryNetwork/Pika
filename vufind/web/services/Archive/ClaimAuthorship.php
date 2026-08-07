@@ -53,9 +53,9 @@ class Archive_ClaimAuthorship extends Action{
 		}
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
+			if (isset($configArray['ReCaptcha']['secretKey'])){
 				try {
-					$recaptchaValid = recaptchaCheckAnswer();
+					$recaptchaValid = recaptchaCheckAnswer(false, 'archive_claimauthorship');
 				} catch (Exception $e) {
 					$recaptchaValid = false;
 				}
@@ -128,9 +128,9 @@ class Archive_ClaimAuthorship extends Action{
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
 
-		// Set up captcha to limit spam submissions
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$captchaCode        = recaptchaGetQuestion();
+		// Set up captcha to limit spam authorship claims
+		if (isset($configArray['ReCaptcha']['siteKey'])) {
+			$captchaCode = recaptchaGetQuestion('archive_claimauthorship');
 			$interface->assign('captcha', $captchaCode);
 		}
 

@@ -158,24 +158,26 @@ Pika.Lists = (function(){
 		},
 
 		SendMyListEmail: function () {
-			var url = "/MyAccount/AJAX";
-					$.getJSON(url,
-				{ // form inputs passed as data
-					listId   : $('#emailListForm input[name="listId"]').val()
-					,to      : $('#emailListForm input[name="to"]').val()
-					,from    : $('#emailListForm input[name="from"]').val()
-					,message : $('#emailListForm textarea[name="message"]').val()
-					,method  : 'sendMyListEmail' // server-side method
-					,'g-recaptcha-response' : (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
-				},
-				function(data) {
-					if (data.result) {
-						Pika.showMessage("Success", data.message);
-					} else {
-						Pika.showMessage("Error", data.message);
+			var url    = "/MyAccount/AJAX";
+			var params = {
+				listId   : $('#emailListForm input[name="listId"]').val()
+				,to      : $('#emailListForm input[name="to"]').val()
+				,from    : $('#emailListForm input[name="from"]').val()
+				,message : $('#emailListForm textarea[name="message"]').val()
+				,method  : 'sendMyListEmail'
+			};
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_userlist', function(token) {
+				params['g-recaptcha-response'] = token;
+				$.getJSON(url, params,
+					function(data) {
+						if (data.result) {
+							Pika.showMessage("Success", data.message);
+						} else {
+							Pika.showMessage("Error", data.message);
+						}
 					}
-				}
-			);
+				).fail(Pika.ajaxFail);
+			});
 		},
 
 		//Exports list to Excel

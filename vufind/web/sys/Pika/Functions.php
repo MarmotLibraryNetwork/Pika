@@ -51,43 +51,76 @@ function getCheckDigit($baseId) {
 	}
 }
 
-function recaptchaGetQuestion() {
+/**
+ * Returns the HTML snippet that loads the reCAPTCHA v3 API and exposes the site
+ * key and action name to JavaScript as window globals. Assign the return value to
+ * the Smarty variable $captcha; templates render it with {$captcha}.
+ *
+ * The $action string is sent with the token and validated server-side by
+ * recaptchaCheckAnswer(). It also appears in the Google reCAPTCHA admin console
+ * for per-action analytics. Use a consistent lowercase identifier for each form
+ * (e.g. 'selfreg', 'email', 'sms', 'support', 'requestcopy').
+ *
+ * Keys are read from config.pwd.ini [ReCaptcha] siteKey.
+ */
+function recaptchaGetQuestion(string $action = 'submit') {
 	global $configArray;
 
-	if(!isset($configArray['ReCaptcha']['publicKey']) || empty($configArray['ReCaptcha']['publicKey'])) {
+	if (!isset($configArray['ReCaptcha']['siteKey']) || empty($configArray['ReCaptcha']['siteKey'])) {
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
-	$key = $configArray['ReCaptcha']['publicKey'];
+	$key    = htmlspecialchars($configArray['ReCaptcha']['siteKey'], ENT_QUOTES);
+	$action = htmlspecialchars($action, ENT_QUOTES);
 
-	return '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' .
-	       '<div class="g-recaptcha" data-sitekey="'. $key .'">';
-	//TODO: include  alt="Captcha test to confirm you are not a robot"  ??
+	return '<script src="https://www.google.com/recaptcha/api.js?render=' . $key . '" async defer></script>' .
+	       '<script>window.pikaRecaptchaSiteKey = "' . $key . '"; window.pikaRecaptchaAction = "' . $action . '";</script>';
 }
 
-function recaptchaCheckAnswer($recaptchaResponse = false) {
+/**
+ * Verifies a reCAPTCHA v3 token against Google's API and returns true if the
+ * response passes the score threshold.
+ *
+ * Token source: $_REQUEST['g-recaptcha-response'], or pass one explicitly.
+ * Score threshold: config.ini [ReCaptcha] passingScoreThreshold (default 0.5).
+ * Action validation: when $expectedAction is provided, Google rejects tokens
+ *   generated for a different action, preventing cross-form token reuse.
+ *
+ * Returns false (rather than throwing) on a low score so callers can show a
+ * user-facing error. Throws RuntimeException only for missing configuration and
+ * DomainException only when no token is present at all.
+ *
+ * Keys are read from config.pwd.ini [ReCaptcha] secretKey.
+ */
+function recaptchaCheckAnswer($recaptchaResponse = false, string $expectedAction = '') {
 	global $configArray;
-	$logger = new Logger('reCaptcha');
 
-	if (empty($configArray['ReCaptcha']['privateKey'])){
+	if (empty($configArray['ReCaptcha']['secretKey'])) {
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
 
-	if (!$recaptchaResponse){
-		if (!isset($_REQUEST['g-recaptcha-response'])){
+	if (!$recaptchaResponse) {
+		if (!isset($_REQUEST['g-recaptcha-response'])) {
 			throw new \DomainException('No reCaptcha response found');
-		}else{
+		} else {
 			$recaptchaResponse = $_REQUEST['g-recaptcha-response'];
 		}
 	}
+
+	$threshold = (float)($configArray['ReCaptcha']['passingScoreThreshold'] ?? 0.5);
 	$remoteIp  = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
-	$recaptcha = new ReCaptcha($configArray['ReCaptcha']['privateKey']);
-	$r         = $recaptcha->verify($recaptchaResponse, $remoteIp);
-	if ($r->isSuccess()) {
-		return true;
-	} else {
-		$errors = $r->getErrorCodes();
-		$errors = print_r($errors, true);
-		$logger->warn('reCaptcha failed', ['recaptcha_errors' => $errors]);
-		return false;
+	$recaptcha = new ReCaptcha($configArray['ReCaptcha']['secretKey']);
+
+	if ($expectedAction) {
+		$recaptcha->setExpectedAction($expectedAction);
 	}
+	$recaptcha->setScoreThreshold($threshold);
+
+	$logger = new Logger('reCaptcha');
+	$r      = $recaptcha->verify($recaptchaResponse, $remoteIp);
+	if ($r->isSuccess()) {
+		$logger->info('reCaptcha passed', ['score' => $r->getScore(), 'action' => $expectedAction]);
+		return true;
+	}
+	$logger->warn('reCaptcha failed', ['recaptcha_errors' => print_r($r->getErrorCodes(), true), 'score' => $r->getScore()]);
+	return false;
 }
