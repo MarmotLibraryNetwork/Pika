@@ -129,10 +129,8 @@ class Archive2_ClaimAuthorship extends Action{
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
 
 		// Set up captcha to limit spam authorship claims
-		if (isset($configArray['ReCaptcha']['siteKey'])) {
-			$captchaCode = recaptchaGetQuestion('archive2_claimauthorship');
-			$interface->assign('captcha', $captchaCode);
-		}
+		$captchaCode = recaptchaGetQuestion('archive2_claimauthorship');
+		$interface->assign('captcha', $captchaCode);
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);

@@ -61,13 +61,22 @@ function getCheckDigit($baseId) {
  * for per-action analytics. Use a consistent lowercase identifier for each form
  * (e.g. 'selfreg', 'email', 'sms', 'support', 'requestcopy').
  *
- * Keys are read from config.pwd.ini [ReCaptcha] siteKey.
+ * Keys are read from config.pwd.ini [ReCaptcha] siteKey. Returns an empty string
+ * when no key is set, so callers do not need to test the config themselves.
  */
 function recaptchaGetQuestion(string $action = 'submit') {
 	global $configArray;
 
+	// reCAPTCHA is optional per site, so an unconfigured (or blank) key is a normal
+	// state rather than an error: return nothing instead of throwing. Templates wrap
+	// the output in {if $captcha} so nothing renders, and recaptchaIsValid() passes
+	// the matching check for the same reason, leaving the form usable without a captcha.
 	if (empty($configArray['ReCaptcha']['siteKey'])) {
-		throw new \RuntimeException('No reCaptcha key provided');
+		if (!empty($configArray['Site']['isProduction'])) {
+			$logger = new Logger('reCaptcha');
+			$logger->warn('reCaptcha key not configured on production site. This will lead to spam.');
+		}
+		return '';
 	}
 	$key    = htmlspecialchars($configArray['ReCaptcha']['siteKey'], ENT_QUOTES);
 	$action = htmlspecialchars($action, ENT_QUOTES);

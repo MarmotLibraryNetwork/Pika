@@ -25,12 +25,9 @@ use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class AccessibilityReport extends Action {
 	function launch(){
-		global $configArray;
 		global $interface;
-		if (isset($configArray['ReCaptcha']['siteKey'])) {
-			$captchaCode = recaptchaGetQuestion('accessibility_report');
-			$interface->assign('captcha', $captchaCode);
-		}
+		$captchaCode = recaptchaGetQuestion('accessibility_report');
+		$interface->assign('captcha', $captchaCode);
 		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');
 	}
 }

@@ -125,10 +125,8 @@ class Archive_RequestCopy extends Action{
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
 		// Set up captcha to limit spam self-registrations
-		if (isset($configArray['ReCaptcha']['siteKey'])){
-			$captchaCode = recaptchaGetQuestion('archive_requestcopy');
-			$interface->assign('captcha', $captchaCode);
-		}
+		$captchaCode = recaptchaGetQuestion('archive_requestcopy');
+		$interface->assign('captcha', $captchaCode);
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);

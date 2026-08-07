@@ -94,10 +94,8 @@ class SelfReg extends Action {
 		$interface->assign('saveButtonText', 'Register');
 
 		// Set up captcha to limit spam self-registrations
-		if (!empty($configArray['ReCaptcha']['siteKey'])){
-			$captchaCode = recaptchaGetQuestion('selfreg');
-			$interface->assign('captcha', $captchaCode);
-		}
+		$captchaCode = recaptchaGetQuestion('selfreg');
+		$interface->assign('captcha', $captchaCode);
 
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
 		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
