@@ -21,7 +21,7 @@
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class Archive_ClaimAuthorship extends Action{
 
@@ -53,15 +53,7 @@ class Archive_ClaimAuthorship extends Action{
 		}
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'archive_claimauthorship');
-				} catch (Exception $e) {
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('archive_claimauthorship');
 
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');

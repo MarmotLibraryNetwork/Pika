@@ -26,7 +26,7 @@
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive/ArchiveRequest.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 class Archive_RequestCopy extends Action{
 	function launch(){
 		global $configArray;
@@ -55,15 +55,7 @@ class Archive_RequestCopy extends Action{
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
 		if (isset($_REQUEST['submit'])){
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'archive_requestcopy');
-				} catch (Exception $e){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('archive_requestcopy');
 
 			if (!$recaptchaValid) {
 					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');

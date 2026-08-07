@@ -19,7 +19,7 @@
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/Action.php';
 
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class SelfReg extends Action {
 	protected $catalog;
@@ -60,15 +60,7 @@ class SelfReg extends Action {
 
 		if (isset($_REQUEST['submit'])){
 
-			if (!empty($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'selfreg');
-				} catch (Exception $e){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('selfreg');
 			if ($library->enableSelfRegistration && isset($_POST['pin'])){
 				$pinLength = strlen($_POST['pin']);
 				if ($pinLength < $pinMinimumLength or $pinLength > $pinMaximumLength){

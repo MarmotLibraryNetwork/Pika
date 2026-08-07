@@ -24,7 +24,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class MyAccount_AJAX extends AJAXHandler {
 
@@ -1275,15 +1275,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'email_userlist');
-				} catch (Exception $e){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('email_userlist');
 
 			if (UserAccount::isLoggedIn() || $recaptchaValid){
 				$listId = $_REQUEST['listId'];

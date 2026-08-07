@@ -26,7 +26,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php'; // Include for Id validation
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
@@ -750,15 +750,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		if (isset($configArray['ReCaptcha']['secretKey'])){
-			try {
-				$recaptchaValid = recaptchaCheckAnswer(false, 'email_grouped_work');
-			} catch (Exception $e){
-				$recaptchaValid = false;
-			}
-		}else{
-			$recaptchaValid = true;
-		}
+		$recaptchaValid = recaptchaIsValid('email_grouped_work');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$id = $_REQUEST['id'];
 			if (GroupedWork::validGroupedWorkId($id)){
@@ -836,15 +828,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendSeriesEmail(){
 		global $interface;
 		global $configArray;
-		if (isset($configArray['ReCaptcha']['secretKey'])){
-			try {
-				$recaptchaValid = recaptchaCheckAnswer(false, 'email_series');
-			} catch (Exception $e){
-				$recaptchaValid = false;
-			}
-		}else{
-			$recaptchaValid = true;
-		}
+		$recaptchaValid = recaptchaIsValid('email_series');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
@@ -1442,15 +1426,7 @@ function getSaveSeriesToListForm(){
 
 		// Only logged-out users are issued a captcha, so only they are checked against one.
 		if (!UserAccount::isLoggedIn()){
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'sms');
-				} catch (Exception $e){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('sms');
 			if (!$recaptchaValid){
 				return ['result' => false, 'message' => 'The CAPTCHA response was incorrect, please try again.'];
 			}

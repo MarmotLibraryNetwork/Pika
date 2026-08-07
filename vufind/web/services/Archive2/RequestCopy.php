@@ -28,7 +28,7 @@
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/ArchiveRequest.php';
 
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class Archive2_RequestCopy extends Action {
 	function launch(){
@@ -66,15 +66,7 @@ class Archive2_RequestCopy extends Action {
 			$interface->assign('error', "An invalid ID was provided. Please use only numeric ids.");
 		}
 			if (isset($_REQUEST['submit'])){
-				if (isset($configArray['ReCaptcha']['secretKey'])){
-					try {
-						$recaptchaValid = recaptchaCheckAnswer(false, 'archive2_requestcopy');
-					} catch (Exception $e){
-						$recaptchaValid = false;
-					}
-				}else{
-					$recaptchaValid = true;
-				}
+				$recaptchaValid = recaptchaIsValid('archive2_requestcopy');
 
 				if (!$recaptchaValid){
 					$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');

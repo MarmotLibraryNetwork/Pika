@@ -124,3 +124,37 @@ function recaptchaCheckAnswer($recaptchaResponse = false, string $expectedAction
 	$logger->warn('reCaptcha failed', ['recaptcha_errors' => print_r($r->getErrorCodes(), true), 'score' => $r->getScore()]);
 	return false;
 }
+
+/**
+ * Controller-friendly wrapper around recaptchaCheckAnswer().
+ *
+ * Every controller that gates a form on reCAPTCHA wants the same three-way
+ * behavior, so it lives here once instead of being repeated at each call site:
+ *
+ *   - reCAPTCHA not configured for this site  -> true  (the feature is optional,
+ *     so an unconfigured site must not be locked out of its own forms)
+ *   - token verified above the score threshold -> true
+ *   - anything else, including a thrown error  -> false
+ *
+ * Unlike recaptchaCheckAnswer() this never throws, so callers can branch on a
+ * plain bool. Pair it with the matching recaptchaGetQuestion($action) call that
+ * renders the widget — the action strings must agree or Google rejects the token.
+ *
+ * @param string $action Action name matching the one passed to recaptchaGetQuestion().
+ * @return bool True when the submission may proceed.
+ */
+function recaptchaIsValid(string $action): bool {
+	global $configArray;
+
+	if (empty($configArray['ReCaptcha']['secretKey'])) {
+		return true;
+	}
+
+	try {
+		return recaptchaCheckAnswer(false, $action);
+	} catch (\Exception $e) {
+		$logger = new Logger('reCaptcha');
+		$logger->warn('reCaptcha check could not be completed', ['action' => $action, 'error' => $e->getMessage()]);
+		return false;
+	}
+}

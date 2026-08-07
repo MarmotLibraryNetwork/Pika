@@ -18,7 +18,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class AJAX extends AJAXHandler {
 
@@ -46,16 +46,7 @@ class AJAX extends AJAXHandler {
 	// Email Search Results
 	function sendEmail(){
 		global $interface;
-		global $configArray;
-		if (isset($configArray['ReCaptcha']['secretKey'])){
-			try {
-				$recaptchaValid = recaptchaCheckAnswer(false, 'email_search_results');
-			} catch (Exception $e){
-				$recaptchaValid = false;
-			}
-		}else{
-			$recaptchaValid = true;
-		}
+		$recaptchaValid = recaptchaIsValid('email_search_results');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 
 			$subject = translate('Library Catalog Search Result');

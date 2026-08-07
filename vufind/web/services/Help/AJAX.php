@@ -19,7 +19,7 @@
 
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class Help_AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = [
@@ -34,15 +34,7 @@ class Help_AJAX extends AJAXHandler {
 		global $configArray;
 
 		if (isset($_REQUEST['submit'])){
-			if (isset($configArray['ReCaptcha']['secretKey'])) {
-				try{
-					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive_support');
-				}catch (Exception $ex){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('overdrive_support');
 			if (!$recaptchaValid) {
 				return [
 					'title'   => 'OverDrive Support Form Not Sent',
@@ -135,15 +127,7 @@ class Help_AJAX extends AJAXHandler {
 		global $configArray;
 
 		if (isset($_REQUEST['submit'])){
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'overdrive_purchase');
-				} catch (Exception $ex){
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('overdrive_purchase');
 			if (!$recaptchaValid){
 				$this->logger->info('Recaptcha validation failed for OverDrivePurchaseForm');
 				return [
@@ -235,16 +219,7 @@ class Help_AJAX extends AJAXHandler {
 		global $configArray;
 
 		if (isset($_REQUEST['submit'])){
-			if (isset($configArray['ReCaptcha']['secretKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer(false, 'accessibility_report');
-				} catch (Exception $e){
-					$this->logger->error('ReCaptcha validation failed: ' . $e->getMessage());
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('accessibility_report');
 			if (!$recaptchaValid){
 				return [
 					'title'   => 'Accessibility Report Not Sent',
