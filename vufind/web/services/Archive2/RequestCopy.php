@@ -66,9 +66,9 @@ class Archive2_RequestCopy extends Action {
 			$interface->assign('error', "An invalid ID was provided. Please use only numeric ids.");
 		}
 			if (isset($_REQUEST['submit'])){
-				if (isset($configArray['ReCaptcha']['privateKey'])){
+				if (isset($configArray['ReCaptcha']['secretKey'])){
 					try {
-						$recaptchaValid = recaptchaCheckAnswer();
+						$recaptchaValid = recaptchaCheckAnswer(false, 'archive2_requestcopy');
 					} catch (Exception $e){
 						$recaptchaValid = false;
 					}
@@ -138,9 +138,9 @@ class Archive2_RequestCopy extends Action {
 			$interface->assign('saveButtonText', 'Submit Request');
 			$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
-			// Set up captcha to limit spam submission
-			if (isset($configArray['ReCaptcha']['publicKey'])){
-				$captchaCode = recaptchaGetQuestion();
+			// Set up captcha to limit spam copy requests
+			if (isset($configArray['ReCaptcha']['siteKey'])){
+				$captchaCode = recaptchaGetQuestion('archive2_requestcopy');
 				$interface->assign('captcha', $captchaCode);
 			}
 
