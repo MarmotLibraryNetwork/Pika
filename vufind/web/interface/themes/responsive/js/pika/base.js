@@ -573,7 +573,9 @@ var Pika = (function(){
  * Runs the risk assessment for the given action and passes the resulting token
  * to callback(token). If the reCAPTCHA API is not loaded (key not configured,
  * slow network, etc.) callback(false) is called immediately so the server-side
- * check can handle the missing token gracefully.
+ * check can handle the missing token gracefully. The same happens if execute()
+ * rejects (invalid site key, network failure) — callback must always run, or the
+ * caller's submit handler would stall with no request sent and no error shown.
  *
  * @param {string}   action   - reCAPTCHA action name matching the server-side
  *                              expectedAction (e.g. 'email', 'selfreg', 'sms').
@@ -587,7 +589,8 @@ function pikaExecuteRecaptcha(action, callback) {
 	}
 	grecaptcha.ready(function() {
 		grecaptcha.execute(window.pikaRecaptchaSiteKey, {action: action})
-			.then(function(token) { callback(token); });
+			.then(function(token) { callback(token); })
+			.catch(function() { callback(false); });
 	});
 }
 

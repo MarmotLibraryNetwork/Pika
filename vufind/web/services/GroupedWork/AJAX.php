@@ -681,6 +681,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$recordDriver   = new GroupedWorkDriver($id);
 			$relatedRecords = $recordDriver->getRelatedRecords();
 			$interface->assign('relatedRecords', $relatedRecords);
+			if (!UserAccount::isLoggedIn()){
+				$captchaCode = recaptchaGetQuestion('sms');
+				$interface->assign('captcha', $captchaCode);
+			}
 			$results = [
 				'title'        => 'Share via SMS Message',
 				'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
@@ -1417,8 +1421,8 @@ function getSaveSeriesToListForm(){
 			return ['result' => false, 'message' => 'Invalid Grouped Work ID.'];
 		}
 
-		$recaptchaValid = recaptchaCheckAnswer(false, 'sms');
-		if (!UserAccount::isLoggedIn() && !$recaptchaValid){
+		// Only logged out users are issued a captcha, so only they are checked against one.
+		if (!UserAccount::isLoggedIn() && !recaptchaCheckAnswer(false, 'sms')){
 			return ['result' => false, 'message' => 'The CAPTCHA response was incorrect, please try again.'];
 		}
 
