@@ -66,7 +66,7 @@ function getCheckDigit($baseId) {
 function recaptchaGetQuestion(string $action = 'submit') {
 	global $configArray;
 
-	if (!isset($configArray['ReCaptcha']['siteKey']) || empty($configArray['ReCaptcha']['siteKey'])) {
+	if (empty($configArray['ReCaptcha']['siteKey'])) {
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
 	$key    = htmlspecialchars($configArray['ReCaptcha']['siteKey'], ENT_QUOTES);
