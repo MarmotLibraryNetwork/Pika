@@ -15,9 +15,9 @@
 					{* Best Local Status is "On Display" while on OPAC device *}
 				{else}
 					<div class="related-manifestation-shelf-status available">It's Here{if (!empty($statusInformation.groupedStatus) && $statusInformation.groupedStatus != "On Shelf")} ({$statusInformation.groupedStatus}){/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
-				{* This allows for other available statuses, like "On Display";
-				like "Shelving"; or "Recently Returned" for Clearview *}
-					{/if}
+					{* This allows for other available statuses, like "On Display";
+						like "Shelving"; or "Recently Returned" for Clearview (on Polaris) *}
+				{/if}
 			{else}
 				{if $statusInformation.localOnDisplayItem}
 					<div class="related-manifestation-shelf-status available">{translate text='On Display'} {include file='GroupedWork/homePickupbutton.tpl'}</div>
@@ -39,7 +39,7 @@
 			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
 			like "On Display";
-			like "Shelving"; or "Recently Returned" for Clearview *}
+			like "Shelving"; or "Recently Returned" for Clearview (on Polaris) *}
 			{*TODO:  Need a condition when all the holdable copies are checked out and the remaining copies are library use only*}
 		{/if}
 	{elseif $statusInformation.availableOnline}
@@ -60,7 +60,7 @@
 		{/if}
 	{elseif $statusInformation.available && $statusInformation.hasLocalItem}
 		{if $statusInformation.localShelvingItem}
-			{*When the most available local item has grouped item status 'Shelving' or 'Recently Returned',
+			{* When the most available local item has grouped item status 'Shelving' or 'Recently Returned',
 			display that status over 'Checked Out' *}
 			<div class="related-manifestation-shelf-status availableOther">{$statusInformation.localShelvingStatus}/Available Elsewhere {include file='GroupedWork/homePickupbutton.tpl'}</div>
 		{else}
@@ -71,7 +71,7 @@
 			<div class="related-manifestation-shelf-status available">{if empty($statusInformation.groupedStatus)}{translate text='On Shelf'}{else}{$statusInformation.groupedStatus}{/if} {include file='GroupedWork/homePickupbutton.tpl'}</div>
 			{* Should be "On Shelf" most of the time, but this allows for other available statuses,
 			like "On Display";
-			like "Shelving"; or "Recently Returned" for Clearview *}
+			like "Shelving"; or "Recently Returned" for Clearview (on Polaris) *}
 		{else}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'}</div>
 		{/if}
