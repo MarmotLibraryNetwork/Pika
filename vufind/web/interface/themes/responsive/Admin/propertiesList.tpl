@@ -263,6 +263,11 @@
 				return $('a', td).text().trim() * 1;
 			});
 		}
+		$.fn.dataTable.ext.order['dom-status'] = function (settings, col){
+			return this.api().column(col, {order:'index'}).nodes().map(function (td, i){
+				return $(td).text().trim() === 'Closed' ? 1 : 0;
+			});
+		}
 		$(function(){
 			{/literal}{if $objectType == "LoanRuleDeterminer"}{literal}
 				$('#adminTable thead th:nth-child(-n+4), #adminTable thead th:nth-child(6)').each( function () {
@@ -278,7 +283,14 @@
 			{/literal}{/if}{literal}
 			$('#adminTable').DataTable({
 				pageLength: 100,
-				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}
+					{/literal}
+					{if $objectType == "BookClubKit\BookClubKitRequest"}
+						{* Use dom-status sorting function to sort requests that aren't closed above closed requests *}
+					{literal}
+					,{"orderDataType": "dom-status", "type": "numeric", "targets": 1}
+					{/literal}{/if}{literal}
+				],
 					{/literal}
 				{if $objectType == "LoanRule" || $objectType == "LoanRuleDeterminer" }
 					{literal}
@@ -308,6 +320,11 @@
 				{elseif $objectType == "Archive2\ArchiveRequest" || $objectType == "Archive2\ClaimAuthorshipRequest"}
 				{literal}
 					"order": [[5, "desc"]]
+				{/literal}
+				{elseif $objectType == "BookClubKit\BookClubKitRequest"}
+				{* Sort by status, anything not closed first, then by date created, descending *}
+				{literal}
+					"order": [[1, "asc"], [6, "desc"]]
 				{/literal}
 				{else}
 					{literal}

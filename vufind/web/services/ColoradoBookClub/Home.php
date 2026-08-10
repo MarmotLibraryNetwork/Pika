@@ -1,8 +1,7 @@
 <?php
 /*
  * Pika Discovery Layer
- * Copyright (C) 2023  Marmot Library Network
- *
+ * Copyright (C) 2026  Marmot Library Network
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,17 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/Pika/Functions.php';
-require_once ROOT_DIR . '/services/Help/AJAX.php';
+/**
+ * Extends the Record Home class so that ColoradoBookClub record pages (e.g. "More Info" links)
+ * continue to display normally now that this module has its own services directory.
+ *
+ * (This class has to exist because the parent directory causes the action loading to expect it)
+ */
 
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+require_once ROOT_DIR . '/services/Record/Home.php';
 
-class AccessibilityReport extends Action {
-	function launch(){
-		global $interface;
-		$captchaCode = recaptchaGetQuestion('accessibility_report');
-		$interface->assign('captcha', $captchaCode);
-		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');
-	}
+class ColoradoBookClub_Home extends Record_Home {
+
 }

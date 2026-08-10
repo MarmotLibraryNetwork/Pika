@@ -12,7 +12,7 @@
 				</span>
 			{/if}
 			{if $loggedIn && ($review->userid == $activeUserId || in_array('opacAdmin', $userRoles))}
-				&nbsp;<span onclick='return Pika.GroupedWork.deleteReview("{$id|escape:"url"}", "{$review->id}");' class="btn btn-danger btn-xs">&times; {translate text='Delete'}</span>
+				&nbsp;<button type="button" onclick='return Pika.GroupedWork.deleteReview("{$id|escape:"url"}", "{$review->id}");' class="btn btn-danger btn-xs">&times; {translate text='Delete'}</button>
 			{/if}</h5>
 	</div>
 	{if $review->review}

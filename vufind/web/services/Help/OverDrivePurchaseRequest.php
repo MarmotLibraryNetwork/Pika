@@ -25,12 +25,9 @@ use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class OverDrivePurchaseRequest extends Action {
 	function launch(){
-		global $configArray;
 		global $interface;
-		if (isset($configArray['ReCaptcha']['publicKey'])){
-			$captchaCode = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
-		}
+		$captchaCode = recaptchaGetQuestion('overdrive_purchase');
+		$interface->assign('captcha', $captchaCode);
 		$this->display('overdrivePurchaseRequest.tpl', 'Request OverDrive Purchase');
 	}
 }

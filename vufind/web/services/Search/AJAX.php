@@ -18,7 +18,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class AJAX extends AJAXHandler {
 
@@ -46,7 +46,7 @@ class AJAX extends AJAXHandler {
 	// Email Search Results
 	function sendEmail(){
 		global $interface;
-		$recaptchaValid = recaptchaCheckAnswer();
+		$recaptchaValid = recaptchaIsValid('email_search_results');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 
 			$subject = translate('Library Catalog Search Result');
@@ -55,7 +55,7 @@ class AJAX extends AJAXHandler {
 			$from    = $_REQUEST['from'];
 			$message = $_REQUEST['message'];
 			$interface->assign('from', $from);
-			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+			if (!str_contains($message, 'http') && !str_contains($message, 'mailto') && $message == strip_tags($message)){
 				$interface->assign('message', $message);
 				$interface->assign('msgUrl', $url);
 				$body = $interface->fetch('Emails/share-link.tpl');
@@ -91,7 +91,7 @@ class AJAX extends AJAXHandler {
 		}else{ // logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 
@@ -184,7 +184,7 @@ class AJAX extends AJAXHandler {
 	function getEmailForm(){
 		global $interface;
 		if (!UserAccount::isLoggedIn()){
-			$captchaCode = recaptchaGetQuestion();
+			$captchaCode = recaptchaGetQuestion('email_search_results');
 			$interface->assign('captcha', $captchaCode);
 		}
 		if (UserAccount::isLoggedIn()){
@@ -198,7 +198,7 @@ class AJAX extends AJAXHandler {
 		return [
 			'title'        => 'E-Mail Search',
 			'modalBody'    => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</button>",
 		];
 	}
 

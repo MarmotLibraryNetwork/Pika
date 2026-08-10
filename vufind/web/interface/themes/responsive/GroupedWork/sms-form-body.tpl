@@ -41,4 +41,12 @@
       </select>
     </div>
   </div>
+	{* Show Recaptcha spam control if set. *}
+	{if $captcha}
+		<div class="form-group">
+			<div class="col-sm-9 col-sm-offset-3">
+				{$captcha}
+			</div>
+		</div>
+	{/if}
 </form>

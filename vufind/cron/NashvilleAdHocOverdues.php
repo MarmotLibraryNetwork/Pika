@@ -21,6 +21,7 @@
 
 // SYNTAX: path/to/php NashvilleAdHocOverdues.php $_SERVER['SERVER_NAME'], e.g., 
 // $ sudo /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.test
+exit;
 
 $_SERVER['SERVER_NAME'] = $argv[1];
 if(is_null($_SERVER['SERVER_NAME'])) {

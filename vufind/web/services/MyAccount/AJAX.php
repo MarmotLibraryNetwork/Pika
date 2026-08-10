@@ -24,7 +24,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class MyAccount_AJAX extends AJAXHandler {
 
@@ -1275,7 +1275,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			$recaptchaValid = recaptchaCheckAnswer();
+			$recaptchaValid = recaptchaIsValid('email_userlist');
 
 			if (UserAccount::isLoggedIn() || $recaptchaValid){
 				$listId = $_REQUEST['listId'];
@@ -1353,7 +1353,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			} else { // logged in check, or captcha check
 				$result = [
 					'result'  => false,
-					'message' => 'Not logged in or invalid captcha response',
+					'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 				];
 			}
 		}else{ // Invalid listId
@@ -1378,7 +1378,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion();
+				$captchaCode = recaptchaGetQuestion('email_userlist');
 				$interface->assign('captcha', $captchaCode);
 			}
 

@@ -143,6 +143,7 @@ class Library extends DB_DataObject {
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
 	public $externalMaterialsRequestUrl;
+	public $bookClubKitContactEmail;
 	public $includeNovelistEnrichment;
 	public $applyNumberOfHoldingsBoost;
 	public $allowAutomaticSearchReplacements;
@@ -870,6 +871,14 @@ class Library extends DB_DataObject {
 						],
 					],
 
+				],
+			],
+
+			'bookClubKitSection' => [
+				'property'   => 'bookClubKitSection', 'type' => 'section', 'label' => 'Book Club Kit Requests', 'hideInLists' => true,
+				'helpLink'   => '',
+				'properties' => [
+					'bookClubKitContactEmail' => ['property' => 'bookClubKitContactEmail', 'type' => 'email', 'label' => 'Book Club Kit Contact Email', 'description' => 'The email address that patron requests for Colorado State Book Club Kits should be sent to. Leave blank if this library does not offer Book Club Kit requests.', 'hideInLists' => true],
 				],
 			],
 

@@ -1471,9 +1471,10 @@ class GroupedWorkDriver extends RecordInterface {
 					//'itemSummaryLocal'     => [],
 					'groupedStatus'        => '',
 
-					// Local Shelving status display for format manifestation level
-					'anyRecordHasStatusBetterThanShelving' => false,
-					'localShelvingItem'                    => false,
+					// Local status override display; see the derivation after this loop
+					'bestLocalGroupedStatus' => 'Currently Unavailable',
+					'localShelvingItem'      => false,
+					'localOnDisplayItem'     => false,
 				];
 			}
 			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
@@ -1511,17 +1512,9 @@ class GroupedWorkDriver extends RecordInterface {
 			if (!empty($curRecord['hasLocalItem'])){
 				$relatedManifestations[$currentManifestation]['hasLocalItem'] = true;
 
-				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] && $curRecord['anyLocalStatusBetterThanShelving']){
-					$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] = true;
-					// Flag to disable displaying Shelving override status at format manifestation level
-					$relatedManifestations[$currentManifestation]['localShelvingItem']   = false;
-					// Unset other flag in case previously set
-				}
-				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] && !empty($curRecord['localShelvingItem'])){
-					// Set manifestation level localShelvingItem flag if a record does have it on.
-					$relatedManifestations[$currentManifestation]['localShelvingItem']   = true;
-					$relatedManifestations[$currentManifestation]['localShelvingStatus'] = $curRecord['localShelvingStatus'];
-				}
+				// Roll the record's best local status up to the format, so a better local status on any
+				// one of the format's records suppresses an override status set on another record.
+				$relatedManifestations[$currentManifestation]['bestLocalGroupedStatus'] = self::keepBestGroupedStatus($curRecord['bestLocalGroupedStatus'], $relatedManifestations[$currentManifestation]['bestLocalGroupedStatus']);
 			}
 			if ($curRecord['shelfLocation']){
 				$relatedManifestations[$currentManifestation]['shelfLocation'][$curRecord['shelfLocation']] = $curRecord['shelfLocation'];
@@ -1580,6 +1573,20 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 		}
+
+		// An override status only displays when it is the best status among the format's local items,
+		// so that a better local status (e.g. 'On Shelf') on any of its records always wins. This is
+		// the same derivation setupRelatedRecordDetails() runs at the individual record level.
+		foreach ($relatedManifestations as $manifestationFormat => $manifestationDetails){
+			$bestLocalGroupedStatus = $manifestationDetails['bestLocalGroupedStatus'];
+			if (in_array($bestLocalGroupedStatus, ['Shelving', 'Recently Returned'])){
+				$relatedManifestations[$manifestationFormat]['localShelvingItem']   = true;
+				$relatedManifestations[$manifestationFormat]['localShelvingStatus'] = $bestLocalGroupedStatus;
+			}elseif ($bestLocalGroupedStatus == 'On Display'){
+				$relatedManifestations[$manifestationFormat]['localOnDisplayItem'] = true;
+			}
+		}
+
 		$timer->logTime('Finished initial processing of related records');
 		$memoryWatcher->logMemory('Finished initial processing of related records');
 
@@ -2981,7 +2988,10 @@ class GroupedWorkDriver extends RecordInterface {
 			'holdable'               => false,
 			'itemSummary'            => [],
 			'groupedStatus'          => 'Currently Unavailable',
-			'anyLocalStatusBetterThanShelving' => false,
+			// Local status override display; see the derivation after the item loop below
+			'bestLocalGroupedStatus' => 'Currently Unavailable',
+			'localShelvingItem'      => false,
+			'localOnDisplayItem'     => false,
 			'source'                 => $source,
 			'actions'                => [],
 			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
@@ -3007,16 +3017,10 @@ class GroupedWorkDriver extends RecordInterface {
 		$i                 = 0;
 		$allLibraryUseOnly = true;
 
-		// booleans to be used together to determine if the most available local item has
-		// the shelving or recently returned grouped item status; and no other local item is on shelf
-		$anyLocalShelving                 = false;
-		$anyLocalStatusBetterThanShelving = false;
-		$localShelvingStatus              = '';
-
-		// booleans to be used together to determine if the best status among local items is
-		// 'On Display'; and no local item has a better status (i.e. 'On Shelf')
-		$anyLocalOnDisplay                 = false;
-		$anyLocalStatusBetterThanOnDisplay = false;
+		// The best grouped status among this record's local items. After the item loop this decides
+		// whether an override status ('Shelving'/'Recently Returned', 'On Display') displays instead
+		// of the generic 'On Shelf'. See self::$statusRankings for the relative ranking of statuses.
+		$bestLocalGroupedStatus = 'Currently Unavailable';
 
 		/** @var \Pika\BibliographicDrivers\GroupedWork\ItemDetails $curItem */
 		foreach ($this->relatedItemsByRecordId[$recordDetails->recordFullIdentifier] as $curItem){
@@ -3213,20 +3217,9 @@ class GroupedWorkDriver extends RecordInterface {
 				$sectionId                     = 1;
 				$section                       = 'In this library';
 
-				// Check if the best local status is Shelving; only check while the relevant flags aren't true.
-				if (!$anyLocalStatusBetterThanShelving && self::$statusRankings[$groupedStatus] > self::$statusRankings['Shelving']){
-					$anyLocalStatusBetterThanShelving = true;
-				} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
-					$anyLocalShelving    = true;
-					$localShelvingStatus = $groupedStatus;
-				}
-
-				// Check if the best local status is On Display; only check while the relevant flags aren't true.
-				if (!$anyLocalStatusBetterThanOnDisplay && self::$statusRankings[$groupedStatus] > self::$statusRankings['On Display']){
-					$anyLocalStatusBetterThanOnDisplay = true;
-				} elseif (!$anyLocalStatusBetterThanOnDisplay && !$anyLocalOnDisplay && $groupedStatus == 'On Display'){
-					$anyLocalOnDisplay = true;
-				}
+				// Ties keep the status seen first, so the earliest item wins between equally ranked
+				// statuses (e.g. 'Shelving' and 'Recently Returned').
+				$bestLocalGroupedStatus = self::keepBestGroupedStatus($groupedStatus, $bestLocalGroupedStatus);
 			}elseif ($libraryOwned){
 				if ($libraryShelfLocation == null){
 					$libraryShelfLocation = $shelfLocation;
@@ -3241,20 +3234,7 @@ class GroupedWorkDriver extends RecordInterface {
 				if ($searchLocation == null || $isEcontent){
 					$relatedRecord['hasLocalItem'] = true;
 
-					// Check if the best status is Shelving; only check while the relevant flags aren't true.
-					if (!$anyLocalStatusBetterThanShelving && self::$statusRankings[$groupedStatus] > self::$statusRankings['Shelving']){
-						$anyLocalStatusBetterThanShelving = true;
-					} elseif (!$anyLocalStatusBetterThanShelving && !$anyLocalShelving && in_array($groupedStatus, ['Shelving', 'Recently Returned'])){
-						$anyLocalShelving    = true;
-						$localShelvingStatus = $groupedStatus;
-					}
-
-					// Check if the best status is On Display; only check while the relevant flags aren't true.
-					if (!$anyLocalStatusBetterThanOnDisplay && self::$statusRankings[$groupedStatus] > self::$statusRankings['On Display']){
-						$anyLocalStatusBetterThanOnDisplay = true;
-					} elseif (!$anyLocalStatusBetterThanOnDisplay && !$anyLocalOnDisplay && $groupedStatus == 'On Display'){
-						$anyLocalOnDisplay = true;
-					}
+					$bestLocalGroupedStatus = self::keepBestGroupedStatus($groupedStatus, $bestLocalGroupedStatus);
 				}
 				$sectionId = 5;
 				$section   = $library->displayName;
@@ -3352,19 +3332,18 @@ class GroupedWorkDriver extends RecordInterface {
 			$recordAvailable          = $relatedRecord['availableLocally'] || $relatedRecord['availableOnline'];
 			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $recordIsHomePickUp, $isExternalReservationItem, $relatedUrls/*, $volumeData*/) : [];
 
-			if ($anyLocalShelving && !$anyLocalStatusBetterThanShelving){
+			// An override status only displays when it is the best status among the record's local
+			// items, so that a better local status (e.g. 'On Shelf') always wins. The status itself
+			// is carried up to the format manifestation level (search results & grouped work view),
+			// where the same derivation runs across all of the format's records.
+			$relatedRecord['bestLocalGroupedStatus'] = $bestLocalGroupedStatus;
+			if (in_array($bestLocalGroupedStatus, ['Shelving', 'Recently Returned'])){
 				// display override status when the most available local item is being shelved
 				$relatedRecord['localShelvingItem']   = true;
-				$relatedRecord['localShelvingStatus'] = $localShelvingStatus;
-			}
-			if ($anyLocalOnDisplay && !$anyLocalStatusBetterThanOnDisplay){
+				$relatedRecord['localShelvingStatus'] = $bestLocalGroupedStatus;
+			}elseif ($bestLocalGroupedStatus == 'On Display'){
 				// display override status when the best status among local items is 'On Display'
 				$relatedRecord['localOnDisplayItem'] = true;
-			}
-			if ($anyLocalStatusBetterThanShelving){
-				$relatedRecord['anyLocalStatusBetterThanShelving'] = true;
-				// Use this flag to determine if we can display Shelving grouped status
-				// at format manifestation level (in search results & grouped work view)
 			}
 			$timer->logTime('Loaded actions');
 			$memoryWatcher->logMemory('Loaded actions');
