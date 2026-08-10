@@ -1474,6 +1474,10 @@ class GroupedWorkDriver extends RecordInterface {
 					// Local Shelving status display for format manifestation level
 					'anyRecordHasStatusBetterThanShelving' => false,
 					'localShelvingItem'                    => false,
+
+					// Local On Display status display for format manifestation level
+					'anyRecordHasStatusBetterThanOnDisplay' => false,
+					'localOnDisplayItem'                    => false,
 				];
 			}
 			// If a flag is set for the current record, turn on the equivalent flag for the format manifestion
@@ -1515,12 +1519,23 @@ class GroupedWorkDriver extends RecordInterface {
 					$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] = true;
 					// Flag to disable displaying Shelving override status at format manifestation level
 					$relatedManifestations[$currentManifestation]['localShelvingItem']   = false;
-					// Unset other flag in case previously set
+					// Unset the other flag in case previously set
 				}
 				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanShelving'] && !empty($curRecord['localShelvingItem'])){
 					// Set manifestation level localShelvingItem flag if a record does have it on.
 					$relatedManifestations[$currentManifestation]['localShelvingItem']   = true;
 					$relatedManifestations[$currentManifestation]['localShelvingStatus'] = $curRecord['localShelvingStatus'];
+				}
+
+				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanOnDisplay'] && $curRecord['anyLocalStatusBetterThanOnDisplay']){
+					$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanOnDisplay'] = true;
+					// Flag to disable displaying On Display override status at format manifestation level
+					$relatedManifestations[$currentManifestation]['localOnDisplayItem']  = false;
+					// Unset the other flag in case previously set
+				}
+				if (!$relatedManifestations[$currentManifestation]['anyRecordHasStatusBetterThanOnDisplay'] && !empty($curRecord['localOnDisplayItem'])){
+					// Set manifestation level localOnDisplayItem flag if a record does have it on.
+					$relatedManifestations[$currentManifestation]['localOnDisplayItem']  = true;
 				}
 			}
 			if ($curRecord['shelfLocation']){
@@ -2981,7 +2996,9 @@ class GroupedWorkDriver extends RecordInterface {
 			'holdable'               => false,
 			'itemSummary'            => [],
 			'groupedStatus'          => 'Currently Unavailable',
-			'anyLocalStatusBetterThanShelving' => false,
+			'anyLocalStatusBetterThanShelving'  => false,
+			'anyLocalStatusBetterThanOnDisplay' => false,
+			'localOnDisplayItem'                => false,
 			'source'                 => $source,
 			'actions'                => [],
 			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails->primaryFormat),
@@ -3364,6 +3381,11 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($anyLocalStatusBetterThanShelving){
 				$relatedRecord['anyLocalStatusBetterThanShelving'] = true;
 				// Use this flag to determine if we can display Shelving grouped status
+				// at format manifestation level (in search results & grouped work view)
+			}
+			if ($anyLocalStatusBetterThanOnDisplay){
+				$relatedRecord['anyLocalStatusBetterThanOnDisplay'] = true;
+				// Use this flag to determine if we can display On Display grouped status
 				// at format manifestation level (in search results & grouped work view)
 			}
 			$timer->logTime('Loaded actions');
