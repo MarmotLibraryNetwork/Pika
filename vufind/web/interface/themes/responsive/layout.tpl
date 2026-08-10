@@ -97,7 +97,10 @@
 					{if !empty($sidebar)} {* Main Content & Sidebars *}
 
 						{if $sideBarOnRight}  {*Sidebar on the right *}
-							<div role="region" aria-label="Sidebar" class="rightSidebar col-sm-12 col-md-4 col-lg-3 col-xl-3 order-md-2" id="side-bar">
+							{* tabindex="-1" keeps this region out of the normal Tab order but lets the
+							   "Skip to sidebar" link (href="#side-bar") move keyboard focus into it;
+							   without it the anchor jump scrolls but leaves focus on the link. *}
+							<div role="region" aria-label="Sidebar" class="rightSidebar col-sm-12 col-md-4 col-lg-3 col-xl-3 order-md-2" id="side-bar" tabindex="-1">
 								{include file="sidebar.tpl"}
 							</div>
 							<div class="rightSidebar col-sm-12 col-md-8 col-lg-9 col-xl-9 order-md-1" id="main-content-with-sidebar" style="overflow-x: auto;">
@@ -106,7 +109,10 @@
 							</div>
 
 						{else} {* Sidebar on the left *}
-							<div role="region" aria-label="Sidebar" class="col-sm-12 col-md-4 col-lg-3 col-xl-3" id="side-bar">
+							{* tabindex="-1" keeps this region out of the normal Tab order but lets the
+							   "Skip to sidebar" link (href="#side-bar") move keyboard focus into it;
+							   without it the anchor jump scrolls but leaves focus on the link. *}
+							<div role="region" aria-label="Sidebar" class="col-sm-12 col-md-4 col-lg-3 col-xl-3" id="side-bar" tabindex="-1">
 								{include file="sidebar.tpl"}
 							</div>
 							<div class="col-sm-12 col-md-8 col-lg-9 col-xl-9" id="main-content-with-sidebar">

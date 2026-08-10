@@ -99,7 +99,7 @@ class TaxonomyObject extends \Action
 
         // Named variables for templates.
         $interface->assign('tid',                    $this->taxonomyObject->getTid());
-        $interface->assign('term_title',             $this->taxonomyObject->getTitle());
+        $interface->assign('term_title',             $this->taxonomyObject->getTitle()); // Gets translated to html entities
         $interface->assign('term_description',       $this->taxonomyObject->getDescription());
         $interface->assign('vocabulary_name',        $this->taxonomyObject->getVocabularyName());
         $vocabularyMachineName = $this->taxonomyObject->getVocabularyMachineName();

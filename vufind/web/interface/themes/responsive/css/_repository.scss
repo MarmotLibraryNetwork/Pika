@@ -735,6 +735,7 @@
   object-fit: contain;
   max-width: 600px;
   max-height: 600px;
+  width: 100%; // Reduce the width on medium views so the poster does not flow over the sidebar
 }
 
 // Archive2 — Audio player element, full width (audio.tpl, audio_compound.tpl)

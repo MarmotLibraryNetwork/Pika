@@ -44,10 +44,10 @@ abstract class AJAXHandler extends Action {
 
 	protected $logger;
 
-	// Most if not all AJAX calls require javascript to be executed,
+	// Most if not all AJAX calls require JavaScript to be executed,
 	// so most bots & crawls don't trigger AJAX calls.  But we have found
-	// that at least one does execute javascript, and is also malicious
-	// in the amount of requests it makes
+	// that at least one does execute JavaScript, and is also malicious
+	// in the number of requests it makes
 	private $maliciousAgents = [
 		'YandexRenderResourcesBot'
 	];

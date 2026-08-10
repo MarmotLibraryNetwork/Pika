@@ -32,7 +32,7 @@ abstract class Record_Record extends Action {
 		//Load basic information needed in subclasses
 		$this->sourceAndId = new SourceAndId(empty($recordId) ? $_GET['id'] : $recordId);
 
-		//Check to see if the record exists within the resources table
+		//Check to see if the record exists
 		$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId);
 		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){
 			// initRecordDriverById itself does a validity check and returns null if not.
@@ -53,6 +53,7 @@ abstract class Record_Record extends Action {
 				$this->displayInvalidRecord();
 			}
 		}
+		parent::__construct(); // TODO: Any actual utility for this?
 
 		global $interface;
 		$interface->assign('id', $this->sourceAndId->getRecordId());

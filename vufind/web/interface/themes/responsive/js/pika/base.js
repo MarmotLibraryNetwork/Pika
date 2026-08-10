@@ -476,29 +476,44 @@ var Pika = (function(){
 		},
 
 		submitAccessibilityReport: function(){
-			$.post('/Help/AJAX?method=submitAccessibilityReport', $("#accessibilityReport").serialize(),
-					function(data){
-						Pika.showMessage(data.title, data.message,0, true);
-					},
-					'json').fail(Pika.ajaxFail);
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'accessibility_report', function(token) {
+				var $form = $('#accessibilityReport');
+				$form.find('input[name="g-recaptcha-response"]').remove();
+				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);
+				$.post('/Help/AJAX?method=submitAccessibilityReport', $form.serialize(),
+						function(data){
+							Pika.showMessage(data.title, data.message, 0, true);
+						},
+						'json').fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 
 		submitOverDriveForm: function() {
-			$.post('/Help/AJAX?method=submitOverDriveForm', $("#overdriveSupport").serialize(),
-					function(data){
-						Pika.showMessage(data.title, data.message, 0, true);
-					},
-					'json').fail(Pika.ajaxFail);
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive_support', function(token) {
+				var $form = $('#overdriveSupport');
+				$form.find('input[name="g-recaptcha-response"]').remove();
+				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);
+				$.post('/Help/AJAX?method=submitOverDriveForm', $form.serialize(),
+						function(data){
+							Pika.showMessage(data.title, data.message, 0, true);
+						},
+						'json').fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 
 		submitOverDrivePurchaseRequest: function() {
-			$.post('/Help/AJAX?method=submitOverDrivePurchaseForm', $("#overdrivePurchaseRequest").serialize(),
-					function(data){
-						Pika.showMessage(data.title, data.message, 0, true);
-					},
-					'json').fail(Pika.ajaxFail);
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'overdrive_purchase', function(token) {
+				var $form = $('#overdrivePurchaseRequest');
+				$form.find('input[name="g-recaptcha-response"]').remove();
+				$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo($form);
+				$.post('/Help/AJAX?method=submitOverDrivePurchaseForm', $form.serialize(),
+						function(data){
+							Pika.showMessage(data.title, data.message, 0, true);
+						},
+						'json').fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 
@@ -551,4 +566,31 @@ var Pika = (function(){
 	// }
 
 }(Pika || {}));
+
+/**
+ * Global reCAPTCHA v3 helper used by all form submit handlers.
+ *
+ * Runs the risk assessment for the given action and passes the resulting token
+ * to callback(token). If the reCAPTCHA API is not loaded (key not configured,
+ * slow network, etc.) callback(false) is called immediately so the server-side
+ * check can handle the missing token gracefully. The same happens if execute()
+ * rejects (invalid site key, network failure) — callback must always run, or the
+ * caller's submit handler would stall with no request sent and no error shown.
+ *
+ * @param {string}   action   - reCAPTCHA action name matching the server-side
+ *                              expectedAction (e.g. 'email', 'selfreg', 'sms').
+ *                              Shown in the Google admin console for analytics.
+ * @param {Function} callback - Receives the token string, or false on failure.
+ */
+function pikaExecuteRecaptcha(action, callback) {
+	if (typeof grecaptcha === 'undefined' || !window.pikaRecaptchaSiteKey) {
+		callback(false);
+		return;
+	}
+	grecaptcha.ready(function() {
+		grecaptcha.execute(window.pikaRecaptchaSiteKey, {action: action})
+			.then(function(token) { callback(token); })
+			.catch(function() { callback(false); });
+	});
+}
 

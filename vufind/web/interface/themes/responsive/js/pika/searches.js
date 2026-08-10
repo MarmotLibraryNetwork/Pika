@@ -215,24 +215,26 @@ Pika.Searches = (function(){
 		},
 */
 		sendEmail: function (){
-			var url = "/Search/AJAX";
-			$.getJSON(url,
-					{ // pass parameters as data
-						method: 'sendEmail'
-						, from: $('#from').val()
-						, to: $('#to').val()
-						, message: $('#message').val()
-						, sourceUrl: window.location.href
-						,'g-recaptcha-response' : (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
-					},
-					function (data){
-						if (data.result){
-							Pika.showMessage("Success", data.message);
-						}else{
-							Pika.showMessage("Error", data.message);
+			var url    = "/Search/AJAX";
+			var params = {
+				method: 'sendEmail'
+				, from: $('#from').val()
+				, to: $('#to').val()
+				, message: $('#message').val()
+				, sourceUrl: window.location.href
+			};
+			pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'email_search_results', function(token) {
+				params['g-recaptcha-response'] = token;
+				$.getJSON(url, params,
+						function (data){
+							if (data.result){
+								Pika.showMessage("Success", data.message);
+							}else{
+								Pika.showMessage("Error", data.message);
+							}
 						}
-					}
-			);
+				).fail(Pika.ajaxFail);
+			});
 			return false;
 		},
 

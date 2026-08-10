@@ -21,7 +21,7 @@
  */
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class Archive_ClaimAuthorship extends Action{
 
@@ -53,15 +53,7 @@ class Archive_ClaimAuthorship extends Action{
 		}
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
-				try {
-					$recaptchaValid = recaptchaCheckAnswer();
-				} catch (Exception $e) {
-					$recaptchaValid = false;
-				}
-			}else{
-				$recaptchaValid = true;
-			}
+			$recaptchaValid = recaptchaIsValid('archive_claimauthorship');
 
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
@@ -128,11 +120,9 @@ class Archive_ClaimAuthorship extends Action{
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
 
-		// Set up captcha to limit spam submissions
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$captchaCode        = recaptchaGetQuestion();
-			$interface->assign('captcha', $captchaCode);
-		}
+		// Set up captcha to limit spam authorship claims
+		$captchaCode = recaptchaGetQuestion('archive_claimauthorship');
+		$interface->assign('captcha', $captchaCode);
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);

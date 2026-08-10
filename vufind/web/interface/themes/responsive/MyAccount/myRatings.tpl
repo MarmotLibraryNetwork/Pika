@@ -56,7 +56,7 @@
 								<p style="white-space: normal">{$rating.review}</p>
 							</td>
 							<td>
-								<span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</span>
+								<button type="button" class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</button>
 							</td>
 						</tr>
 					{/foreach}
@@ -115,7 +115,7 @@
 							<td><span data-date="{$notInterestedTitle.dateMarked}">{$notInterestedTitle.dateMarked|date_format}</span></td>
 							<td><a href="{$notInterestedTitle.link}">{$notInterestedTitle.title}</a></td>
 							<td>{$notInterestedTitle.author}</td>
-							<td><span class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">Clear</span></td>
+							<td><button type="button" class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">Clear</button></td>
 						</tr>
 					{/foreach}
 					</tbody>

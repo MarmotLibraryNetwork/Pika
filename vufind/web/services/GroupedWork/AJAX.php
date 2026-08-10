@@ -26,7 +26,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php'; // Include for Id validation
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaIsValid};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
@@ -681,6 +681,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$recordDriver   = new GroupedWorkDriver($id);
 			$relatedRecords = $recordDriver->getRelatedRecords();
 			$interface->assign('relatedRecords', $relatedRecords);
+			if (!UserAccount::isLoggedIn()){
+				$captchaCode = recaptchaGetQuestion('sms');
+				$interface->assign('captcha', $captchaCode);
+			}
 			$results = [
 				'title'        => 'Share via SMS Message',
 				'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
@@ -706,7 +710,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion();
+				$captchaCode = recaptchaGetQuestion('email_grouped_work');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [
@@ -731,7 +735,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$captchaCode = recaptchaGetQuestion();
+				$captchaCode = recaptchaGetQuestion('email_series');
 				$interface->assign('captcha', $captchaCode);
 			}
 			return [
@@ -746,7 +750,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer();
+		$recaptchaValid = recaptchaIsValid('email_grouped_work');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$id = $_REQUEST['id'];
 			if (GroupedWork::validGroupedWorkId($id)){
@@ -815,7 +819,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			// logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 		return $result;
@@ -824,7 +828,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendSeriesEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = recaptchaCheckAnswer();
+		$recaptchaValid = recaptchaIsValid('email_series');
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
@@ -878,7 +882,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}else{ // logged in check, or captcha check
 			$result = [
 				'result'  => false,
-				'message' => 'Not logged in or invalid captcha response',
+				'message' => "Sorry, we couldn't confirm you're not a bot. Please try again in a moment, or log in to skip verification.",
 			];
 		}
 		return $result;
@@ -1173,7 +1177,7 @@ function getCreateSeriesForm(){
 	return [
 		'title'        => 'Create new List',
 		'modalBody'    => $interface->fetch("GroupedWork/series-list-form.tpl"),
-		'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</span>",
+		'modalButtons' => "<button class='tool btn btn-primary' onclick='return Pika.GroupedWork.createSeriesList(\"{$id}\");'>Create List</button>",
 	];
 }
 
@@ -1419,6 +1423,14 @@ function getSaveSeriesToListForm(){
 
 		global $configArray;
 		global $interface;
+
+		// Only logged-out users are issued a captcha, so only they are checked against one.
+		if (!UserAccount::isLoggedIn()){
+			$recaptchaValid = recaptchaIsValid('sms');
+			if (!$recaptchaValid){
+				return ['result' => false, 'message' => 'The CAPTCHA response was incorrect, please try again.'];
+			}
+		}
 
 		require_once ROOT_DIR . '/sys/Mailer.php';
 		$sms = new SMSMailer();

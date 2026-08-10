@@ -450,8 +450,8 @@ class Record_AJAX extends AJAXHandler {
 		}else{
 			$results = [
 				'title'        => 'Please log in',
-				'modalBody'    => "You must be logged in.  Please close this dialog and login before scheduling this item.",
-				'modalButtons' => ""
+				'modalBody'    => 'You must be logged in.  Please close this dialog and login before scheduling this item.',
+				'modalButtons' => ''
 			];
 		}
 		return $results;

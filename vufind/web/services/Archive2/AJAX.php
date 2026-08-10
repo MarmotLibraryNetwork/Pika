@@ -360,7 +360,8 @@ class Archive2_AJAX extends AJAXHandler {
 	 * @param string $noun         Human-readable label for error messages (e.g. 'Person')
 	 */
 	private function fetchRelatedObjects(string $filterField, string $noun): array {
-		$name = trim(strip_tags($_REQUEST['name'] ?? ''));
+		$name = html_entity_decode(trim(strip_tags($_REQUEST['name'] ?? '')));
+		// Taxonomy Object getTitle() encodes characters to html entities. So we must unconvert to get results.
 		if (empty($name)) {
 			return ['success' => false, 'message' => "$noun name is required."];
 		}

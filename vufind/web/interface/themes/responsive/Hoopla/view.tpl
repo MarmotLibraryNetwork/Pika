@@ -31,14 +31,6 @@
 
 			<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
 
-				{if $error}{* TODO: Does this get used? *}
-					<div class="row">
-						<div class="alert alert-danger">
-							{$error}
-						</div>
-					</div>
-				{/if}
-
 				<div class="row">
 					<div id="record-details-column" class="col-sm-12 col-md-12 col-lg-9">
 						{include file="Hoopla/view-title-details.tpl"}

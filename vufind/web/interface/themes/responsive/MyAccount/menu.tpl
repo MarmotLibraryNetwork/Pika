@@ -90,8 +90,8 @@
 			<span id="tagsMenu-placeholder"></span>
 
 			{* Admin Functionality if Available *}
-			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('partnerAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'UserAdmin'))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('partnerAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('bookClubKitAdmin', $userRoles))}
+				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'UserAdmin', 'BookClubKitRequests'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -140,9 +140,13 @@
 									<div class="adminMenuLink{if $action == "NPRBestBooksLists"} active{/if}"><a href="/Admin/NPRBestBooksLists">NPR Books We Love Lists</a></div>
 								{/if}
 							{/if}
+
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('bookClubKitAdmin', $userRoles))}
+								<div class="adminMenuLink{if $action == "BookClubKitRequests"} active{/if}"><a href="/Admin/BookClubKitRequests">Book Club Kit Requests</a></div>
+								<hr class="menu">
+							{/if}
 							{* OPAC Admin Actions*}
 							{if in_array('opacAdmin', $userRoles)}
-								<hr class="menu">
 								{* OPAC Admin Actions*}
 								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'Polaris' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="/Admin/PTypes">P-Types</a></div>

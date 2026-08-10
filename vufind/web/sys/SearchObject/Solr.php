@@ -1460,7 +1460,7 @@ class SearchObject_Solr extends SearchObject_Base {
 					}
 
 					// Special case -- allow trailing wildcards:
-					if (substr($value, -1) == '*'){
+					if (str_ends_with($value, '*')){
 						$filterQuery[] = "$field:$value";
 					}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
 						$filterQuery[] = "$field:$value";
@@ -1469,14 +1469,14 @@ class SearchObject_Solr extends SearchObject_Base {
 					}else{
 						if (!empty($value)){
 							if ($isAvailabilityToggle){
-								$filterQuery['availability_toggle'] = "$field:\"$value\"";
+								$filterQuery['availability_toggle'] = "$field:\"" . $this->escapeSolrPhraseValue($value) . "\"";
 							}elseif ($isAvailableAt){
-								$filterQuery['available_at'] = "$field:\"$value\"";
+								$filterQuery['available_at'] = "$field:\"" . $this->escapeSolrPhraseValue($value) . "\"";
 							}else{
 								if (is_numeric($field)){
 									$filterQuery[] = $value;
 								}else{
-									$filterQuery[] = "$field:\"$value\"";
+									$filterQuery[] = "$field:\"" . $this->escapeSolrPhraseValue($value) . '"';
 								}
 							}
 						}
@@ -2405,9 +2405,11 @@ class SearchObject_Solr extends SearchObject_Base {
 				$interface->assign('searchId', $_REQUEST['searchId']);
 				$interface->assign('page', $currentPage);
 
-				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_Solr $searchObject */
-				$searchObject = SearchObjectFactory::deminify($minSO);
+				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+				if ($searchObject === false){
+					return;
+				}
 				$searchObject->setPage($currentPage);
 				//Run the search
 				$result = $searchObject->processSearch(true);

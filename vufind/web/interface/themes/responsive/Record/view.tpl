@@ -5,15 +5,8 @@
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
-		{if $error && !$recordDriver}
-			<div class="row">
-				<div class="alert alert-danger">
-					{$error}
-				</div>
-			</div>
-		{else}
-			{* Display Title *}
-			<h1 role="heading" aria-level="1" class="h2">
+		{* Display Title *}
+		<h1 role="heading" aria-level="1" class="h2">
 					{*Short Title excludes the sub-title *}
 				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}
 				{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getShortTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
@@ -63,13 +56,6 @@ the 128 is shorthand for pretty print;
 				</div>
 
 				<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
-					{if $error}{* TODO: Does this get used? *}
-						<div class="row">
-							<div class="alert alert-danger">
-								{$error}
-							</div>
-						</div>
-					{/if}
 
 
 
@@ -97,6 +83,5 @@ the 128 is shorthand for pretty print;
 			</div>
 
 			<span class="Z3988" title="{$recordDriver->getOpenURL()|escape}" style="display:none">&nbsp;</span>
-		{/if}
 	</div>
 {/strip}

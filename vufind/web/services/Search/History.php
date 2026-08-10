@@ -59,8 +59,11 @@ class History extends Action {
 					unset($_SESSION['lastSearchURL']);
 					// Otherwise add to the list
 				}else{
-					$minSO             = unserialize($search->search_object);
-					$searchObject      = SearchObjectFactory::deminify($minSO);
+					$searchObject = SearchObjectFactory::deminifySerialized($search->search_object);
+					if ($searchObject === false){
+						// Corrupt or unreadable entry; skip it rather than fail the whole history page
+						continue;
+					}
 					$searchSourceLabel = $searchObject->getSearchSource();
 					if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)){
 						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];

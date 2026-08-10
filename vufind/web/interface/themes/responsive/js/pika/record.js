@@ -105,6 +105,15 @@ Pika.Record = (function(){
 			return false;
 		},
 
+		submitBookClubKitRequestForm: function(module, id){
+			$.post('/' + module + '/' + id + '/AJAX?method=submitBookClubKitRequestForm', $('#bookClubKitRequestForm').serialize(),
+					function(data){
+						Pika.showMessage(data.title, data.message);
+					},
+					'json').fail(Pika.ajaxFail);
+			return false;
+		},
+
 		// showBookMaterial: function(module, id){
 		// 	Pika.Account.ajaxLogin(function (){
 		// 		Pika.loadingMessage();

@@ -738,6 +738,53 @@ class ArchiveObject extends \Action
     }
 
     /**
+     * Builds Cantaloupe IIIF URLs for this object's child images, for the
+     * open_seadragon_multi viewer.
+     *
+     * The Cantaloupe image server has no access control of its own: anyone who has
+     * one of these URLs can fetch the full-resolution image directly, forever,
+     * regardless of Pika's own viewing-restriction check (and regardless of whether
+     * wrapper.tpl later decides not to render the viewer markup that would have
+     * embedded them). So only build URLs for the child images when the current
+     * patron is actually allowed to view the parent object itself; otherwise return
+     * an empty list so nothing restricted ever reaches the page.
+     */
+    protected function buildChildImageServiceUrls(): array
+    {
+        global $configArray;
+
+        if (!$this->canCurrentUserView()) {
+            $this->logger->info('Skipping service_file_url construction; a viewing restriction is in effect.', ['nid' => $this->mediaObject->getNodeId()]);
+            return [];
+        }
+
+        $serviceFileUrls = [];
+        foreach ($this->mediaObject->getChildObjects() as $childObject) {
+            if ($childObject->getObjectModel() !== 'image') {
+                continue;
+            }
+
+            $serviceFile = $childObject->getServiceFile();
+            if (!$serviceFile || !isset($serviceFile->fileUrl)) {
+                // Skip rather than emit a null: an empty tileSources entry gives
+                // OpenSeadragon a broken frame in the sequence.
+                $this->logger->warning('Service file not found for child image.', ['nid' => $childObject->getNodeId()]);
+                continue;
+            }
+
+            $baseUrl = $configArray['Islandora2']['url'] ?? '';
+            if (empty($baseUrl)) {
+                $this->logger->error('Islandora2 URL not configured; cannot build child image URL.', ['nid' => $childObject->getNodeId()]);
+                continue;
+            }
+
+            $serviceFileUrls[] = rtrim($baseUrl, '/') . "/cantaloupe/iiif/2/" . urlencode($serviceFile->fileUrl);
+        }
+
+        return $serviceFileUrls;
+    }
+
+    /**
      * Formats a single EDTF date string for display.
      * Full dates (YYYY-MM-DD) → "Month D, YYYY"; partial dates (YYYY-MM) → "Month YYYY"; year-only values pass through as-is.
      */

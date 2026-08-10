@@ -102,15 +102,18 @@ class MLN1 extends Sierra {
 
 		// vail fields
 		if ($libSubDomain == 'vail'/* || $libSubDomain == 'vail2'*/){
-			$fields[] = [
-				'property'    => 'altaddress',
-				'type'        => 'text',
-				'label'       => 'Physical Address',
-				'description' => 'Physical Address.',
-				'maxLength'   => 40,
-				'required'    => false
-			];
-		}
+			foreach ($fields as &$field) {
+				if ($field['property'] === 'email') {
+					$field['required'] = true;
+				}
+				if ($field['property'] === 'primaryphone') {
+					$field['required'] = true;
+					$field['label']    = 'Primary phone';
+					unset($field['simplePhoneUS']); // Allow international phone numbers with spaces. See D-5442
+					}
+			}
+			unset($field);
+	}
 
 		return $fields;
 	}

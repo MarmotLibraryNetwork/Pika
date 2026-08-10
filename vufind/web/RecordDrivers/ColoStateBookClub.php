@@ -25,4 +25,31 @@ class ColoStateBookClub extends ExternalRequestPhysicalItemsDriver {
 	protected function getLinks(){
 		return [];
 	}
+
+	/**
+	 * Replace the inherited "Request Online" external link with an action that pops up the
+	 * in-house Book Club Kit request form (login required, prepopulated with patron and title info).
+	 * Libraries that haven't configured a bookClubKitContactEmail don't participate in the in-house
+	 * form, so fall back to the inherited external "Request Online" link behavior for them.
+	 */
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem = false, $relatedUrls = null, $volumeData = null){
+		/** @var Library $library */
+		global $library;
+		if (empty($library->bookClubKitContactEmail)){
+			return parent::getRecordActions($isAvailable, $isHoldable, $isBookable, $isHomePickupRecord, $isExternalReservationItem, $relatedUrls, $volumeData);
+		}
+
+		// Use the bare id (not getIdWithSource()) - index.php's loadModuleActionId() prepends the
+		// indexing profile's sourceName itself when the URL module matches a recordUrlComponent
+		// (e.g. "ColoradoBookClub"), so embedding the source here too would double-prefix the id.
+		$url = '/' . $this->getModule() . '/' . $this->getId() . '/AJAX?method=getBookClubKitRequestForm';
+		return [
+			[
+				'url'          => '',
+				'onclick'      => "return Pika.Account.ajaxLightbox('$url', true);",
+				'title'        => 'Request Book Club Kit',
+				'requireLogin' => false, // login is gated by the ajaxLightbox call itself
+			],
+		];
+	}
 }
