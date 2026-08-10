@@ -20879,6 +20879,14 @@ div.striped > div:nth-child(odd) {
   outline: 2px solid #E15F15 !important;
 }
 
+.related-objects-tiles a:focus {
+  outline: none;
+}
+
+.related-objects-tiles a:focus .browse-thumbnail-sorted {
+  outline: 2px solid #E15F15;
+}
+
 #vertical-menu-bar .menu-bar-option:focus-within {
   border: 2px solid #E15F15 !important;
   outline: 2px solid white;
@@ -23352,6 +23360,11 @@ img.x-twit {
   font-weight: bold;
 }
 
+.itemSummaryTable tr.availableOther {
+  color: #A60489;
+  font-weight: bold;
+}
+
 .itemSummary {
   text-indent: -10px;
   padding-left: 10px;
@@ -23533,6 +23546,10 @@ img.x-twit {
     width: 20px;
   }
 }
+.exploreMoreItemsContainer.jcarousel {
+  min-height: 225px;
+}
+
 .result-value a,
 .similar-authors a,
 .facetDetails a, .solicit-new-materials-request a,
@@ -24240,6 +24257,7 @@ img.x-twit {
      object-fit: contain;
   max-width: 600px;
   max-height: 600px;
+  width: 100%;
 }
 
 .archive-audio-player {
