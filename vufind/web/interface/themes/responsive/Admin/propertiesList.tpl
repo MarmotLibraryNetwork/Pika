@@ -326,7 +326,7 @@
 				{elseif $objectType == "BookClubKit\BookClubKitRequest"}
 				{* Sort by status, anything not closed first, then by date created, descending *}
 				{literal}
-					"order": [[1, "asc"], [6, "desc"]]
+					"order": [[1, "asc"], [7, "desc"]]
 				{/literal}
 				{else}
 					{literal}
