@@ -11,7 +11,7 @@
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
 		</li>
 		<li class="breadcrumb-item">
-			<em>{$groupedWorkDriver->getFormatCategory()}</em>
+			<em>{implode subject=$recordDriver->getFormats() glue=", "}</em>
 		</li>
 	{/if}
 {/strip}
