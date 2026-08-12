@@ -859,6 +859,12 @@ class BookCoverProcessor {
 		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
 		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
 
+		$userAgent           = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
+		$httpContextOptions  = ['http' => ['header' => "User-Agent: {$userAgent}\r\n"]];
+		$context             = stream_context_create($httpContextOptions);
+		// getimagesize() (called within getBookcoverUrlForUserListImageCreation()) doesn't accept a context argument, so it needs the default context set instead.
+		stream_context_set_default($httpContextOptions);
+
 		if ($this->reload){
 			unlink($this->cacheFile);
 		}
@@ -873,7 +879,7 @@ class BookCoverProcessor {
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 4){
 					if ($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
 							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
 							$resizedResource        = imagescale($listEntryImageResource, 50);
 							$imageArray[$x]         = $resizedResource;
@@ -901,7 +907,7 @@ class BookCoverProcessor {
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 3){
 					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
 							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
 							if ($x == 0){
 								$resizedResource = imagescale($listEntryImageResource, -1, 98);
@@ -932,7 +938,7 @@ class BookCoverProcessor {
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 2){
 					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
+						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
 							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
 							$resizedResource        = imagescale($listEntryImageResource, -1, 100);
 							$imageArray[$x]         = $resizedResource;
