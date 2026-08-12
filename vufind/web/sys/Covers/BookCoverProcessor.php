@@ -961,12 +961,12 @@ class BookCoverProcessor {
 	 * @return string|void  A Cover url to fetch
 	 */
 	private function getBookcoverUrlForUserListImageCreation($itemId){
-		$isArchiveId = strpos($itemId, ':') !== false;
-		if ($isArchiveId){
-			require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-			/** @var IslandoraDriver $islandoraObject */
-			$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($itemId);
-			$bookcoverUrl    = $islandoraObject->getBookcoverUrl();
+		$isPossibleArchiveItem = strpos($itemId, '-') == false;
+		if ($isPossibleArchiveItem){
+			$archiveObject = new Islandora2Driver($itemId);
+			if (!empty($archiveObject->getNodeId())){
+				$bookcoverUrl = $archiveObject->getBookcoverUrl();
+			}
 		}else{
 			$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
 		}
