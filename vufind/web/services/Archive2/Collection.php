@@ -324,7 +324,7 @@ class Collection extends ArchiveObject
                 $title    = '';
                 $srcNid   = 0;
                 if ($source instanceof CollectionObject) {
-                    $children = $this->resolveOrderedChildren($source, self::SCROLLER_ITEM_LIMIT);
+                    $children = $source->getOrderedChildObjects(self::SCROLLER_ITEM_LIMIT);
                     foreach ($children as $obj) {
                         $items[] = [
                             'nid'       => $obj->getNodeId(),
@@ -358,11 +358,10 @@ class Collection extends ArchiveObject
                 if ($childNid > 0) {
                     $childCollection = $factory->fromNodeId($childNid);
                     if ($childCollection instanceof CollectionObject) {
-                        // Titles are ordered by each child's field_weight (the
-                        // per-item ordering set in the Islandora admin). usort is
-                        // stable on PHP 8, so equal/zero weights keep API order.
-                        $children = $childCollection->getChildObjects();
-                        usort($children, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
+                        // Titles follow the same curator-defined order as the rest of
+                        // the collection: field_pika_coll_order first, falling back to
+                        // field_weight for any members it doesn't name.
+                        $children = $childCollection->getOrderedChildObjects();
                         $childItems = [];
                         foreach ($children as $obj) {
                             $childItems[] = [
