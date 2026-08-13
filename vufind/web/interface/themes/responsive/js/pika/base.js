@@ -588,9 +588,13 @@ function pikaExecuteRecaptcha(action, callback) {
 		return;
 	}
 	grecaptcha.ready(function() {
+		// The failure handler is passed as the second argument to then() rather than
+		// chained as a catch(). A chained catch() also fires when callback() itself
+		// throws, which would run the caller's callback a second time with false and
+		// leave it acting on a bogus token.
 		grecaptcha.execute(window.pikaRecaptchaSiteKey, {action: action})
-			.then(function(token) { callback(token); })
-			.catch(function() { callback(false); });
+			.then(function(token) { callback(token); },
+				function() { callback(false); });
 	});
 }
 
