@@ -1,6 +1,3 @@
-/**
- * Created by mark on 12/10/2015.
- */
 Pika.Archive = (function(){
 	var date = new Date();
 	date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
@@ -69,7 +66,7 @@ Pika.Archive = (function(){
 				"id": "pika-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
 				"debugMode": Globals.debugViewer,
-				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
+				/*"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",*/
 				"tileSize": 256,
 				"tileOverlap": 0,
 				"animationTime": 1.5,

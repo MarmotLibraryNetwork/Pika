@@ -110,8 +110,7 @@
 			Globals.activeAction = '{$action}';
 			//console.log('{$module}', '{$action}');
 			{*Globals.masqueradeMode = {if $masqueradeMode}true{else}false{/if};*}
-			{if $repositoryUrl}
-				Globals.repositoryUrl = '{$repositoryUrl}';
+			{if $encodedRepositoryUrl}
 				Globals.encodedRepositoryUrl = '{$encodedRepositoryUrl}';
 			{/if}
 			{if $debugViewer}
