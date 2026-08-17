@@ -39,22 +39,42 @@
 			{$captcha}
 			{* reCAPTCHA v3 is invisible — there is no widget to submit. Instead, intercept the
 			   form's submit event, obtain a token asynchronously via pikaExecuteRecaptcha(), inject
-			   it as a hidden field, then re-submit using the native DOM method (bypasses jQuery's
-			   submit handler to avoid an infinite loop). *}
+			   it as a hidden field, then submit the form programmatically.
+
+			   Two quirks of that programmatic submit have to be worked around:
+			   - The save button below is named "submit", and a form control's name shadows the
+			     method of the same name on the form element, so form.submit() throws a TypeError.
+			     Call the method off the prototype instead.
+			   - A programmatic submit does not post the button that was clicked, but the
+			     controllers gate their save logic on that button (isset($_REQUEST['submit'])),
+			     so it has to be carried over as a hidden field.
+			   Validation is run here as well: the native submit below bypasses the validation
+			   plugin's own submit handler, so an invalid form would otherwise be posted anyway. *}
 			<script>
 			{literal}
 			(function() {
-				var submitted = false;
+				var awaitingToken = false;
 				$('#objectEditor').on('submit', function(e) {
-					if (!submitted) {
-						e.preventDefault();
-						submitted = true;
-						var form = this;
-						pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'submit', function(token) {
-							$('<input type="hidden" name="g-recaptcha-response">').val(token).appendTo(form);
-							form.submit();
-						});
-					}
+					if (awaitingToken) { return; }
+					e.preventDefault();
+					var form  = this,
+					    $form = $(form);
+					if (typeof $form.valid === 'function' && !$form.valid()) { return; }
+					var submitter = (e.originalEvent && e.originalEvent.submitter) ||
+						form.querySelector('input[type="submit"], button[type="submit"]');
+					awaitingToken = true;
+					pikaExecuteRecaptcha(window.pikaRecaptchaAction || 'submit', function(token) {
+						/* Rebuilt on every attempt so a retry cannot post a stale token. */
+						$form.find('input.recaptchaSubmitField').remove();
+						$('<input type="hidden" class="recaptchaSubmitField" name="g-recaptcha-response">')
+							.val(token || '').appendTo($form);
+						if (submitter && submitter.name) {
+							$('<input type="hidden" class="recaptchaSubmitField">')
+								.attr('name', submitter.name).val(submitter.value).appendTo($form);
+						}
+						awaitingToken = false;
+						HTMLFormElement.prototype.submit.call(form);
+					});
 				});
 			})();
 			{/literal}
