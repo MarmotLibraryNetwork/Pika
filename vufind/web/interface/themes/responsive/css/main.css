@@ -10491,6 +10491,12 @@ img.x-twit {
 .random-image-figure .explore-more-category-title {
   text-align: center;
 }
+.random-image-component {
+  text-align: center;
+}
+.random-image-component .random-image-reload {
+  margin-top: 5px;
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
