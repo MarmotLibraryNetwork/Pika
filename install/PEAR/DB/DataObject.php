@@ -735,8 +735,10 @@ class DB_DataObject extends DB_DataObject_Overload
             $not = 'NOT ';
             $key = substr($key, 1);
         }
-        // fix type for short entry. 
-        $type = $type == 'int' ? 'integer' : $type; 
+        // fix type for short entry.  PHP 8.5 deprecates the integer|boolean|double
+        // aliases, so normalize to the canonical names settype() still accepts.
+        $typeAliases = array('integer' => 'int', 'boolean' => 'bool', 'double' => 'float');
+        $type        = $typeAliases[$type] ?? $type;
 
         if ($type == 'string') {
             $this->_connect();
