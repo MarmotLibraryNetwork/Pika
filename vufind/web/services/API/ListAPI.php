@@ -1015,7 +1015,7 @@ class ListAPI extends AJAXHandler {
 	 * @param string|null $selectedList machine-readable name of the new york times list
 	 * @return array
 	 */
-	public function createUserListFromNYT(string $selectedList = null){
+	public function createUserListFromNYT(?string $selectedList = null){
 		global $configArray;
 
 		if ($selectedList == null){
@@ -1228,7 +1228,7 @@ class ListAPI extends AJAXHandler {
 	 * @param string|null $selectedYear the selected year of NPR listing to update
 	 * @return array
 	 */
-	public function createUserListFromNPRBestBooks(string $selectedYear = null){
+	public function createUserListFromNPRBestBooks(?string $selectedYear = null){
 		global $configArray;
 
 		if ($selectedYear == null){

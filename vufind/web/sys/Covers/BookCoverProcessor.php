@@ -140,7 +140,7 @@ class BookCoverProcessor {
 		$this->getDefaultCover();
 	}
 
-	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
+	private function loadCoverBySpecifiedSource($coverSource, ?SourceAndId $sourceAndId = null){
 		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
 //			case 'Zinio':

@@ -66,7 +66,7 @@ class HooplaDriver
 	 * @param HooplaRecordDriver|null $hooplaRecord  RecordDriver for the marc record
 	 * @return string The id for the Hoopla API
 	 */
-	public static function recordIDtoHooplaID(SourceAndId $hooplaRecordId, HooplaRecordDriver $hooplaRecord = null){
+	public static function recordIDtoHooplaID(SourceAndId $hooplaRecordId, ?HooplaRecordDriver $hooplaRecord = null){
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaId      = preg_replace('/^MWT/', '', $hooplaRecordId->getRecordId());
 		$hooplaExtract = new HooplaExtract();

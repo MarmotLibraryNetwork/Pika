@@ -1325,7 +1325,7 @@ class Library extends DB_DataObject {
 		return null;
 	}
 
-	static function getPatronHomeLibrary(User $tmpUser = null){
+	static function getPatronHomeLibrary(?User $tmpUser = null){
 		//Finally check to see if the user has logged in and if so, use that library
 		if ($tmpUser != null){
 			return self::getLibraryForLocation($tmpUser->homeLocationId);
