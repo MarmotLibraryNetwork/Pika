@@ -223,6 +223,30 @@ Pika.Archive2 = (function(){
 		},
 
 		/**
+		 * Reload a custom collection's "random image" component with a newly
+		 * picked random image, in place. Called by the reload button in
+		 * random_image_component.tpl.
+		 *
+		 * @param {string} id         Component instance id (matches the placeholder's
+		 *                            "randomImagePlaceholder_" suffix)
+		 * @param {string} sourceNids Comma-separated collection node ids to pick from
+		 */
+		nextRandomImage: function(id, sourceNids) {
+			var placeholder = $('#randomImagePlaceholder_' + id);
+			$.getJSON('/Archive2/AJAX', {
+				method: 'getRandomImageComponent',
+				nids: sourceNids
+			}, function(data) {
+				if (data.success) {
+					placeholder.html(data.html);
+				} else if (data.message) {
+					Pika.showMessage('Error', data.message);
+				}
+			}).fail(Pika.ajaxFail);
+			return false;
+		},
+
+		/**
 		 * Apply a decade date filter ('' or 'all' clears it).
 		 * Called by the buttons in timeline_date_filters.tpl.
 		 *

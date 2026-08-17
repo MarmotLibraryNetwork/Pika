@@ -1,25 +1,11 @@
 {strip}
-{*<div class="archiveComponentContainer nopadding col-sm-12 col-md-6">
-	<div class="archiveComponent horizontalComponent">
-		<div class="archiveComponentBody">
-			<div class="archiveComponentBox">
-				<div class="archiveComponentHeader">Random Image</div>
-				<div class="archiveComponentRandomImage row">*}
-					{if $randomObject}
-					<figure class="random-image-figure">
-						<a href="{$randomObject.url}">
-							{if $randomObject.thumbnail}
-							<img src="{$randomObject.thumbnail}" alt="{$randomObject.title|escape}" class="img-responsive thumbnail collection-thumbnail-fit">
-							{/if}
-							<figcaption class="explore-more-category-title">
-								<strong>{$randomObject.title|truncate:120}</strong>
-							</figcaption>
-						</a>
-					</figure>
-					{/if}
-				{*</div>
-			</div>
+	<div class="random-image-component" style="height: 275px;">
+		<div id="randomImagePlaceholder_{$id}">
+			{include file="Archive2/components/random_image_figure.tpl"}
 		</div>
+		<button type="button" class="btn btn-default btn-xs random-image-reload" onclick="return Pika.Archive2.nextRandomImage('{$id}', '{$sourceNids}');" title="Show a different random image">
+			<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> New Random Image
+		</button>
 	</div>
-</div>*}
+	<br class="clearFix">
 {/strip}

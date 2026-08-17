@@ -379,30 +379,18 @@ class Collection extends ArchiveObject
                 }
 
             } elseif ($type === 'randomImage') {
-                $sourceNids = !empty($parts[1])
+                $sourceNids   = !empty($parts[1])
                     ? array_map('trim', explode(',', $parts[1]))
                     : [$nid];
-                $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
-                $randomSource = $factory->fromNodeId($randomNid);
-                if ($randomSource instanceof CollectionObject) {
-                    $total = $randomSource->getTotalChildCount();
-                    if ($total > 0) {
-                        // number=1 means page N is item N, giving a uniform random pick across all children
-                        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
-                        if (!empty($response['children'])) {
-                            $randomObj = $factory->fromNode($response['children'][0]);
-                            if ($randomObj) {
-                                $thumb = $randomObj->getThumbnail();
-                                $randomImageComponents[] = [
-                                    'object' => [
-                                        'title'     => $randomObj->getTitle(),
-                                        'url'       => getObjRelativeUrl($randomObj),
-                                        'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                                    ],
-                                ];
-                            }
-                        }
-                    }
+                $randomObject = self::pickRandomChildImage($sourceNids);
+                if ($randomObject !== null) {
+                    $randomImageComponents[] = [
+                        // Distinguishes multiple randomImage components on one page
+                        // (each targets its own placeholder for the reload button).
+                        'id'         => $nid . '_' . count($randomImageComponents),
+                        'sourceNids' => implode(',', $sourceNids),
+                        'object'     => $randomObject,
+                    ];
                 }
 
             } elseif ($type === 'browseAllObjects') {
@@ -494,6 +482,50 @@ class Collection extends ArchiveObject
         $interface->assign('browseSubjectComponents', $browseSubjectComponents);
         $interface->assign('browseRelatedComponents', $browseRelatedComponents);
         $interface->assign('randomImageComponents',  $randomImageComponents);
+    }
+
+    /**
+     * Picks a uniformly random child object from across one or more source
+     * collections and returns the display data for the "random image" component.
+     * Shared by loadCustomComponents() (initial page render) and
+     * Archive2_AJAX::getRandomImageComponent() (the reload button), so both pick
+     * from the same logic.
+     *
+     * @param int[] $sourceNids Candidate collection node ids; one is chosen at
+     *                          random, then one of its children is chosen at random.
+     * @return array{title: string, url: string, thumbnail: string}|null Null if no
+     *                          source collection has any children.
+     */
+    public static function pickRandomChildImage(array $sourceNids): ?array
+    {
+        if (empty($sourceNids)) {
+            return null;
+        }
+        $factory      = new I2ObjectFactory();
+        $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
+        $randomSource = $factory->fromNodeId($randomNid);
+        if (!($randomSource instanceof CollectionObject)) {
+            return null;
+        }
+        $total = $randomSource->getTotalChildCount();
+        if ($total <= 0) {
+            return null;
+        }
+        // number=1 means page N is item N, giving a uniform random pick across all children
+        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
+        if (empty($response['children'])) {
+            return null;
+        }
+        $randomObj = $factory->fromNode($response['children'][0]);
+        if (!$randomObj) {
+            return null;
+        }
+        $thumb = $randomObj->getThumbnail();
+        return [
+            'title'     => $randomObj->getTitle(),
+            'url'       => getObjRelativeUrl($randomObj),
+            'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+        ];
     }
 
     /**

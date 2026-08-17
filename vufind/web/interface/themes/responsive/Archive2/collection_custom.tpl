@@ -18,7 +18,7 @@
 	{if $randomImageComponents}
 		<div {if $thumbnail}class="col-xs-6 text-center"{else}class="col-xs-12 text-center"{/if}>
 		{foreach from=$randomImageComponents item=random}
-			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object}
+			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object id=$random.id sourceNids=$random.sourceNids}
 		{/foreach}
 		</div>
 	{/if}
