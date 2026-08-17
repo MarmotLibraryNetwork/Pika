@@ -444,15 +444,8 @@ class MyAccount_MyList extends MyAccount {
 		$ret    = [];
 		reset($array);
 		foreach ($array as $ii => $va){
-			$sorter[$ii] = $va[$key];
-			if ($key == 'custom'){
-				$val = $va[$key];
-				if (is_null($val)){
-					$val = 0;
-				}
-			}else{
-				$val = $va[$key];
-			}
+			// An item with no custom weight sorts as 0 rather than ahead of every weighted item
+			$sorter[$ii] = ($field == 'custom' && is_null($va[$key])) ? 0 : $va[$key];
 		}
 		if ($field == 'recentlyAdded'){
 			arsort($sorter);
