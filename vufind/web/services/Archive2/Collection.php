@@ -379,30 +379,18 @@ class Collection extends ArchiveObject
                 }
 
             } elseif ($type === 'randomImage') {
-                $sourceNids = !empty($parts[1])
+                $sourceNids   = !empty($parts[1])
                     ? array_map('trim', explode(',', $parts[1]))
                     : [$nid];
-                $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
-                $randomSource = $factory->fromNodeId($randomNid);
-                if ($randomSource instanceof CollectionObject) {
-                    $total = $randomSource->getTotalChildCount();
-                    if ($total > 0) {
-                        // number=1 means page N is item N, giving a uniform random pick across all children
-                        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
-                        if (!empty($response['children'])) {
-                            $randomObj = $factory->fromNode($response['children'][0]);
-                            if ($randomObj) {
-                                $thumb = $randomObj->getThumbnail();
-                                $randomImageComponents[] = [
-                                    'object' => [
-                                        'title'     => $randomObj->getTitle(),
-                                        'url'       => getObjRelativeUrl($randomObj),
-                                        'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                                    ],
-                                ];
-                            }
-                        }
-                    }
+                $randomObject = self::pickRandomChildImage($sourceNids);
+                if ($randomObject !== null) {
+                    $randomImageComponents[] = [
+                        // Distinguishes multiple randomImage components on one page
+                        // (each targets its own placeholder for the reload button).
+                        'id'         => $nid . '_' . count($randomImageComponents),
+                        'sourceNids' => implode(',', $sourceNids),
+                        'object'     => $randomObject,
+                    ];
                 }
 
             } elseif ($type === 'browseAllObjects') {
