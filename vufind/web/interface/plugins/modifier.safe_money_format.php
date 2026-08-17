@@ -30,17 +30,14 @@
  * @return string        Formatted number
  */ // @codingStandardsIgnoreStart
 function smarty_modifier_safe_money_format($number){   // @codingStandardsIgnoreEnd
-	// money_format() does not exist on windows
-	if (function_exists('money_format')){
-		return money_format('%.2n', $number);
-	}else{
-		return safeMoneyFormat($number);
-	}
+	return safeMoneyFormat($number);
 }
 
 if (!function_exists('safeMoneyFormat')){
 	/**
-	 * Windows-compatible equivalent to built-in money_format function.
+	 * Windows-compatible equivalent to the built-in money_format() function.
+	 *
+	 *  There is a duplicate of this function in Fines.php
 	 *
 	 * @param string $number Number to format.
 	 *
