@@ -55,7 +55,7 @@ function process(filePath) {
 // usePolling is NOT used — native fs events catch writes from external processes
 // (i.e. files written by watch-less.js) on both Windows and macOS.
 
-const watcher = chokidar.watch('**/main.tmpcss', {
+const watcher = chokidar.watch('vufind/web/interface/themes', {
   ignored: /(^|[/\\])\../,   // ignore dotfiles/dot-dirs
   persistent: true,
   ignoreInitial: true,        // don't process everything on startup

@@ -67,7 +67,7 @@ function compile(filePath) {
 
 // ─── Watcher ─────────────────────────────────────────────────────────────────
 
-const watcher = chokidar.watch('**/*.less', {
+const watcher = chokidar.watch('vufind/web/interface/themes', {
   ignored: /(^|[/\\])\../,   // ignore dotfiles/dot-dirs
   persistent: true,
   ignoreInitial: true,        // don't compile everything on startup

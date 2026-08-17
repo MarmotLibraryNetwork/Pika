@@ -55,7 +55,7 @@ function minify(filePath) {
 // awaitWriteFinish ensures we wait for watch-postcss.js to finish writing
 // main.css before cleancss reads it.
 
-const watcher = chokidar.watch('**/main.css', {
+const watcher = chokidar.watch('vufind/web/interface/themes', {
   ignored: /(^|[/\\])\../,   // ignore dotfiles/dot-dirs
   persistent: true,
   ignoreInitial: true,        // don't process everything on startup
