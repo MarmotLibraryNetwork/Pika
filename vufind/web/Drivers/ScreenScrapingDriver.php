@@ -131,7 +131,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	 */
 	public function _close_curl() {
 		if ($this->curl_connection) {
-			curl_close($this->curl_connection);
+			// curl_close($this->curl_connection); - deprecated in PHP 8.5, the CurlHandle frees itself
 			unset($this->curl_connection);
 		}
 		if (!empty($this->cookieJar) && file_exists($this->cookieJar)) {

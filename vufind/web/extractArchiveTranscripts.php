@@ -286,7 +286,7 @@ function httpGet(string $url): ?string {
 	$body = curl_exec($ch);
 	$err  = curl_error($ch);
 	$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	curl_close($ch);
+	// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 
 	if ($body === false || $code !== 200) {
 		fwrite(STDERR, "  HTTP GET failed ($code) for $url : $err\n");

@@ -160,7 +160,7 @@ abstract class HorizonROA extends PatronDriverInterface implements \DriverInterf
 			$this->getLogger()->warn('URL: '. $url . ' Curl error: ' . $curl_error);
 			$return = false;
 		}
-		curl_close($ch);
+		// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 		return $return;
 	}
 

@@ -619,7 +619,7 @@ class BookCoverProcessor {
 					}
 					// We no longer need the temp file:
 					@unlink($tempFile);
-					imagedestroy($imageResource);
+					// imagedestroy($imageResource); - deprecated in PHP 8.5, the GdImage frees itself
 					if (!$conversionOk){
 						return false;
 					}

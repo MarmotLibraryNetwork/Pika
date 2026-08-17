@@ -416,45 +416,38 @@ class MyAccount_MyList extends MyAccount {
 
 
 	/**
-	 * Sorts array by provided string.
+	 * Sorts the array by the provided field.
 	 *
-	 * @param array $array
-	 * @param string $field
-	 * @return array
+	 * @param array $array The Array to sort
+	 * @param string $field The field to sort by
+	 * @return void
 	 */
 	static private function SortByValue(array &$array, string $field){
 		switch ($field){
-			case "title":
-				$key = "Title";
+			case 'title':
+				$key = 'Title';
 				break;
-			case "author":
-				$key = "Author";
+			case 'author':
+				$key = 'Author';
 				break;
-			case "dateAdded":
-			case   "recentlyAdded":
-				$key = "Date";
+			case 'dateAdded':
+			case 'recentlyAdded':
+				$key = 'Date';
 				break;
-			case "custom";
-				$key = "Weight";
+			case 'custom':
+				$key = 'Weight';
 				break;
 			default:
-				return $array;
+				return; // Unknown sort: do nothing
 		}
 		$sorter = [];
 		$ret    = [];
 		reset($array);
 		foreach ($array as $ii => $va){
-			$sorter[$ii] = $va[$key];
-			if ($key == "custom"){
-				$val = $va[$key];
-				if (is_null($val)){
-					$val = 0;
-				}
-			}else{
-				$val = $va[$key];
-			}
+			// An item with no custom weight sorts as 0 rather than ahead of every weighted item
+			$sorter[$ii] = ($field == 'custom' && is_null($va[$key])) ? 0 : $va[$key];
 		}
-		if ($field == "recentlyAdded"){
+		if ($field == 'recentlyAdded'){
 			arsort($sorter);
 		}else{
 			asort($sorter);
