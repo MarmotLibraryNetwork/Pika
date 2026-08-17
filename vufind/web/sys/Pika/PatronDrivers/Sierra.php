@@ -924,7 +924,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 				case 'state':
 				case 'zip':
 					// if library allows address updates
-					if((boolean)$library->allowPatronAddressUpdates){
+					if((bool)$library->allowPatronAddressUpdates){
 						if(empty($val)) {
 							$errors[] = 'City, state and ZIP are required.';
 						} else {
@@ -1025,7 +1025,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			$params['phones'] = $phones;
 		}
 		// allow address updates?
-		if((boolean)$library->allowPatronAddressUpdates) {
+		if((bool)$library->allowPatronAddressUpdates) {
 			// fix up city state zip
 			$address2            = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
 			$params['addresses'] = [(object)['lines' => [$address1, $address2], "type" => 'a']];
@@ -1877,7 +1877,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 		}
 
 		$operation = "patrons/$patronId/holds";
-		if ((integer)$this->configArray['Catalog']['api_version'] > 4){
+		if ((int)$this->configArray['Catalog']['api_version'] > 4){
 			$params = [
 				'fields' => 'default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate,canFreeze,note',
 				'limit'  => 1000,
@@ -1937,7 +1937,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
 				// sierra api v4 priority is 0 based index so add 1
 				if ($this->configArray['Catalog']['api_version'] == 4 ) {
-					$holdPriority = (integer)$hold->priority + 1;
+					$holdPriority = (int)$hold->priority + 1;
 				} else {
 					$holdPriority = $hold->priority;
 				}
@@ -1946,7 +1946,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
 				// sierra api v4 priority is 0 based index so add 1
 				if ($this->configArray['Catalog']['api_version'] == 4 ) {
-					$holdPriority = (integer)$hold->priority + 1;
+					$holdPriority = (int)$hold->priority + 1;
 				} else {
 					$holdPriority = $hold->priority;
 				}
@@ -2044,7 +2044,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 			}
 			if (isset($hold->canFreeze)){
 				// Sierra holds now have a canFreeze flag
-				$freezeable = (boolean)$hold->canFreeze;
+				$freezeable = (bool)$hold->canFreeze;
 			}else{
 				// for sierra, holds can't be frozen if patron is next in line
 				if (isset($hold->priorityQueueLength)){
@@ -2228,7 +2228,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 
 		// check if error we need to do an item level hold
 		if ($this->apiLastError && stristr($this->apiLastError, 'Volume record selection is required to proceed')
-			|| (stristr($this->apiLastError,'This record is not available') && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
+			|| (stristr($this->apiLastError,'This record is not available') && (int)$this->configArray['Catalog']['api_version'] == 4)) {
 
 			$this->logger->notice("Sierra patron $patronId hold on $recordId requires item level hold");
 			$itemsAsVolumes = $r->details->itemsAsVolumes ?? null; // Response when item level hold is required includes the list of items

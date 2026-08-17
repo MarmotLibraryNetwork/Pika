@@ -348,7 +348,7 @@ EOD;
 		// otherwise keep setting as is
 		if ($historyEnabled == false) {
 			if ($historyEnabled != $patron->trackReadingHistory) {
-				$patron->trackReadingHistory = (boolean)$historyEnabled;
+				$patron->trackReadingHistory = (bool)$historyEnabled;
 				$patron->update();
 			}
 		}

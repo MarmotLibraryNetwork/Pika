@@ -103,7 +103,7 @@ class KohaSIP extends sip2
 		$sipLoginCall  = $this->msgLogin($login, $password);
 		$loginResponse = $this->get_message($sipLoginCall);
 		$loginResult   = $this->parseLoginResponse($loginResponse);
-		return (boolean) $loginResult['fixed']['Ok'];
+		return (bool) $loginResult['fixed']['Ok'];
 	}
 
 }

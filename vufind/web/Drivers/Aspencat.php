@@ -532,7 +532,7 @@ class Aspencat implements DriverInterface{
 
 			// Update patron's setting in Pika if the setting has changed in Koha
 			if ($historyEnabled != $patron->trackReadingHistory) {
-				$patron->trackReadingHistory = (boolean) $historyEnabled;
+				$patron->trackReadingHistory = (bool) $historyEnabled;
 				$patron->update();
 			}
 
