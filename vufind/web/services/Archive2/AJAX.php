@@ -32,11 +32,13 @@ require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+require_once ROOT_DIR . '/services/Archive2/Collection.php';
 
 use Islandora2\I2ObjectFactory;
 use Archive2\ExploreMore;
 use Archive2\CollectionTimelineData;
 use Archive2\ArchiveObject;
+use Archive2\Collection;
 
 class Archive2_AJAX extends AJAXHandler {
 
@@ -49,6 +51,7 @@ class Archive2_AJAX extends AJAXHandler {
 		'getRelatedObjectsForEvent',
 		'getRelatedObjectsForPlace',
 		'getCollectionTimelineObjects',
+		'getRandomImageComponent',
 		'showSaveToListForm',
 		'saveToList',
 	];
@@ -464,6 +467,35 @@ class Archive2_AJAX extends AJAXHandler {
 			$response['filtersHtml'] = $interface->fetch('Archive2/components/timeline_date_filters.tpl');
 		}
 		return $response;
+	}
+
+	/**
+	 * Picks a new random child image for a custom collection's "random image"
+	 * component (the reload button) and returns the rendered figure HTML.
+	 *
+	 * Called via: /Archive2/AJAX?method=getRandomImageComponent&nids={comma-separated
+	 * source collection node ids}
+	 */
+	function getRandomImageComponent(): array {
+		$nids = array_values(array_filter(
+			array_map('intval', explode(',', (string)($_REQUEST['nids'] ?? ''))),
+			fn($n) => $n > 0
+		));
+		if (empty($nids)) {
+			return ['success' => false, 'message' => 'A valid source collection node id is required.'];
+		}
+
+		$randomObject = Collection::pickRandomChildImage($nids);
+		if ($randomObject === null) {
+			return ['success' => false, 'message' => 'No image is available right now.'];
+		}
+
+		global $interface;
+		$interface->assign('randomObject', $randomObject);
+		return [
+			'success' => true,
+			'html'    => $interface->fetch('Archive2/components/random_image_figure.tpl'),
+		];
 	}
 
 	/**
