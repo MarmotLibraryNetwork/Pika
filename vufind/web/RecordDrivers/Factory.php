@@ -54,6 +54,11 @@ class RecordDriverFactory {
 				if (array_key_exists('its_node_id', $record)){
 					// Islandora 2 Solr Document
 					return self::initIslandora2DriverFromSolrDoc($record);
+				}elseif (array_key_exists('its_tid', $record)){
+					// Islandora 2 taxonomy term Solr Document. Terms are indexed in the same core as
+					// the archive objects and are returned alongside them in archive search results.
+					// Checked after its_node_id so an object document always wins.
+					return self::initIslandora2TaxonomyTermDriverFromSolrDoc($record);
 				}elseif (array_key_exists('PID', $record)){
 					// Islandora 1 Solr Document
 					return self::initIslandora1DriverFromSolrDoc($record);
@@ -375,6 +380,15 @@ class RecordDriverFactory {
 	public static function initIslandora2DriverFromSolrDoc(array $record){
 		$object = new Islandora2Driver($record);
 		return $object;
+	}
+
+	/**
+	 * @param array $record Solr Document for the taxonomy term to initialize
+	 * @return Islandora2TaxonomyTermDriver
+	 */
+	public static function initIslandora2TaxonomyTermDriverFromSolrDoc(array $record){
+		require_once ROOT_DIR . '/RecordDrivers/Islandora2TaxonomyTermDriver.php';
+		return new Islandora2TaxonomyTermDriver($record);
 	}
 
 

@@ -43,10 +43,11 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
 	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
 	// The remaining fields mirror Islandora2Driver's solrFields map.
-	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
-	// Include doucment Id field for the solr explaination matching, which keys of id field
+	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score'
+	// Taxonomy Fields:
+	. ',its_tid,tm_X3b_en_name,tm_X3b_en_description,ss_legacy_entity_pid';
+	// Include document Id field for the solr explanation matching, which keys of id field
 	//TODO: modified date field
-	//TODO: which created date field should we use?
 	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
 	//its_edtf_year,sm_field_display_title
 
@@ -1408,25 +1409,33 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	private function getStandardFilters(){
 		global $configArray;
 		$filters = [
-			'ss_type:islandoraobject',   // ignore other drupal things
-			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
-			//'!ss_name_1:Page',           // Hide Page objects //TODO: temp, remove
+			//'ss_type:islandoraobject',   // ignore other drupal things
+			'ss_search_api_datasource:("entity:node" OR "entity:taxonomy_term")',
+			//'ss_search_api_datasource:("entity:node","entity:taxonomy_term")', // could be simplified to this with q.op=OR
+			'bs_pika_show_in_search:1 OR bs_geo_show_in_search:1',  // Pika Option: Show in Search Results
+			//'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
 			'!ss_model:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (contributing library taxonomy tid) (theoretically number-filtering is quicker)
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 
 			// these shouldn't show due to pika controls
 			//'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
-			//'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
-			//'!itm_field_member_of:640', // BD test?
 		];
 
 		// Pika Search Options
 		// Pika Usage
-		$filters[] = $configArray['Site']['isProduction']
-			? 'ss_pika_usage:yes'  // Production: Show "yes" only
-			: '!ss_pika_usage:no'; // Test: Show "yes" and "testonly" (by excluding "no")
-
+		if ($configArray['Site']['isProduction']){
+			// Production: Show "yes" only
+			$filters[] = '(ss_pika_usage:yes OR ss_taxo_pika_usage:yes)';
+		}else{
+			// Test: Show "yes" and "testonly" (by excluding "no").
+			// Kept as separate filters: Solr only supplies the implicit *:* for an all-negative
+			// query at the top level of an fq, so combining these inside parens matches nothing.
+			// Combining these two in a single filter within parentheses returns no results.
+			// To correctly combine, use: '(*:* -ss_pika_usage:no -ss_taxo_pika_usage:no)'
+			$filters[] = '!ss_pika_usage:no';
+			$filters[] = '!ss_taxo_pika_usage:no';
+		}
 		global /** @var \Library $library */ $library;
 		if (!isset($library)){
 			$this->getLogger()->error('Library not set when calling '. __FUNCTION__. '. Needed for correct standard filtering.');
