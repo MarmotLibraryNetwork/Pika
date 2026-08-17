@@ -443,7 +443,7 @@ class Aspencat implements DriverInterface{
 							$user->insert();
 						}
 
-						$timer->logTime("patron logged in successfully");
+						$timer->logTime('patron logged in successfully');
 
 						return $user;
 					}else{
@@ -452,13 +452,13 @@ class Aspencat implements DriverInterface{
 						}
 					}
 				}else{
-					$this->logger->error("MySQL did not return a result for getUserInfoStmt");
+					$this->logger->error('MySQL did not return a result for getUserInfoStmt');
 					if ($i == count($barcodesToTest) - 1){
 						return new PEAR_Error('authentication_error_technical');
 					}
 				}
 			}else{
-				$this->logger->error("Unable to execute getUserInfoStmt " . mysqli_error($this->dbConnection));
+				$this->logger->error('Unable to execute getUserInfoStmt ' . mysqli_error($this->dbConnection));
 				if ($i == count($barcodesToTest) - 1){
 					return new PEAR_Error('authentication_error_technical');
 				}
@@ -474,19 +474,19 @@ class Aspencat implements DriverInterface{
 
 			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
 
-				$this->logger->error("Error connecting to Koha database " . mysqli_error($this->dbConnection));
+				$this->logger->error('Error connecting to Koha database ' . mysqli_error($this->dbConnection));
 				$this->dbConnection = null;
 			}
 			global $timer;
-			$timer->logTime("Initialized connection to Koha");
+			$timer->logTime('Initialized connection to Koha');
 		}
 	}
 
 	function __destruct(){
-		//Cleanup any connections we have to other systems
-		if ($this->curl_connection != null){
-			curl_close($this->curl_connection);
-		}
+		//Clean up any connections we have to other systems
+//		if ($this->curl_connection != null){
+//			// curl_close($this->curl_connection); - deprecated in PHP 8.5, the CurlHandle frees itself
+//		}
 		if ($this->dbConnection != null){
 			if ($this->getNumHoldsStmt != null){
 				$this->getNumHoldsStmt->close();
@@ -506,7 +506,7 @@ class Aspencat implements DriverInterface{
 	/**
 	 * Get Reading History
 	 *
-	 * This is responsible for retrieving a history of checked out items for the patron.
+	 * This is responsible for retrieving a history of checked-out items for the patron.
 	 *
 	 * @param   User   $patron     The patron account
 	 * @param   int     $page

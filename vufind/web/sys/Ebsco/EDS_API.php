@@ -210,7 +210,7 @@ BODY;
 
 	public function __destruct(){
 		$this->endSession();
-		curl_close($this->curl_connection);
+		// curl_close($this->curl_connection); - deprecated in PHP 8.5, the CurlHandle frees itself
 	}
 
 	public function getQuerySpeed() {

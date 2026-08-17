@@ -776,7 +776,7 @@ EOD;
 			$this->logger->error('Response from bywater api: ' . $return . "\n\n");
 		}
 
-		curl_close($c);
+		// curl_close($c); - deprecated in PHP 8.5, the CurlHandle frees itself
 		return $return;
 	}
 
