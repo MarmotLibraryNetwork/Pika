@@ -177,8 +177,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 				$curTitle['id']           = $loan->bibliographicId;
 				$curTitle['shortId']      = $loan->bibliographicId;
 				$curTitle['recordId']     = $loan->bibliographicId;
-				$curTitle['title']        = utf8_encode($loan->title);
-				$curTitle['author']       = utf8_encode($loan->author);
+				$curTitle['title']        = mb_convert_encoding($loan->title, 'UTF-8', 'ISO-8859-1');
+				$curTitle['author']       = mb_convert_encoding($loan->author, 'UTF-8', 'ISO-8859-1');
 				$curTitle['dueDate']      = $dueDate;        // item likely will not have a dueDate, (get null value)
 				$curTitle['checkout']     = $loan->outDateString; // item always has a outDateString
 				$curTitle['borrower_num'] = $patron->id;
@@ -271,8 +271,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 				$curTitle['id'] = $loan->bibliographicId;
 				$curTitle['shortId'] = $loan->bibliographicId;
 				$curTitle['recordId'] = $loan->bibliographicId;
-				$curTitle['title'] = utf8_encode($loan->title);
-				$curTitle['author'] = utf8_encode($loan->author);
+				$curTitle['title'] = mb_convert_encoding($loan->title, 'UTF-8', 'ISO-8859-1');
+				$curTitle['author'] = mb_convert_encoding($loan->author, 'UTF-8', 'ISO-8859-1');
 				$dueDate = $loan->dueDate;
 				if ($dueDate){
 					$dueDate = strtotime($dueDate);

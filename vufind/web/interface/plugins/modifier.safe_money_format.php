@@ -103,7 +103,7 @@ if (!function_exists('safeMoneyFormatMakeUTF8')){
 	/**
 	 * Adapted from code at http://us.php.net/manual/en/function.utf8-encode.php
 	 * This is needed for Windows only as a support function for safeMoneyFormat;
-	 * utf8_encode by itself doesn't do the job, but this is capable of properly
+	 * mb_convert_encoding by itself doesn't do the job, but this is capable of properly
 	 * turning currency symbols into valid UTF-8.
 	 *
 	 * @param string $instr String to convert to UTF-8
@@ -116,7 +116,7 @@ if (!function_exists('safeMoneyFormatMakeUTF8')){
 
 		if (empty($byte_map)){
 			for ($x = 128;$x < 256;++$x){
-				$byte_map[chr($x)] = utf8_encode(chr($x));
+				$byte_map[chr($x)] = mb_convert_encoding(chr($x), 'UTF-8', 'ISO-8859-1');
 			}
 			$cp1252_map = [
 				"\x80" => "\xE2\x82\xAC",  // EURO SIGN
