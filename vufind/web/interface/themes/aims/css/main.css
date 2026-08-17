@@ -10543,6 +10543,16 @@ img.x-twit {
   border-bottom: 2px solid #ccc;
   padding-bottom: 0.25em;
 }
+.timeline-pager > li > a,
+.timeline-pager > li > span {
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 40px;
+  line-height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 15px;
+}
 .collection-row-spacer-sm {
   margin-top: 0.5em;
 }
@@ -10595,6 +10605,12 @@ img.x-twit {
 }
 .random-image-figure .explore-more-category-title {
   text-align: center;
+}
+.random-image-component {
+  text-align: center;
+}
+.random-image-component .random-image-reload {
+  margin-top: 5px;
 }
 .archive-audio-poster-wrapper {
   display: flex;
@@ -10763,6 +10779,9 @@ img.x-twit {
   display: -webkit-box;
   -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
+}
+#moreDetailsPanel:focus-within {
+  outline: #E15F15 solid 2px;
 }
 .help-icon {
   color: blue;
