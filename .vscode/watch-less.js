@@ -16,6 +16,7 @@
 
 const chokidar = require('chokidar');
 const { execSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 // ─── Scope filter ────────────────────────────────────────────────────────────
@@ -62,6 +63,21 @@ function compile(filePath) {
   } catch (err) {
     // lessc already printed the error via stdio: 'inherit'
     console.error(`[less]  ✗ failed: ${filePath}`);
+    return;
+  }
+
+  if (input !== 'main.less' && fs.existsSync(path.join(dir, 'main.less'))) {
+    const mainPath = path.join(dir, 'main.less');
+    console.log(`[less] cascading to ${mainPath}`);
+    try {
+      execSync(
+        `lessc "main.less" "main.tmpcss" --no-color --strict-imports`,
+        { cwd: dir, stdio: 'inherit' }
+      );
+      console.log(`[less]  → ${path.join(dir, 'main.tmpcss')}`);
+    } catch (err) {
+      console.error(`[less]  ✗ failed: ${mainPath}`);
+    }
   }
 }
 
