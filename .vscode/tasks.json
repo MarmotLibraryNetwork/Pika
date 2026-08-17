@@ -101,8 +101,9 @@
         "owner": "cleancss",
         "fileLocation": "absolute",
         "pattern": {
-          "regexp": "^(.+)$",
-          "message": 1
+          "regexp": "^(WARNING|ERROR): (.+)$",
+          "severity": 1,
+          "message": 2
         },
         "background": {
           "activeOnStart": true,
