@@ -55,7 +55,7 @@ if (!function_exists('safeMoneyFormat')){
 		// convert the currency symbol manually:
 		$currency_symbol = safeMoneyFormatMakeUTF8($currency_symbol);
 
-		// How is the ammount signed?
+		// How is the amount signed?
 		// Positive
 		if ($number > 0){
 			$sign         = $positive_sign;
