@@ -153,6 +153,7 @@ CLAUDE.md
 .claude
 .claude/*
 .mcp.json
+.playwright-mcp
 
 # NPM
 ###############################
