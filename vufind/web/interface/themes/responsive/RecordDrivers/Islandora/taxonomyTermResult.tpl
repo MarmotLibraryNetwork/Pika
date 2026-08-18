@@ -1,9 +1,9 @@
 {strip}
 {* Search result for an Islandora 2 taxonomy term.
-   Terms have no cover, format, model, or contributing library, so this shows the name, the
-   vocabulary the term belongs to, and the description only. The title and the More Info
-   button both link to the typed Archive2 term page for that vocabulary (/Archive2/Person,
-   /Archive2/Place, and so on). *}
+   Terms have no format, model, or contributing library, so this shows the thumbnail, the
+   name, the vocabulary the term belongs to, and the description. The title, the thumbnail
+   and the More Info button all link to the typed Archive2 term page for that vocabulary
+   (/Archive2/Person, /Archive2/Place, and so on). *}
 <div id="record{$jquerySafeId}" class="resultsList">
 	{if isset($summExplain)}
 		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
@@ -28,27 +28,40 @@
 		</div>
 	</div>
 
-	{if $summVocabularyLabel}
-		<div class="row">
-			<div class="result-label col-tn-3">Taxonomy: </div>
-			<div class="col-tn-9 result-value">{$summVocabularyLabel}</div>
+	<div class="row">
+	{if $showCovers}
+		{* The driver leaves $bookCoverUrlMedium empty when covers are switched off for this
+		   patron, so that it can skip the API call the thumbnail would otherwise cost. *}
+		<div class="col-xs-12 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
+			{if $bookCoverUrlMedium}
+				<a href="{$summUrl}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail{if $summTitle} for '{$summTitle}'{/if}">
+				</a>
+			{/if}
 		</div>
 	{/if}
 
-	{if $summDescription}
-		<div class="row">
-			<div class="col-tn-12">
+		<div class="{if !$showCovers}col-xs-12 col-sm-12{if !$viewingCombinedResults} col-md-12 col-lg-12{/if}{else}col-xs-12 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">
+
+			{if $summVocabularyLabel}
+				<div class="row">
+					<div class="result-label col-tn-3">Taxonomy: </div>
+					<div class="col-tn-9 result-value">{$summVocabularyLabel}</div>
+				</div>
+			{/if}
+
+			{if $summDescription}
 				<div class="row well-small">
 					<div class="col-tn-12 result-value" id="descriptionValue{$jquerySafeId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>
 				</div>
-			</div>
-		</div>
-	{/if}
+			{/if}
 
-	<div class="row">
-		<div class="col-tn-12">
-			{* showFavorites=0: the Add to favorites button saves a node id, and a term is not a node. *}
-			{include file='Archive2/result-tools-horizontal.tpl' showFavorites=0}
+			<div class="row">
+				<div class="col-tn-12">
+					{* showFavorites=0: the Add to favorites button saves a node id, and a term is not a node. *}
+					{include file='Archive2/result-tools-horizontal.tpl' showFavorites=0}
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

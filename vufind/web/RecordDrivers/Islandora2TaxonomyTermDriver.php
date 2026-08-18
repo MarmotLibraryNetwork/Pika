@@ -19,7 +19,10 @@
 
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+require_once ROOT_DIR . '/sys/Islandora2/TaxonomyFactory.php';
 
+use Islandora2\TaxonomyFactory;
+use Islandora2\TaxonomyObjectInterface;
 use Pika\Logger;
 
 /**
@@ -32,13 +35,16 @@ use Pika\Logger;
  * and have no media, model, or contributing library, so they get their own driver and
  * their own result template instead of being squeezed into Islandora2Driver.
  *
- * This driver is deliberately Solr-only: unlike Islandora2Driver it never falls back to
- * an API fetch, because everything it currently displays (name and description) is in
- * the Solr document already.
+ * Everything this driver displays comes from the Solr document except the cover image:
+ * Solr carries no thumbnail field for taxonomy terms, so that one value costs an API
+ * fetch. See getBookcoverUrl() for how that call is kept off the hot path.
  *
  * @category Pika
  */
 class Islandora2TaxonomyTermDriver extends RecordInterface {
+
+	/** Shown when a term has no thumbnail of its own; matches Islandora2Driver. */
+	private const PLACEHOLDER_IMAGE = '/interface/themes/responsive/images/History.png';
 
 	private Logger $logger;
 	private int $tid = 0;
@@ -47,6 +53,10 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	private ?string $vocabulary = null;
 	protected ?float $solrScore = null;
 	protected ?string $solrExplanation = null;
+
+	/** Populated on demand by ensureTaxonomyObject(); only the cover image needs it. */
+	private ?TaxonomyObjectInterface $taxonomyObject = null;
+	private bool $taxonomyObjectLoaded = false;
 
 	/**
 	 * Map of friendly names to the Solr fields on a taxonomy term document.
@@ -140,7 +150,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	 * Assign the Smarty variables for a taxonomy term search result and return its template.
 	 *
 	 * Terms get their own template rather than sharing RecordDrivers/Islandora/result.tpl:
-	 * they have no cover, format, model, or contributing library to show.
+	 * they have no format, model, or contributing library to show.
 	 *
 	 * @param string $view The view style for this search entry
 	 * @return string
@@ -156,6 +166,15 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		// parameters the term page needs to show the previous & next result navigation.
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summVocabularyLabel', $this->getVocabularyLabel());
+
+		// Resolving the cover costs an API call (see getBookcoverUrl), so ask for it only
+		// when the template will actually paint it. Both flags are page-wide template vars
+		// - showCovers is the patron's results toggle (Action.php), disableCoverArt their
+		// account setting (index.php) - and the template's own {if $showCovers} block mirrors
+		// this test, so leaving the URL unassigned when covers are off renders the same page
+		// it would have anyway, just without the round trips.
+		$showCovers = $interface->get_template_vars('showCovers') && $interface->get_template_vars('disableCoverArt') != 1;
+		$interface->assign('bookCoverUrlMedium', $showCovers ? $this->getBookcoverUrl('medium') : '');
 
 		global $configArray;
 		if (!empty($configArray['System']['debugSolr'])){
@@ -221,9 +240,71 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		return getTaxonomyAbsoluteUrlFromParts($this->tid, $this->vocabulary);
 	}
 
-	//TODO: no thumbnail for terms yet; the result template does not display a cover.
+	/**
+	 * Lazily fetch the full taxonomy term from the Islandora API.
+	 *
+	 * Nothing on a search result needs this except the cover image, so it stays behind a
+	 * flag rather than being loaded in the constructor: a term driver built for its title,
+	 * description or URL never makes an HTTP call. Mirrors Islandora2Driver::ensureI2Object().
+	 *
+	 * The null result is cached in $taxonomyObjectLoaded as well, so a term the API cannot
+	 * resolve is not retried once per accessor within a single request.
+	 *
+	 * @return TaxonomyObjectInterface|null
+	 */
+	private function ensureTaxonomyObject(): ?TaxonomyObjectInterface{
+		if ($this->taxonomyObjectLoaded){
+			return $this->taxonomyObject;
+		}
+		$this->taxonomyObjectLoaded = true;
+
+		if ($this->tid <= 0){
+			$this->logger->warning('Cannot load Islandora2 taxonomy term without a valid term id.');
+			return null;
+		}
+
+		$factory              = new TaxonomyFactory();
+		$this->taxonomyObject = $factory->fromTid($this->tid);
+
+		if ($this->taxonomyObject === null){
+			$this->logger->warning('Failed to load Islandora2 taxonomy term.', ['tid' => $this->tid]);
+		}
+
+		return $this->taxonomyObject;
+	}
+
+	/**
+	 * The term's thumbnail, or the placeholder image when it has none.
+	 *
+	 * This is the one value on a term result that the search index cannot supply, and it
+	 * is the expensive one. Solr has no thumbnail field for taxonomy terms, so the URL can
+	 * only come from /pika-json/taxonomy/{tid} - one HTTP round trip per term shown. Three
+	 * things keep that off the hot path:
+	 *
+	 *   1. The fetch is lazy (ensureTaxonomyObject), so it only happens when something
+	 *      actually asks for a cover.
+	 *   2. getSearchResult() asks only when the cover will really be rendered - it checks
+	 *      the patron's show-covers toggle and the disableCoverArt account setting first,
+	 *      so a covers-off results page costs zero API calls.
+	 *   3. Request::fetch() stores the response in memcache under islandora2_taxonomy_{tid},
+	 *      so a term costs at most one round trip per cache lifetime however many results
+	 *      pages it turns up on. Warm cache is the normal case; a cold cache on a page of
+	 *      24 term results is the worst case worth watching.
+	 *
+	 * $size is accepted for interface compatibility but ignored: the API exposes a single
+	 * thumbnail derivative per term, with no small/medium/large variants.
+	 *
+	 * @param string $size Ignored; terms have only one thumbnail size.
+	 * @return string
+	 */
 	public function getBookcoverUrl($size = 'small'){
-		return '';
+		$term = $this->ensureTaxonomyObject();
+		if ($term === null){
+			return self::PLACEHOLDER_IMAGE;
+		}
+
+		$thumbnail = $term->getThumbnail();
+		return !empty($thumbnail['url']) ? $thumbnail['url'] : self::PLACEHOLDER_IMAGE;
 	}
 
 	public function getListEntry($listId = null, $allowEdit = true){
