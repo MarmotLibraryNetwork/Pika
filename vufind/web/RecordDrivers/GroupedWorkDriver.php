@@ -3576,6 +3576,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 			default:
 				$this->logger->info("No schema.org format set for $pikaFormat");
+			case 'Kit':
 				return 'CreativeWork';
 		}
 	}
