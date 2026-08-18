@@ -3499,23 +3499,34 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private function getSchemaOrgType($pikaFormat){
 		switch ($pikaFormat){
+			case 'Adult Literacy Book':
 			case 'Audio':
 			case 'Audio Book':
 			case 'Audio Cassette':
 			case 'Audio CD':
+			case 'Board Book':
 			case 'Book':
 			case 'Book Club Kit':
+			case 'Book with Audio CD':
+			case 'Book with CD-ROM':
+			case 'Book with DVD':
+			case 'Book with DVD-ROM':
+			case 'Braille':
+			case 'CD':
+			case 'Easy Reader':
 			case 'eAudiobook':
 			case 'eBook':
 			case 'eMagazine':
-			case 'CD':
+			case 'Illustrated Edition':
 			case 'Journal':
 			case 'Large Print':
 			case 'Manuscript':
 			case 'Musical Score':
 			case 'Newspaper':
 			case 'Playaway':
+			case 'Read-Along Book':
 			case 'Serial':
+			case 'Yoto Story Card':
 				return 'Book';
 
 			case 'eComic':
@@ -3523,12 +3534,19 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'ComicStory';
 
 			case 'eMusic':
+			case 'Music Cassette':
+			case 'Music CD':
+			case 'Music CD With Blu-Ray':
+			case 'Music CD With DVD':
 			case 'Music Recording':
 			case 'Phonograph':
+			case 'Yoto Music Card':
 				return 'MusicRecording';
 
 			case 'Blu-ray':
+			case 'Blu-Ray/4K Ultra HD Blu-Ray Combo Pack':
 			case 'DVD':
+			case 'DVD Blu-ray Combo Pack':
 			case 'eVideo':
 			case 'VHS':
 			case 'Video':
@@ -3550,6 +3568,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Xbox 360':
 			case 'Xbox 360 Kinect':
 			case 'Xbox One':
+			case 'Xbox Series X':
 				return 'Game';
 
 			case 'Web Content':
@@ -3587,7 +3606,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->info('No schema.org book format set for ' . $pikaFormat);
+				//$this->logger->info('No schema.org book format set for ' . $pikaFormat);
 			case 'Book Club Kit':
 			case 'Read-Along Book':
 			case 'Newspaper':
