@@ -152,7 +152,9 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		$interface->assign('jquerySafeId', $this->getUniqueID());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summDescription', $this->getDescription());
-		$interface->assign('summUrl', $this->getRecordUrl());
+		// getLinkUrl() rather than getRecordUrl(): it carries the searchId / recordIndex / page
+		// parameters the term page needs to show the previous & next result navigation.
+		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summVocabularyLabel', $this->getVocabularyLabel());
 
 		global $configArray;
