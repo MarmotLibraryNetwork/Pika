@@ -91,7 +91,7 @@ class NYTApi {
 			}
 		}
 		// Close request to clear up some resources
-		curl_close($curl);
+		// curl_close($curl); - deprecated in PHP 8.5, the CurlHandle frees itself
 		// return response
 		return json_decode($response);
 	}

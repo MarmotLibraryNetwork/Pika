@@ -102,7 +102,7 @@ private function setForegroundAndBackgroundColors($title, $author){
 			//Add the title to the background image
 			$this->drawText($blankCover, $title, $author, 200);
 			imagepng($blankCover, $filename);
-			imagedestroy($blankCover);
+			// imagedestroy($blankCover); - deprecated in PHP 8.5, the GdImage frees itself
 		}else{
 			$this->setForegroundAndBackgroundColors($title, $author);
 			$imageCanvas = imagecreate($this->imageWidth, $this->imageHeight);
@@ -120,7 +120,7 @@ private function setForegroundAndBackgroundColors($title, $author){
 			$author = preg_replace($authorPreg,'', $author);
 			$this->drawText($imageCanvas, $title, $author, $artworkHeight);
 			imagepng($imageCanvas, $filename);
-			imagedestroy($imageCanvas);
+			// imagedestroy($imageCanvas); - deprecated in PHP 8.5, the GdImage frees itself
 		}
 
 	}

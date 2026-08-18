@@ -118,12 +118,7 @@ class Fines extends MyAccount {
  * @return mixed|string    string to be displayed
  */
 function formatNumber($number){
-	// money_format() does not exist on windows
-	if (function_exists('money_format')){
-		return money_format('%.2n', $number);
-	}else{
-		return safeMoneyFormat($number);
-	}
+	return safeMoneyFormat($number);
 }
 
 // Windows alternatives
@@ -139,7 +134,7 @@ function safeMoneyFormat($number){
 	// convert the currency symbol manually:
 	$currency_symbol = safeMoneyFormatMakeUTF8($currency_symbol);
 
-	// How is the ammount signed?
+	// How is the amount signed?
 	// Positive
 	if ($number > 0) {
 		$sign         = $positive_sign;
@@ -183,15 +178,17 @@ function safeMoneyFormat($number){
 
 // Adapted from code at http://us.php.net/manual/en/function.utf8-encode.php
 // This is needed for Windows only as a support function for safeMoneyFormat;
-// utf8_encode by itself doesn't do the job, but this is capable of properly
+// mb_convert_encoding by itself doesn't do the job, but this is capable of properly
 // turning currency symbols into valid UTF-8.
+//
+// There is a duplicate of this function in the SMARTY plugin modifier.safe_money_format.php
 function safeMoneyFormatMakeUTF8($instr){
 	static $nibble_good_chars = false;
 	static $byte_map = [];
 
 	if (empty($byte_map)){
 		for ($x = 128;$x < 256;++$x){
-			$byte_map[chr($x)] = utf8_encode(chr($x));
+			$byte_map[chr($x)] = mb_convert_encoding(chr($x), 'UTF-8', 'ISO-8859-1');
 		}
 		$cp1252_map = [
 			"\x80" => "\xE2\x82\xAC",  // EURO SIGN

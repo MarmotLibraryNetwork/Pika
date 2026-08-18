@@ -180,6 +180,7 @@ $GLOBALS['_DB_DATAOBJECT']['QUERYENDTIME'] = 0;
 
  
 if (!defined('DB_DATAOBJECT_NO_OVERLOAD')) {
+	//TODO: Remove this block with D-5160 and simplify; Only used by createTables.php, which we have never used.
     
     class DB_DataObject_Overload 
     {
@@ -189,9 +190,22 @@ if (!defined('DB_DATAOBJECT_NO_OVERLOAD')) {
             $this->_call($method,$args,$return);
             return $return;
         }
-        function __sleep() 
+        function __sleep()
         {
-            return array_keys(get_object_vars($this)) ; 
+            return array_keys(get_object_vars($this)) ;
+        }
+        // PHP 8.5 deprecates __sleep()/__wakeup().  The RFC's migration is to declare
+        // __serialize()/__unserialize() in addition, which take precedence and keep
+        // __sleep() in place for older runtimes.
+        function __serialize(): array
+        {
+            return get_object_vars($this) ;
+        }
+        function __unserialize(array $data): void
+        {
+            foreach ($data as $property => $value) {
+                $this->$property = $value ;
+            }
         }
     }
 } else {
@@ -735,8 +749,10 @@ class DB_DataObject extends DB_DataObject_Overload
             $not = 'NOT ';
             $key = substr($key, 1);
         }
-        // fix type for short entry. 
-        $type = $type == 'int' ? 'integer' : $type; 
+        // fix type for short entry.  PHP 8.5 deprecates the integer|boolean|double
+        // aliases, so normalize to the canonical names settype() still accepts.
+        $typeAliases = array('integer' => 'int', 'boolean' => 'bool', 'double' => 'float');
+        $type        = $typeAliases[$type] ?? $type;
 
         if ($type == 'string') {
             $this->_connect();

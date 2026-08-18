@@ -42,7 +42,7 @@ class MyAccount_Holds extends MyAccount{
 		// If $showPosition is already true don't override that setting
 		// #D-3420
 		if(!$showPosition && isset($configArray['OPAC']['showPosition'])) {
-			$showPosition = (boolean)$configArray['OPAC']['showPosition'];
+			$showPosition = (bool)$configArray['OPAC']['showPosition'];
 		}
 		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
 		$suspendRequiresReactivationDate = ($ils == 'Polaris' || $ils == 'Horizon' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'CarlX');

@@ -140,7 +140,7 @@ class BookCoverProcessor {
 		$this->getDefaultCover();
 	}
 
-	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
+	private function loadCoverBySpecifiedSource($coverSource, ?SourceAndId $sourceAndId = null){
 		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
 //			case 'Zinio':
@@ -619,7 +619,7 @@ class BookCoverProcessor {
 					}
 					// We no longer need the temp file:
 					@unlink($tempFile);
-					imagedestroy($imageResource);
+					// imagedestroy($imageResource); - deprecated in PHP 8.5, the GdImage frees itself
 					if (!$conversionOk){
 						return false;
 					}

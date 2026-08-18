@@ -1639,7 +1639,7 @@ abstract class SearchObject_Base {
 	 * @var string $searchSource
 	 * @return  boolean
 	 */
-	public function init(string $searchSource = null){
+	public function init(?string $searchSource = null){
 		// Start the timer
 		$this->initTime = microtime(true);
 
@@ -2199,7 +2199,7 @@ abstract class SearchObject_Base {
 	 * @param string|null $groupJoin
 	 * @return array
 	 */
-	private function parseBooleanSearchClauses(string $searchTerm, string $groupJoin = null){
+	private function parseBooleanSearchClauses(string $searchTerm, ?string $groupJoin = null){
 		$clauses       = [];
 		$searchPhrases = preg_split('/(?:\s(AND NOT|OR NOT|AND|OR|NOT)\s)/', $searchTerm, 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 		// Split by boolean phrases so that we have search phrases on their own; as well as the boolean operator without surrounding spaces

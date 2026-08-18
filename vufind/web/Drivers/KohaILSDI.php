@@ -371,7 +371,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$authenticateResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($authenticateResponse)){
 			if (!empty($authenticateResponse->id)){
-				return (integer)$authenticateResponse->id;
+				return (int)$authenticateResponse->id;
 			}else{
 				//Standard access denied response is $authenticateResponse->code == "PatronNotFound"
 				if ($authenticateResponse->code != "PatronNotFound"){

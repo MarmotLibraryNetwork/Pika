@@ -1645,7 +1645,7 @@ class ArchiveObject extends \Action
         $response   = curl_exec($ch);
         $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError  = curl_error($ch);
-        curl_close($ch);
+        // curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
         if ($response === false || $statusCode !== 200) {
             $this->logger->error('fetchTranscriptText failed.', [
                 'url'        => $url,

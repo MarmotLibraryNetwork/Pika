@@ -1701,7 +1701,7 @@ class pDraw {
 			$this->Shadow = $RestoreShadow;
 
 			imagecopy($this->Picture, $Raster, $X, $Y, 0, 0, $Width, $Height);
-			imagedestroy($Raster);
+			// imagedestroy($Raster); - deprecated in PHP 8.5, the GdImage frees itself
 		}
 	}
 

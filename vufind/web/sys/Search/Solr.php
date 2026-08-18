@@ -545,7 +545,7 @@ class Solr implements IndexEngine {
 	 * @param string $idFieldToReturn
 	 * @return array of the filtered ids
 	 */
-	function getFilteredIds(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
+	function getFilteredIds(array $ids, ?array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -618,7 +618,7 @@ class Solr implements IndexEngine {
 	 * @param string $idFieldToReturn
 	 * @return array of the filtered PIDs
 	 */
-	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'):array{
+	function getFilteredPIDs(array $ids, ?array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'):array{
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -691,7 +691,7 @@ class Solr implements IndexEngine {
 	 * @param string $returnField    Solr field to return from matching documents (e.g. 'its_node_id', 'its_tid')
 	 * @return array                 Array of $returnField values for matching documents
 	 */
-	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
+	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', ?array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
 		$solrDocArray = [];
 		$numIds       = count($pids);
 		if ($numIds) {
@@ -758,7 +758,7 @@ class Solr implements IndexEngine {
 	 * @param int            $batchSize Number of node IDs per request
 	 * @return array         Array of Solr document arrays
 	 */
-	function getIslandora2NodeIds(array $nids, array $filters = null, int $batchSize = 100): array {
+	function getIslandora2NodeIds(array $nids, ?array $filters = null, int $batchSize = 100): array {
 		$solrDocArray = [];
 		$numIds       = count($nids);
 		if ($numIds) {
