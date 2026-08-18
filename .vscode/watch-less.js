@@ -11,6 +11,13 @@
  * Command per file (run in the file's own directory):
  *   lessc <filename>.less <filename>.tmpcss --no-color --strict-imports
  *
+ * Deviation from PhpStorm: partials such as responsive/css/repository.less are
+ * shared — other themes' main.less files pull them in too (e.g. marmot/css/main.less
+ * → responsive/css/responsive_base.less → repository.less). So after compiling the
+ * saved file, every theme directory's main.less is also recompiled, cascading the
+ * change through to main.tmpcss → main.css → main.min.css (via the other two
+ * watchers) for all themes, not just the one that was saved in.
+ *
  * Requires: chokidar  →  npm install --save-dev chokidar
  */
 
@@ -24,6 +31,7 @@ const path = require('path');
 const EXCLUDE_BOOTSTRAP = normSep('vufind/web/interface/themes/responsive/css/bootstrap/');
 const EXCLUDE_LIB       = normSep('vufind/web/interface/themes/responsive/css/lib/');
 const INCLUDE_TABLESORTER = normSep('vufind/web/interface/themes/responsive/css/lib/tablesorter/');
+const THEMES_ROOT = path.resolve('vufind/web/interface/themes');
 
 function normSep(p) {
   return p.replace(/\\/g, '/');
@@ -44,6 +52,29 @@ function shouldCompile(filePath) {
 }
 
 // ─── Compiler ────────────────────────────────────────────────────────────────
+
+function compileMain(cssDir) {
+  const mainPath = path.join(cssDir, 'main.less');
+  console.log(`[less] cascading to ${mainPath}`);
+  try {
+    execSync(
+      `lessc "main.less" "main.tmpcss" --no-color --strict-imports`,
+      { cwd: cssDir, stdio: 'inherit' }
+    );
+    console.log(`[less]  → ${path.join(cssDir, 'main.tmpcss')}`);
+  } catch (err) {
+    console.error(`[less]  ✗ failed: ${mainPath}`);
+  }
+}
+
+function cascadeToAllThemes(skipDir) {
+  for (const themeName of fs.readdirSync(THEMES_ROOT)) {
+    const cssDir = path.join(THEMES_ROOT, themeName, 'css');
+    if (cssDir === skipDir) continue;
+    if (!fs.existsSync(path.join(cssDir, 'main.less'))) continue;
+    compileMain(cssDir);
+  }
+}
 
 function compile(filePath) {
   if (!shouldCompile(filePath)) return;
@@ -66,19 +97,7 @@ function compile(filePath) {
     return;
   }
 
-  if (input !== 'main.less' && fs.existsSync(path.join(dir, 'main.less'))) {
-    const mainPath = path.join(dir, 'main.less');
-    console.log(`[less] cascading to ${mainPath}`);
-    try {
-      execSync(
-        `lessc "main.less" "main.tmpcss" --no-color --strict-imports`,
-        { cwd: dir, stdio: 'inherit' }
-      );
-      console.log(`[less]  → ${path.join(dir, 'main.tmpcss')}`);
-    } catch (err) {
-      console.error(`[less]  ✗ failed: ${mainPath}`);
-    }
-  }
+  cascadeToAllThemes(input === 'main.less' ? dir : null);
 }
 
 // ─── Watcher ─────────────────────────────────────────────────────────────────
