@@ -24,6 +24,7 @@ require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 class CollectionObject extends I2Object
 {
@@ -242,11 +243,10 @@ class CollectionObject extends I2Object
         $terms  = (new JsonApiClient())->fetchChildrenFiltered($nid, $filterField);
         $result = [];
         foreach ($terms as $term) {
-            $segment  = ISLANDORA2_VOCAB_URL_MAP[$term['vocabulary']] ?? 'TaxonomyTerm';
             $result[] = [
                 'tid'   => $term['tid'],
                 'name'  => $term['name'],
-                'url'   => '/Archive2/' . $segment . '/' . urlencode((string)$term['tid']),
+                'url'   => getTaxonomyRelativeUrlFromParts((int)$term['tid'], $term['vocabulary'] ?? null),
                 'count' => $term['count'] ?? 0,
             ];
         }

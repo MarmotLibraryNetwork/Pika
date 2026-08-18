@@ -43,6 +43,7 @@ class LibraryArchive2SearchFacetSetting extends FacetSetting {
 		'sm_research_type'        => 'Research Type',
 		'sm_rights_creator'       => 'Rights Creator',
 		'sm_rights_holder'        => 'Rights Holder',
+		'ss_vid'                  => 'Taxonomy Terms',
 	];
 
 	static function getObjectStructure($availableFacets = null){

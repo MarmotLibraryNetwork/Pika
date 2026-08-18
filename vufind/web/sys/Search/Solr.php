@@ -939,8 +939,10 @@ class Solr implements IndexEngine {
 
 							}
 							break;
-						case 'shortId': // Genealogy Id number field
-						case 'its_node_id':  // Islandora2 node id field
+						case 'shortId':     // Genealogy Id number field
+						case 'its_node_id': // Islandora2 node id field
+						case 'its_tid':     // Islandora2 taxonomy id field
+							//TODO: this should be made into a specific searchspec type, integersOnly
 						if (!ctype_digit($fieldValue)){
 								// If the search phrase isn't all numbers, don't add this clause to the query
 								continue 2;
@@ -1646,7 +1648,7 @@ class Solr implements IndexEngine {
 			}
 
 			if (isset($facet['additionalOptions'])) {
-				//Currently this is only used by the Archive Mapped Timeline Exhibits (Collections)
+				//Currently, this is only used by the Archive Mapped Timeline Exhibits (Collections)
 				$options = array_merge($options, $facet['additionalOptions']);
 				unset($facet['additionalOptions']);
 			}
@@ -1662,7 +1664,7 @@ class Solr implements IndexEngine {
 		//Check to see if there are filters we want to show all values for
 		if ($isPikaGroupedWorkIndex && isset($filters) && is_array($filters)) {
 			foreach ($filters as $key => $value) {
-				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
+				if (str_starts_with($value, 'availability_toggle') || str_starts_with($value, 'availability_by_format')) {
 					$filters[$key] = '{!tag=avail}' . $value;
 				}
 			}

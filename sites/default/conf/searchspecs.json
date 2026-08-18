@@ -812,6 +812,19 @@
         ["onePhrase", 1100],
         ["and", 500]
       ],
+
+      /*Taxonomy title fields */
+      "tm_X3b_en_name": [
+        ["exact", 1800],
+        ["onePhrase", 1200],
+        ["and", 500]
+      ],
+      "tm_X3b_en_field_geo_alt_name": [
+        ["exact", 1500],
+        ["onePhrase", 1200],
+        ["and", 500]
+      ],
+
 /* Can only match on complete phrase with single strings
       "ss_field_album_title": [
         ["onePhrase", 1100]
@@ -822,6 +835,11 @@
       ],
       /* Description Fields */
       "twm_X3b_en_field_description_long_ws_token": [ /* Main Description */
+        ["and", 500]
+      ],
+
+      /* Taxonomy Description */
+      "tm_X3b_en_description": [
         ["and", 500]
       ],
 /*
@@ -839,7 +857,13 @@
       "its_node_id": [ /*TODO: new munge: intergerOnly*/
         ["exact", 10000]
       ],
+      "its_tid": [
+        ["exact", 10000]
+      ],
       "ss_legacy_pid" : [
+        ["exact", 2000]
+      ],
+      "ss_legacy_entity_pid": [
         ["exact", 2000]
       ],
       "sm_field_local_identifier": [ /*Local Indentifier (string)*/ /*confirmed search of identifier string works*/
@@ -1027,7 +1051,13 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
+      "its_tid": [
+        ["exact", 10000]
+      ],
       "ss_legacy_pid" : [
+        ["exact", 2000]
+      ],
+      "ss_legacy_entity_pid": [
         ["exact", 2000]
       ],
       "sm_field_local_identifier": [ /*Local Indentifier (string)*/ /*confirmed search of identifier string works*/
@@ -1196,7 +1226,13 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
+      "its_tid": [
+        ["exact", 10000]
+      ],
       "ss_legacy_pid" : [
+        ["exact", 2000]
+      ],
+      "ss_legacy_entity_pid": [
         ["exact", 2000]
       ]
     }
@@ -1240,7 +1276,13 @@
       "its_node_id": [ /*TODO: new munge: integerOnly*/
         ["exact", 10000]
       ],
+      "its_tid": [
+        ["exact", 10000]
+      ],
       "ss_legacy_pid" : [
+        ["exact", 2000]
+      ],
+      "ss_legacy_entity_pid": [
         ["exact", 2000]
       ]
     }

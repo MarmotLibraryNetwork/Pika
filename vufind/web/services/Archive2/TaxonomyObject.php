@@ -104,13 +104,7 @@ class TaxonomyObject extends \Action
         $interface->assign('vocabulary_name',        $this->taxonomyObject->getVocabularyName());
         $vocabularyMachineName = $this->taxonomyObject->getVocabularyMachineName();
         $interface->assign('vocabulary_machine_name', $vocabularyMachineName);
-        $vocabularyLabels = [
-            'corporate_body' => 'Organization',
-            'person'         => 'Person',
-            'place'          => 'Place',
-            'event'          => 'Event',
-        ];
-        $interface->assign('vocabulary_label', $vocabularyLabels[$vocabularyMachineName] ?? ucwords(str_replace('_', ' ', $vocabularyMachineName)));
+        $interface->assign('vocabulary_label', \getTaxonomyVocabularyLabel($vocabularyMachineName));
         $interface->assign('is_shown_in_search',     $this->taxonomyObject->isShownInSearch());
         $interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
         $interface->assign('pid',                    $this->taxonomyObject->getPid());
