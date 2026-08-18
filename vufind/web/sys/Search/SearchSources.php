@@ -53,6 +53,7 @@ class SearchSources {
 		$searchGenealogy                   = true;
 		$repeatCourseReserves              = false;
 		$searchArchive                     = false;
+		$searchArchive2                    = false;
 		$searchEbsco                       = false;
 
 		/** @var $locationSingleton Location */
