@@ -1,5 +1,5 @@
 {strip}
-	<div class="random-image-component" style="height: 275px;">
+	<div class="random-image-component">
 		<div id="randomImagePlaceholder_{$id}">
 			{include file="Archive2/components/random_image_figure.tpl"}
 		</div>
