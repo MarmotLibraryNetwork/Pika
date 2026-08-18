@@ -18,6 +18,7 @@
  */
 
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 use Pika\Logger;
 
@@ -43,6 +44,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	private int $tid = 0;
 	private ?string $title = null;
 	private ?string $description = null;
+	private ?string $vocabulary = null;
 	protected ?float $solrScore = null;
 	protected ?string $solrExplanation = null;
 
@@ -54,6 +56,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		'id'          => 'its_tid',
 		'title'       => 'tm_X3b_en_name',
 		'description' => 'tm_X3b_en_description',
+		'vocabulary'  => 'ss_vid',
 	];
 
 	/**
@@ -68,6 +71,8 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 			$this->title           = !empty($title) ? $title : null;
 			$description           = $this->getSolrFirstFieldValue($recordData, 'description');
 			$this->description     = !empty($description) ? $description : null;
+			$vocabulary            = $this->getSolrFirstFieldValue($recordData, 'vocabulary');
+			$this->vocabulary      = !empty($vocabulary) ? strtolower((string)$vocabulary) : null;
 			$this->solrScore       = isset($recordData['score']) ? (float)$recordData['score'] : null;
 			$this->solrExplanation = isset($recordData['explain']) ? (string)$recordData['explain'] : null;
 		}elseif (is_numeric($recordData)){
@@ -96,6 +101,16 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 
 	public function getTid(): int{
 		return $this->tid;
+	}
+
+	/**
+	 * The vocabulary machine name (person, geo_location, corporate_body, event), which
+	 * determines which Archive2 display page the term links to.
+	 *
+	 * @return string|null
+	 */
+	public function getVocabulary(): ?string{
+		return $this->vocabulary;
 	}
 
 	public function getTitle(){
@@ -127,6 +142,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		$interface->assign('jquerySafeId', $this->getUniqueID());
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summUrl', $this->getRecordUrl());
 
 		global $configArray;
 		if (!empty($configArray['System']['debugSolr'])){
@@ -176,14 +192,20 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		return 'Archive2';
 	}
 
-	//TODO: taxonomy terms have no landing page in Pika yet. Once one exists, return its
-	// path here and turn the title in taxonomyTermResult.tpl back into a link.
+	/**
+	 * The term's display page, e.g. /Archive2/Place/12345.
+	 *
+	 * The vocabulary (ss_vid) picks the typed Archive2 action; terms indexed without one
+	 * fall back to /Archive2/Term, which looks the term up and redirects.
+	 *
+	 * @return string
+	 */
 	public function getRecordUrl(){
-		return '#';
+		return getTaxonomyRelativeUrlFromParts($this->tid, $this->vocabulary);
 	}
 
 	public function getAbsoluteUrl(){
-		return '#';
+		return getTaxonomyAbsoluteUrlFromParts($this->tid, $this->vocabulary);
 	}
 
 	//TODO: no thumbnail for terms yet; the result template does not display a cover.

@@ -1,7 +1,8 @@
 {strip}
 {* Search result for an Islandora 2 taxonomy term.
-   Terms have no cover, format, model, or contributing library, and no landing page to
-   link to yet, so this shows the name and description only. *}
+   Terms have no cover, format, model, or contributing library, so this shows the name and
+   description only. The title links to the typed Archive2 term page for the term's
+   vocabulary (/Archive2/Person, /Archive2/Place, and so on). *}
 <div id="record{$jquerySafeId}" class="resultsList">
 	{if isset($summExplain)}
 		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
@@ -15,10 +16,9 @@
 			<h2 class="h3">
 				<span class="result-index">{$resultIndex}.</span>&nbsp;
 
-				{*TODO: no term landing page yet; make this an anchor once one exists *}
-				<span class="result-title notranslate">
+				<a href="{$summUrl}" class="result-title notranslate">
 					{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-				</span>
+				</a>
 
 				{if isset($summScore)}
 					&nbsp;<small>(<a href="#" onclick="return Pika.showElementInPopup('Score Explanation', '#scoreExplanationValue{$jquerySafeId|escape}');">{$summScore}</a>)</small>

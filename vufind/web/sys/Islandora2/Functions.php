@@ -95,6 +95,19 @@ function getObjRelativeUrl(I2Object $obj): string
  */
 function getObjAbsoluteUrl(I2Object $obj)
 {
+    return getArchiveBaseUrl() . getObjRelativeUrl($obj);
+}
+
+/**
+ * Return the base URL that absolute Archive2 links are built on, without a trailing slash.
+ *
+ * Pika is multi-tenant, so the current library's catalogUrl wins over the configured site
+ * URL to keep links on the host the patron is actually browsing.
+ *
+ * @return string
+ */
+function getArchiveBaseUrl(): string
+{
     global $configArray;
     global $library;
 
@@ -104,11 +117,11 @@ function getObjAbsoluteUrl(I2Object $obj)
         $baseUrl = $scheme . '://' . $library->catalogUrl;
     }
 
-    return rtrim($baseUrl, '/') . getObjRelativeUrl($obj);
+    return rtrim($baseUrl, '/');
 }
 
 /**
- * Return the relative display URL for an Islandora 2 taxonomy term.
+ * Return the relative display URL for a taxonomy term given its id and vocabulary.
  *
  * Maps vocabulary machine names to their Archive2 action segment:
  *   person           → /Archive2/Person
@@ -116,20 +129,50 @@ function getObjAbsoluteUrl(I2Object $obj)
  *   geo_location     → /Archive2/Place
  *   event            → /Archive2/Event
  *
+ * A missing or unmapped vocabulary falls back to /Archive2/Term, the generic controller
+ * that resolves the term and redirects to its typed URL (or returns 410 for vocabularies
+ * Pika does not display).
+ *
+ * This variant exists for callers that only have the Solr fields of a term (its_tid and
+ * ss_vid) rather than a full taxonomy object, such as the search result record drivers.
+ *
+ * @param int         $tid
+ * @param string|null $vocabularyMachineName
+ * @return string  Relative URL, or '#' when the term ID is not valid.
+ */
+function getTaxonomyRelativeUrlFromParts(int $tid, ?string $vocabularyMachineName): string
+{
+    if ($tid <= 0) {
+        return '#';
+    }
+
+    $vocab   = strtolower($vocabularyMachineName ?? '');
+    $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Term';
+
+    return '/Archive2/' . $segment . '/' . urlencode((string)$tid);
+}
+
+/**
+ * Return the absolute display URL for a taxonomy term given its id and vocabulary.
+ *
+ * @param int         $tid
+ * @param string|null $vocabularyMachineName
+ * @return string  Absolute URL, or the base URL followed by '#' when invalid.
+ */
+function getTaxonomyAbsoluteUrlFromParts(int $tid, ?string $vocabularyMachineName): string
+{
+    return getArchiveBaseUrl() . getTaxonomyRelativeUrlFromParts($tid, $vocabularyMachineName);
+}
+
+/**
+ * Return the relative display URL for an Islandora 2 taxonomy term.
+ *
  * @param TaxonomyObjectInterface $term
  * @return string  Relative URL, or '#' when the term has no valid ID.
  */
 function getTaxonomyRelativeUrl(TaxonomyObjectInterface $term): string
 {
-    $tid = $term->getTid();
-    if (!$tid || $tid <= 0) {
-        return '#';
-    }
-
-    $vocab   = strtolower($term->getVocabularyMachineName() ?? '');
-    $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'TaxonomyTerm';
-
-    return '/Archive2/' . $segment . '/' . urlencode((string)$tid);
+    return getTaxonomyRelativeUrlFromParts((int)$term->getTid(), $term->getVocabularyMachineName());
 }
 
 /**
@@ -143,14 +186,5 @@ function getTaxonomyRelativeUrl(TaxonomyObjectInterface $term): string
  */
 function getTaxonomyAbsoluteUrl(TaxonomyObjectInterface $term)
 {
-    global $configArray;
-    global $library;
-
-    $baseUrl = $configArray['Site']['url'] ?? '';
-    if (!empty($library->catalogUrl ?? '')) {
-        $scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'https';
-        $baseUrl = $scheme . '://' . $library->catalogUrl;
-    }
-
-    return rtrim($baseUrl, '/') . getTaxonomyRelativeUrl($term);
+    return getArchiveBaseUrl() . getTaxonomyRelativeUrl($term);
 }

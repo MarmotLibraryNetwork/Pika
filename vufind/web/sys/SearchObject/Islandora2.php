@@ -45,7 +45,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// The remaining fields mirror Islandora2Driver's solrFields map.
 	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score'
 	// Taxonomy Fields:
-	. ',its_tid,tm_X3b_en_name,tm_X3b_en_description,ss_legacy_entity_pid';
+	// ss_vid is the vocabulary machine name (person, geo_location, corporate_body, event);
+	// the term driver needs it to build the typed /Archive2/{Person|Place|Organization|Event} URL.
+	. ',its_tid,ss_vid,tm_X3b_en_name,tm_X3b_en_description,ss_legacy_entity_pid';
 	// Include document Id field for the solr explanation matching, which keys of id field
 	//TODO: modified date field
 	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
