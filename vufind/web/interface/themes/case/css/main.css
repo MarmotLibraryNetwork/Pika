@@ -10668,6 +10668,9 @@ img.x-twit {
   -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
 }
+#moreDetailsPanel:focus-within {
+  outline: #E15F15 solid 2px;
+}
 .help-icon {
   color: blue;
 }
