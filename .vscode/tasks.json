@@ -115,5 +115,42 @@
         "runOn": "folderOpen"
       }
     }
+
+    ,
+    // ─── UglifyJS Minifier ────────────────────────────────────────────────────
+    // Scope: any *.js file directly in vufind/web/interface/themes/responsive/js/pika,
+    //        excluding files already ending in .min.js.
+    // Per-file command (run in file's own directory):
+    //   uglifyjs <file>.js -c arrows=false -o <file>.min.js
+    //
+    // Prerequisites: npm install --save-dev uglify-js chokidar
+    {
+      "label": "Watch UglifyJS Minifier (pika js → min.js)",
+      "type": "shell",
+      "command": "node .vscode/watch-uglifyjs.js",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "label": "UglifyJS Watcher"
+      },
+      "problemMatcher": {
+        "owner": "uglifyjs",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(WARN|ERROR): (.+)$",
+          "severity": 1,
+          "message": 2
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[uglifyjs\\] Watching",
+          "endsPattern": "\\[uglifyjs\\]  (→|✗)"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
   ]
 }
