@@ -113,6 +113,16 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		return $this->vocabulary;
 	}
 
+	/**
+	 * The singular display label for the term's vocabulary — Person, Place, Organization
+	 * or Event — as shown in the Taxonomy row of a search result.
+	 *
+	 * @return string
+	 */
+	public function getVocabularyLabel(): string{
+		return getTaxonomyVocabularyLabel($this->vocabulary);
+	}
+
 	public function getTitle(){
 		return $this->title ?? ($this->tid > 0 ? 'Islandora Term ' . $this->tid : '');
 	}
@@ -143,6 +153,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summUrl', $this->getRecordUrl());
+		$interface->assign('summVocabularyLabel', $this->getVocabularyLabel());
 
 		global $configArray;
 		if (!empty($configArray['System']['debugSolr'])){

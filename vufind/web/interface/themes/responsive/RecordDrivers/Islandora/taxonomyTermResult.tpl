@@ -1,8 +1,8 @@
 {strip}
 {* Search result for an Islandora 2 taxonomy term.
-   Terms have no cover, format, model, or contributing library, so this shows the name and
-   description only. The title links to the typed Archive2 term page for the term's
-   vocabulary (/Archive2/Person, /Archive2/Place, and so on). *}
+   Terms have no cover, format, model, or contributing library, so this shows the name, the
+   vocabulary the term belongs to, and the description only. The title links to the typed
+   Archive2 term page for that vocabulary (/Archive2/Person, /Archive2/Place, and so on). *}
 <div id="record{$jquerySafeId}" class="resultsList">
 	{if isset($summExplain)}
 		<div class="hidden" id="scoreExplanationValue{$jquerySafeId|escape}">
@@ -26,6 +26,13 @@
 			</h2>
 		</div>
 	</div>
+
+	{if $summVocabularyLabel}
+		<div class="row">
+			<div class="result-label col-tn-3">Taxonomy: </div>
+			<div class="col-tn-9 result-value">{$summVocabularyLabel}</div>
+		</div>
+	{/if}
 
 	{if $summDescription}
 		<div class="row">

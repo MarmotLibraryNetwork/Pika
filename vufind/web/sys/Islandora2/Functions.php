@@ -64,6 +64,39 @@ const ISLANDORA2_VOCAB_URL_MAP = [
 ];
 
 /**
+ * Maps taxonomy vocabulary machine names to the singular label shown to patrons.
+ *
+ * Kept separate from ISLANDORA2_VOCAB_URL_MAP even though the two currently agree: one is
+ * routing, the other is display text, and they should be free to diverge. The plural forms
+ * in lang/en.ini (People, Places, ...) label the ss_vid facet, not an individual term.
+ */
+const ISLANDORA2_VOCAB_LABEL_MAP = [
+    'person'         => 'Person',
+    'corporate_body' => 'Organization',
+    'geo_location'   => 'Place',
+    'event'          => 'Event',
+];
+
+/**
+ * Return the singular display label for a taxonomy vocabulary machine name.
+ *
+ * Unmapped vocabularies fall back to their machine name in title case, so a vocabulary
+ * added in Islandora before Pika knows about it still reads sensibly.
+ *
+ * @param string|null $vocabularyMachineName
+ * @return string  Label, or '' when no vocabulary is known.
+ */
+function getTaxonomyVocabularyLabel(?string $vocabularyMachineName): string
+{
+    $vocab = strtolower($vocabularyMachineName ?? '');
+    if ($vocab === '') {
+        return '';
+    }
+
+    return ISLANDORA2_VOCAB_LABEL_MAP[$vocab] ?? ucwords(str_replace('_', ' ', $vocab));
+}
+
+/**
  * Return the relative display URL for an Islandora 2 object.
  *
  * Maps display model names to their Archive2 action segment using
