@@ -939,8 +939,10 @@ class Solr implements IndexEngine {
 
 							}
 							break;
-						case 'shortId': // Genealogy Id number field
-						case 'its_node_id':  // Islandora2 node id field
+						case 'shortId':     // Genealogy Id number field
+						case 'its_node_id': // Islandora2 node id field
+						case 'its_tid':     // Islandora2 taxonomy id field
+							//TODO: this should be made into a specific searchspec type, integersOnly
 						if (!ctype_digit($fieldValue)){
 								// If the search phrase isn't all numbers, don't add this clause to the query
 								continue 2;
