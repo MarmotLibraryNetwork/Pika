@@ -460,12 +460,9 @@ class BookCoverProcessor {
 	 * agent is what tells the proxy to let them through untouched; without it, the proxy interferes with the calls
 	 * the catalog makes to itself. Any new internal fetch should use this rather than the external options.
 	 *
-	 * Options are returned as an array rather than a stream context so that callers can also hand them to
-	 * stream_context_set_default(), which is needed for functions that take no context argument.
-	 *
 	 * @param int|null $timeout Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
 	 *
-	 * @return array Options for stream_context_create() or stream_context_set_default()
+	 * @return array Options for stream_context_create()
 	 */
 	private function getInternalHttpContextOptions(?int $timeout = null){
 		$userAgent = empty($this->configArray['Site']['internalUserAgent']) ? 'Pika' : $this->configArray['Site']['internalUserAgent'];
@@ -898,17 +895,14 @@ class BookCoverProcessor {
 	}
 
 	private function getUserListCover($listId){
-		require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
-		require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
-		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$font         = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
+		$defaultImage = imagecreatefrompng(ROOT_DIR . '/interface/themes/default/images/lists_small.png');
 
 		// These fetches loop back to our own server, and each one may in turn call out to an external cover provider,
 		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
-		$httpContextOptions  = $this->getInternalHttpContextOptions(10);
-		$context             = stream_context_create($httpContextOptions);
-		// getimagesize() (called within getBookcoverUrlForUserListImageCreation()) doesn't accept a context argument, so it needs the default context set instead.
-		stream_context_set_default($httpContextOptions);
+		$context = stream_context_create($this->getInternalHttpContextOptions(10));
 
 		if ($this->reload){
 			unlink($this->cacheFile);
@@ -923,12 +917,9 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 4){
-					if ($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							$resizedResource        = imagescale($listEntryImageResource, 50);
-							$imageArray[$x]         = $resizedResource;
-						}
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						$resizedResource = imagescale($listEntryImageResource, 50);
+						$imageArray[$x]  = $resizedResource;
 					}else{
 						$finalCover = $defaultImage;
 					}
@@ -951,16 +942,13 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 3){
-					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							if ($x == 0){
-								$resizedResource = imagescale($listEntryImageResource, -1, 98);
-							}else{
-								$resizedResource = imagescale($listEntryImageResource, 50);
-							}
-							$imageArray[$x] = $resizedResource;
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						if ($x == 0){
+							$resizedResource = imagescale($listEntryImageResource, -1, 98);
+						}else{
+							$resizedResource = imagescale($listEntryImageResource, 50);
 						}
+						$imageArray[$x] = $resizedResource;
 					}else{
 						$finalCover = $defaultImage;
 					}
@@ -982,13 +970,10 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 2){
-					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							$resizedResource        = imagescale($listEntryImageResource, -1, 100);
-							$imageArray[$x]         = $resizedResource;
-							}
-						}else{
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						$resizedResource = imagescale($listEntryImageResource, -1, 100);
+						$imageArray[$x]  = $resizedResource;
+					}else{
 						$finalCover = $defaultImage;
 					}
 					$x++;
@@ -1026,12 +1011,38 @@ class BookCoverProcessor {
 			$this->logger->error('No cover url could be determined for user list entry: ' . $itemId);
 			return false;
 		}
-		if(@is_array(getimagesize($bookcoverUrl))){
-			return $bookcoverUrl;
-		}else{
+		return $bookcoverUrl;
+	}
+
+	/**
+	 * Fetch the cover image for one User List entry and turn it into an image resource.
+	 *
+	 * The url used to be checked with getimagesize() before being fetched, but getimagesize() downloads the whole
+	 * image to read its header, so every cover was pulled twice. For a four-item list that is eight requests back
+	 * to our own server instead of four. Whether imagecreatefromstring() can read the response is the same
+	 * "is this really an image" test the getimagesize() call was making, so one fetch now does both jobs.
+	 *
+	 * @param string $itemId    GroupedWorkId or Archive Node Id taken from an entry in a User List
+	 * @param resource $context Stream context carrying our internal user agent
+	 *
+	 * @return GdImage|false The image resource, or false if the cover couldn't be fetched or read
+	 */
+	private function getUserListEntryCoverImage($itemId, $context){
+		$bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($itemId);
+		if (empty($bookcoverUrl)){
+			return false;
+		}
+		$listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context);
+		if ($listEntryCoverImage === false){
 			$this->logger->error('Image was not returned when retrieving: ' . $bookcoverUrl);
 			return false;
 		}
+		$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+		if ($listEntryImageResource === false){
+			$this->logger->error('Image data could not be read when retrieving: ' . $bookcoverUrl);
+			return false;
+		}
+		return $listEntryImageResource;
 	}
 
 	private function getGroupedWorkCover(){
