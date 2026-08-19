@@ -997,9 +997,8 @@ class BookCoverProcessor {
 	 * @return string|false  A Cover url to fetch, or false when one can't be determined
 	 */
 	private function getBookcoverUrlForUserListImageCreation($itemId){
-		$bookcoverUrl          = false;
-		$isPossibleArchiveItem = strpos($itemId, '-') === false;
-		if ($isPossibleArchiveItem){
+		$bookcoverUrl = false;
+		if ($this->isArchiveItem($itemId)){
 			$archiveObject = new Islandora2Driver($itemId);
 			if (!empty($archiveObject->getNodeId())){
 				$bookcoverUrl = $archiveObject->getBookcoverUrl();
@@ -1012,6 +1011,20 @@ class BookCoverProcessor {
 			return false;
 		}
 		return $bookcoverUrl;
+	}
+
+	/**
+	 * Decide whether a User List entry id belongs to an archive object rather than a grouped work.
+	 *
+	 * Grouped work ids are hyphenated, archive ids aren't, so the absence of a hyphen is all we have to go on for
+	 * now. That is expected to change, so keep the test here rather than inline at the point of use.
+	 *
+	 * @param string $itemId Id taken from an entry in a User List
+	 *
+	 * @return bool
+	 */
+	private function isArchiveItem($itemId){
+		return strpos($itemId, '-') === false;
 	}
 
 	/**
