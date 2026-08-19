@@ -453,6 +453,55 @@ class BookCoverProcessor {
 	}
 
 	/**
+	 * Http stream options for calls that stay inside our own infrastructure: cover fetches that loop back to this
+	 * site.
+	 *
+	 * These requests go out through our forward proxy service and come back to us. Sending the internal user
+	 * agent is what tells the proxy to let them through untouched; without it, the proxy interferes with the calls
+	 * the catalog makes to itself. Any new internal fetch should use this rather than the external options.
+	 *
+	 * Options are returned as an array rather than a stream context so that callers can also hand them to
+	 * stream_context_set_default(), which is needed for functions that take no context argument.
+	 *
+	 * @param int|null $timeout Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array Options for stream_context_create() or stream_context_set_default()
+	 */
+	private function getInternalHttpContextOptions(?int $timeout = null){
+		$userAgent = empty($this->configArray['Site']['internalUserAgent']) ? 'Pika' : $this->configArray['Site']['internalUserAgent'];
+		return $this->buildHttpContextOptions($userAgent, $timeout);
+	}
+
+	/**
+	 * Http stream options for calls out to outside content providers, such as Google Books or Syndetics.
+	 *
+	 * These identify us with the catalog user agent, which is what providers see and what some of them key their
+	 * rate limits on. The proxy doesn't need to be bypassed for traffic that genuinely leaves our network.
+	 *
+	 * @param int|null $timeout Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array Options for stream_context_create()
+	 */
+	private function getExternalHttpContextOptions(?int $timeout = null){
+		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
+		return $this->buildHttpContextOptions($userAgent, $timeout);
+	}
+
+	/**
+	 * @param string $userAgent  User agent to identify the request with
+	 * @param int|null $timeout  Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array
+	 */
+	private function buildHttpContextOptions(string $userAgent, ?int $timeout = null){
+		$httpOptions = ['header' => "User-Agent: {$userAgent}\r\n"];
+		if (!empty($timeout)){
+			$httpOptions['timeout'] = $timeout;
+		}
+		return ['http' => $httpOptions];
+	}
+
+	/**
 	 * Get a cover image from a source, check & adjust image sizing,
 	 * check whether or not it is a good image to use,
 	 * then save as a PNG file to best sent on to the user
@@ -469,12 +518,7 @@ class BookCoverProcessor {
 			$this->logger->info("Processing $url");
 		}
 
-		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-		$context   = stream_context_create([
-			'http' => [
-				'header' => "User-Agent: {$userAgent}\r\n",
-			],
-		]);
+		$context = stream_context_create($this->getExternalHttpContextOptions());
 
 		$this->logTime('Fetch image from external url');
 		if (isset($url) && $image = @file_get_contents($url, false, $context)){
@@ -859,10 +903,9 @@ class BookCoverProcessor {
 		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
 		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
 
-		$userAgent           = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
 		// These fetches loop back to our own server, and each one may in turn call out to an external cover provider,
 		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
-		$httpContextOptions  = ['http' => ['header' => "User-Agent: {$userAgent}\r\n", 'timeout' => 10]];
+		$httpContextOptions  = $this->getInternalHttpContextOptions(10);
 		$context             = stream_context_create($httpContextOptions);
 		// getimagesize() (called within getBookcoverUrlForUserListImageCreation()) doesn't accept a context argument, so it needs the default context set instead.
 		stream_context_set_default($httpContextOptions);
@@ -1473,12 +1516,7 @@ class BookCoverProcessor {
 		if (is_callable('json_decode')){
 			$url = 'https://books.google.com/books?jscmd=viewapi&bibkeys=ISBN:' . $this->isn . '&callback=addTheCover';
 
-			$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-			$context   = stream_context_create([
-				'http' => [
-					'header' => "User-Agent: {$userAgent}\r\n",
-				],
-			]);
+			$context = stream_context_create($this->getExternalHttpContextOptions());
 
 			$json = @file_get_contents($url, false, $context);
 			if (!empty($json) && $json != 'addTheCover({});'){

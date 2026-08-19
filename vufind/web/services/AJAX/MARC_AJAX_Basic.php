@@ -106,7 +106,8 @@ trait MARC_AJAX_Basic {
 	private function sendReloadCoverURl(RecordInterface $recordDriver, string $size): bool{
 		global $configArray;
 		$reloadCoverURL = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl($size, true)) . '&reload';
-		$options        = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent'] ]];
+		$userAgent      = empty($configArray['Site']['internalUserAgent']) ? 'Pika' : $configArray['Site']['internalUserAgent'];
+		$options        = ['http' => ['user_agent' => $userAgent]];
 		$context        = stream_context_create($options);
 		$response       = file_get_contents($reloadCoverURL, false, $context);
 		if ($response === false){
