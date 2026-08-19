@@ -860,7 +860,9 @@ class BookCoverProcessor {
 		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
 
 		$userAgent           = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-		$httpContextOptions  = ['http' => ['header' => "User-Agent: {$userAgent}\r\n"]];
+		// These fetches loop back to our own server, and each one may in turn call out to an external cover provider,
+		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
+		$httpContextOptions  = ['http' => ['header' => "User-Agent: {$userAgent}\r\n", 'timeout' => 10]];
 		$context             = stream_context_create($httpContextOptions);
 		// getimagesize() (called within getBookcoverUrlForUserListImageCreation()) doesn't accept a context argument, so it needs the default context set instead.
 		stream_context_set_default($httpContextOptions);
@@ -964,10 +966,11 @@ class BookCoverProcessor {
 	}
 	/**
 	 * @param string $itemId GroupedWorkId or ArchivePID taken from an entry in a User List
-	 * @return string|void  A Cover url to fetch
+	 * @return string|false  A Cover url to fetch, or false when one can't be determined
 	 */
 	private function getBookcoverUrlForUserListImageCreation($itemId){
-		$isPossibleArchiveItem = strpos($itemId, '-') == false;
+		$bookcoverUrl          = false;
+		$isPossibleArchiveItem = strpos($itemId, '-') === false;
 		if ($isPossibleArchiveItem){
 			$archiveObject = new Islandora2Driver($itemId);
 			if (!empty($archiveObject->getNodeId())){
@@ -975,6 +978,10 @@ class BookCoverProcessor {
 			}
 		}else{
 			$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+		}
+		if (empty($bookcoverUrl)){
+			$this->logger->error('No cover url could be determined for user list entry: ' . $itemId);
+			return false;
 		}
 		if(@is_array(getimagesize($bookcoverUrl))){
 			return $bookcoverUrl;
