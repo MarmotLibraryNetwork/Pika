@@ -1251,7 +1251,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				->setCellValue('A' . $a, $resultItem['twm_X3b_en_title_ws_token'][0] ?? $resultItem['tm_X3b_en_name'][0])
 				// ucwords and str_replace are here to turn corporate_body into Corporate Body which looks better to my eye and
 				// more closely matches the provided formats
-				->setCellValue('B' . $a, $resultItem['ss_model'] ?? ucwords(str_replace('_', '', $resultItem['ss_vid'])))
+				->setCellValue('B' . $a, $resultItem['ss_model'] ?? ucwords(str_replace('_', ' ', $resultItem['ss_vid'])))
 				->setCellValue('C' . $a, $resultItem['ss_library'])
 				->setCellValue('D' . $a, $resultItem['its_node_id'] ?? $resultItem['its_tid'])
 				->setCellValue('E' . $a, $resultItem['twm_X3b_en_field_description_long_ws_token'][0] ?? $resultItem['tm_X3b_en_description'][0]);
