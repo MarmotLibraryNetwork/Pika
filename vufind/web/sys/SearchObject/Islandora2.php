@@ -682,6 +682,23 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// down to the page and display mode the patron was on.
 		$interface->assign('searchResultsUrl', $searchObject->renderSearchUrl());
 
+		// Repopulate the search box with the search this record was reached through, so the
+		// patron can amend it rather than retype it (D-5466).  setUpSearchDisplayOptions() in
+		// index.php has already filled these in from loadLastSearch(), but it runs before the
+		// controller does and only knows the last search of the session, whatever index that
+		// was made against; and it has no way to recover the archive search type at all, since
+		// a record url carries no islandoraType.  Assigning here overrides all of that with the
+		// search actually behind this record.
+		//
+		// An archive search can be facets only, with no search terms at all, and displayQuery()
+		// reads searchTerms[0] without checking it is there; fall back to an empty phrase rather
+		// than leave whatever setUpSearchDisplayOptions() found in the session sitting in the box.
+		$lookfor = empty($searchObject->getSearchTerms()) ? '' : $searchObject->displayQuery();
+		$interface->assign('lookfor', $lookfor);
+		$interface->assign('searchType', $searchObject->getSearchType());
+		$interface->assign('islandoraSearchIndex', $searchObject->getSearchIndex());
+		$interface->assign('filterList', $searchObject->getFilterList());
+
 		//Run the search
 		$result = $searchObject->processSearch(true);
 		if (PEAR_Singleton::isError($result) || $searchObject->getResultTotal() <= 0){
