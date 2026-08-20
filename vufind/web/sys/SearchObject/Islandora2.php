@@ -1219,61 +1219,62 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function buildExcel($result = null){
 		//TODO: this wouldn't work for archive searches
+  	// First, get the search results if none were provided
+		if (is_null($result)) {
+			$this->limit = 2000;
+			$result = $this->processSearch(false, false);
+		}
 
-//		// First, get the search results if none were provided
-//		// (we'll go for 50 at a time)
-//		if (is_null($result)) {
-//			$this->limit = 2000;
-//			$result = $this->processSearch(false, false);
-//		}
-//
-//		// Prepare the spreadsheet
-//		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-//		$objPHPExcel->getProperties()->setTitle("Search Results");
-//
-//		$objPHPExcel->setActiveSheetIndex(0);
-//		$objPHPExcel->getActiveSheet()->setTitle('Results');
-//
-//		//Add headers to the table
-//		$sheet = $objPHPExcel->getActiveSheet();
-//		$curRow = 1;
-//		$curCol = 1;
-//		$sheet->setCellValue([$curCol++, $curRow], 'First Name');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Last Name');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Birth Date');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Death Date');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Veteran Of');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Cemetery');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Addition');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Block');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Lot');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Grave');
-//		$maxColumn = $curCol -1;
-//
-//        $_count = count($result['response']['docs']);
-//		for ($i = 0; $i < $_count; $i++) {
-//			$curDoc = $result['response']['docs'][$i];
-//			$curRow++;
-//			$curCol = 1;
-//			//TODO: Need to export information to Excel
-//		}
-//
-//		for ($i = 0; $i < $maxColumn; $i++){
-//			$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-//		}
-//
-//		//Output to the browser
-//		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-//		header("Cache-Control: no-store, no-cache, must-revalidate");
-//		header("Cache-Control: post-check=0, pre-check=0", false);
-//		header("Pragma: no-cache");
-//		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//		header('Content-Disposition: attachment;filename="Results.xlsx"');
-//
-//		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xlsx');
-//		$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-//		$objPHPExcel->disconnectWorksheets();
-//		unset($objPHPExcel);
+		// Prepare the spreadsheet
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+		$objPHPExcel->getProperties()->setTitle("Search Results");
+		$objPHPExcel->getProperties()->setCreator('Pika')
+			->setLastModifiedBy('Pika')
+			->setTitle('Office 2007 XLSX Document')
+			->setSubject('Office 2007 XLSX Document')
+			->setDescription('Office 2007 XLSX, generated using PHP.')
+			->setKeywords('office 2007 openxml php')
+			->setCategory('List Items');
+
+		//Initiate and add headers to the document
+		$objPHPExcel->setActiveSheetIndex(0)
+			->setCellValue('A1', 'Title')
+			->setCellValue('B1', 'Format')
+			->setCellValue('C1', 'Contributing Library')
+			->setCellValue('D1', 'Record ID')
+			->setCellValue('E1', 'Description');
+		$objPHPExcel->getActiveSheet()->setTitle('Results');
+
+		$a = 2;
+		foreach ($result['response']['docs'] as $resultItem){
+			$objPHPExcel->setActiveSheetIndex(0)
+				->setCellValue('A' . $a, $resultItem['twm_X3b_en_title_ws_token'][0] ?? $resultItem['tm_X3b_en_name'][0])
+				// ucwords and str_replace are here to turn corporate_body into Corporate Body which looks better to my eye and
+				// more closely matches the provided formats
+				->setCellValue('B' . $a, $resultItem['ss_model'] ?? ucwords(str_replace('_', ' ', $resultItem['ss_vid'])))
+				->setCellValue('C' . $a, $resultItem['ss_library'])
+				->setCellValue('D' . $a, $resultItem['its_node_id'] ?? $resultItem['its_tid'])
+				->setCellValue('E' . $a, $resultItem['twm_X3b_en_field_description_long_ws_token'][0] ?? $resultItem['tm_X3b_en_description'][0]);
+			$a++;
+		}
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+
+		//Output to the browser
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="Results.xls"');
+		header('Cache-Control: max-age=0');
+
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
+		$objWriter->save('php://output');
+
+		$objPHPExcel->disconnectWorksheets();
+		unset($objPHPExcel);
 	}
 
 	/**
