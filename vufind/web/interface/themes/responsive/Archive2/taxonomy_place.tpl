@@ -2,7 +2,7 @@
 {strip}
 	<div class="row">
 		<div class="col-xs-12">
-			{include file="Archive/search-results-navigation.tpl"}
+			{include file="Archive2/search-results-navigation.tpl"}
 			<h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 		</div>
 	</div>

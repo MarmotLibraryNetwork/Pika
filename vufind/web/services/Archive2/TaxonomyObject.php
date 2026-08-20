@@ -111,6 +111,7 @@ class TaxonomyObject extends \Action
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
         $interface->assign('lastsearch',             $_SESSION['lastArchive2SearchURL'] ?? false);
+        \assignArchive2SearchResultsNavigation();
         $interface->assign('archivePage',            true);
         $interface->assign('showExploreMore',        true);
         $interface->assign('maps_key',               $mapsKey);

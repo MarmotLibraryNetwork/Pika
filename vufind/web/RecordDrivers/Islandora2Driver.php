@@ -355,6 +355,18 @@ class Islandora2Driver extends RecordInterface
         return '/Archive2/' . $displayModel . '/' . urlencode((string)$this->nodeId);
     }
 
+	/**
+	 * SearchObject_Islandora2::getNextPrevLinks() locates a record by its position in the
+	 * whole result set, so the link out of the search results has to carry resultIndex; the
+	 * default recordIndex is only the position within the current page of results, which
+	 * would make every record on page two navigate as though it were on page one.
+	 *
+	 * @return string
+	 */
+	protected function getSearchPositionVariable(){
+		return 'resultIndex';
+	}
+
     public function getAbsoluteUrl()
     {
         global $configArray;

@@ -353,6 +353,7 @@ class ArchiveObject extends \Action
         // breadcrumb
         $interface->assign('breadcrumbText', $title);
         $interface->assign('lastsearch', $_SESSION['lastArchive2SearchURL'] ?? false);
+        \assignArchive2SearchResultsNavigation();
         $displayModel = $this->mediaObject->getDisplayModel();
         $interface->assign('display_model', $displayModel ? ucfirst($displayModel) : null);
 

@@ -1,5 +1,5 @@
 {strip}
-{include file="Archive/search-results-navigation.tpl"}
+{include file="Archive2/search-results-navigation.tpl"}
 <h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 
 <div class="col-xs-6 taxonomy-wrapper-thumbnail-col">

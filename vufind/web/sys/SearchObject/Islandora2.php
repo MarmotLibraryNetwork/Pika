@@ -65,6 +65,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
+	const int COVERS_VIEW_PAGE_SIZE = 24;
 	private Logger $logger;
 
 	public function __construct(){
@@ -613,130 +614,151 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Taken from the Islandora1 class. It contains Collection/Exhibit handling that
-	 * we ultimately abandoned.  So may be able to simplify to the traditional handling
-	 * found in the other versions of the Search Object.
+	 * Set the number of results per page the archive results page uses.
 	 *
-	 * TODO: Disable initially
-	 * Current Archive search doesn't appear to use this.
-	 * @param $searchId
-	 * @param $recordIndex
-	 * @param $page
-	 * @param $preventQueryModification
+	 * Covers view lays the results out as a grid of image tiles, which looks better with a
+	 * full set of 24 rather than the standard page size.  The results page and
+	 * getNextPrevLinks() have to agree on this: the previous/next arithmetic converts a
+	 * record's position in the whole result set into a page plus an offset within that
+	 * page, so a different page size there lands on the wrong record.
+	 *
+	 * @access public
 	 * @return void
 	 */
-	public function getNextPrevLinks($searchId=null, $recordIndex=null, $page=null, $preventQueryModification = false){
+	public function initResultsPageSize(){
+		if ($this->getView() == 'covers'){
+			$this->setLimit(self::COVERS_VIEW_PAGE_SIZE);
+		}
+	}
+
+	/**
+	 * Assign the previous & next result links shown on archive object and taxonomy term pages.
+	 *
+	 * Follows the catalog implementation in SearchObject_Solr::getNextPrevLinks().  The link
+	 * a patron follows out of the search results carries the id of the saved search plus the
+	 * position of that record within it, so the saved search is re-run here and the records
+	 * on either side read back out of the result set.  When the record sits at the start or
+	 * the end of a page, the adjacent page is searched as well to find its neighbor.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function getNextPrevLinks(){
 		global $interface;
-		//global $timer;
+		global $timer;
+
 		//Setup next and previous links based on the search results.
-		if (is_null($searchId)) {
-			if (!empty($_REQUEST['searchId']) && ctype_digit($_REQUEST['searchId'])) {
-				$searchId = $_REQUEST['searchId'];
+		if (empty($_REQUEST['searchId']) || empty($_REQUEST['recordIndex'])
+			|| !ctype_digit((string)$_REQUEST['searchId']) || !ctype_digit((string)$_REQUEST['recordIndex'])){
+			return;
+		}
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+		$s     = new SearchEntry();
+		$s->id = $_REQUEST['searchId'];
+		if (!$s->find(true)){
+			return;
+		}
+
+		$currentPage = !empty($_REQUEST['page']) && ctype_digit((string)$_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('page', $currentPage);
+
+		$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+		if (!($searchObject instanceof SearchObject_Islandora2)){
+			// The saved search was made against a different index; it holds no archive results to navigate.
+			return;
+		}
+		// A saved search stores neither the display mode nor the page size, so restore both
+		// the way the results page did before working out where this record sits.
+		$searchObject->initView();
+		$searchObject->initResultsPageSize();
+		$searchObject->setPage($currentPage);
+
+		// Render the link back to the results out of the saved search itself rather than
+		// leaving it to $_SESSION['lastArchive2SearchURL'], which only holds the last archive
+		// search made in this session: it is empty for a record reached from a shared or
+		// bookmarked link, and stale once the patron has run another archive search in
+		// another tab.  The saved search always describes the results this record came from,
+		// down to the page and display mode the patron was on.
+		$interface->assign('searchResultsUrl', $searchObject->renderSearchUrl());
+
+		//Run the search
+		$result = $searchObject->processSearch(true);
+		if (PEAR_Singleton::isError($result) || $searchObject->getResultTotal() <= 0){
+			return;
+		}
+
+		//Check to see if we need to run a search for the next or previous page
+		$currentResultIndex  = (int)$_REQUEST['recordIndex'] - 1;
+		$recordsPerPage      = $searchObject->getLimit();
+		$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+		if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+			//Need to run a search for the previous page
+			$interface->assign('previousPage', $currentPage - 1);
+			$previousSearchObject = clone $searchObject;
+			$previousSearchObject->setPage($currentPage - 1);
+			$previousSearchObject->processSearch(true);
+			$previousResults = $previousSearchObject->getNavigationDocuments();
+		}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+			//Need to run a search for the next page
+			$interface->assign('nextPage', $currentPage + 1);
+			$nextSearchObject = clone $searchObject;
+			$nextSearchObject->setPage($currentPage + 1);
+			$nextSearchObject->processSearch(true);
+			$nextResults = $nextSearchObject->getNavigationDocuments();
+		}
+
+		$recordSet = $searchObject->getNavigationDocuments();
+		//Record set is 0 based, but we are passed a 1 based index
+		if ($currentResultIndex > 0){
+			if (isset($previousResults)){
+				$previousRecord = $previousResults[count($previousResults) - 1] ?? null;
+			}else{
+				$previousRecord = $recordSet[$adjustedResultIndex - 1] ?? null;
+			}
+			if (!empty($previousRecord) && $this->assignNextPrevRecord($previousRecord, 'previous')){
+				//Convert back to 1 based index
+				$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
 			}
 		}
-		if (is_null($recordIndex)) {
-			if (!empty($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['recordIndex'])) {
-				$recordIndex = $_REQUEST['recordIndex'];
-			} else {
-				$recordIndex = 1;
+		if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+			if (isset($nextResults)){
+				$nextRecord = $nextResults[0] ?? null;
+			}else{
+				$nextRecord = $recordSet[$adjustedResultIndex + 1] ?? null;
+			}
+			if (!empty($nextRecord) && $this->assignNextPrevRecord($nextRecord, 'next')){
+				//Convert back to 1 based index
+				$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 			}
 		}
-		if ($searchId) {
-			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$s = new SearchEntry();
-			if ($s->get($searchId)){
-				//rerun the search
-				$interface->assign('searchId', $searchId);
-				if (is_null($page)) {
-					$page = !empty($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				}
-				$interface->assign('page', $page);
+		$timer->logTime('Got next/previous links');
+	}
 
-				/** @var SearchObject_Islandora2 $searchObject */
-				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
-				if ($searchObject === false){
-					return;
-				}
-				$searchObject->setPage($page);
-				$searchObject->setLimit(24); // Assume 24 for Archive Searches; or // TODO: Add pagelimit to saved search?
-				//Run the search
-				$result = $searchObject->processSearch(true, false, $preventQueryModification); // prevent query modification needed for Map Exhibits
-
-				//Check to see if we need to run a search for the next or previous page
-				$currentResultIndex  = $recordIndex - 1;
-				$recordsPerPage      = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($page - 1));
-
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
-					//Need to run a search for the previous page
-					$interface->assign('previousPage', $page - 1);
-					$previousSearchObject = clone $searchObject;
-					$previousSearchObject->setPage($page - 1);
-					$previousSearchObject->processSearch(true, false, $preventQueryModification);
-					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
-					//Need to run a search for the next page
-					$nextSearchObject = clone $searchObject;
-					$interface->assign('nextPage', $page + 1);
-					$nextSearchObject->setPage($page + 1);
-					$nextSearchObject->processSearch(true, false, $preventQueryModification);
-					$nextResults = $nextSearchObject->getResultRecordSet();
-				}
-
-				if (!PEAR_Singleton::isError($result)) {
-					if ($searchObject->getResultTotal() > 0) {
-						$recordSet = $searchObject->getResultRecordSet();
-						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
-							}else{
-								$previousId = $adjustedResultIndex - 1;
-								if (isset($recordSet[$previousId])){
-									$previousRecord = $recordSet[$previousId];
-								}
-							}
-
-							//Convert back to 1 based index
-							if (isset($previousRecord)) {
-								$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-								if (key_exists(self::IDFIELD, $previousRecord)) {
-									$interface->assign('previousType', $this->resultsModule);
-									$interface->assign('previousUrl', $previousRecord['url']);
-									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
-									$previousTitle = is_array($previousRecord[self::TITLE_FIELD]) ? $previousRecord[self::TITLE_FIELD][0] : $previousRecord[self::TITLE_FIELD];
-									$interface->assign('previousTitle', $previousTitle);
-								}
-							}
-						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
-
-							if (isset($nextResults)){
-								$nextRecord = $nextResults[0];
-							}else{
-								$nextRecordIndex = $adjustedResultIndex + 1;
-								if (isset($recordSet[$nextRecordIndex])){
-									$nextRecord = $recordSet[$nextRecordIndex];
-								}
-							}
-							//Convert back to 1 based index
-							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-							if (isset($nextRecord)) {
-								if (key_exists(self::IDFIELD, $nextRecord)) {
-									$interface->assign('nextType', $this->resultsModule);
-									$interface->assign('nextUrl', $nextRecord['url']);
-									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
-									$nextTitle = is_array($nextRecord[self::TITLE_FIELD]) ? $nextRecord[self::TITLE_FIELD][0] : $nextRecord[self::TITLE_FIELD];
-									$interface->assign('nextTitle', $nextTitle);
-								}
-							}
-						}
-
-					}
-				}
-			}
-			//$timer->logTime('Got next/previous links');
+	/**
+	 * Assign the url & title of one of the previous/next navigation links.
+	 *
+	 * The url comes from the record driver rather than the 'url' entry getResultRecordSet()
+	 * adds to each document, because that entry already carries the search parameters of the
+	 * page the patron came from; the navigation template appends the parameters that belong
+	 * to this neighboring record instead.
+	 *
+	 * @access private
+	 * @param  array  $record A solr document from the result set
+	 * @param  string $prefix Either 'previous' or 'next'; the template variables are named for it
+	 * @return bool           Whether the link could be built
+	 */
+	private function assignNextPrevRecord($record, $prefix){
+		global $interface;
+		$recordDriver = RecordDriverFactory::initRecordDriver($record);
+		if (PEAR_Singleton::isError($recordDriver)){
+			return false;
 		}
+		$interface->assign($prefix . 'Type', $this->resultsModule);
+		$interface->assign($prefix . 'Url', $recordDriver->getRecordUrl());
+		$interface->assign($prefix . 'Title', $recordDriver->getTitle());
+		return true;
 	}
 
 	/**
@@ -871,6 +893,20 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			$recordSet[$key]        = $solrDocument;
 		}
 		return $recordSet;
+	}
+
+	/**
+	 * The raw solr documents of the current page of results, for getNextPrevLinks().
+	 *
+	 * getResultRecordSet() is the richer version of this, but it builds a record driver for
+	 * every document on the page to enrich it; the previous/next lookup only ever reads one
+	 * document out of the page, and builds the driver for that one itself.
+	 *
+	 * @access  public
+	 * @return  array   The solr documents returned by the last search.
+	 */
+	public function getNavigationDocuments(){
+		return $this->indexResult['response']['docs'] ?? [];
 	}
 
 	/**
