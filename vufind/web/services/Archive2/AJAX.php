@@ -268,7 +268,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$interface->assign('exploreMoreSections', $sections);
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		global $library;
-		$exploreMoreSettings = $library->exploreMoreBar;
+		$exploreMoreSettings = $library->exploreMoreSideBar;
 		if (empty($exploreMoreSettings)) {
 			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}
@@ -310,7 +310,7 @@ class Archive2_AJAX extends AJAXHandler {
 
 		$interface->assign('exploreMoreSections', $sections);
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
-		$exploreMoreSettings = $library->exploreMoreBar;
+		$exploreMoreSettings = $library->exploreMoreSideBar;
 		if (empty($exploreMoreSettings)) {
 			$exploreMoreSettings = \ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}

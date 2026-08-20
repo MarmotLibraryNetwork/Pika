@@ -934,13 +934,13 @@ class Admin_AJAX extends AJAXHandler {
 					$copyFromArchiveMoreDetails[$key] = $archiveDetail;
 				}
 				$library->archiveMoreDetailsOptions = $copyFromArchiveMoreDetails;
-				$copyFromExploreMoreBar             = $copyFrom->exploreMoreBar;
-				foreach ($copyFromExploreMoreBar as $key => $explore){
-					$explore->id                  = null;
-					$explore->libraryId           = $library->libraryId;
-					$copyFromExploreMoreBar[$key] = $explore;
+				$copyFromExploreMoreSideBar = $copyFrom->exploreMoreSideBar;
+				foreach ($copyFromExploreMoreSideBar as $key => $explore){
+					$explore->id                      = null;
+					$explore->libraryId               = $library->libraryId;
+					$copyFromExploreMoreSideBar[$key] = $explore;
 				}
-				$library->exploreMoreBar     = $copyFromExploreMoreBar;
+				$library->exploreMoreSideBar = $copyFromExploreMoreSideBar;
 				$copyFromArchiveSearchFacets = $copyFrom->archiveSearchFacets;
 				foreach ($copyFromArchiveSearchFacets as $key => $archiveFacet){
 					$archiveFacet->id                  = null;
