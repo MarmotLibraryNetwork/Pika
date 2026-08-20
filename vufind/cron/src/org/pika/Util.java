@@ -313,6 +313,10 @@ public class Util {
 	}
 
 	public static URLPostResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
+		return postToURL(url, postData, contentType, referer, logger, null);
+	}
+
+	public static URLPostResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String userAgent) {
 		URLPostResponse retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -330,6 +334,9 @@ public class Util {
 				});
 			}
 			conn.setDoInput(true);
+			if (userAgent != null && !userAgent.isEmpty()){
+				conn.setRequestProperty("User-Agent", userAgent);
+			}
 			if (referer != null){
 				conn.setRequestProperty("Referer", referer);
 			}

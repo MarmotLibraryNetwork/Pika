@@ -15,6 +15,7 @@
 package org.pika;
 
 import java.io.FileReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,6 +35,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 	private String              steamboatFile;
 	private String              ruralFile;
 	private String              pikaUrl;
+	private String              userAgent;
 	private PreparedStatement   checkForExistingPerson;
 	private PreparedStatement   addPersonStmt;
 	private PreparedStatement   updatePersonStmt;
@@ -42,7 +44,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
 		
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Import Steamboat Genealogy");
-		if (!loadConfig(processSettings)){
+		if (!loadConfig(processSettings, logger)){
 			processLog.addNote("Unable to load configuration");
 			processLog.incErrors();
 			return;
@@ -214,9 +216,11 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 			
 			//Reindex the record
 			if (personId != null){
-				URL reindexUrl = new URL(pikaUrl + "/Person/" + personId + "/Reindex?quick=true");
+				URL               reindexUrl = new URL(pikaUrl + "/Person/" + personId + "/Reindex?quick=true");
+				HttpURLConnection conn       = (HttpURLConnection) reindexUrl.openConnection();
+				conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
 				@SuppressWarnings("unused")
-				Object content = reindexUrl.getContent();
+				Object content = conn.getContent();
 				processLog.incUpdated();
 			}
 		} catch (Exception e) {
@@ -226,8 +230,13 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 		}
 	}
 	
-	private boolean loadConfig(Section processSettings) {
+	private boolean loadConfig(Section processSettings, Logger logger) {
 		pikaUrl       = PikaConfigIni.getIniValue("Site", "url");
+		userAgent     = PikaConfigIni.getIniValue("Site", "internalUserAgent");
+		if (userAgent == null || userAgent.isEmpty()) {
+			logger.warn("No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
+			userAgent = "Pika";
+		}
 		steamboatFile = processSettings.get("steamboatFile");
 		if (steamboatFile == null || steamboatFile.length() == 0) {
 			processLog.addNote("Unable to get steamboat file in Process section.  Please specify steamboatFile key.");

@@ -50,6 +50,7 @@ public class OfflineCirculation implements IProcessHandler {
 	private       String              userApiToken = "";
 	private       String              baseApiUrl;
 	private       String              pikaBaseUrl;
+	private       String              userAgent;
 
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -58,6 +59,11 @@ public class OfflineCirculation implements IProcessHandler {
 		processLog.saveToDatabase(pikaConn, logger);
 		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
 		pikaBaseUrl  = PikaConfigIni.getIniValue("Site", "url");
+		userAgent    = PikaConfigIni.getIniValue("Site", "internalUserAgent");
+		if (userAgent == null || userAgent.isEmpty()) {
+			logger.warn("No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
+			userAgent = "Pika";
+		}
 
 //		ils = PikaConfigIni.getIniValue("Catalog", "ils"); //TODO: remove; was only used to check if millennium
 
@@ -170,8 +176,10 @@ public class OfflineCirculation implements IProcessHandler {
 					placeHoldUrlStr += "&campus=" + pickUpLocation;
 				}
 
-				URL    placeHoldUrl     = new URL(placeHoldUrlStr);
-				Object placeHoldDataRaw = placeHoldUrl.getContent();
+				URL               placeHoldUrl = new URL(placeHoldUrlStr);
+				HttpURLConnection conn         = (HttpURLConnection) placeHoldUrl.openConnection();
+				conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+				Object placeHoldDataRaw = conn.getContent();
 				if (placeHoldDataRaw instanceof InputStream) {
 					String placeHoldDataJson = Util.convertStreamToString((InputStream) placeHoldDataRaw);
 					if (logger.isInfoEnabled()) {
@@ -658,8 +666,10 @@ public class OfflineCirculation implements IProcessHandler {
 				if (patronPikaId != null && !patronPikaId.isEmpty()) {
 					String token                   = md5(patronBarcode);
 					String getPatronPinUrlStr      = pikaBaseUrl + "/API/UserAPI?method=getPatronPin&userId=" + patronPikaId + "&token=" + token;
-					URL    getPatronPinUrl         = new URL(getPatronPinUrlStr);
-					Object getPatronPinResponseRaw = getPatronPinUrl.getContent();
+					URL               getPatronPinUrl = new URL(getPatronPinUrlStr);
+					HttpURLConnection conn            = (HttpURLConnection) getPatronPinUrl.openConnection();
+					conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+					Object getPatronPinResponseRaw = conn.getContent();
 					if (getPatronPinResponseRaw instanceof InputStream) {
 						String     getPatronPinJsonStr = Util.convertStreamToString((InputStream) getPatronPinResponseRaw);
 						JSONObject getPatronPin        = new JSONObject(getPatronPinJsonStr);

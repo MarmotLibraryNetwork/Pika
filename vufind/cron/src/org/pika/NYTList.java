@@ -22,8 +22,9 @@ public class NYTList implements IProcessHandler {
 		try {
 			final Boolean fullReindexRunning = systemVariables.getBooleanValuedVariable("full_reindex_running");
 			if (fullReindexRunning != null && !fullReindexRunning) {
-				userAgent = PikaConfigIni.getIniValue("Islandora2", "userAgent");
+				userAgent = PikaConfigIni.getIniValue("Site", "internalUserAgent");
 				if (userAgent == null || userAgent.isEmpty()) {
+					logger.warn( "No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
 					userAgent = "Pika";
 				}
 				String url = PikaConfigIni.getIniValue("Index", "url") + "/admin/cores?wt=json";

@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.net.URL;
@@ -40,6 +41,7 @@ public class DPLAFeed implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private String              pikaUrl;
 	private Logger              logger;
+	private String              userAgent;
 
 	@Override
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
@@ -56,6 +58,11 @@ public class DPLAFeed implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			return;
+		}
+		userAgent = PikaConfigIni.getIniValue("Site", "internalUserAgent");
+		if (userAgent == null || userAgent.isEmpty()) {
+			logger.warn("No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
+			userAgent = "Pika";
 		}
 		boolean fatal            = false;
 		int     currentPage      = 1;
@@ -92,8 +99,10 @@ public class DPLAFeed implements IProcessHandler {
 				}
 				try {
 					String urlStringThisRound = DLPAFeedUrlString + (currentPage > 1 ? "&page=" + currentPage : "");
-					URL    DPLAFeedUrl        = new URL(urlStringThisRound);
-					Object dplaFeedRaw = DPLAFeedUrl.getContent();
+					URL               DPLAFeedUrl = new URL(urlStringThisRound);
+					HttpURLConnection conn        = (HttpURLConnection) DPLAFeedUrl.openConnection();
+					conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+					Object dplaFeedRaw = conn.getContent();
 					if (dplaFeedRaw instanceof InputStream) {
 						String jsonData = "";
 						jsonData = Util.convertStreamToString((InputStream) dplaFeedRaw);
