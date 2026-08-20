@@ -195,12 +195,13 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	 *
 	 * Deliberately the same tile Islandora2Driver::getBrowseResult() builds, down to the
 	 * template: covers view mixes terms and archive objects in one grid of thumbnails, and a
-	 * term rendered any other way breaks the grid it sits in.  The term name is carried by the
-	 * image title attribute rather than a caption, which is all an object tile shows too.
+	 * term rendered any other way breaks the grid it sits in.  The tile captions itself with
+	 * the term name, since an archive thumbnail rarely carries its own title and is often the
+	 * placeholder image.
 	 *
 	 * Unlike getSearchResult(), this asks for the cover without first checking the patron's
-	 * show-covers setting - a tile is nothing but its cover, and the object tiles beside it
-	 * make the same call.
+	 * show-covers setting - the thumbnail is the substance of a tile, and the object tiles
+	 * beside it make the same call.
 	 *
 	 * @return string
 	 */
@@ -215,7 +216,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		return 'RecordDrivers/Islandora/browse_result.tpl';
+		return 'RecordDrivers/Islandora/browse_result_archive2.tpl';
 	}
 
 	/**

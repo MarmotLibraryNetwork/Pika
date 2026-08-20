@@ -328,6 +328,9 @@ class Islandora2Driver extends RecordInterface
     /**
      * Provide a browse tile result.
      *
+     * Archive2 uses its own tile template, which captions the thumbnail with the title.
+     * Archive 1 keeps the uncaptioned RecordDrivers/Islandora/browse_result.tpl.
+     *
      * @return string
      */
 	public function getBrowseResult(){
@@ -338,7 +341,7 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		return 'RecordDrivers/Islandora/browse_result.tpl';
+		return 'RecordDrivers/Islandora/browse_result_archive2.tpl';
 	}
 
     public function getRecordUrl()
