@@ -87,7 +87,11 @@ class Archive2_Results extends Union_Results {
 		$interface->assign('searchId', $searchObject->getSearchId());
 		$interface->assign('showAdminTools', true);
 		$interface->assign('addToHomePageSearchSource', 'islandora2');
-		$currentPage = $_REQUEST['page'] ?? 1;
+		// Validated rather than passed through: covers view seeds its load-more counter from
+		// this, and getLinkUrl() sends it along as the page each result was found on, so a
+		// non-numeric value would land in both a script and a url.  Same test getNextPrevLinks()
+		// applies to the parameter coming back the other way.
+		$currentPage = (isset($_REQUEST['page']) && is_scalar($_REQUEST['page']) && ctype_digit((string)$_REQUEST['page'])) ? (int)$_REQUEST['page'] : 1;
 		$interface->assign('page', $currentPage);
 
 		if ($searchObject->getResultTotal() < 1){
@@ -187,7 +191,7 @@ class Archive2_Results extends Union_Results {
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Local Digital Archive Results');
-		$this->display($searchObject->getResultTotal() ? '../Archive/list.tpl' : '../Archive/list-none.tpl', 'Archive Search Results', 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : '../Archive/list-none.tpl', 'Archive Search Results', 'Search/results-sidebar.tpl');
 	} // End launch()
 }
 

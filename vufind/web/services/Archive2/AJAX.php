@@ -54,6 +54,7 @@ class Archive2_AJAX extends AJAXHandler {
 		'getRandomImageComponent',
 		'showSaveToListForm',
 		'saveToList',
+		'getMoreSearchResults',
 	];
 
 	/** Methods that return a structured JSON result wrapper {result, message, ...}. */
@@ -321,6 +322,63 @@ class Archive2_AJAX extends AJAXHandler {
 			'success'     => true,
 			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
 		];
+	}
+
+	/**
+	 * Serve the next batch of archive search results for the covers view of the results page.
+	 *
+	 * Covers view gets no pager - Archive2/Results.php only builds one for the list view - so
+	 * the results page appends batches to the grid instead, driven by the load-more button in
+	 * Archive2/list.tpl and Pika.Archive2.getMoreResults().  The results page sends its whole
+	 * query string back with the page number advanced, so re-initializing a search object from
+	 * it reproduces the patron's search, facets, and sort exactly.
+	 *
+	 * Follows Search_AJAX::getMoreSearchResults(), which does the same job for the catalog.
+	 *
+	 * Called via: /Archive2/AJAX?method=getMoreSearchResults&<the results page query string>
+	 *
+	 * @return array{success: bool, records?: string, lastPage?: bool}
+	 */
+	function getMoreSearchResults(): array {
+		global $interface;
+
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
+		// The button exists only in covers view, so pin the view rather than trusting the
+		// parameter to have survived the round trip.  It decides both which template each
+		// record driver returns and, through initResultsPageSize(), the page size - and the
+		// page size has to match the one the results page used, because getNextPrevLinks()
+		// turns a record's position in the whole result set into a page plus an offset within
+		// it, so a different size here would send every appended tile to the wrong neighbor.
+		$_REQUEST['view'] = 'covers';
+
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->initResultsPageSize();
+
+		$result = $searchObject->processSearch(true, true);
+		if (PEAR_Singleton::isError($result)){
+			$this->logger->error('Failed to load a further batch of archive search results.', ['error' => $result->getMessage()]);
+			return ['success' => false];
+		}
+		$searchObject->close();
+
+		// Assign before building the record HTML: getLinkUrl() reads searchId and page off the
+		// interface to put the search navigation parameters on each tile's link, and close() is
+		// what settles the searchId.
+		$interface->assign('searchId', $searchObject->getSearchId());
+		$interface->assign('page', $searchObject->getPage());
+		$interface->assign('recordSet', $searchObject->getResultRecordHTML());
+
+		$response = [
+			'success' => true,
+			'records' => $interface->fetch('Archive/covers-list.tpl'),
+		];
+		// Let the front end know when to stop offering more.
+		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
+			$response['lastPage'] = true;
+		}
+		return $response;
 	}
 
 	/**
