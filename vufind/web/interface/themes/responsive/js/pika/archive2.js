@@ -35,6 +35,9 @@ Pika.Archive2 = (function(){
 		 */
 		curPage: 1,
 
+		/** Whether a batch of covers results is in flight; see getMoreResults(). */
+		loadingMoreResults: false,
+
 		/**
 		 * Append the next batch of archive search results to the covers grid.
 		 *
@@ -43,12 +46,25 @@ Pika.Archive2 = (function(){
 		 * still applies to the batch that comes back.
 		 */
 		getMoreResults: function(){
+			// A batch takes long enough to fetch that the button can be clicked again before the
+			// first one lands; without this guard both requests ask for the same page and the
+			// same tiles get appended twice.
+			if (this.loadingMoreResults){
+				return false;
+			}
 			var url      = '/Archive2/AJAX',
 					params   = Pika.replaceQueryParam('page', this.curPage + 1) + '&method=getMoreSearchResults',
-					status          = $('#more-results-status'),
+					status   = $('#more-results-status'),
+					loading  = $('#more-results-loading'),
+					button   = $('#more-browse-results'),
 					divClass = 'home-page-browse-thumbnails'; // the wrapper Archive/covers-list.tpl builds
 			params = Pika.replaceQueryParam('view', 'covers', params); // the button only exists in covers view
+
+			this.loadingMoreResults = true;
+			button.prop('disabled', true);
+			loading.removeClass('hidden');
 			status.text('Loading more results.');
+
 			$.getJSON(url + params, function(data){
 				if (data.success === false){
 					status.text('');
@@ -68,6 +84,10 @@ Pika.Archive2 = (function(){
 			}).fail(function(){
 				status.text('');
 				Pika.ajaxFail.apply(this, arguments);
+			}).always(function(){
+				Pika.Archive2.loadingMoreResults = false;
+				loading.addClass('hidden');
+				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
 			});
 			return false;
 		},
