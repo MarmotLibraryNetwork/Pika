@@ -11,8 +11,14 @@
 			{/if}
 		</div>
 		<div id="returnToSearch" class="return">
-			{if $lastsearch}
-				<a href="{$lastsearch|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Return to Search Results"}</a>
+			{* searchResultsUrl is rebuilt from the saved search this record was reached through
+			   (SearchObject_Solr::getNextPrevLinks()), so it survives a search made in another tab.
+			   lastsearch, the last search of the session, stands in where there is no saved search
+			   to work from - a record opened outside a search, or a genealogy result, whose search
+			   object does not assign searchResultsUrl. *}
+			{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
+			{if $returnToSearchUrl}
+				<a href="{$returnToSearchUrl|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Return to Search Results"}</a>
 			{/if}
 		</div>
 		<div id="nextRecordLink" class="next">
