@@ -17,10 +17,10 @@
 						{foreach from=$browseCollectionItems item=item name="loop"}
 						<li id="collectionItem{$item.nid}" class="explore-more-option">
 							<a href="{$item.url}">
-								<figure class="thumbnail" title="{$item.title|escape}">
+								<figure class="thumbnail">
 									<div class="explore-more-image">
 										{if $item.thumbnail}
-										<img src="{$item.thumbnail}" alt="{$item.title|escape}">
+										<img src="{$item.thumbnail}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 										{/if}
 									</div>
 									<figcaption class="explore-more-category-title">
