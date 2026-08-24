@@ -150,12 +150,17 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	 * Assign the Smarty variables for a taxonomy term search result and return its template.
 	 *
 	 * Terms get their own template rather than sharing RecordDrivers/Islandora/result.tpl:
-	 * they have no format, model, or contributing library to show.
+	 * they have no format, model, or contributing library to show.  In covers view they do
+	 * share the object tile, so a page of results reads as one grid - see getBrowseResult().
 	 *
 	 * @param string $view The view style for this search entry
 	 * @return string
 	 */
 	public function getSearchResult(string $view = 'list'){
+		if ($view === 'covers'){
+			return $this->getBrowseResult();
+		}
+
 		global $interface;
 
 		$interface->assign('summId', $this->getUniqueID());
@@ -183,6 +188,35 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		}
 
 		return 'RecordDrivers/Islandora/taxonomyTermResult.tpl';
+	}
+
+	/**
+	 * Provide a browse tile result, the covers view of a search result.
+	 *
+	 * Deliberately the same tile Islandora2Driver::getBrowseResult() builds, down to the
+	 * template: covers view mixes terms and archive objects in one grid of thumbnails, and a
+	 * term rendered any other way breaks the grid it sits in.  The tile captions itself with
+	 * the term name, since an archive thumbnail rarely carries its own title and is often the
+	 * placeholder image.
+	 *
+	 * Unlike getSearchResult(), this asks for the cover without first checking the patron's
+	 * show-covers setting - the thumbnail is the substance of a tile, and the object tiles
+	 * beside it make the same call.
+	 *
+	 * @return string
+	 */
+	public function getBrowseResult(){
+		global $interface;
+
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('summTitle', $this->getTitle());
+		// getLinkUrl() rather than getRecordUrl(): it carries the searchId / recordIndex / page
+		// parameters the term page needs to show the previous & next result navigation.
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/Islandora/browse_result_archive2.tpl';
 	}
 
 	/**
@@ -238,6 +272,18 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 
 	public function getAbsoluteUrl(){
 		return getTaxonomyAbsoluteUrlFromParts($this->tid, $this->vocabulary);
+	}
+
+	/**
+	 * SearchObject_Islandora2::getNextPrevLinks() locates a record by its position in the
+	 * whole result set, so the link out of the search results has to carry resultIndex; the
+	 * default recordIndex is only the position within the current page of results, which
+	 * would make every record on page two navigate as though it were on page one.
+	 *
+	 * @return string
+	 */
+	protected function getSearchPositionVariable(){
+		return 'resultIndex';
 	}
 
 	/**

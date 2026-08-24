@@ -978,8 +978,8 @@ class Library extends DB_DataObject {
 				'enableArchive'                        => ['property' => 'enableArchive', 'type' => 'checkbox', 'label' => 'Allow Searching the Archive', 'description' => 'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				//'archiveNamespace'                     => ['property' => 'archiveNamespace', 'type' => 'text', 'label' => 'Archive Namespace', 'description' => 'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size' => '30'],
 				//'archivePid'                         => ['property' => 'archivePid', 'type' => 'text', 'label' => 'Organization PID for Library', 'description' => 'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size' => '50'],
-				'libraryTid'                           => ['property' => 'libraryTid', 'type' => self::getLibraryTidType(), 'values' => self::getLibraryTidChoices(), 'label' => 'Contributing Library Taxonomy Term ID', 'description' => 'The Islandora2 Corporate Body TID for this library; shown as the contributing-library thumbnail in Archive object acknowledgements.', 'hideInLists' => true],
-				'corporateBodyTid'                     => ['property' => 'corporateBodyTid', 'type' => self::getCorporateBodyTidType(), 'values' => self::getCorporateBodyTidChoices(),  'label' => 'Corporate Body Taxonomy Term ID', 'description' => '', 'hideInLists' => true],
+				'libraryTid'                           => ['property' => 'libraryTid', 'type' => self::getLibraryTidType(), 'values' => self::getLibraryTidChoices(), 'label' => 'Contributing Library Taxonomy Term ID', 'description' => 'The Islandora2 taxonomy term ID (TID) for this library entity', 'hideInLists' => true],
+				'corporateBodyTid'                     => ['property' => 'corporateBodyTid', 'type' => self::getCorporateBodyTidType(), 'values' => self::getCorporateBodyTidChoices(),  'label' => 'Corporate Body Taxonomy Term ID', 'description' => 'The Islandora2 Corporate Body TID for this library; shown as the contributing-library thumbnail in Archive object acknowledgements.', 'hideInLists' => true],
 				'hideAllCollectionsFromOtherLibraries' => ['property' => 'hideAllCollectionsFromOtherLibraries', 'type' => 'checkbox', 'label' => 'Hide Collections from Other Libraries', 'description' => 'Whether or not collections created by other libraries is shown in Pika.', 'hideInLists' => true, 'default' => 0],
 				'collectionsToHide'                    => ['property' => 'collectionsToHide', 'type' => 'textarea', 'label' => 'Collections To Hide (One node Id per line)', 'description' => 'Specific collections to hide. Input the node Id of the collection, one per line', 'hideInLists' => true],
 				'objectsToHide'                        => ['property' => 'objectsToHide', 'type' => 'textarea', 'label' => 'Objects To Hide', 'description' => 'Specific objects to hide.', 'hideInLists' => true],
@@ -1044,8 +1044,13 @@ class Library extends DB_DataObject {
 					]
 				],
 
-				'exploreMoreSidebar' => [
-					'property'      => 'exploreMoreSidebar',
+				// 'property' must match both the case in __get()/__set() below and the backing
+				// $this->exploreMoreSideBar those cases assign to. All three names have to move
+				// together: the magic-method recursion guard is keyed to the property name, so a
+				// case that assigns a differently named property re-enters __set() and the value
+				// lands in the data bag instead of a real property, silently breaking the save.
+				'exploreMoreSideBar' => [
+					'property'      => 'exploreMoreSideBar',
 					'type'          => 'oneToMany',
 					'label'         => 'Archive Explore More Sidebar Configuration',
 					'description'   => 'Control the order of Explore More Sidebar Sections and if they are open by default',
@@ -1428,11 +1433,11 @@ class Library extends DB_DataObject {
 					$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
 				}
 				return $this->materialsRequestFormFields;
-			case 'exploreMoreBar':
-				if (!isset($this->exploreMoreBar)){
-					$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
+			case 'exploreMoreSideBar':
+				if (!isset($this->exploreMoreSideBar)){
+					$this->exploreMoreSideBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
 				}
-				return $this->exploreMoreBar;
+				return $this->exploreMoreSideBar;
 			case 'combinedResultSections':
 				if (!isset($this->combinedResultSections)){
 					$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
@@ -1478,8 +1483,8 @@ class Library extends DB_DataObject {
 			$this->materialsRequestFormats = $value;
 		}elseif ($name == 'materialsRequestFormFields') {
 			$this->materialsRequestFormFields = $value;
-		}elseif ($name == 'exploreMoreBar') {
-			$this->exploreMoreBar = $value;
+		}elseif ($name == 'exploreMoreSideBar') {
+			$this->exploreMoreSideBar = $value;
 		}elseif ($name == 'combinedResultSections') {
 			$this->combinedResultSections = $value;
 		}elseif ($name == 'hooplaSettings') {
@@ -1576,7 +1581,7 @@ class Library extends DB_DataObject {
 			$this->saveMoreDetailsOptions();
 			$this->saveArchiveMoreDetailsOptions();
 
-			$this->saveExploreMoreBar();
+			$this->saveExploreMoreSideBar();
 			$this->saveCombinedResultSections();
 			$this->saveHooplaSettings();
 		}
@@ -1677,7 +1682,7 @@ class Library extends DB_DataObject {
 			$this->saveLibraryTopLinks();
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
-			$this->saveExploreMoreBar();
+			$this->saveExploreMoreSideBar();
 			$this->saveCombinedResultSections();
 			$this->saveHooplaSettings();
 		}
@@ -1801,16 +1806,16 @@ class Library extends DB_DataObject {
 		}
 	}
 
-	private function saveExploreMoreBar(){
-		if (isset ($this->exploreMoreBar) && is_array($this->exploreMoreBar)){
-			$this->saveOneToManyOptions($this->exploreMoreBar);
-			unset($this->exploreMoreBar);
+	private function saveExploreMoreSideBar(){
+		if (isset ($this->exploreMoreSideBar) && is_array($this->exploreMoreSideBar)){
+			$this->saveOneToManyOptions($this->exploreMoreSideBar);
+			unset($this->exploreMoreSideBar);
 		}
 	}
 
-	public function clearExploreMoreBar(){
+	public function clearExploreMoreSideBar(){
 		$this->clearOneToManyOptions('ArchiveExploreMoreBar');
-		$this->exploreMoreBar = [];
+		$this->exploreMoreSideBar = [];
 	}
 
 	public function saveMoreDetailsOptions(){

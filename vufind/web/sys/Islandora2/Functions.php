@@ -221,3 +221,23 @@ function getTaxonomyAbsoluteUrl(TaxonomyObjectInterface $term)
 {
     return getArchiveBaseUrl() . getTaxonomyRelativeUrl($term);
 }
+
+/**
+ * Assign the previous & next search result links for an Archive2 display page.
+ *
+ * Shared by the object (ArchiveObject) and taxonomy term (TaxonomyObject) controllers,
+ * which have no common parent of their own.  Does nothing unless the request carries the
+ * saved search parameters a link out of the archive search results adds, so a page reached
+ * any other way simply renders without the navigation.
+ *
+ * @return void
+ */
+function assignArchive2SearchResultsNavigation(): void
+{
+    /** @var SearchObject_Islandora2|false $searchObject */
+    $searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+    if ($searchObject === false) {
+        return;
+    }
+    $searchObject->getNextPrevLinks();
+}

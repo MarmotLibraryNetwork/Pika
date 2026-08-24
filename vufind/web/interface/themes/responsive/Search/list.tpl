@@ -60,11 +60,26 @@
 	{/if}
 
 	{if $displayMode == 'covers'}
+		{* Feedback while a batch is on its way.  Fetching one is slow enough that without this
+		   the button reads as not having registered the click.  The spinner is the visible
+		   half and #more-results-status carries the same news to a screen reader; they are
+		   kept apart so the live region announces its own text only, not the image markup.
+		   The image is decorative here - the words beside it already say what it means.
+
+		   Centered on the button below it, which is full width and centers its own chevron.
+		   The image is 32px against a line of text, so it needs aligning to the middle of
+		   that line rather than sitting on its baseline for the two to read as one unit. *}
+		<div id="more-results-loading" class="hidden text-center" style="margin: 10px 0;">
+			<img src="{img filename='loading.gif'}" alt="" style="vertical-align: middle; margin-right: 5px;">
+			{translate text="Loading"}...
+		</div>
+
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Searches.getMoreResults()" aria-label="Load more search results">
 				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
+		<div id="more-results-status" class="sr-only" aria-live="polite"></div>
 	{else}
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
@@ -122,6 +137,13 @@
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
 		$('#'+Pika.Searches.displayMode).addClass('active'); {* show user which one is selected *}
+
+		{* Start counting from the page the server actually rendered.  Covers view has no pager,
+		   but a patron can still land on a later page from a bookmark or a shared link, and
+		   starting at 1 there would request a batch that is already on screen.  Results.php
+		   validates this as a digit string, and sets covers view to the same page size of 24
+		   the load-more call uses, so the arithmetic lines up. *}
+		Pika.Searches.curPage = {$page};
 
 		{rdelim});
 </script>

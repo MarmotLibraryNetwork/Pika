@@ -3,9 +3,14 @@
 		<a href="/Archive2/Home">{translate text="Archive Home"}</a>
 		<span class="divider">&raquo;</span>
 	</li>
-	{if $lastsearch}
+	{* searchResultsUrl is rebuilt from the saved search this record was reached through (see
+	   SearchObject_Islandora2::getNextPrevLinks()); lastsearch, the last archive search of the
+	   session, stands in when there is no saved search to work from.  Kept in step with
+	   Archive2/search-results-navigation.tpl, which links back to the same results. *}
+	{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
+	{if $returnToSearchUrl}
 		<li>
-			<a href="{$lastsearch|escape}">{translate text="Archive Search Results"}</a>
+			<a href="{$returnToSearchUrl|escape}">{translate text="Archive Search Results"}</a>
 			<span class="divider">&raquo;</span>
 		</li>
 	{/if}

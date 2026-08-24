@@ -391,9 +391,9 @@ class Admin_Libraries extends ObjectEditor {
 		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
-			$library->clearExploreMoreBar();
+			$library->clearExploreMoreSideBar();
 			require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
-			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
+			$library->exploreMoreSideBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
 			$library->update();
 		}
 		$this->navigateToLibraryPage($libraryId);

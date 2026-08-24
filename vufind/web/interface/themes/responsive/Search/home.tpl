@@ -67,9 +67,24 @@
 				</div>
 			</div>
 
+			{* Feedback while a batch is on its way.  Fetching one is slow enough that without this
+			   the button reads as not having registered the click.  The spinner is the visible
+			   half and #more-results-status carries the same news to a screen reader; they are
+			   kept apart so the live region announces its own text only, not the image markup.
+			   The image is decorative here - the words beside it already say what it means.
+
+			   Centered on the button below it, which is full width and centers its own chevron.
+			   The image is 32px against a line of text, so it needs aligning to the middle of
+			   that line rather than sitting on its baseline for the two to read as one unit. *}
+			<div id="more-results-loading" class="hidden text-center" style="margin: 10px 0;">
+				<img src="{img filename='loading.gif'}" alt="" style="vertical-align: middle; margin-right: 5px;">
+				{translate text="Loading"}...
+			</div>
+
 			<button type="button" id="more-browse-results" onclick="return Pika.Browse.getMoreResults()" aria-label="Load more results for browse category">
 				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 			</button>
+			<div id="more-results-status" class="sr-only" aria-live="polite"></div>
 
 		</div>
 	</div>

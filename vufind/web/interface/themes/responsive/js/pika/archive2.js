@@ -26,6 +26,73 @@ Pika.Archive2 = (function(){
 		collectionDisplayMode: 'covers',
 
 		/**
+		 * The page of archive search results currently at the bottom of the covers grid.
+		 *
+		 * Archive2/list.tpl seeds this with the page the server rendered rather than leaving it
+		 * at 1: covers view has no pager, but a patron can still arrive on a later page from a
+		 * bookmark or from the "back to results" link on an object or term page, and counting
+		 * from 1 there would re-request a batch that is already on screen.
+		 */
+		curPage: 1,
+
+		/** Whether a batch of covers results is in flight; see getMoreResults(). */
+		loadingMoreResults: false,
+
+		/**
+		 * Append the next batch of archive search results to the covers grid.
+		 *
+		 * Mirrors Pika.Searches.getMoreResults() for the catalog: the current query string is
+		 * reused with the page advanced, so every search term, facet, and sort the patron set
+		 * still applies to the batch that comes back.
+		 */
+		getMoreResults: function(){
+			// A batch takes long enough to fetch that the button can be clicked again before the
+			// first one lands; without this guard both requests ask for the same page and the
+			// same tiles get appended twice.
+			if (this.loadingMoreResults){
+				return false;
+			}
+			var url      = '/Archive2/AJAX',
+					params   = Pika.replaceQueryParam('page', this.curPage + 1) + '&method=getMoreSearchResults',
+					status   = $('#more-results-status'),
+					loading  = $('#more-results-loading'),
+					button   = $('#more-browse-results'),
+					divClass = 'home-page-browse-thumbnails'; // the wrapper Archive/covers-list.tpl builds
+			params = Pika.replaceQueryParam('view', 'covers', params); // the button only exists in covers view
+
+			this.loadingMoreResults = true;
+			button.prop('disabled', true);
+			loading.removeClass('hidden');
+			status.text('Loading more results.');
+
+			$.getJSON(url + params, function(data){
+				if (data.success === false){
+					status.text('');
+					Pika.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
+				}else{
+					var newDiv = $(data.records).hide();
+					$('.' + divClass).filter(':last').after(newDiv);
+					newDiv.fadeIn('slow');
+					if (data.lastPage){
+						$('#more-browse-results').hide();
+						status.text('Loaded the last of the results.');
+					}else{
+						Pika.Archive2.curPage++;
+						status.text('More results loaded.');
+					}
+				}
+			}).fail(function(){
+				status.text('');
+				Pika.ajaxFail.apply(this, arguments);
+			}).always(function(){
+				Pika.Archive2.loadingMoreResults = false;
+				loading.addClass('hidden');
+				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
+			});
+			return false;
+		},
+
+		/**
 		 * Syncs the in-memory display mode with what the server already rendered
 		 * (the toggle button PHP marked "active", per the archive2CollectionDisplayMode
 		 * cookie / library defaultArchiveCollectionBrowseMode setting), so later AJAX

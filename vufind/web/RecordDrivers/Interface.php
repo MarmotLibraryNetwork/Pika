@@ -115,7 +115,7 @@ abstract class RecordInterface {
 		$extraParams = [];
 		if (!empty($interface->get_template_vars('searchId'))){
 			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
-			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
+			$extraParams[] = 'recordIndex=' . $interface->get_template_vars($this->getSearchPositionVariable());
 			$extraParams[] = 'page=' . $interface->get_template_vars('page');
 			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
 		}
@@ -124,6 +124,22 @@ abstract class RecordInterface {
 			$linkUrl .= '?' . implode('&', $extraParams);
 		}
 		return $linkUrl;
+	}
+
+	/**
+	 * The name of the template variable holding this record's position in the search results,
+	 * which getLinkUrl() sends along as the recordIndex parameter so the full record view can
+	 * work out the previous & next results.
+	 *
+	 * Search objects assign two of these for every result: 'recordIndex', the position within
+	 * the current page of results, and 'resultIndex', the position within the whole result set.
+	 * Which one a record type needs depends on what its getNextPrevLinks() implementation
+	 * expects, so drivers may override this.
+	 *
+	 * @return string
+	 */
+	protected function getSearchPositionVariable(){
+		return 'recordIndex';
 	}
 
 	/**
