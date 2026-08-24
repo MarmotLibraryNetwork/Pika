@@ -131,6 +131,7 @@ class Admin_Variables extends ObjectEditor {
 				$variable->update();
 			}
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=" . $id);
+			die();
 		}
 	}
 
@@ -159,6 +160,7 @@ class Admin_Variables extends ObjectEditor {
 				}
 			}
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=" . $id);
+			die();
 		}
 	}
 
@@ -180,6 +182,7 @@ class Admin_Variables extends ObjectEditor {
 				}
 			}
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=" . $id);
+			die();
 		}
 	}
 
