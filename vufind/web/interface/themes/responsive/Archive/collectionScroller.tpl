@@ -9,7 +9,7 @@
 			<div class="exploreMoreContainer">
 				<div class="jcarousel-wrapper" id="scroll{$browseCollectionTitlesData.title}">
 					{* Scrolling Buttons *}
-					<button class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></button>
+					<button class="jcarousel-control-prev"{* data-target="-=1"*} aria-label="Previous Collection Item"><i class="glyphicon glyphicon-chevron-left"></i></button>
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
 							{foreach from=$browseCollectionTitlesData.collectionTitles item=titleInfo name="loop"}
@@ -29,7 +29,7 @@
 							{/foreach}
 						</ul>
 					</div>
-					<button class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></button>
+					<button class="jcarousel-control-next"{* data-target="+=1"*} aria-label="Next Collection Item"><i class="glyphicon glyphicon-chevron-right"></i></button>
 				</div>
 			</div>
 		</div>
