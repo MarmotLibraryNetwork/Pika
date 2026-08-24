@@ -17,11 +17,11 @@
 {* Search Debugging *}
 {include file="Search/search-debug.tpl"}
 
-    {if $parseError}
-			<div class="alert alert-danger">
-          {$parseError}
-			</div>
-    {/if}
+	{if $parseError}
+		<div class="alert alert-danger">
+			{$parseError}
+		</div>
+	{/if}
 
 <div id="debug">
 	{if $debug}
