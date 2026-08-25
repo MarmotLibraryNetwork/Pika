@@ -190,6 +190,7 @@ class DBMaintenance extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/DBMaintenance/list_widget_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/book_club_kit_updates.php';
+		require_once ROOT_DIR . '/sys/DBMaintenance/search_updates.php';
 
 		$updates = array_merge(
 			getLibraryLocationUpdates(),
@@ -202,18 +203,11 @@ class DBMaintenance extends Admin_Admin {
 			getListWidgetUpdates(),
 			getIslandoraUpdates(),
 			getBookClubKitUpdates(),
+			getSearchUpdates(),
 
 			// Uncategorized updates
 			[
-				'2026.03.0_AddSearchSourceToSearchTable' => [
-					'release'         => '2026.03.0',
-					'title'           => 'Store the Search Source with saved searches',
-					'description'     => 'Adds the searchSource column to the search table so a saved search records the scope it was made under. The column was first added by a legacy update; this repeats it for any database that did not receive it, and so fails harmlessly where it is already there.',
-					'continueOnError' => true,
-					'sql'             => [
-						"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
-					],
-				],
+
 			] // End of main array
 		);
 
