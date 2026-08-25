@@ -9,15 +9,15 @@
 			<div class="exploreMoreContainer">
 				<div class="jcarousel-wrapper" id="scroll{$browseCollectionTitlesData.title}">
 					{* Scrolling Buttons *}
-					<button class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></button>
+					<button class="jcarousel-control-prev"{* data-target="-=1"*} aria-label="Previous Collection Item"><i class="glyphicon glyphicon-chevron-left"></i></button>
 					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for Pika.initCarousels() *}
 						<ul>
 							{foreach from=$browseCollectionTitlesData.collectionTitles item=titleInfo name="loop"}
 								<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
-									<figure class="thumbnail" title="{$titleInfo.title|escape}">
+									<figure class="thumbnail">
 										<div class="explore-more-image">
-											<a href='{$titleInfo.link}'{if $titleInfo.isExhibit} onclick="Pika.Archive.setForExhibitInAExhibitNavigation('{$browseCollectionTitlesData.collectionPid}')" {/if} {*{if $titleInfo.onclick}onclick="{$titleInfo.onclick}"{/if}*}>
-												<img src="{$titleInfo.image}" alt="{$titleInfo.title|escape}">
+											<a href='{$titleInfo.link}' aria-label="{$titleInfo.title|escape}"{if $titleInfo.isExhibit} onclick="Pika.Archive.setForExhibitInAExhibitNavigation('{$browseCollectionTitlesData.collectionPid}')" {/if} {*{if $titleInfo.onclick}onclick="{$titleInfo.onclick}"{/if}*}>
+												<img src="{$titleInfo.image}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 											</a>
 										</div>
 										<figcaption class="explore-more-category-title">
@@ -29,7 +29,7 @@
 							{/foreach}
 						</ul>
 					</div>
-					<button class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></button>
+					<button class="jcarousel-control-next"{* data-target="+=1"*} aria-label="Next Collection Item"><i class="glyphicon glyphicon-chevron-right"></i></button>
 				</div>
 			</div>
 		</div>

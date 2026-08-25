@@ -3,7 +3,7 @@
 	<figure class="random-image-figure">
 		<a href="{$randomObject.url}">
 			{if $randomObject.thumbnail}
-			<img src="{$randomObject.thumbnail}" alt="{$randomObject.title|escape}" class="img-responsive thumbnail collection-thumbnail-fit">
+			<img src="{$randomObject.thumbnail}" alt=""{* "Alternative text of images should not be repeated as text" *} class="img-responsive thumbnail collection-thumbnail-fit">
 			{/if}
 			<figcaption class="explore-more-category-title">
 				<strong>{$randomObject.title|truncate:120}</strong>

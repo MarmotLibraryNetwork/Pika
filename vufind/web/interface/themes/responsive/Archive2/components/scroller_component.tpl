@@ -11,16 +11,16 @@
 		{/if}
 		<div class="exploreMoreContainer">
 			<div class="jcarousel-wrapper" id="scrollCollection{$browseCollectionNid}">
-				<button class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="jcarousel-control-prev" aria-label="Previous Collection Item"><i class="glyphicon glyphicon-chevron-left"></i></button>
 				<div class="exploreMoreItemsContainer jcarousel">
 					<ul>
 						{foreach from=$browseCollectionItems item=item name="loop"}
 						<li id="collectionItem{$item.nid}" class="explore-more-option">
 							<a href="{$item.url}">
-								<figure class="thumbnail" title="{$item.title|escape}">
+								<figure class="thumbnail">
 									<div class="explore-more-image">
 										{if $item.thumbnail}
-										<img src="{$item.thumbnail}" alt="{$item.title|escape}">
+										<img src="{$item.thumbnail}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 										{/if}
 									</div>
 									<figcaption class="explore-more-category-title">
@@ -32,7 +32,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<button class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="jcarousel-control-next" aria-label="Next Collection Item"><i class="glyphicon glyphicon-chevron-right"></i></button>
 			</div>
 		</div>
 	</div>

@@ -3521,6 +3521,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Journal':
 			case 'Large Print':
 			case 'Manuscript':
+			case 'MP3 Audio CD':
 			case 'Musical Score':
 			case 'Newspaper':
 			case 'Playaway':
@@ -3572,11 +3573,17 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Game';
 
 			case 'Web Content':
+			case 'Online Materials':
+			case 'Digital Newspaper':
 				return 'WebPage';
 
 			default:
 				$this->logger->info("No schema.org format set for $pikaFormat");
 			case 'Kit':
+			case 'Microfilm':
+			case 'Physical Object':
+			case 'Slide':
+			case 'Resource Kit':
 				return 'CreativeWork';
 		}
 	}
