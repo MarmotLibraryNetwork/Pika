@@ -2579,30 +2579,36 @@ abstract class SearchObject_Base {
  * ****************************************************
  *
  * A minified search object used exclusively for trimming
- *  a search object down to it's barest minimum size
+ *  a search object down to its barest minimum size
  *  before storage in a cookie or database.
  *
- * It's still contains enough data granularity to
+ * It still contains enough data granularity to
  *  programmatically recreate search urls.
  *
- * This class isn't intended for general use, but simply
+ * This class isn't intended for general use but simply
  *  a way of storing/retrieving data from a search object:
  *
- * eg. Store
+ * e.g., Store
  * $searchHistory[] = serialize($this->minify());
  *
- * eg. Retrieve
+ * e.g., Retrieve
  * $searchObject  = SearchObjectFactory::initSearchObject();
- * $searchObject->deminify(unserialize($search));
+ * $searchObject->deminify(unserialize($serializedMinSO, ['allowed_classes' => ['minSO']]));
  *
  */
 class minSO {
-	public $t = [];  // search terms
-	public $f = [];  // search filters
-	public $hf = []; // hidden search filters
-	public $fc = []; // facet configurations
+	public $t  = [];   // search terms
+	public $f  = [];   // search filters
+	public $hf = [];   // hidden search filters
+	public $fc = [];   // facet configurations
 	public $ss = null; // search source
-	public $id, $i, $s, $r, $ty, $sr, $q;
+	public $id;        // search id
+	public $i;         // init time - when the search was started
+	public $s;         // query time - how long the search took
+	public $r;         // result total
+	public $ty;        // search type
+	public $sr;        // sort
+	public $q;         // query
 
 	/**
 	 * Constructor. Building minified object from the
