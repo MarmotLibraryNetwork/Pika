@@ -231,8 +231,8 @@ class SearchSources {
 
 		if ($searchArchive){
 			$searchOptions['islandora'] = [
-				'name'        => 'Local Digital Archive',
-				'description' => 'Local Digital Archive in Colorado',
+				'name'        => 'Legacy Digital Archive',
+				'description' => 'Legacy Marmot Digital Archive',
 				'catalogType' => 'islandora'
 			];
 		}
