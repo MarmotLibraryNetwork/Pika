@@ -205,7 +205,15 @@ class DBMaintenance extends Admin_Admin {
 
 			// Uncategorized updates
 			[
-
+				'2026.03.0_AddSearchSourceToSearchTable' => [
+					'release'         => '2026.03.0',
+					'title'           => 'Store the Search Source with saved searches',
+					'description'     => 'Adds the searchSource column to the search table so a saved search records the scope it was made under. The column was first added by a legacy update; this repeats it for any database that did not receive it, and so fails harmlessly where it is already there.',
+					'continueOnError' => true,
+					'sql'             => [
+						"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
+					],
+				],
 			] // End of main array
 		);
 

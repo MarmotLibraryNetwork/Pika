@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
+require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 
 /**
  * Search Object abstract base class.
@@ -42,6 +43,14 @@ abstract class SearchObject_Base {
 	protected $defaultSortByType = [];
 	/** @var string */
 	protected string $searchSource = 'none'; // should be overridden by all extended classes
+	/**
+	 * Whether this object took its search source from the saved search it was deminified from,
+	 * rather than falling back to the class default.  Searches saved before the source was stored
+	 * with them carry none, and callers that have a better guess to hand may use it instead.
+	 *
+	 * @var bool
+	 */
+	protected bool $searchSourceRestored = false;
 
 	// Page number
 	protected $page = 1;
@@ -216,6 +225,17 @@ abstract class SearchObject_Base {
 	 */
 	public function getSearchSource(){
 		return $this->searchSource;
+	}
+
+	/**
+	 * Did the search source come from the saved search this object was deminified from?  False
+	 * means the class default is in use, either because this is not a restored search or because
+	 * it was saved before the source was stored with it.
+	 *
+	 * @return bool
+	 */
+	public function hasRestoredSearchSource(): bool{
+		return $this->searchSourceRestored;
 	}
 
 	/**
@@ -1429,6 +1449,29 @@ abstract class SearchObject_Base {
 	}
 
 	/**
+	 * Restore the source a saved search was made under, so the search is scoped, and linked back
+	 * to, the way the patron left it rather than the way the class defaults to (D-5474).
+	 *
+	 * The source only means anything in a context that still offers it: configuration changes, and
+	 * a search restored under a different library than it was made in, can leave a value that no
+	 * longer resolves to a scope.  Fall back to the class default rather than scope the search to
+	 * something that no longer exists.  Searches saved before the source was stored with them
+	 * carry none, and fall back the same way.
+	 *
+	 * Called by every deminify() - the Islandora search objects override the whole method rather
+	 * than extending this one.
+	 *
+	 * @access  protected
+	 * @param   minSO  $minified     A minSO object
+	 */
+	protected function restoreSearchSource(minSO $minified){
+		if (!empty($minified->ss) && SearchSources::isValidSearchSource($minified->ss)){
+			$this->searchSource         = $minified->ss;
+			$this->searchSourceRestored = true;
+		}
+	}
+
+	/**
 	 * Initialize the object from a minified one stored in a cookie or database.
 	 *  Needs to be kept up-to-date with the minSO object at the end of this file.
 	 *
@@ -1450,6 +1493,7 @@ abstract class SearchObject_Base {
 		$this->filterList   = $minified->f;
 		$this->searchType   = $minified->ty;
 		$this->sort         = $minified->sr;
+		$this->restoreSearchSource($minified);
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
@@ -2557,6 +2601,7 @@ class minSO {
 	public $f = [];  // search filters
 	public $hf = []; // hidden search filters
 	public $fc = []; // facet configurations
+	public $ss = null; // search source
 	public $id, $i, $s, $r, $ty, $sr, $q;
 
 	/**
@@ -2576,6 +2621,7 @@ class minSO {
 		$this->ty = $searchObject->getSearchType();
 		$this->sr = $searchObject->getSort();
 		$this->q  = $searchObject->getQuery();
+		$this->ss = $searchObject->getSearchSource();
 
 		// Search terms, we'll shorten keys
 		$tempTerms = $searchObject->getSearchTerms();

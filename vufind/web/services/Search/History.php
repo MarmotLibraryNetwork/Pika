@@ -18,14 +18,38 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 
 class History extends Action {
 	private static $searchSourceLabels = [
 		'local'      => 'Catalog',
 		'islandora'  => 'Archive',
-		'islandora2' => 'Archive2', //TODO: is a better label needed
+		'islandora2' => 'Archive2',
 		'genealogy'  => 'Genealogy'
 	];
+
+	/**
+	 * The name to show in the Source column for the source a search was made under.
+	 *
+	 * Now that a saved search records its own source (D-5474), this is no longer only ever one of
+	 * the four indexes: a catalog search may have been made in the online collection, at a single
+	 * branch, or across the consortium.  Name those the way the search box named them to the patron
+	 * when they chose one.  The indexes keep the labels above, which read better here than the
+	 * library's own name does.
+	 *
+	 * @param string $searchSource
+	 * @return string
+	 */
+	private static function getSearchSourceLabel($searchSource){
+		if (array_key_exists($searchSource, self::$searchSourceLabels)){
+			return self::$searchSourceLabels[$searchSource];
+		}
+		$searchSources = SearchSources::getSearchSources();
+		if (!empty($searchSources[$searchSource]['name'])){
+			return $searchSources[$searchSource]['name'];
+		}
+		return $searchSource;
+	}
 
 	function launch(){
 		global $interface;
@@ -64,10 +88,7 @@ class History extends Action {
 						// Corrupt or unreadable entry; skip it rather than fail the whole history page
 						continue;
 					}
-					$searchSourceLabel = $searchObject->getSearchSource();
-					if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)){
-						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
-					}
+					$searchSourceLabel = self::getSearchSourceLabel($searchObject->getSearchSource());
 
 					// Make sure all facets are active so we get appropriate
 					// descriptions in the filter box.

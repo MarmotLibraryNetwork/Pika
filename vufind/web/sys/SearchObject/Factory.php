@@ -131,10 +131,20 @@ class SearchObjectFactory {
 		if (!isset($objectCache[$type])){
 			$objectCache[$type] = self::initSearchObject($type);
 		}
+		if ($objectCache[$type] === false){
+			return false;
+		}
 
-		// Populate and return the deminified object:
-		$objectCache[$type]->deminify($minSO);
-		//MDN 1/5/2015 return a clone of the search object since we may deminify several search objects in a single page load. 
-		return clone $objectCache[$type];
+		// Populate and return the deminified object.
+		//
+		// Return a clone of the search object since we may deminify several search
+		// objects in a single page load.  Deminify the clone rather than the cached object: the
+		// cache is only here to save repeating the constructor, and deminifying into it left each
+		// search carrying whatever the one before it had set, because purge() clears only some of
+		// the properties deminify() goes on to assign.  Search History deminifies every row of the
+		// list in a single request.
+		$searchObject = clone $objectCache[$type];
+		$searchObject->deminify($minSO);
+		return $searchObject;
 	}
 }

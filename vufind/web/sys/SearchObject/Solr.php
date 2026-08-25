@@ -2414,14 +2414,16 @@ class SearchObject_Solr extends SearchObject_Base {
 					return;
 				}
 				$searchObject->setPage($currentPage);
-				// A saved search does not carry its search source - the search table has no column
-				// for it - and a deminified object falls back to 'local', which would return the
-				// patron to a differently scoped results page than the one they left (Marmot, a
-				// library subdomain, econtent).  The link the patron followed to this record does
-				// carry it, and bootstrap has already validated it, so take it from there the same
-				// way the controllers do.  It also lets processSearch() below scope the neighboring
-				// results the way the results page did.
-				$searchObject->setSearchSource($_REQUEST['searchSource'] ?? 'local');
+				// The saved search carries the source it was made under, so the object is already
+				// scoped the way the results page was, and renderSearchUrl() below returns the
+				// patron to that same scope rather than to the library default (D-5474).  Searches
+				// saved before the source was stored with them carry none; for those, fall back to
+				// the source on the link the patron followed here, which bootstrap has already
+				// validated (D-5467).  Either way processSearch() below can then scope the
+				// neighboring results the way the results page did.
+				if (!$searchObject->hasRestoredSearchSource()){
+					$searchObject->setSearchSource($_REQUEST['searchSource'] ?? 'local');
+				}
 
 				// Link back to the results out of the saved search itself rather than leaving it to
 				// $_SESSION['lastSearchURL'], which holds only the last search made anywhere in the

@@ -234,6 +234,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$this->sort         = $minified->sr;
 		$this->hiddenFilters= $minified->hf;
 		$this->facetConfig  = $minified->fc;
+		$this->restoreSearchSource($minified);
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
