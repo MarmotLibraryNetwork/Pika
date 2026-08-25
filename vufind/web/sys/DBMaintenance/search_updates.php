@@ -23,10 +23,10 @@ function getSearchUpdates(): array{
 			'release'         => '2026.03.0',
 			'releaseStep'     => 1,
 			'title'           => 'Store the Search Source with saved searches',
-			'description'     => 'Adds the searchSource column to the search table so a saved search records the scope it was made under. The column was first added by a legacy update; this repeats it for any database that did not receive it, and so fails harmlessly where it is already there.',
-			'continueOnError' => true,
+			'description'     => 'Adds the searchSource column to the search table so a saved search records the scope it was made under. Most databases already have the column from a legacy update; where that is so this does nothing and still reports success, so the update is marked as run rather than offered again forever.',
+			'continueOnError' => false,
 			'sql'             => [
-				"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
+				'addSearchSourceColumnToSearchTable',
 			],
 		],
 
@@ -45,6 +45,59 @@ function getSearchUpdates(): array{
 }
 
 // Functions definitions that get executed by any of the updates above
+
+/**
+ * Add the searchSource column to the search table, unless it is already there.
+ *
+ * The column was first added by a legacy update, so most databases already carry it, and an
+ * unconditional ALTER TABLE fails on those.  A failed update is never marked as run, so it goes on
+ * being offered every time anyone opens Database Maintenance, and clearing that by hand is a chore.
+ * There is no portable SQL for "add this column only if it is missing", so look before altering and
+ * report failure only when the column is genuinely absent and cannot be added.
+ *
+ * @return bool  False only if the column is missing and the ALTER TABLE to add it failed.
+ */
+function addSearchSourceColumnToSearchTable(): bool{
+	global $pikaLogger;
+	$logger = $pikaLogger->withName('DBMaintenance');
+
+	if (searchTableHasSearchSourceColumn()){
+		$logger->notice('The search table already has a searchSource column, nothing to add');
+		return true;
+	}
+
+	require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+	$search = new SearchEntry();
+	$result = $search->query("ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`");
+	if (PEAR::isError($result)){
+		$logger->error('Failed to add the searchSource column to the search table', ['message' => $result->getMessage()]);
+		return false;
+	}
+
+	// A DDL statement returns neither rows nor an affected count, so its return value says nothing
+	// about whether it worked.  Ask the table itself instead.
+	if (!searchTableHasSearchSourceColumn()){
+		$logger->error('Adding the searchSource column to the search table reported no error, but the column is still not there');
+		return false;
+	}
+
+	$logger->notice('Added the searchSource column to the search table');
+	return true;
+}
+
+/**
+ * Does the search table carry the searchSource column yet?
+ *
+ * @return bool
+ */
+function searchTableHasSearchSourceColumn(): bool{
+	require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+	$search = new SearchEntry();
+	$search->query("SHOW COLUMNS FROM `search` LIKE 'searchSource'");
+	// The number of matching columns, or false when the query itself failed - which is indeed not
+	// an answer of "yes", but is worth telling apart from an empty result.
+	return is_numeric($search->N) && $search->N > 0;
+}
 
 /**
  * Recover the search source of saved genealogy and archive searches from the search type stored in
@@ -69,6 +122,11 @@ function backfillSearchSourceFromSearchType(): bool{
 
 	global $pikaLogger;
 	$logger = $pikaLogger->withName('DBMaintenance');
+
+	if (!searchTableHasSearchSourceColumn()){
+		$logger->error('Cannot recover search sources: the search table has no searchSource column. Run the update that adds it first.');
+		return false;
+	}
 
 	$recoverableTypes = ['genealogy', 'islandora', 'islandora2'];
 
