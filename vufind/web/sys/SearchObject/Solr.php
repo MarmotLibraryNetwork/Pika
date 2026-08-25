@@ -2447,6 +2447,12 @@ class SearchObject_Solr extends SearchObject_Base {
 				$interface->assign('searchType', $searchObject->getSearchType());
 				$interface->assign('searchIndex', $searchObject->getSearchIndex());
 				$interface->assign('filterList', $searchObject->getFilterList());
+				// The source belongs in the search box with the rest of it, or the select beside GO
+				// drops back to the library default on any page reached by a link that does not carry
+				// searchSource - the Prev/Next bar, and anything relying on the session having kept
+				// the right one.  It is a key of the searchSources list the select is built from, so
+				// an unrecognized value selects nothing and the browser shows the first option.
+				$interface->assign('searchSource', $searchObject->getSearchSource());
 
 				//Run the search
 				$result = $searchObject->processSearch(true);

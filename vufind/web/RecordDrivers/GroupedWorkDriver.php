@@ -486,7 +486,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory("Loaded related manifestations for {$this->getUniqueID()}");
 
 		//Build the link URL.
-		//If there is only one record for the work we will link straight to that.
+		//If there is only one record for the work, we will link straight to that.
 		$relatedRecords = $this->getRelatedRecords();
 		$timer->logTime('Loaded related records');
 		$memoryWatcher->logMemory('Loaded related records');
@@ -495,6 +495,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     = $firstRecord['url'];
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('resultIndex') . '&amp;page=' . $interface->get_template_vars('page');
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}else{
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('resultIndex') . '&amp;page=' . $interface->get_template_vars('page');
@@ -1343,6 +1344,10 @@ class GroupedWorkDriver extends RecordInterface {
 	private $relatedRecords = null;
 	private $relatedItemsByRecordId = null;
 
+	/**
+	 * @param $forCovers
+	 * @return array|null
+	 */
 	public function getRelatedRecords($forCovers = false){
 		$this->loadRelatedRecords($forCovers);
 		return $this->relatedRecords;
@@ -1357,6 +1362,12 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * Populate all the Related Records data for this Grouped Work.
+	 *
+	 * @param $forCovers  bool When loading related records for cover generation, some data population can be skipped
+	 * @return void
+	 */
 	private function loadRelatedRecords($forCovers = false){
 		global $timer;
 		global $memoryWatcher;
@@ -1410,7 +1421,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			//Sort the records based on format and then edition
-			uasort($relatedRecords, [$this, "compareRelatedRecords"]);
+			uasort($relatedRecords, [$this, 'compareRelatedRecords']);
 
 			$this->relatedRecords = $relatedRecords;
 			$timer->logTime("Finished loading related records {$this->getUniqueID()}");
@@ -1420,6 +1431,9 @@ class GroupedWorkDriver extends RecordInterface {
 	/**
 	 * The vast majority of record information is stored within the index.
 	 * This routine parses the information from the index and restructures it for use within the user interface.
+	 *
+	 * A manifestation is a collection of records and editions for the work that all have the same format.
+	 * For eContent, the manifestation is also confined to the same eContent source as well as the same format.
 	 *
 	 * @return array|null
 	 */
