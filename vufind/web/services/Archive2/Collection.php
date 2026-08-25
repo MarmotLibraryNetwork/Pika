@@ -25,7 +25,6 @@ require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
-require_once ROOT_DIR . '/sys/Pager.php';
 
 use Islandora2\CollectionObject;
 use Islandora2\I2ObjectFactory;
@@ -107,7 +106,7 @@ class Collection extends ArchiveObject
 
     /**
      * Fetches a paginated page of child objects for the collection and assigns
-     * them — along with pager links and record-count metadata — to the template.
+     * them — along with pager and record-count metadata — to the template.
      *
      * @param int $nid Node ID of the parent collection.
      */
@@ -134,18 +133,13 @@ class Collection extends ArchiveObject
             ];
         }
 
-        $pager = new \VuFindPager([
-            'totalItems' => $total,
-            'fileName'   => '/Archive2/Collection/' . $nid . '?page=%d',
-            'perPage'    => $limit,
-        ]);
-
         $interface->assign('collectionChildren', $collectionChildren);
         $interface->assign('recordCount',  $total);
         $interface->assign('recordStart',  ($page - 1) * $limit + 1);
         $interface->assign('recordEnd',    min($page * $limit, $total));
         $interface->assign('page',         $page);
-        $interface->assign('pageLinks',    $pager->getLinks());
+        $interface->assign('pageCount',    (int)ceil($total / $limit));
+        $interface->assign('pagerUrlTemplate', '/Archive2/Collection/' . $nid . '?page=%d');
     }
 
     /**
