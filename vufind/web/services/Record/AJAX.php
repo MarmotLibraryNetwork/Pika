@@ -253,15 +253,36 @@ class Record_AJAX extends AJAXHandler {
 			//The user is already logged in
 
 			if (!empty($_REQUEST['campus'])){
-				//Check to see what account we should be placing a hold for
+				//Check to see what account we should be placing a hold for.
 				//Rather than asking the user for this explicitly, we do it based on the pickup location
 				$campus               = $_REQUEST['campus'];
 				$cancelDate           = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
 				$patron               = null;
-				$doingStaffPlacedHold = !empty($_REQUEST['patronBarcode']);
 				$isHomePickupHold     = !empty($_REQUEST['hasHomePickupItems']) && ($_REQUEST['hasHomePickupItems'] == '1' || $_REQUEST['hasHomePickupItems'] == 'true');
+				$doingStaffPlacedHold = false;
+
+				if (!empty($_REQUEST['patronBarcode'])){
+					if (is_array($_REQUEST['patronBarcode'])){
+						// Prevent malicious attempts to pass an array in this field.
+						$this->logger->warn('Array passed to patronBarcode for place Hold');
+						return [
+							'success' => false,
+							'message' => 'Invalid patron barcode to place the hold for.',
+						];
+					}
+					$patronBarcode        = trim(strip_tags($_REQUEST['patronBarcode'] ?? ''));
+					$doingStaffPlacedHold = $patronBarcode !== ''; // works like empty(), but also excluded "0"
+				}
 
 				if (!$doingStaffPlacedHold){
+					if (!empty($_REQUEST['patronBarcode'])){
+						// Catch cases where inputted patron barcode is space characters; or spam HTML tags
+						return [
+							'success' => false,
+							'message' => 'Invalid patron barcode to place the hold for.',
+						];
+					}
+
 					if (!empty($_REQUEST['selectedUser'])){
 						$selectedUserId = $_REQUEST['selectedUser'];
 						if (is_numeric($selectedUserId)){ // we expect an id
@@ -278,7 +299,7 @@ class Record_AJAX extends AJAXHandler {
 							}
 						}
 					}else{
-						//block below sets the $patron variable to place the hold through pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
+						//The block below sets the $patron variable to place the hold through the pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
 						$location = new Location();
 						/** @var Location[] $userPickupLocations */
 						$userPickupLocations = $location->getPickupBranches($user);
@@ -317,8 +338,7 @@ class Record_AJAX extends AJAXHandler {
 				}
 				else{
 					if ($doingStaffPlacedHold){
-						$patronBarcode = trim(strip_tags($_REQUEST['patronBarcode']));
-						$return        = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null, $isHomePickupHold);
+						$return = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null, $isHomePickupHold);
 					}elseif (isset($_REQUEST['selectedItem'])){
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus, $cancelDate);
 					}elseif (isset($_REQUEST['volume'])){
@@ -367,7 +387,7 @@ class Record_AJAX extends AJAXHandler {
 						if (!$doingStaffPlacedHold){
 							$homeLibrary          = $patron->getHomeLibrary();
 							$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
-							// set update permission based on active library's settings. Or allow by default.
+							// set update permission based on the active library's settings. Or allow by default.
 							$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
 							// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
 							$interface->assign('canUpdate', $canUpdateContactInfo && !isset($_REQUEST['autologout'])); //Don't allow updating if the auto log out has been set (because the user will be logged out instead).
@@ -409,7 +429,7 @@ class Record_AJAX extends AJAXHandler {
 			}
 
 			if (isset($_REQUEST['autologout']) && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])){
-				// Only go through the auto-logout when the holds process is completed. Item level holds require another round of interaction with the user.
+				// Only go through the auto-logout when the place hold process is completed. Item level holds require another round of interaction with the user.
 				$masqueradeMode = UserAccount::isUserMasquerading();
 				if ($masqueradeMode){
 					require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
