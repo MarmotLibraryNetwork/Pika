@@ -80,29 +80,36 @@ class MyAccount_Edit extends MyAccount {
 					// Item ID
 					$interface->assign('recordId', $id);
 
-					if (!str_contains($id,'islandora2-')){
-						// Grouped Works (Catalog Items)
-						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-						$groupedWorkDriver = new GroupedWorkDriver($id);
-						if ($groupedWorkDriver->isValid){
-							$interface->assign('recordDriver', $groupedWorkDriver);
-						}
-					}else{
-						// Archive Objects
-						require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
-						/** @var \Islandora2Driver $archiveObject */
-						$archiveId = str_replace('islandora2-', '', $id);
-						$archiveRecordDriver = new Islandora2Driver($archiveId);
-						$interface->assign('recordDriver', $archiveRecordDriver);
+					// The link into this page carries the id the record driver put in the DOM;
+					// user_list_entry stores a different form of it for archive entries.
+					require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+					$entryId = userListEntryIdFromDomId((string)$id);
+
+					switch (parseUserListEntryId($entryId)['type']){
+						case USER_LIST_ENTRY_ARCHIVE_OBJECT:
+							require_once ROOT_DIR . '/RecordDrivers/Islandora2Driver.php';
+							$interface->assign('recordDriver', new Islandora2Driver($entryId));
+							break;
+						case USER_LIST_ENTRY_TAXONOMY_TERM:
+							require_once ROOT_DIR . '/RecordDrivers/Islandora2TaxonomyTermDriver.php';
+							// The driver reads the tid and the vocabulary straight out of the
+							// stored id, so editing a term's notes costs no Islandora lookup.
+							$interface->assign('recordDriver', new Islandora2TaxonomyTermDriver($entryId));
+							break;
+						default:
+							// Grouped Works (Catalog Items)
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWorkDriver = new GroupedWorkDriver($entryId);
+							if ($groupedWorkDriver->isValid){
+								$interface->assign('recordDriver', $groupedWorkDriver);
+							}
+							break;
 					}
 
 					// Retrieve saved information about record
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					$userListEntry                         = new UserListEntry();
-					$userListEntry->groupedWorkPermanentId = $id;
-					if(str_contains($id,'islandora2-')){
-						$userListEntry->groupedWorkPermanentId = str_replace('islandora2-', '', $id);
-					}
+					$userListEntry->groupedWorkPermanentId = $entryId;
 					$userListEntry->listId                 = $listId;
 					$params = [];
 					if (!empty($_REQUEST['pagesize']) && is_numeric($_REQUEST['pagesize'])){

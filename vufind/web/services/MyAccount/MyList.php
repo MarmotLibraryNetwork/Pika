@@ -114,10 +114,12 @@ class MyAccount_MyList extends MyAccount {
 							//get a list of all titles that were selected
 							if (isset($_REQUEST['myListActionData'])){
 								$itemsToRemove = explode(',', $_REQUEST['myListActionData']);
+								require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 								foreach ($itemsToRemove as $id){
-									// make sure that, if archive item contains islandora2- before the id, that it is removed
-									$id = !str_contains($id,"islandora2-") ? $id : str_replace('islandora2-', '', $id);
-									// add back the leading . to get the full bib record
+									// Archive entries arrive as the id their record driver put in the DOM
+									// (islandora2-{nid}, islandora2-term-{vocabulary}-{tid}); convert back
+									// to the form user_list_entry stores.
+									$id = userListEntryIdFromDomId((string)$id);
 									$list->removeListEntry($id);
 									$list->update();
 								}
@@ -133,9 +135,11 @@ class MyAccount_MyList extends MyAccount {
 							break;
 					}
 				}elseif (isset($_REQUEST['delete'])){
-					$recordToDelete = $_REQUEST['delete'];
-					// make sure that, if archive item contains islandora2- before the id, that it is removed
-					$recordToDelete = !str_contains($recordToDelete,"islandora2-") ? $recordToDelete : str_replace('islandora2-', '', $recordToDelete);
+					require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+					// Archive entries arrive as the id their record driver put in the DOM
+					// (islandora2-{nid}, islandora2-term-{vocabulary}-{tid}); convert back to the
+					// form user_list_entry stores.
+					$recordToDelete = userListEntryIdFromDomId((string)$_REQUEST['delete']);
 					$list->removeListEntry($recordToDelete);
 					$list->update();
 				}
@@ -276,6 +280,7 @@ class MyAccount_MyList extends MyAccount {
 	static public function exportToExcel(UserList $list){
 
 		global $interface;
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php'; // getTaxonomyVocabularyLabel()
 		$interface->assign('favList', $list);
 		$interface->assign('listSelected', $list->id);
 		$userCanEdit = false;
@@ -316,15 +321,30 @@ class MyAccount_MyList extends MyAccount {
 		//create array including all data
 		$itemArray  = [];
 		foreach ($favorites as $listItem){
-			$recordID =  $listItem['its_node_id'] ?? $listItem['id'];
-			$isArchive = isset($listItem['its_node_id']);
-			$isCatalog = isset($listItem['id']);
+			// Three kinds of document arrive here. An archive object carries its_node_id, a
+			// taxonomy term carries its_tid and no node id at all, and a catalog work carries
+			// neither. Note every archive document also has a Solr 'id' (the uniqueKey, e.g.
+			// entity:node/1234:en), so the archive tests have to come first.
+			$isArchiveObject = isset($listItem['its_node_id']);
+			$isTaxonomyTerm  = !$isArchiveObject && isset($listItem['its_tid']);
+			$isArchive       = $isArchiveObject || $isTaxonomyTerm;
+			$isCatalog       = !$isArchive && isset($listItem['id']);
+
+			if ($isArchive){
+				// The entry id, not the Solr uniqueKey, so the notes/date lookup below matches
+				// what user_list_entry stores.
+				$recordID = SearchObject_Islandora2::getEntryIdForDoc($listItem);
+			}else{
+				$recordID = $listItem['id'] ?? '';
+			}
 
 			$title = '';
 			if ($isCatalog && !empty($listItem['title_display'])){
 				$title = $listItem['title_display'];
-			} elseif ($isArchive && !empty($listItem['twm_X3b_en_title_ws_token'][0])){
+			} elseif ($isArchiveObject && !empty($listItem['twm_X3b_en_title_ws_token'][0])){
 				$title = $listItem['twm_X3b_en_title_ws_token'][0];
+			} elseif ($isTaxonomyTerm && !empty($listItem['tm_X3b_en_name'][0])){
+				$title = $listItem['tm_X3b_en_name'][0];
 			}
 			$author = '';
 			if (!empty($listItem['author_display'])){
@@ -343,8 +363,13 @@ class MyAccount_MyList extends MyAccount {
 			$typeString = 'format_category_' . $GLOBALS['solrScope'];
 			if ($isCatalog && isset($listItem[$typeString])){
 				$type = $listItem[$typeString][0];
-			} elseif ($isArchive && isset($listItem['sm_format'][0])){
+			} elseif ($isArchiveObject && isset($listItem['sm_format'][0])){
 				$type = $listItem['sm_format'][0];
+			} elseif ($isTaxonomyTerm){
+				// A term has no format; its vocabulary is the closest equivalent, and it is the
+				// same value the archive search spreadsheet puts in this column.
+				$vocabulary = $listItem['ss_vid'] ?? null;
+				$type       = getTaxonomyVocabularyLabel(is_array($vocabulary) ? reset($vocabulary) : $vocabulary);
 			}
 
 

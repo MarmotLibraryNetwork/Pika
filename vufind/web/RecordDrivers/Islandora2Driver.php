@@ -300,6 +300,10 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
+		// An object has no vocabulary. Assigned so a taxonomy term earlier in the same list
+		// does not leave its Taxonomy row showing on this one — Smarty variables persist
+		// between the rows of a list.
+		$interface->assign('summVocabularyLabel', null);
 //		$interface->assign('summShortId', null);
 //		$interface->assign('summTitleStatement', null);
 		$interface->assign('summAuthor', null);
@@ -316,9 +320,10 @@ class Islandora2Driver extends RecordInterface
 			$listEntry                         = new UserListEntry();
 			$listEntry->groupedWorkPermanentId = $this->nodeId;
 			$listEntry->listId                 = $listId;
-			if ($listEntry->find(true)){
-				$interface->assign('listEntryNotes', $listEntry->notes);
-			}
+			// Always assign, even when there is no entry: Smarty variables persist between the
+			// rows of a list, so an unassigned value would show the previous row's notes. Now
+			// that taxonomy terms share this template the rows are no longer all objects.
+			$interface->assign('listEntryNotes', $listEntry->find(true) ? $listEntry->notes : '');
 			$interface->assign('listEditAllowed', $allowEdit);
 		}
 

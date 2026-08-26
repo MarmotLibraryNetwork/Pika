@@ -27,8 +27,9 @@
  * @access      public
  */
 class FavoriteHandler {
-	// Solr field holding the Islandora2 node id; used to match returned archive docs back to the requested ids.
-	protected const ISLANDORA_ID_FIELD = 'its_node_id';
+	// Matching a returned archive document back to the id that was asked for is now
+	// SearchObject_Islandora2::getEntryIdForDoc()'s job: $archiveIds holds both node ids and
+	// taxonomy term ids, and a term document carries no its_node_id to compare against.
 
 	/** @var UserList */
 	private $list;
@@ -243,7 +244,7 @@ class FavoriteHandler {
 							foreach ($archiveResult['response']['docs'] as $result){
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $idsToFetch);
+								$key         = array_search(SearchObject_Islandora2::getEntryIdForDoc($result), $idsToFetch);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -285,7 +286,7 @@ class FavoriteHandler {
 							try {
 								/** @var IslandoraDriver $archiveWork */
 								$archiveWork = RecordDriverFactory::initRecordDriver($result);
-								$key         = array_search((string)$result[self::ISLANDORA_ID_FIELD], $this->archiveIds);
+								$key         = array_search(SearchObject_Islandora2::getEntryIdForDoc($result), $this->archiveIds);
 								if ($key !== false){
 									$archiveResourceList[] = $interface->fetch($archiveWork->getBrowseResult());
 								}
@@ -708,7 +709,7 @@ class FavoriteHandler {
 				if(!empty($archiveResults['response']['docs'])){
 					foreach ($archiveResults['response']['docs'] as $archiveResult){
 						$archiveWork = RecordDriverFactory::initRecordDriver($archiveResult);
-						$key         = array_search((string)$archiveResult[self::ISLANDORA_ID_FIELD], $this->favorites);
+						$key         = array_search(SearchObject_Islandora2::getEntryIdForDoc($archiveResult), $this->favorites);
 						if ($key !== false){
 							$citations[$key] = $interface->fetch($archiveWork->getCitation($citationFormat));
 						}

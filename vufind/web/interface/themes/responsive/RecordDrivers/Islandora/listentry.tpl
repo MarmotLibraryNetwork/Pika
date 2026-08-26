@@ -65,6 +65,14 @@
 					</div>
 				{/if}
 
+				{* Taxonomy terms share this template with the archive objects; a term has a vocabulary where an object has a format. *}
+				{if $summVocabularyLabel}
+					<div class="row">
+						<div class="result-label col-xs-3">Taxonomy: </div>
+						<div class="col-xs-9 result-value">{$summVocabularyLabel}</div>
+					</div>
+				{/if}
+
 				{if $summFormat}
 					<div class="row">
 						<div class="result-label col-xs-3">Format: </div>
