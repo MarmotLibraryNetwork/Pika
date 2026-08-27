@@ -28,10 +28,11 @@
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
-
 			</div>
 		</div>
 	{/if}
+
+	{include file="Archive2/taxonomy_tools.tpl"}
 
 	<div class="taxonomy-detail taxonomy-event">
 		<div id="more-details-accordion" class="panel-group">

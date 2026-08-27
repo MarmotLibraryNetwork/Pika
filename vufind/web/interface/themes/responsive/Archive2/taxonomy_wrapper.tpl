@@ -33,12 +33,6 @@
 </div>
 	<br class="clearfix">
 
-	{if $showFavorites == 1}
-		<div class="taxonomy-tools">
-			<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$termListEntryDomId|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
-		</div>
-	{/if}
-
 	{include file="Archive2/$taxonomy_type_template.tpl"}
 
 	{include file="Archive2/taxonomy_related_objects.tpl"}

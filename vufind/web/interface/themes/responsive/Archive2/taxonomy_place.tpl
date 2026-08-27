@@ -14,12 +14,10 @@
 		</div>
 		<div class="col-lg-6">
 			{if $alternate_name}
-				
-					<div class="row taxonomy-alt_name">
-						<div class="col-xs-4 result-label">Other Names</div>
-						<div class="col-xs-8">{foreach from=$alternate_name item=name}{$name}<br>{/foreach}</div>
-					</div>
-				
+				<div class="row taxonomy-alt_name">
+					<div class="col-xs-4 result-label">Other Names</div>
+					<div class="col-xs-8">{foreach from=$alternate_name item=name}{$name}<br>{/foreach}</div>
+				</div>
 			{/if}
 			{if $start_date || $end_date}
 				{if $start_date}
@@ -69,10 +67,11 @@
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
-
 			</div>
 		</div>
 	{/if}
+
+	{include file="Archive2/taxonomy_tools.tpl"}
 
 	<div class="taxonomy-detail taxonomy-geographic-location">
 		<div id="more-details-accordion" class="panel-group">
