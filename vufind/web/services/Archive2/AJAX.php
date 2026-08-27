@@ -566,11 +566,17 @@ class Archive2_AJAX extends AJAXHandler {
 			return ['success' => false, 'message' => 'Lists are not available for this interface.'];
 		}
 
-		$nid = (int)($_REQUEST['id'] ?? 0);
-		if ($nid <= 0) {
-			return ['success' => false, 'message' => 'A valid node id is required.'];
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		// The id arrives in the form a record driver put in the DOM: islandora2-{nid} for an
+		// archive object, islandora2-term-{vocabulary}-{tid} for a taxonomy term. Normalizing
+		// first gives the id as user_list_entry stores it, which is what both the containment
+		// check below and the save itself need.
+		$entryId = userListEntryIdFromDomId((string)($_REQUEST['id'] ?? ''));
+		$parsed  = parseUserListEntryId($entryId);
+		if ($parsed['type'] !== USER_LIST_ENTRY_ARCHIVE_OBJECT && $parsed['type'] !== USER_LIST_ENTRY_TAXONOMY_TERM){
+			return ['success' => false, 'message' => 'A valid archive object or taxonomy term id is required.'];
 		}
-		$interface->assign('id', $nid);
+		$interface->assign('id', $entryId);
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
@@ -600,7 +606,7 @@ class Archive2_AJAX extends AJAXHandler {
 			//Check to see if the user has already added the title to the list.
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
-			$userListEntry->groupedWorkPermanentId = $nid;
+			$userListEntry->groupedWorkPermanentId = $entryId;
 			if ($userListEntry->find(true)){
 				$containingLists[] = [
 					'id'    => $userLists->id,
@@ -621,7 +627,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$results = [
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive2.saveToList(\"{$nid}\"); return false;'>Save To List</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive2.saveToList(\"" . htmlspecialchars($entryId, ENT_QUOTES) . "\"); return false;'>Save To List</button>",
 		];
 		return $results;
 	}
@@ -640,10 +646,18 @@ class Archive2_AJAX extends AJAXHandler {
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 			$result['success'] = true;
-			$id                = urldecode($_REQUEST['id']);
-			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9-]+$/i", $id)){
-				// Is not a valid grouped work Id or archive PID
+			// Normalize the DOM id to the stored form before validating, so a taxonomy term
+			// arrives here as tax_{vocabulary}:{tid} rather than islandora2-term-{vocab}-{tid}.
+			$id         = userListEntryIdFromDomId(urldecode((string)($_REQUEST['id'] ?? '')));
+			$parsedType = parseUserListEntryId($id)['type'];
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$isValidId = $parsedType === USER_LIST_ENTRY_ARCHIVE_OBJECT
+				|| $parsedType === USER_LIST_ENTRY_TAXONOMY_TERM
+				|| ($parsedType === USER_LIST_ENTRY_CATALOG && GroupedWork::validGroupedWorkId($id));
+			if (!$isValidId){
+				// Is not a valid grouped work id, archive node id, or taxonomy term id
 				$result['success'] = false;
 				$result['message'] = 'That is not a valid title to add to the list.';
 			}else{

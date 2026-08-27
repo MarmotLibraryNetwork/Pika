@@ -62,6 +62,11 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// OTHER VARIABLES
 	const string IDFIELD = 'its_node_id';
 	const string TITLE_FIELD = 'twm_X3b_en_title_ws_token';
+	// Taxonomy terms share this Solr core with the archive objects but are identified by
+	// their own fields; a term document carries no its_node_id at all.
+	const string TAXONOMY_IDFIELD = 'its_tid';
+	const string TAXONOMY_TITLE_FIELD = 'tm_X3b_en_name';
+	const string TAXONOMY_VOCABULARY_FIELD = 'ss_vid';
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
@@ -234,6 +239,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$this->sort         = $minified->sr;
 		$this->hiddenFilters= $minified->hf;
 		$this->facetConfig  = $minified->fc;
+		$this->restoreSearchSource($minified);
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
@@ -834,8 +840,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				// use $IDList as the order guide for the HTML
 				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
-					if (!empty($doc[self::IDFIELD]) && $doc[self::IDFIELD] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+					// getEntryIdForDoc() rather than the raw IDFIELD: a taxonomy term document
+					// has no node id, and the list stores it as tax_{vocabulary}:{tid}.
+					$docEntryId = self::getEntryIdForDoc($doc);
+					if ($docEntryId !== '' && $docEntryId == $currentId) {
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading; getEntryIdForDoc() would then be handed a null.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
@@ -939,7 +951,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			if (!PEAR_Singleton::isError($archiveObjectDriver)){
 				if (method_exists($archiveObjectDriver, 'getListWidgetTitle')){
 					if (!empty($orderedListOfIDs)){
-						$position = array_search($solrDoc[self::IDFIELD], $orderedListOfIDs);
+						// getEntryIdForDoc() rather than the raw IDFIELD: a taxonomy term
+						// document carries no node id.
+						$position = array_search(self::getEntryIdForDoc($solrDoc), $orderedListOfIDs);
 						if ($position !== false){
 							$widgetTitles[$position] = $archiveObjectDriver->getListWidgetTitle();
 						}
@@ -1017,14 +1031,81 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Set an overriding array of archive Node Ids.
+	 * Set an overriding array of archive entry Ids.
+	 *
+	 * Accepts both Islandora 2 node ids and taxonomy term ids in their user list entry form
+	 * (tax_{vocabulary}:{tid}). The two entity types live in the same Solr core but are
+	 * identified by different fields, so they are queried as a union.
+	 *
+	 * The prefix has to come off before the query is built: Solr.php drops an its_node_id or
+	 * its_tid clause whose value is not all digits.
 	 *
 	 * @access  public
-	 * @param   array  $ids archive Node IDs to load
+	 * @param   array  $ids archive Node IDs and/or taxonomy term entry IDs to load
 	 */
 	public function setQueryIDs($ids){
-		$this->query = self::IDFIELD . ':(' . implode(' ', $ids) . ')';
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		$nodeIds = $termIds = [];
+		foreach ($ids as $id){
+			$parsed = parseUserListEntryId((string)$id);
+			// Both fields are integer fields, so anything non-numeric is dropped rather than
+			// interpolated. An unconverted legacy PID reaching here would otherwise put a bare
+			// colon inside the clause and make the whole query malformed, failing the entire
+			// list rather than just that entry.
+			if ($parsed['type'] === USER_LIST_ENTRY_TAXONOMY_TERM && ctype_digit($parsed['id'])){
+				$termIds[] = $parsed['id'];
+			}elseif ($parsed['type'] === USER_LIST_ENTRY_ARCHIVE_OBJECT && ctype_digit($parsed['id'])){
+				$nodeIds[] = $parsed['id'];
+			}else{
+				$this->getLogger()->warning('Ignoring an archive list id that is neither a node id nor a taxonomy term id', ['id' => $id]);
+			}
+		}
+
 		// The default q.op for Islandora2 is OR so we can just use a space instead of adding an explicit OR
+		$clauses = [];
+		if (!empty($nodeIds)){
+			$clauses[] = self::IDFIELD . ':(' . implode(' ', $nodeIds) . ')';
+		}
+		if (!empty($termIds)){
+			$clauses[] = self::TAXONOMY_IDFIELD . ':(' . implode(' ', $termIds) . ')';
+		}
+
+		if (empty($clauses)){
+			// An empty query would ask Solr for everything; ask for a node id that cannot exist
+			// instead, so the caller gets the empty result set it actually meant.
+			$this->query = self::IDFIELD . ':(-1)';
+		}elseif (count($clauses) === 1){
+			$this->query = $clauses[0];
+		}else{
+			$this->query = '(' . implode(' OR ', $clauses) . ')';
+		}
+	}
+
+	/**
+	 * The user list entry id for an archive Solr document, node or taxonomy term.
+	 *
+	 * Callers match a returned document back to the id they asked for. A node answers with
+	 * its_node_id, but a taxonomy term has no node id at all — it has to be rebuilt into the
+	 * tax_{vocabulary}:{tid} form the list stores.
+	 *
+	 * @param  array $doc  An Islandora 2 Solr document.
+	 * @return string      The stored entry id, or '' when the document is neither.
+	 */
+	public static function getEntryIdForDoc(array $doc): string{
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		if (!empty($doc[self::IDFIELD])){
+			$nodeId = is_array($doc[self::IDFIELD]) ? reset($doc[self::IDFIELD]) : $doc[self::IDFIELD];
+			return (string)$nodeId;
+		}
+		if (!empty($doc[self::TAXONOMY_IDFIELD])){
+			$tid        = is_array($doc[self::TAXONOMY_IDFIELD]) ? reset($doc[self::TAXONOMY_IDFIELD]) : $doc[self::TAXONOMY_IDFIELD];
+			$vocabulary = $doc[self::TAXONOMY_VOCABULARY_FIELD] ?? null;
+			if (is_array($vocabulary)){
+				$vocabulary = reset($vocabulary);
+			}
+			return buildTaxonomyUserListEntryId((int)$tid, $vocabulary);
+		}
+		return '';
 	}
 
 
@@ -1331,18 +1412,113 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Retrieve full Solr documents for an array of Islandora2 node IDs, with standard filters applied.
+	 * Return the subset of the given archive user list entry IDs that survive the current
+	 * search filters.
 	 *
-	 * Delegates to {@see \Solr::getIslandora2NodeIds()} which queries the its_node_id
-	 * field via /select. Standard search filters (library visibility, private collections, etc.)
-	 * are applied via {@see setFinalFilterQuery()}.
+	 * Standard search filters (library visibility, private collections, etc.) are applied via
+	 * {@see setFinalFilterQuery()}. Node IDs and taxonomy term IDs are queried separately,
+	 * because a term document carries no its_node_id, and both are mapped back to the
+	 * tax_{vocabulary}:{tid} / node id form the list stores.
 	 *
-	 * @param int[]|string[] $nids  Islandora2 node IDs to retrieve
-	 * @return array                Array of matching Solr document arrays
+	 * Note this returns IDs, not documents. It used to return the raw Solr documents while its
+	 * only caller (FavoriteHandler, the list facet-filter branch) fed the result straight into
+	 * array_intersect() against a list of ID strings, which could never match.
+	 *
+	 * @param int[]|string[] $ids  Archive user list entry IDs to filter
+	 * @return string[]            The entry IDs that matched, in Solr's order
 	 */
-	function getFilteredNodeIds($nids):array{
+	function getFilteredNodeIds($ids):array{
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 		$filterQuery = $this->setFinalFilterQuery();
-		return $this->indexEngine->getIslandora2NodeIds($nids, $filterQuery);
+
+		$nodeIds = $termIds = [];
+		foreach ($ids as $id){
+			$parsed = parseUserListEntryId((string)$id);
+			if ($parsed['type'] === USER_LIST_ENTRY_TAXONOMY_TERM){
+				$termIds[] = $parsed['id'];
+			}else{
+				$nodeIds[] = $parsed['id'];
+			}
+		}
+
+		$docs = [];
+		if (!empty($nodeIds)){
+			$docs = $this->indexEngine->getIslandora2NodeIds($nodeIds, $filterQuery, 100, self::IDFIELD);
+		}
+		if (!empty($termIds)){
+			$docs = array_merge($docs, $this->indexEngine->getIslandora2NodeIds($termIds, $filterQuery, 100, self::TAXONOMY_IDFIELD));
+		}
+
+		$entryIds = [];
+		foreach ($docs as $doc){
+			$entryId = self::getEntryIdForDoc($doc);
+			if ($entryId !== ''){
+				$entryIds[] = $entryId;
+			}
+		}
+		return $entryIds;
+	}
+
+	/**
+	 * Resolve legacy Islandora 1 entity PIDs to their Islandora 2 taxonomy terms, keeping the
+	 * association between each PID and the term it resolved to.
+	 *
+	 * getLegacyEntitiesTIDs() returns a bare list of TIDs, which is enough when looking up one
+	 * PID at a time but loses which PID produced which TID — and it cannot say what vocabulary
+	 * a term belongs to. Both matter when converting a table of stored PIDs in bulk, so this
+	 * asks Solr for the three fields together and keys the result by PID.
+	 *
+	 * Like getLegacyEntitiesTIDs(), no standard search filters are applied, so a term that is
+	 * currently hidden or private still resolves. That is deliberate for a data migration: the
+	 * entry should point at the right term whether or not the term is visible today.
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 entity PIDs to look up
+	 * @return array          Map of legacy PID => ['tid' => int, 'vocabulary' => string|null].
+	 *                        PIDs with no match are absent; a PID matching more than one term
+	 *                        keeps the first and is reported in $duplicatePids.
+	 * @param string[] $duplicatePids  Out-parameter listing PIDs that matched multiple terms.
+	 */
+	function getLegacyEntityTermsByPid(array $pids, array &$duplicatePids = []): array{
+		$termsByPid    = [];
+		$duplicatePids = [];
+		if (empty($pids)){
+			return $termsByPid;
+		}
+
+		$docs = $this->indexEngine->getLegacyPidDocuments(
+			$pids,
+			'ss_legacy_entity_pid',
+			['ss_legacy_entity_pid', self::TAXONOMY_IDFIELD, self::TAXONOMY_VOCABULARY_FIELD]
+		);
+
+		foreach ($docs as $doc){
+			$pid = $doc['ss_legacy_entity_pid'] ?? null;
+			if (is_array($pid)){
+				$pid = reset($pid);
+			}
+			$tid = $doc[self::TAXONOMY_IDFIELD] ?? null;
+			if (is_array($tid)){
+				$tid = reset($tid);
+			}
+			if (empty($pid) || empty($tid)){
+				continue;
+			}
+			if (isset($termsByPid[$pid])){
+				$duplicatePids[$pid] = $pid;
+				continue; // keep the first match, as convertArchivePidToCorporateBodyTid() does
+			}
+			$vocabulary = $doc[self::TAXONOMY_VOCABULARY_FIELD] ?? null;
+			if (is_array($vocabulary)){
+				$vocabulary = reset($vocabulary);
+			}
+			$termsByPid[$pid] = [
+				'tid'        => (int)$tid,
+				'vocabulary' => !empty($vocabulary) ? strtolower((string)$vocabulary) : null,
+			];
+		}
+
+		$duplicatePids = array_values($duplicatePids);
+		return $termsByPid;
 	}
 
 	/**

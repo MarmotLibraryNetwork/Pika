@@ -35,7 +35,9 @@ class UserListEntry extends DB_DataObject {
 	public $notes;                                        // blob(65535)  blob
 	public $dateAdded;                                    // timestamp(19)  not_null unsigned zerofill binary timestamp
 	public $weight;                                       // Where to position the entry in the overall list
-	public bool $hidden = false;                          // bool  Do we hide the record in the list? (This is primarily for Archive2 Integration stability)
+	public bool $hidden = false;                          // bool
+	//  Do we hide the record in the list? (This is primarily for Archive2 Integration stability)
+	// Pre-setting this to false, sets an additional condition on all queries using the class.
 
 	/**
 	 * @return bool

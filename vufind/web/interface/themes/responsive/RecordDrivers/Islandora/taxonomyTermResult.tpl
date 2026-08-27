@@ -58,8 +58,9 @@
 
 			<div class="row">
 				<div class="col-tn-12">
-					{* showFavorites=0: the Add to favorites button saves a node id, and a term is not a node. *}
-					{include file='Archive2/result-tools-horizontal.tpl' showFavorites=0}
+					{* Terms can be saved to a list since D-5469; they are stored as tax_{vocabulary}:{tid}.
+					   showFavorites is left to the page-level variable, exactly as the object result does. *}
+					{include file='Archive2/result-tools-horizontal.tpl'}
 				</div>
 			</div>
 		</div>

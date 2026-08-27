@@ -105,6 +105,10 @@ class TaxonomyObject extends \Action
         $vocabularyMachineName = $this->taxonomyObject->getVocabularyMachineName();
         $interface->assign('vocabulary_machine_name', $vocabularyMachineName);
         $interface->assign('vocabulary_label', \getTaxonomyVocabularyLabel($vocabularyMachineName));
+        // The id the Add to favorites button hands back to Archive2 AJAX. It matches what
+        // Islandora2TaxonomyTermDriver::getUniqueID() emits in search results, so both routes
+        // into showSaveToListForm() normalize to the same stored tax_{vocabulary}:{tid}.
+        $interface->assign('termListEntryDomId', 'islandora2-term-' . ($vocabularyMachineName ?: 'term') . '-' . $this->taxonomyObject->getTid());
         $interface->assign('is_shown_in_search',     $this->taxonomyObject->isShownInSearch());
         $interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
         $interface->assign('pid',                    $this->taxonomyObject->getPid());

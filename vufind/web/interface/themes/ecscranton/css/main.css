@@ -9996,7 +9996,7 @@ img.x-twit {
   text-transform: uppercase;
   white-space: nowrap;
 }
-@media (max-width: 479px) {
+@media (max-width: 1199px) {
   .exploreMoreBar .exploreMoreBarLabel {
     white-space: normal;
   }
@@ -10393,14 +10393,6 @@ img.x-twit {
 .taxonomy-thumbnail {
   max-width: 300px;
   margin: 0;
-}
-.taxonomy-wrapper-thumbnail-col .taxonomy-thumbnail {
-  max-width: 390px;
-  float: left;
-}
-.taxonomy-related-thumb {
-  max-height: 120px;
-  margin: 0 auto 8px;
 }
 .taxonomy-map-embed {
   border: 0;

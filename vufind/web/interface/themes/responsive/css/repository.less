@@ -109,7 +109,7 @@
     font-weight: bold;
     text-transform: uppercase;
     white-space: nowrap; // multiple word labels need to stay on the same line
-    @media (max-width: @screen-tn-max) {
+    @media (max-width: @screen-md-max) {
       white-space: normal;
     }
   }
@@ -585,18 +585,6 @@
 .taxonomy-thumbnail {
   max-width: 300px;
   margin: 0;
-}
-
-// taxonomy_wrapper.tpl uses a float-based layout with a wider max-width
-.taxonomy-wrapper-thumbnail-col .taxonomy-thumbnail {
-  max-width: 390px;
-  float: left;
-}
-
-// Related-objects thumbnails on taxonomy pages
-.taxonomy-related-thumb {
-  max-height: 120px;
-  margin: 0 auto 8px;
 }
 
 // Map embed iframe on the Geographic Location taxonomy page

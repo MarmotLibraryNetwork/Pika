@@ -9,7 +9,7 @@
 		{if $showFavorites == 1}
 
 			<div class="btn-group btn-group-sm">
-				<button onclick="return Pika.Archive2.showSaveToListForm(this, {$summId|escape|replace:'islandora2-':'' });" class="btn btn-sm ">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$summId|escape}');" class="btn btn-sm ">{translate text='Add to favorites'}</button>
 			</div>
 		{/if}
 

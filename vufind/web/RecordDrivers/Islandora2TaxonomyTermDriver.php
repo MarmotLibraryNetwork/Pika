@@ -70,10 +70,22 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	];
 
 	/**
-	 * @param array|int|string $recordData A taxonomy term Solr document, or a bare term id
+	 * @param array|int|string $recordData A taxonomy term Solr document, a bare term id, or a
+	 *                                     stored user list entry id (tax_{vocabulary}:{tid})
 	 */
 	public function __construct($recordData){
 		$this->logger = new Logger(__CLASS__);
+
+		if (is_string($recordData) && !is_numeric($recordData)){
+			// A user list entry id. It carries the vocabulary, so a term reached from a list
+			// can build its own URL without an Islandora lookup.
+			$parsed = parseUserListEntryId($recordData);
+			if ($parsed['type'] === USER_LIST_ENTRY_TAXONOMY_TERM){
+				$this->tid        = (int)$parsed['id'];
+				$this->vocabulary = $parsed['vocabulary'];
+			}
+			$recordData = $this->tid;
+		}
 
 		if (is_array($recordData)){
 			$this->tid             = (int)($this->getSolrFirstFieldValue($recordData, 'id') ?? 0);
@@ -86,8 +98,9 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 			$this->solrScore       = isset($recordData['score']) ? (float)$recordData['score'] : null;
 			$this->solrExplanation = isset($recordData['explain']) ? (string)$recordData['explain'] : null;
 		}elseif (is_numeric($recordData)){
-			// No Solr document to read from; the term id is all we have. Name and description
-			// stay empty until this driver grows a TaxonomyFactory lookup.
+			// No Solr document to read from; the term id is all we have. getTitle() and
+			// getDescription() fall back to a TaxonomyFactory lookup when something asks for
+			// them, so nothing is fetched unless it is needed.
 			$this->tid = (int)$recordData;
 		}
 
@@ -134,16 +147,63 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 	}
 
 	public function getTitle(){
-		return $this->title ?? ($this->tid > 0 ? 'Islandora Term ' . $this->tid : '');
+		// When constructed from a Solr document the name is already available without an API
+		// call — use it directly to avoid triggering ensureTaxonomyObject(). A term reached
+		// from a user list entry has only its id and vocabulary, so it has to ask Islandora,
+		// exactly as Islandora2Driver::getTitle() does for an object.
+		if (!empty($this->title)){
+			return $this->title;
+		}
+
+		$term = $this->ensureTaxonomyObject();
+		if ($term !== null){
+			$title = $term->getTitle();
+			if (!empty($title)){
+				$this->title = $title; // resolved once per request
+				return $this->title;
+			}
+		}
+
+		return $this->tid > 0 ? 'Islandora Term ' . $this->tid : '';
 	}
 
 	public function getDescription(){
-		return $this->description ?? '';
+		if (!empty($this->description)){
+			return $this->description;
+		}
+
+		$term = $this->ensureTaxonomyObject();
+		if ($term !== null){
+			$description = $term->getDescription();
+			if (!empty($description)){
+				$this->description = $description;
+				return $this->description;
+			}
+		}
+
+		return '';
 	}
 
 	public function getUniqueID(){
-		// Dash rather than colon so the id is safe to use in the HTML DOM and in jQuery selectors
-		return $this->tid > 0 ? 'islandora2-term-' . $this->tid : 'islandora2-term-unknown';
+		// Dashes rather than colons so the id is safe to use in the HTML DOM and in jQuery
+		// selectors. The vocabulary is carried along because this id comes back from the list
+		// edit, delete and reorder requests and has to be turned back into the stored
+		// tax_{vocabulary}:{tid} form; the tid alone would not be enough to rebuild it.
+		// Vocabulary machine names use underscores, never dashes, so the final dash always
+		// separates the vocabulary from the term id. See userListEntryIdFromDomId().
+		if ($this->tid <= 0){
+			return 'islandora2-term-unknown';
+		}
+		return 'islandora2-term-' . ($this->vocabulary ?? 'term') . '-' . $this->tid;
+	}
+
+	/**
+	 * The id this term is stored under in user_list_entry.groupedWorkPermanentId.
+	 *
+	 * @return string
+	 */
+	public function getUserListEntryId(): string{
+		return buildTaxonomyUserListEntryId($this->tid, $this->vocabulary);
 	}
 
 	/**
@@ -353,8 +413,57 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		return !empty($thumbnail['url']) ? $thumbnail['url'] : self::PLACEHOLDER_IMAGE;
 	}
 
+	/**
+	 * Assign the Smarty variables for this term as an entry in a user list.
+	 *
+	 * Shares RecordDrivers/Islandora/listentry.tpl with the archive objects rather than
+	 * taking a template of its own: a list row is mostly the cover, title, description and
+	 * the edit/delete tools, all of which a term has. The fields a term has no answer for
+	 * (format, author, publisher) are assigned empty and the template skips their rows; a term
+	 * shows its vocabulary where an object shows its format.
+	 *
+	 * @param int|null $listId    The list being displayed, when notes should be shown.
+	 * @param bool     $allowEdit Should the edit & delete controls be rendered?
+	 * @return string             Template to render.
+	 */
 	public function getListEntry($listId = null, $allowEdit = true){
-		return null;
+		global $interface;
+
+		$interface->assign('summId', $this->getUniqueID());
+		$interface->assign('jquerySafeId', $this->getUniqueID());
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summVocabularyLabel', $this->getVocabularyLabel());
+		// A term has no format, author or publisher; listentry.tpl skips each row when the
+		// variable is empty, so these are assigned null rather than left over from the
+		// previously rendered entry in the list.
+		$interface->assign('summFormat', null);
+		$interface->assign('summAuthor', null);
+		$interface->assign('summPublisher', null);
+		$interface->assign('summPubDate', null);
+		// Resolving a term's cover costs an Islandora call (see getBookcoverUrl), and a page of
+		// list entries would make one per row. listentry.tpl paints the thumbnail only when both
+		// of these are set, so when they are not there is nothing to pay for. getSearchResult()
+		// guards the same way.
+		$showCovers = $interface->get_template_vars('showCovers') && $interface->get_template_vars('disableCoverArt') != 1;
+		$interface->assign('bookCoverUrl', $showCovers ? $this->getBookcoverUrl('small') : '');
+		$interface->assign('bookCoverUrlMedium', $showCovers ? $this->getBookcoverUrl('medium') : '');
+		$interface->assign('summAjaxStatus', false);
+		$interface->assign('recordDriver', $this);
+
+		if ($listId){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$listEntry                         = new UserListEntry();
+			$listEntry->groupedWorkPermanentId = $this->getUserListEntryId();
+			$listEntry->listId                 = $listId;
+			// Always assign, even when there is no entry: Smarty variables persist between the
+			// rows of a list, so an unassigned value would show the previous row's notes.
+			$interface->assign('listEntryNotes', $listEntry->find(true) ? $listEntry->notes : '');
+			$interface->assign('listEditAllowed', $allowEdit);
+		}
+
+		return 'RecordDrivers/Islandora/listentry.tpl';
 	}
 
 	public function getStaffView(){

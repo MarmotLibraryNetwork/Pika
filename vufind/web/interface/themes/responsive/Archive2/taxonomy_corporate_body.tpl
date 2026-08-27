@@ -1,4 +1,3 @@
-{* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
 		<div class="col-xs-12">
@@ -36,10 +35,12 @@
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
-
 			</div>
 		</div>
 	{/if}
+
+	{include file="Archive2/taxonomy_tools.tpl"}
+
 	<div class="taxonomy-detail taxonomy-corporate-body">
 		<div id="more-details-accordion" class="panel-group">
 

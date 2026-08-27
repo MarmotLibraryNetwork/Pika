@@ -997,14 +997,29 @@ class BookCoverProcessor {
 	 * @return string|false  A Cover url to fetch, or false when one can't be determined
 	 */
 	private function getBookcoverUrlForUserListImageCreation($itemId){
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 		$bookcoverUrl = false;
-		if ($this->isArchiveItem($itemId)){
-			$archiveObject = new Islandora2Driver($itemId);
-			if (!empty($archiveObject->getNodeId())){
-				$bookcoverUrl = $archiveObject->getBookcoverUrl();
-			}
-		}else{
-			$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+		switch (parseUserListEntryId((string)$itemId)['type']){
+			case USER_LIST_ENTRY_ARCHIVE_OBJECT:
+				$archiveObject = new Islandora2Driver($itemId);
+				if (!empty($archiveObject->getNodeId())){
+					$bookcoverUrl = $archiveObject->getBookcoverUrl();
+				}
+				break;
+			case USER_LIST_ENTRY_TAXONOMY_TERM:
+				require_once ROOT_DIR . '/RecordDrivers/Islandora2TaxonomyTermDriver.php';
+				// The term driver reads the tid and vocabulary out of the stored id; resolving
+				// its thumbnail costs one Islandora call, memcached per term.
+				$term         = new Islandora2TaxonomyTermDriver($itemId);
+				$bookcoverUrl = $term->getBookcoverUrl('medium');
+				break;
+			case USER_LIST_ENTRY_LEGACY:
+				// An unconverted Islandora 1 PID. It should never reach here (getListEntries()
+				// filters these out), and there is nothing to resolve it against.
+				break;
+			default:
+				$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+				break;
 		}
 		if (empty($bookcoverUrl)){
 			$this->logger->error('No cover url could be determined for user list entry: ' . $itemId);
@@ -1013,19 +1028,6 @@ class BookCoverProcessor {
 		return $bookcoverUrl;
 	}
 
-	/**
-	 * Decide whether a User List entry id belongs to an archive object rather than a grouped work.
-	 *
-	 * Grouped work ids are hyphenated, archive ids aren't, so the absence of a hyphen is all we have to go on for
-	 * now. That is expected to change, so keep the test here rather than inline at the point of use.
-	 *
-	 * @param string $itemId Id taken from an entry in a User List
-	 *
-	 * @return bool
-	 */
-	private function isArchiveItem($itemId){
-		return strpos($itemId, '-') === false;
-	}
 
 	/**
 	 * Fetch the cover image for one User List entry and turn it into an image resource.

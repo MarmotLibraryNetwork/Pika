@@ -1,4 +1,3 @@
-{* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
 		<div class="col-xs-12">
@@ -30,12 +29,13 @@
 			<div class="taxonomy-description">
 				{$term_description}
 			</div>
-
 		</div>
 	</div>
 {/if}
 
-<div class=" taxonomy-detail taxonomy-person">
+	{include file="Archive2/taxonomy_tools.tpl"}
+
+	<div class=" taxonomy-detail taxonomy-person">
 	<div id="more-details-accordion" class="panel-group">
 
 		{if $wikipediaData}
@@ -214,6 +214,7 @@
 
 		</div>
 	</div>
+
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
 
 	<script>

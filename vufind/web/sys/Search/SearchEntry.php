@@ -28,6 +28,7 @@ class SearchEntry extends DB_DataObject {
 	public $created;                         // date(10)	not_null binary
 	public $saved;                           // int(1) not_null default 0
 	public $search_object;                   // blob @todo: this should be a varchar field since it's not really a binary large object
+	public $searchSource;                    // varchar(30)	not_null default 'local'
 	public $session_id;                      // varchar(128)
 
 	/**
