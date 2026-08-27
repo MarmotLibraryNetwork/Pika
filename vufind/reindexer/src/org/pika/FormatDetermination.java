@@ -1200,8 +1200,10 @@ public class FormatDetermination {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
 							result.add("VoxBook");
-						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
+						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")) {
 							result.add("PhysicalObject");
+						} else if (physicalDescriptionData.contains("toniebox") || physicalDescriptionData.contains("tonie")){
+							result.add("Tonie");
 						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
 							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
 							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
@@ -1289,7 +1291,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 500 tag  (General Note)
+		// Check for formats in the 500 tag (General Note)
 		List<DataField> noteFields = record.getDataFields("500");
 		for (DataField noteField : noteFields) {
 			if (noteField != null) {
@@ -1313,8 +1315,9 @@ public class FormatDetermination {
 						result.add("BoardBook");
 					} else if (noteValue.contains("mp3")){
 						result.add("MP3");
+					} else if (noteValue.contains("toniebox") || noteValue.contains("tonie")){
+						result.add("Tonie");
 					}
-
 				}
 			}
 		}
@@ -1331,7 +1334,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 590 tag  (Local Note)
+		// Check for formats in the 590 tag (Local Note)
 		List<DataField> noteField = record.getDataFields("590");
 		for(DataField localNoteField : noteField) {
 			if (localNoteField != null) {
@@ -1431,8 +1434,8 @@ public class FormatDetermination {
 	}
 
 		/**
-	 *  Avoid play station format determinations for descriptions of Blu-ray player that note
-	 *  that a play station is compatible with Blu-ray players.
+	 *  Avoid PlayStation format determinations for descriptions of Blu-ray player that note
+	 *  that a PlayStation is compatible with Blu-ray players.
 	 *
 	 * @param value text of a subfield
 	 * @return whether string is describing being Blu-ray compatible
