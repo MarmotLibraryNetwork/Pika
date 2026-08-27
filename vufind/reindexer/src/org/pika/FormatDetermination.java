@@ -62,6 +62,7 @@ public class FormatDetermination {
 	String matTypesToIgnore;
 
 	private Character typeOfRecordLeaderChar = null;
+	private Character ohOhEightAudienceChar = null;
 
 	FormatDetermination(ResultSet indexingProfileRS, HashMap<String, TranslationMap> translationMaps, Logger logger) throws SQLException {
 		this.logger = logger;
@@ -500,8 +501,11 @@ public class FormatDetermination {
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		RecordIdentifier      identifier   = recordInfo.getRecordIdentifier();
 		String                leader       = record.getLeader().toString();
+		ControlField fixedField008 = (ControlField) record.getVariableField("008");
+
 
 		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
+		ohOhEightAudienceChar  = getAudienceCharFrom008(fixedField008);
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
@@ -531,7 +535,6 @@ public class FormatDetermination {
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.isEmpty()) {
-				ControlField fixedField008 = (ControlField) record.getVariableField("008");
 				getFormatFrom008(fixedField008, printFormats);
 				getFormatFromLeader(printFormats, leader, fixedField008);
 				if (printFormats.size() > 1){
@@ -565,6 +568,17 @@ public class FormatDetermination {
 			}
 		}
 		return printFormats;
+	}
+
+	private Character getAudienceCharFrom008(ControlField ohOhEightField) {
+		Character targetAudienceChar = null;
+		if (ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+			targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
+			if (targetAudienceChar == ' ') {
+				targetAudienceChar = null;
+			}
+		}
+		return targetAudienceChar;
 	}
 
 	private final HashSet<String> formatsToFilter = new HashSet<>();
@@ -1572,8 +1586,12 @@ public class FormatDetermination {
 							result.add("Playaway");
 						}else if (subfieldData.contains("readers for new literates")) {
 							result.add("AdultLiteracyBook");
-//						} else if (subfieldData.contains("high interest-low vocabulary") || subfieldData.contains("readers (publications)")) {
-//							result.add("EasyReader");
+						} else if (subfieldData.contains("readers (publications)") /*|| subfieldData.contains("high interest-low vocabulary")*/) {
+							// Check 008 Audience code
+							if (ohOhEightAudienceChar != null && (ohOhEightAudienceChar.equals('A') || ohOhEightAudienceChar.equals('B') || ohOhEightAudienceChar.equals('C') || ohOhEightAudienceChar.equals('J'))) {
+								// These are the preschool, primary, pre-adolescent, and juvenile-general audience codes.
+								result.add("EasyReader");
+							}
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						) {
