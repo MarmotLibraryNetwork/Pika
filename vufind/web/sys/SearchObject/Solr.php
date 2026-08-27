@@ -645,14 +645,15 @@ class SearchObject_Solr extends SearchObject_Base {
 		if ($IDList){
 			//Reorder the documents based on the list of id's
 			$x = 0;
-			$nullHolder = null;
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
-				$current = &$nullHolder; // empty out in case we don't find the matching record
-				reset($this->indexResult['response']['docs']);
+				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
 					if ($doc['id'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}

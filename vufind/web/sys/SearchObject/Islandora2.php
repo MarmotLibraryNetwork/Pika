@@ -844,7 +844,10 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 					// has no node id, and the list stores it as tax_{vocabulary}:{tid}.
 					$docEntryId = self::getEntryIdForDoc($doc);
 					if ($docEntryId !== '' && $docEntryId == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading; getEntryIdForDoc() would then be handed a null.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}

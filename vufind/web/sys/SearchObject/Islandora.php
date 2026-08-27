@@ -279,7 +279,10 @@ class SearchObject_Islandora extends SearchObject_Base {
 				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
 					if (!empty($doc['PID']) && $doc['PID'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
