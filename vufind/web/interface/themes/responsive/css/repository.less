@@ -742,7 +742,19 @@
 
   .random-image-reload {
     margin-top: 5px;
+
+    // Spins the refresh icon while a reload request is in flight (nextRandomImage()
+    // toggles this class), so the button gives feedback on a slow Islandora round trip
+    // instead of looking unresponsive.
+    &.loading .glyphicon-refresh {
+      animation: pika-spin-refresh 1s linear infinite;
+    }
   }
+}
+
+@keyframes pika-spin-refresh {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 // Archive2 — Audio poster wrapper, centers the poster image (audio.tpl)
