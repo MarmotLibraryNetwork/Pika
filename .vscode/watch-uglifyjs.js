@@ -11,8 +11,13 @@
  * arrows=false and no mangler match the style already committed for the existing
  * min.js files in this directory (compressed but not mangled, no arrow functions).
  *
+ * After minifying, also re-runs merge_javascript.php (in the parent js/ directory)
+ * to rebuild the bundled js/pika.min.js from javascript_files.txt, since that
+ * bundle includes the pika/*.min.js file that was just regenerated.
+ *
  * Requires: chokidar   →  npm install --save-dev chokidar
  *           uglify-js  →  npm install --save-dev uglify-js
+ *           php        →  must be on PATH
  */
 
 const chokidar = require('chokidar');
@@ -45,6 +50,28 @@ function minify(filePath) {
     console.log(`[uglifyjs]  → ${path.join(dir, output)}`);
   } catch (err) {
     console.error(`[uglifyjs]  ✗ failed: ${filePath}`);
+    return;
+  }
+
+  mergeJavascript(dir);
+}
+
+// ─── Merge ───────────────────────────────────────────────────────────────────
+// Rebuilds js/pika.min.js from javascript_files.txt, which includes the
+// pika/*.min.js file that was just regenerated above.
+
+function mergeJavascript(pikaDir) {
+  const jsDir = path.dirname(pikaDir); // .../responsive/js
+
+  console.log(`[uglifyjs] merging javascript bundle`);
+  try {
+    execSync(
+      `php merge_javascript.php`,
+      { cwd: jsDir, stdio: 'inherit' }
+    );
+    console.log(`[uglifyjs]  → ${path.join(jsDir, 'pika.min.js')}`);
+  } catch (err) {
+    console.error(`[uglifyjs]  ✗ merge failed`);
   }
 }
 
