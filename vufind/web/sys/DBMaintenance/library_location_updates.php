@@ -131,6 +131,14 @@ function getLibraryLocationUpdates(): array{
 				"ALTER TABLE `location_facet_setting` DROP COLUMN IF EXISTS `showAsDropDown`;",
 			],
 		],
-
+		'2026.03.0_expand_column_size_for_library_externalSelfRegistrationUrl' =>[
+			'release'         => '2026.03.0',
+			'title'           => 'Expand column size for external self registration URL',
+			'description'     => 'Expand column size for external self registration URL',
+			'continueOnError' => true,
+			'sql'             => [
+				"ALTER TABLE `library` CHANGE COLUMN `externalSelfRegistrationUrl` `externalSelfRegistrationUrl` VARCHAR(255) NULL DEFAULT NULL;"
+			]
+		],
 	];
 }
