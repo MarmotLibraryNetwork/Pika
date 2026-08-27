@@ -745,6 +745,11 @@ public class FormatDetermination {
 			return;
 		}
 
+		// Audio Figurine and kits, Tonie, Toniebox (should commonly also have PhysicalObject)
+		if (hasOverRidingFormat("Tonie", printFormats)){
+			return;
+		}
+
 		// Video Things
 		if (hasOverRidingFormat("Blu-ray4KCombo", printFormats)) {
 			// Check this before DVD/Blu-ray Combo checking because this combo can be confused for the other combo
