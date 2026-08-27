@@ -10115,7 +10115,7 @@ img.x-twit {
   text-transform: uppercase;
   white-space: nowrap;
 }
-@media (max-width: 479px) {
+@media (max-width: 1199px) {
   .exploreMoreBar .exploreMoreBarLabel {
     white-space: normal;
   }
@@ -10546,8 +10546,8 @@ img.x-twit {
   border-bottom: 2px solid #ccc;
   padding-bottom: 0.25em;
 }
-.timeline-pager > li > a,
-.timeline-pager > li > span {
+.collection-pager > li > a,
+.collection-pager > li > span {
   box-sizing: border-box;
   height: 40px;
   min-width: 40px;
