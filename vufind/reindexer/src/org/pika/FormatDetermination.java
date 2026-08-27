@@ -698,6 +698,13 @@ public class FormatDetermination {
 		if (hasOverRidingFormat("BookClubKit", printFormats)) {
 				return;
 		}
+
+		// Audio Figurine and kits, Tonie, Toniebox (should commonly also have PhysicalObject)
+		// Must come before Kit, since many are also cataloged as Kits
+		if (hasOverRidingFormat("Tonie", printFormats)){
+			return;
+		}
+
 		if (hasOverRidingFormat("Kit", printFormats)) {
 				return;
 		}
@@ -756,11 +763,6 @@ public class FormatDetermination {
 			// Note: General need to be careful with Yoto Player records that should have determination of Physical Object
 			printFormats.clear();
 			printFormats.add("YotoStory");
-			return;
-		}
-
-		// Audio Figurine and kits, Tonie, Toniebox (should commonly also have PhysicalObject)
-		if (hasOverRidingFormat("Tonie", printFormats)){
 			return;
 		}
 
