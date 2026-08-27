@@ -10525,14 +10525,6 @@ img.x-twit {
   max-width: 300px;
   margin: 0;
 }
-.taxonomy-wrapper-thumbnail-col .taxonomy-thumbnail {
-  max-width: 390px;
-  float: left;
-}
-.taxonomy-related-thumb {
-  max-height: 120px;
-  margin: 0 auto 8px;
-}
 .taxonomy-map-embed {
   border: 0;
 }
