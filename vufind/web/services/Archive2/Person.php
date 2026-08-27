@@ -103,8 +103,6 @@ class Person extends TaxonomyObject
         $interface->assign('obituaries', $this->loadObituaries($genealogyPerson));
         $interface->assign('burial',     $this->loadBurialData($genealogyPerson));
 
-        $interface->assign('taxonomy_type_template', 'taxonomy_person');
-
         $title = $this->taxonomyObject->getTitle();
         parent::display('taxonomy_person.tpl', $title);
     }

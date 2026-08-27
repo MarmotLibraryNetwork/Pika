@@ -1,4 +1,3 @@
-{* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
 		<div class="col-xs-12">
@@ -88,7 +87,6 @@
 
 		</div>
 	</div>
-	{*include file="Archive2/taxonomy_related_objects.tpl"*}
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
 
 	<script>

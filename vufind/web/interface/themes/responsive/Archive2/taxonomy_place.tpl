@@ -1,4 +1,3 @@
-{* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
 		<div class="col-xs-12">

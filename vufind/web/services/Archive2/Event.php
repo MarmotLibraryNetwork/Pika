@@ -55,8 +55,6 @@ class Event extends TaxonomyObject
         $interface->assign('event_county',        $event->getEventCounty());
         $interface->assign('event_state',         $event->getEventState());
 
-        $interface->assign('taxonomy_type_template', 'taxonomy_event');
-
         $title = $this->taxonomyObject->getTitle();
         parent::display('taxonomy_event.tpl', $title);
     }
