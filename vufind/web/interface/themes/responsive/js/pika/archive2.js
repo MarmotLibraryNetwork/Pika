@@ -39,6 +39,13 @@ Pika.Archive2 = (function(){
 		loadingMoreResults: false,
 
 		/**
+		 * Ids of "random image" components (see nextRandomImage()) with a reload
+		 * request in flight. Keyed rather than a single flag since a page can carry
+		 * more than one randomImage component, each reloading independently.
+		 */
+		loadingRandomImage: {},
+
+		/**
 		 * Append the next batch of archive search results to the covers grid.
 		 *
 		 * Mirrors Pika.Searches.getMoreResults() for the catalog: the current query string is
@@ -299,7 +306,18 @@ Pika.Archive2 = (function(){
 		 * @param {string} sourceNids Comma-separated collection node ids to pick from
 		 */
 		nextRandomImage: function(id, sourceNids) {
-			var placeholder = $('#randomImagePlaceholder_' + id);
+			// Without this guard, clicking again before the first response lands fires a
+			// second overlapping request; whichever happens to land last wins, which isn't
+			// necessarily the one requested last. Mirrors the guard in getMoreResults().
+			if (this.loadingRandomImage[id]) {
+				return false;
+			}
+			var placeholder = $('#randomImagePlaceholder_' + id),
+					button      = $('#randomImageReload_' + id);
+
+			this.loadingRandomImage[id] = true;
+			button.prop('disabled', true).addClass('loading');
+
 			$.getJSON('/Archive2/AJAX', {
 				method: 'getRandomImageComponent',
 				nids: sourceNids
@@ -309,7 +327,10 @@ Pika.Archive2 = (function(){
 				} else if (data.message) {
 					Pika.showMessage('Error', data.message);
 				}
-			}).fail(Pika.ajaxFail);
+			}).fail(Pika.ajaxFail).always(function() {
+				Pika.Archive2.loadingRandomImage[id] = false;
+				button.prop('disabled', false).removeClass('loading');
+			});
 			return false;
 		},
 

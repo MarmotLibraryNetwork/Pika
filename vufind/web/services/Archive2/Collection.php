@@ -479,47 +479,76 @@ class Collection extends ArchiveObject
     }
 
     /**
-     * Picks a uniformly random child object from across one or more source
-     * collections and returns the display data for the "random image" component.
-     * Shared by loadCustomComponents() (initial page render) and
+     * Picks a random child object from across one or more candidate collections
+     * and returns the display data for the "random image" component. Shared by
+     * loadCustomComponents() (initial page render) and
      * Archive2_AJAX::getRandomImageComponent() (the reload button), so both pick
      * from the same logic.
      *
-     * @param int[] $sourceNids Candidate collection node ids; one is chosen at
-     *                          random, then one of its children is chosen at random.
+     * Each candidate collection's chance of being chosen is weighted by its child
+     * count, so every child across every candidate collection is equally likely to
+     * be picked — picking the collection uniformly first would badly
+     * over-represent children of a small collection (e.g. one of three) against a
+     * large one (e.g. thousands). Candidates that fail to load, have no children,
+     * or fail the subsequent fetch are dropped and the remaining weighted
+     * candidates are tried before giving up, so one empty or briefly-erroring
+     * collection in the list doesn't turn every other reload into a dead end.
+     *
+     * @param int[] $sourceNids Candidate collection node ids.
      * @return array{title: string, url: string, thumbnail: string}|null Null if no
-     *                          source collection has any children.
+     *                          candidate collection has any children.
      */
     public static function pickRandomChildImage(array $sourceNids): ?array
     {
-        if (empty($sourceNids)) {
-            return null;
+        $factory = new I2ObjectFactory();
+
+        $candidates = []; // nid => total child count
+        foreach (array_unique(array_map('intval', $sourceNids)) as $candidateNid) {
+            if ($candidateNid <= 0) {
+                continue;
+            }
+            $candidateSource = $factory->fromNodeId($candidateNid);
+            if (!($candidateSource instanceof CollectionObject)) {
+                continue;
+            }
+            $total = $candidateSource->getTotalChildCount();
+            if ($total > 0) {
+                $candidates[$candidateNid] = $total;
+            }
         }
-        $factory      = new I2ObjectFactory();
-        $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
-        $randomSource = $factory->fromNodeId($randomNid);
-        if (!($randomSource instanceof CollectionObject)) {
-            return null;
+
+        while (!empty($candidates)) {
+            $weightTotal = array_sum($candidates);
+            $pick        = rand(1, $weightTotal);
+            $randomNid   = 0;
+            foreach ($candidates as $candidateNid => $total) {
+                $pick -= $total;
+                if ($pick <= 0) {
+                    $randomNid = $candidateNid;
+                    break;
+                }
+            }
+            $total = $candidates[$randomNid];
+            unset($candidates[$randomNid]);
+
+            // number=1 means page N is item N, giving a uniform random pick across all children
+            $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
+            if (empty($response['children'])) {
+                continue;
+            }
+            $randomObj = $factory->fromNode($response['children'][0]);
+            if (!$randomObj) {
+                continue;
+            }
+            $thumb = $randomObj->getThumbnail();
+            return [
+                'title'     => $randomObj->getTitle(),
+                'url'       => getObjRelativeUrl($randomObj),
+                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+            ];
         }
-        $total = $randomSource->getTotalChildCount();
-        if ($total <= 0) {
-            return null;
-        }
-        // number=1 means page N is item N, giving a uniform random pick across all children
-        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
-        if (empty($response['children'])) {
-            return null;
-        }
-        $randomObj = $factory->fromNode($response['children'][0]);
-        if (!$randomObj) {
-            return null;
-        }
-        $thumb = $randomObj->getThumbnail();
-        return [
-            'title'     => $randomObj->getTitle(),
-            'url'       => getObjRelativeUrl($randomObj),
-            'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-        ];
+
+        return null;
     }
 
     /**
