@@ -1,4 +1,23 @@
 {strip}
+	{* The Islandora field can hold a single title or a list of them. *}
+	{if $alternative_title}
+		<div class="row">
+			<div class="result-label col-sm-4">Alternative Title{if is_array($alternative_title) && count($alternative_title) > 1}s{/if}:</div>
+			<div class="result-value col-sm-8">
+				{if is_array($alternative_title)}
+					{foreach from=$alternative_title item=alternativeTitle}
+						{if $alternativeTitle ne ''}
+							<div>{$alternativeTitle|escape}</div>
+						{/if}
+					{/foreach}
+				{else}
+					{$alternative_title|escape}
+				{/if}
+			</div>
+		</div>
+	{/if}
+
+
 	{if $linked_agents_display || $debugDetails}
 		{if $linked_agents_display}
 			{foreach from=$linked_agents_display item=agent}
