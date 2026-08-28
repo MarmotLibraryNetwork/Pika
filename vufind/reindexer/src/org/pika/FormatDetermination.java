@@ -527,6 +527,7 @@ public class FormatDetermination {
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats, identifier);
+		getFormatFromAlternateTitle(record, printFormats/*, identifier*/);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 
@@ -1095,8 +1096,37 @@ public class FormatDetermination {
 		}
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
+			title = title.toLowerCase();
 			if (findBookClubKitPhrases(title)){
 				printFormats.add("BookClubKit");
+			} else if (title.contains("toniebox") || title.contains("tonie box")) {
+				// Search for tonie box phrases only, since there is at least one title with Tonie as a name
+				printFormats.add("Tonie");
+			}
+		}
+	}
+
+	/**
+	 * Determine formats from the varying form of title (MARC 246).  Only fields with a second
+	 * indicator of 3 ("Other title") are considered, since those carry an alternate title the
+	 * item is also known by rather than a portion or variant of the 245.
+	 *
+	 * @param record       The MARC record to determine formats for
+	 * @param printFormats All the format determinations so far; any format found here is added to it
+	 */
+	private void getFormatFromAlternateTitle(Record record, Set<String> printFormats/*, RecordIdentifier identifier*/) {
+		List<DataField> marc246 = MarcUtil.getDataFields(record, "246");
+		for (DataField field : marc246) {
+			if (field != null && field.getIndicator2() == '3') {
+				// Second indicator 3 is an "Other title"
+				if (field.getSubfield('a') != null) {
+					String alternateTitle = field.getSubfield('a').getData().toLowerCase();
+					if (alternateTitle.contains("toniebox") || alternateTitle.contains("tonie")){
+						// Allow for "tonie" only phrase on alternate title search, since there is a
+						// lower risk of matching on alternate title containing a name "Tonie" coincidentally
+							printFormats.add("Tonie");
+					}
+				}
 			}
 		}
 	}
@@ -1501,11 +1531,11 @@ public class FormatDetermination {
 
 
 	/**
-	 * @param subject A string that could contain upper case text
+	 * @param subject A string that should be lower-cased
 	 * @return contains one of the phrases, or not
 	 */
 	private Boolean findBookClubKitPhrases(String subject){
-		subject = subject.toLowerCase();
+		//subject = subject.toLowerCase();
 		return findBookClubKitPhrasesLowerCased(subject);
 	}
 
@@ -1558,6 +1588,8 @@ public class FormatDetermination {
 							}
 						} else if (subfieldData.contains("board books")) {
 							result.add("BoardBook");
+						} else if (subfieldData.contains("toniebox") || subfieldData.contains("tonie box")){
+							result.add("Tonie");
 						}
 					} else if (subfieldCode == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
