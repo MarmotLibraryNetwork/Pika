@@ -10315,6 +10315,62 @@ img.x-twit {
   text-align: center;
   text-transform: uppercase;
 }
+.browseButtonsRow {
+  display: flex;
+  flex-wrap: wrap;
+}
+.archiveComponentContainer.browseButtonBox {
+  flex: 0 0 auto;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent {
+  width: 160px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentHeader {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox a {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-decoration: none;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentIconContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 8px 0 0;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentImage {
+  width: 64px;
+  height: 64px;
+  max-width: 64px;
+  max-height: 64px;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: block;
+  padding: 8px 4px;
+}
 #pdfContainer {
   border: 1px solid lightgrey;
   margin: 10px;

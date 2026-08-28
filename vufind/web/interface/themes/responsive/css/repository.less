@@ -478,6 +478,74 @@
   text-transform: uppercase;
 }
 
+// Compact "Browse by X" popup-trigger buttons (subject / related filters):
+// lay them out horizontally, wrapping as needed, instead of stacking full-width.
+.browseButtonsRow {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.archiveComponentContainer.browseButtonBox {
+  flex: 0 0 auto;
+
+  .archiveComponent {
+    width: 160px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+
+    .archiveComponentHeader {
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .archiveComponentBody {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+
+      .archiveComponentBox {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+        width: 100%;
+
+        a {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          text-decoration: none;
+        }
+
+        .archiveComponentIconContainer {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 0;
+          padding: 8px 0 0;
+        }
+
+        .archiveComponentImage {
+          width: 64px;
+          height: 64px;
+          max-width: 64px;
+          max-height: 64px;
+        }
+
+        .archiveComponentControls {
+          flex: 0 0 auto;
+          min-height: 0;
+          display: block;
+          padding: 8px 4px;
+        }
+      }
+    }
+  }
+}
+
 #pdfContainer {
   border: 1px solid lightgrey;
   margin: 10px;
