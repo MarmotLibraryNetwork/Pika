@@ -62,6 +62,7 @@ public class FormatDetermination {
 	String matTypesToIgnore;
 
 	private Character typeOfRecordLeaderChar = null;
+	private Character ohOhEightAudienceChar = null;
 
 	FormatDetermination(ResultSet indexingProfileRS, HashMap<String, TranslationMap> translationMaps, Logger logger) throws SQLException {
 		this.logger = logger;
@@ -500,8 +501,11 @@ public class FormatDetermination {
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		RecordIdentifier      identifier   = recordInfo.getRecordIdentifier();
 		String                leader       = record.getLeader().toString();
+		ControlField fixedField008 = (ControlField) record.getVariableField("008");
+
 
 		typeOfRecordLeaderChar = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
+		ohOhEightAudienceChar  = getAudienceCharFrom008(fixedField008);
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
@@ -523,6 +527,7 @@ public class FormatDetermination {
 		getFormatFromPhysicalDescription(record, printFormats, identifier);
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats, identifier);
+		getFormatFromAlternateTitle(record, printFormats/*, identifier*/);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 
@@ -531,7 +536,6 @@ public class FormatDetermination {
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.isEmpty()) {
-				ControlField fixedField008 = (ControlField) record.getVariableField("008");
 				getFormatFrom008(fixedField008, printFormats);
 				getFormatFromLeader(printFormats, leader, fixedField008);
 				if (printFormats.size() > 1){
@@ -565,6 +569,17 @@ public class FormatDetermination {
 			}
 		}
 		return printFormats;
+	}
+
+	private Character getAudienceCharFrom008(ControlField ohOhEightField) {
+		Character targetAudienceChar = null;
+		if (ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+			targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
+			if (targetAudienceChar == ' ') {
+				targetAudienceChar = null;
+			}
+		}
+		return targetAudienceChar;
 	}
 
 	private final HashSet<String> formatsToFilter = new HashSet<>();
@@ -684,6 +699,13 @@ public class FormatDetermination {
 		if (hasOverRidingFormat("BookClubKit", printFormats)) {
 				return;
 		}
+
+		// Audio Figurine and kits, Tonie, Toniebox (should commonly also have PhysicalObject)
+		// Must come before Kit, since many are also cataloged as Kits
+		if (hasOverRidingFormat("Tonie", printFormats)){
+			return;
+		}
+
 		if (hasOverRidingFormat("Kit", printFormats)) {
 				return;
 		}
@@ -1074,8 +1096,37 @@ public class FormatDetermination {
 		}
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
-			if (findBookClubKitPhrases(title)){
+			title = title.toLowerCase();
+			if (findBookClubKitPhrasesLowerCased(title)){
 				printFormats.add("BookClubKit");
+			} else if (title.contains("toniebox") || title.contains("tonie box")) {
+				// Search for tonie box phrases only, since there is at least one title with Tonie as a name
+				printFormats.add("Tonie");
+			}
+		}
+	}
+
+	/**
+	 * Determine formats from the varying form of title (MARC 246).  Only fields with a second
+	 * indicator of 3 ("Other title") are considered, since those carry an alternate title the
+	 * item is also known by rather than a portion or variant of the 245.
+	 *
+	 * @param record       The MARC record to determine formats for
+	 * @param printFormats All the format determinations so far; any format found here is added to it
+	 */
+	private void getFormatFromAlternateTitle(Record record, Set<String> printFormats/*, RecordIdentifier identifier*/) {
+		List<DataField> marc246 = MarcUtil.getDataFields(record, "246");
+		for (DataField field : marc246) {
+			if (field != null && field.getIndicator2() == '3') {
+				// Second indicator 3 is an "Other title"
+				if (field.getSubfield('a') != null) {
+					String alternateTitle = field.getSubfield('a').getData().toLowerCase();
+					if (alternateTitle.contains("toniebox") || alternateTitle.contains("tonie")){
+						// Allow for "tonie" only phrase on alternate title search, since there is a
+						// lower risk of matching on alternate title containing a name "Tonie" coincidentally
+							printFormats.add("Tonie");
+					}
+				}
 			}
 		}
 	}
@@ -1200,8 +1251,10 @@ public class FormatDetermination {
 							result.add("WonderBook");
 						}else if (physicalDescriptionData.contains("vox book")){
 							result.add("VoxBook");
-						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")){
+						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")) {
 							result.add("PhysicalObject");
+						} else if (physicalDescriptionData.contains("toniebox") || physicalDescriptionData.contains("tonie")){
+							result.add("Tonie");
 						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
 							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
 							// allow phrases like "CD : digital" or "CDs : digital" to get us to MusicCD
@@ -1289,7 +1342,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 500 tag  (General Note)
+		// Check for formats in the 500 tag (General Note)
 		List<DataField> noteFields = record.getDataFields("500");
 		for (DataField noteField : noteFields) {
 			if (noteField != null) {
@@ -1313,8 +1366,9 @@ public class FormatDetermination {
 						result.add("BoardBook");
 					} else if (noteValue.contains("mp3")){
 						result.add("MP3");
+					} else if (noteValue.contains("toniebox") || noteValue.contains("tonie")){
+						result.add("Tonie");
 					}
-
 				}
 			}
 		}
@@ -1331,7 +1385,7 @@ public class FormatDetermination {
 			}
 		}
 
-		// Check for formats in the 590 tag  (Local Note)
+		// Check for formats in the 590 tag (Local Note)
 		List<DataField> noteField = record.getDataFields("590");
 		for(DataField localNoteField : noteField) {
 			if (localNoteField != null) {
@@ -1431,8 +1485,8 @@ public class FormatDetermination {
 	}
 
 		/**
-	 *  Avoid play station format determinations for descriptions of Blu-ray player that note
-	 *  that a play station is compatible with Blu-ray players.
+	 *  Avoid PlayStation format determinations for descriptions of Blu-ray player that note
+	 *  that a PlayStation is compatible with Blu-ray players.
 	 *
 	 * @param value text of a subfield
 	 * @return whether string is describing being Blu-ray compatible
@@ -1473,16 +1527,6 @@ public class FormatDetermination {
 						subject.contains("4k ultra hd/blu-ray combo") ||
 						subject.contains("4k ultra hd blu-ray + blu-ray")
 						;
-	}
-
-
-	/**
-	 * @param subject A string that could contain upper case text
-	 * @return contains one of the phrases, or not
-	 */
-	private Boolean findBookClubKitPhrases(String subject){
-		subject = subject.toLowerCase();
-		return findBookClubKitPhrasesLowerCased(subject);
 	}
 
 	/**
@@ -1534,6 +1578,8 @@ public class FormatDetermination {
 							}
 						} else if (subfieldData.contains("board books")) {
 							result.add("BoardBook");
+						} else if (subfieldData.contains("toniebox") || subfieldData.contains("tonie box")){
+							result.add("Tonie");
 						}
 					} else if (subfieldCode == 'v') {
 						String subfieldData = subfield.getData().toLowerCase();
@@ -1564,8 +1610,12 @@ public class FormatDetermination {
 							result.add("Playaway");
 						}else if (subfieldData.contains("readers for new literates")) {
 							result.add("AdultLiteracyBook");
-//						} else if (subfieldData.contains("high interest-low vocabulary") || subfieldData.contains("readers (publications)")) {
-//							result.add("EasyReader");
+						} else if (subfieldData.contains("readers (publications)") /*|| subfieldData.contains("high interest-low vocabulary")*/) {
+							// Check 008 Audience code
+							if (ohOhEightAudienceChar != null && (ohOhEightAudienceChar.equals('A') || ohOhEightAudienceChar.equals('B') || ohOhEightAudienceChar.equals('C') || ohOhEightAudienceChar.equals('J'))) {
+								// These are the preschool, primary, pre-adolescent, and juvenile-general audience codes.
+								result.add("EasyReader");
+							}
 						}else if (subfieldData.contains("graphic novel")
 										|| subfieldData.contains("comic books, strips, etc") // Library of Congress authorized term
 						) {
