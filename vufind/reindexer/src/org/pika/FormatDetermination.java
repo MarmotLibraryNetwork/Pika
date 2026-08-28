@@ -1097,7 +1097,7 @@ public class FormatDetermination {
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
 			title = title.toLowerCase();
-			if (findBookClubKitPhrases(title)){
+			if (findBookClubKitPhrasesLowerCased(title)){
 				printFormats.add("BookClubKit");
 			} else if (title.contains("toniebox") || title.contains("tonie box")) {
 				// Search for tonie box phrases only, since there is at least one title with Tonie as a name
@@ -1527,16 +1527,6 @@ public class FormatDetermination {
 						subject.contains("4k ultra hd/blu-ray combo") ||
 						subject.contains("4k ultra hd blu-ray + blu-ray")
 						;
-	}
-
-
-	/**
-	 * @param subject A string that should be lower-cased
-	 * @return contains one of the phrases, or not
-	 */
-	private Boolean findBookClubKitPhrases(String subject){
-		//subject = subject.toLowerCase();
-		return findBookClubKitPhrasesLowerCased(subject);
 	}
 
 	/**
