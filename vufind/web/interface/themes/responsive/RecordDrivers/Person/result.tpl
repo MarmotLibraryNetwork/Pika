@@ -40,7 +40,9 @@
 
 			<div class="col-tn-3 col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center"> *}
 			<div class="col-tn-4 col-xs-4 col-sm-4 col-md-4 col-lg-3 text-center">
-				<a href="/Person/{$summShortId}">
+				{* getLinkUrl() rather than a hand built path, so the thumbnail carries the same search
+				   position as the name above it and prev/next works from either link. *}
+				<a href="{$recordDriver->getLinkUrl()}">
 				{if $summPicture}
 					<img src="{$summPicture}" class="listResultImage" alt="{translate text='Picture'} of {if $summTitle}{$summTitle}{else}person{/if}"><br>
 				{else}
