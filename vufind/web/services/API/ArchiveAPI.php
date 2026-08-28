@@ -102,9 +102,11 @@ class API_ArchiveAPI extends AJAXHandler {
 				$dplaDoc['language'] = $language;
 			}
 
-			$alternativeTitle = $record->getAlternativeTitle();
-			if (!empty($alternativeTitle)){
-				$dplaDoc['alternativeTitle'] = $alternativeTitle;
+			// The alternative title field is multi-valued; a lone title is sent as a plain
+			// string so single-titled objects keep the shape the hub has always seen.
+			$alternativeTitles = $record->getAlternativeTitles();
+			if (!empty($alternativeTitles)){
+				$dplaDoc['alternativeTitle'] = count($alternativeTitles) == 1 ? $alternativeTitles[0] : $alternativeTitles;
 			} else {
 				$subTitle = $record->getSubTitle();
 				if (strlen($subTitle) > 0){

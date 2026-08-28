@@ -722,16 +722,20 @@ class Islandora2Driver extends RecordInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Alternative title for the object, or '' when none is set.
-	 * @return string
+	 * Alternative titles for the object, or an empty array when none are set.
+	 *
+	 * The Islandora field is multi-valued, so an object can carry several
+	 * alternative titles.
+	 *
+	 * @return string[]
 	 */
-	public function getAlternativeTitle(): string{
+	public function getAlternativeTitles(): array{
 			$obj = $this->ensureI2Object();
 			if (!$obj) {
-				return '';
+				return [];
 			}
-			$alternativeTitle = $this->firstNonEmptyString($obj->alternative_title); // magic __get → field_alternative_title
-			return $alternativeTitle;
+			$alternativeTitles = $this->nonEmptyStrings($obj->alternative_title); // magic __get → field_alternative_title
+			return $alternativeTitles;
 	}
 
 	/**
@@ -748,23 +752,25 @@ class Islandora2Driver extends RecordInterface
 
 	/**
 	 * Normalize a raw node field value that may be a plain string or a list of
-	 * strings (Drupal multi-value field) down to its first non-empty string.
+	 * strings (Drupal multi-value field) down to a list of its non-empty strings.
 	 *
 	 * @param mixed $raw
-	 * @return string
+	 * @return string[]
 	 */
-	private function firstNonEmptyString($raw): string {
+	private function nonEmptyStrings($raw): array {
 		if (is_string($raw)){
-			return $raw;
+			return $raw === '' ? [] : [$raw];
 		}
 		if (is_array($raw)){
+			$values = [];
 			foreach ($raw as $item){
 				if (is_string($item) && $item !== ''){
-					return $item;
+					$values[] = $item;
 				}
 			}
+			return $values;
 		}
-		return '';
+		return [];
 	}
 
 	/**
