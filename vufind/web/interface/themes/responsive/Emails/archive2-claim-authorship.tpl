@@ -14,5 +14,5 @@ Object Claimed:
 {if $requestedObject}
 {$requestedObject->getTitle()}
 {else}
-Could not load requested object.  NID is {$requestResult->getUniqueID()}
+Could not load the requested object.  NID is {$requestResult->getUniqueID()}
 {/if}
