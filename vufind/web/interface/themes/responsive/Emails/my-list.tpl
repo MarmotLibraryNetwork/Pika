@@ -21,11 +21,16 @@
 		{if $title.url}
 			{$url}{$title.url}
 		{/if}
+	{elseif $title.its_tid}{$title.tm_X3b_en_name[0]}{* a taxonomy term carries no node id and keeps its name in a field of its own, so it is checked after its_node_id; its format is its vocabulary *}
+		{$title.format}
+		{if $title.url}
+			{$url}{$title.url}
+		{/if}
 {/if}
 
 {section name=listEntry loop=$listEntries}
-{*If the listEntry has a note see if it is the same work*}
-{if $listEntries[listEntry]->notes && ($listEntries[listEntry]->groupedWorkPermanentId == $title.id || $listEntries[listEntry]->groupedWorkPermanentId == $title.PID)}
+{*If the listEntry has a note see if it is the same work. An archive document's Solr id is its uniqueKey rather than the id the list stores, so it is matched on listEntryId instead - the node id for an object, tax_vocabulary:tid for a taxonomy term.*}
+{if $listEntries[listEntry]->notes && ($listEntries[listEntry]->groupedWorkPermanentId == $title.id || $listEntries[listEntry]->groupedWorkPermanentId == $title.PID || $listEntries[listEntry]->groupedWorkPermanentId == $title.listEntryId)}
 {translate text="Notes"}: {$listEntries[listEntry]->notes}
 
 {/if}

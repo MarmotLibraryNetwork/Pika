@@ -919,6 +919,10 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			$recordDriver           = RecordDriverFactory::initRecordDriver($solrDocument);
 			$solrDocument['url']    = $recordDriver->getLinkUrl();
 			$solrDocument['format'] = $recordDriver->getFormat();
+			// The id user_list_entry stores for this document, so a caller can match it back to
+			// its list entry. An object's is its_node_id, but a term's is tax_{vocabulary}:{tid}
+			// and appears nowhere in the document; the Solr 'id' is the uniqueKey, not the entry.
+			$solrDocument['listEntryId'] = self::getEntryIdForDoc($solrDocument);
 			$recordSet[$key]        = $solrDocument;
 		}
 		return $recordSet;
