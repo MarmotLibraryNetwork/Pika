@@ -239,16 +239,18 @@ Pika.Lists = (function(){
 		},
 
 		copyList: function(id){
-			if (confirm("You are copying this list and all items to your lists. This could take a several moments depending on the size of the list. Are you sure you want to continue?"))
-			{
-				Pika.Account.ajaxLogin(function(){
-					Pika.loadingMessage();
+			// Log in before confirming rather than after, as importListsFromClassic does. Pika.confirm
+			// is a modal rather than the browser's blocking confirm, and ajaxLogin shows its form in
+			// that same modal, so asking first would have the login replace the open confirm dialog.
+			Pika.Account.ajaxLogin(function(){
+				// Pika.confirm shows the loading message itself before running this callback.
+				Pika.confirm("You are copying this list and all items to your lists. This could take several moments depending on the size of the list. Are you sure you want to continue?", function(){
 					var url = "/MyAccount/AJAX?method=copyList&copyFromId=" + id;
 					$.getJSON(url, function(data){
 						Pika.showMessage(data.title, data.body, 1,1);
 					}).fail(Pika.ajaxFail);
 				});
-			}
+			});
 			return false;
 		},
 
