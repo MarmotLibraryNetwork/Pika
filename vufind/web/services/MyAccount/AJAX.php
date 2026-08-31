@@ -1754,7 +1754,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 
 			$list          = new UserList();
-			$list->title   = strip_tags($title) . " (copy)";
+			$list->title   = strip_tags($title) . ' (copy)';
 			$list->user_id = $user->id;
 
 			//Check to see if there is already a list with this id
@@ -1767,9 +1767,20 @@ class MyAccount_AJAX extends AJAXHandler {
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 				//Check to see if the user has already added the title to the list.
 				foreach ($recordsToAdd as $item){
+					// An archive document's Solr id is its uniqueKey (entity:node/1234:en) rather
+					// than the id the list stores, so getResultRecordSet() supplies listEntryId --
+					// the node id for an object, tax_{vocabulary}:{tid} for a taxonomy term. It is
+					// an empty string for a document that is neither, so it cannot be tested with
+					// ??. A catalog work's own Solr id is already the id the list stores.
+					//TODO: With lists converted to the new Islandora, PID will soon be obsolete
+					$entryId = !empty($item['listEntryId']) ? $item['listEntryId'] : ($item['id'] ?? $item['PID'] ?? '');
+					if ($entryId === ''){
+						$this->logger->warn("Failed to get an entryId for User List $copyFromId during copy operation", $item);
+						continue; // nothing usable to store; skip rather than insert a blank entry
+					}
 					$userListEntry                         = new UserListEntry();
 					$userListEntry->listId                 = $list->id;
-					$userListEntry->groupedWorkPermanentId = $item['id'] ?? $item['PID'];
+					$userListEntry->groupedWorkPermanentId = $entryId;
 					$newUserListEntry                      = clone $userListEntry;
 					if (!$newUserListEntry->find(true)){
 						$newUserListEntry->dateAdded = time();
