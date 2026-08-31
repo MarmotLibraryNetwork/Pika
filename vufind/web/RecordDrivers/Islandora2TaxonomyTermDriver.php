@@ -146,6 +146,21 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		return getTaxonomyVocabularyLabel($this->vocabulary);
 	}
 
+	/**
+	 * A term has no format, so its vocabulary label stands in for one.
+	 *
+	 * RecordInterface does not declare getFormat(), but SearchObject_Islandora2::getResultRecordSet()
+	 * calls it on every document it returns, so a term reaching the Excel export or the email a
+	 * list action fataled without it. This is the same value MyAccount_MyList::exportToExcel()
+	 * puts in the Material Type column and the archive search spreadsheet puts in its format
+	 * column, so a term reads the same wherever it is exported.
+	 *
+	 * @return string  Person, Place, Organization or Event.
+	 */
+	public function getFormat(): string{
+		return $this->getVocabularyLabel();
+	}
+
 	public function getTitle(){
 		// When constructed from a Solr document the name is already available without an API
 		// call — use it directly to avoid triggering ensureTaxonomyObject(). A term reached
