@@ -458,6 +458,22 @@ class FavoriteHandler {
 		}
 
 
+		// Empty Lists //
+		// An empty list runs neither the catalog nor the archive search, and those searches are what build
+		// the sort options, so build them here instead. Otherwise the sort controls have nothing to show and
+		// the paging link below, which reuses the current sort's url, has no option to read it from.
+		if (empty($this->catalogIds) && empty($this->archiveIds)){
+			/** @var SearchObject_UserListSolr $emptyListSearchObject */
+			$emptyListSearchObject               = SearchObjectFactory::initSearchObject('UserListSolr');
+			$emptyListSearchObject->userListSort = $this->sort;
+			if ($isPageSizeParamSet){
+				$emptyListSearchObject->userListPageSize = $recordsPerPage;
+			}
+			$emptyListSearchObject->init();
+			$this->populateSortOptionsForList($emptyListSearchObject, $this->solrSortOptions, $sortOptions, $defaultSortOptions);
+		}
+
+
 		// Archive Search
 		$archiveResourceList = [];
 		if (count($this->archiveIds) > 0){
@@ -581,11 +597,16 @@ class FavoriteHandler {
 		$interface->assign('recordEnd', min($pageInfo['endRecord'], $pageInfo['resultTotal']));  //search filtering may reduce the number of entries being displayed
 		$interface->assign('recordsPerPage', $pageInfo['perPage']);
 
-		$link = $sortOptions[$this->sort]['sortUrl']; // Use sanitized url to prevent cross-site script injection via url variables
-		//TODO: what to do when $this->sort isn't set
-		if (is_null($this->sort)){
+		if (isset($sortOptions[$this->sort]['sortUrl'])){
+			$link = $sortOptions[$this->sort]['sortUrl']; // Use sanitized url to prevent cross-site script injection via url variables
+		}else{
+			// The sort isn't one of the options offered for this list's mix of items; eg. a catalog sort left
+			// in the url for a list that holds only archive items. Fall back to the first option that is
+			// offered rather than building the paging links out of raw url input.
 			global $pikaLogger;
-			$pikaLogger->error("List sort not set when it should always have a value" . $_SERVER["REQUEST_URI"]);
+			$pikaLogger->warning("List sort '{$this->sort}' is not an available sort option for list {$this->listId}", [$_SERVER['REQUEST_URI']]);
+			$firstSortOption = reset($sortOptions);
+			$link            = $firstSortOption['sortUrl'] ?? '';
 		}
 		if (preg_match('/[&?]page=/', $link)){
 			$link = preg_replace("/page=\\d+/", 'page=%d', $link);
