@@ -1136,8 +1136,6 @@ class ListAPI extends AJAXHandler {
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
 			];
-			//We already have a list, clear the contents, so we don't have titles from last time
-			$nytList->removeAllListEntries();
 		}
 
 		// We need to add titles to the list //
@@ -1160,6 +1158,12 @@ class ListAPI extends AJAXHandler {
 				'success' => false,
 				'message' => $faultMessage,
 			];
+		}
+
+		if ($listExistsInPika){
+			//We already have a list, clear the contents, so we don't have titles from last time.  This waits until we
+			//have the new titles in hand, so that a failed call to the New York Times does not empty the list.
+			$nytList->removeAllListEntries();
 		}
 
 		$numTitlesAdded = 0;
@@ -1189,7 +1193,7 @@ class ListAPI extends AJAXHandler {
 			if ($pikaID == null){
 				$ISBNs = [];
 				if (!empty($bookDetails->isbns)){
-					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
+					//Note: each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
 					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
 					foreach ($bookDetails->isbns as $isbnEntry){
 						if (!empty($isbnEntry->isbn13) && ISBN::isValidISBN13($isbnEntry->isbn13)){
