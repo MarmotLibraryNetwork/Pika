@@ -1005,8 +1005,19 @@ class ListAPI extends AJAXHandler {
 		}
 
 		// Get the raw response from the API with a list of all the names
-		$nyt_api = new ExternalEnrichment\NYTApi($api_key);
-		return $nyt_api->getList($listName);
+		$nyt_api     = new ExternalEnrichment\NYTApi($api_key);
+		$nytResponse = $nyt_api->getList($listName);
+
+		// A fault response carries no lists, so report the problem rather than returning a response the caller
+		// cannot read.  (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($nytResponse);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+		return $nytResponse;
 	}
 
 	/**
@@ -1054,6 +1065,15 @@ class ListAPI extends AJAXHandler {
 		//Get from the API with a list of all the names
 		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
 		$availableLists = $nyt_api->getLists();
+
+		// (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($availableLists);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
 
 		//Get the human-readable title for our selected list
 		$selectedListTitle       = null;
@@ -1132,6 +1152,16 @@ class ListAPI extends AJAXHandler {
 
 		//Get a list of titles from NYT API
 		$availableLists = $nyt_api->getList($selectedList);
+
+		// (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($availableLists);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+
 		$numTitlesAdded = 0;
 		$titleResults   = $availableLists->results;
 		$this->logger->notice("Populating user list $listID for NYTimes bestseller list $selectedList");

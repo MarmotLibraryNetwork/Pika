@@ -35,9 +35,12 @@ class NYTApi {
 //	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v3/lists/';
 	const BASE_URI = 'https://api.nytimes.com/svc/books/v3/lists/';
 	protected $api_key;
+	protected $logger;
 
 	public function __construct($key){
+		global $pikaLogger;
 		$this->api_key = $key;
+		$this->logger  = $pikaLogger->withName(__CLASS__);
 	}
 
 	protected function buildUrl($listName = null): string{
@@ -85,15 +88,42 @@ class NYTApi {
 		if (!$response){
 			$error = curl_error($curl);
 			if (!empty($error)){
-				global $pikaLogger;
-				$logger = $pikaLogger->withName(__CLASS__);
-				$logger->error($error);
+				$this->logger->error($error);
 			}
 		}
 		// Close request to clear up some resources
 		// curl_close($curl); - deprecated in PHP 8.5, the CurlHandle frees itself
+
+		$decodedResponse = json_decode($response);
+
+		$faultMessage = self::getFaultMessage($decodedResponse);
+		if ($faultMessage !== null){
+			$this->logger->error($faultMessage, ['list' => empty($listName) ? 'overview' : $listName]);
+		}
+
 		// return response
-		return json_decode($response);
+		return $decodedResponse;
+	}
+
+	/**
+	 * The New York Times API reports rate limit violations and similar problems in the body of a response that curl
+	 * considers successful, e.g.
+	 * {"fault":{"faultstring":"Rate limit quota violation. Quota limit  exceeded. Identifier : 671b6860-427c-4dd2-9d08-daa63d434fe4","detail":{"errorcode":"policies.ratelimit.QuotaViolation"}}}
+	 * A response carrying a fault has no results, so callers should stop rather than read the data they asked for.
+	 *
+	 * @param mixed $response decoded response from the New York Times API
+	 * @return string|null the fault as a readable message, or null when the response does not contain one
+	 */
+	public static function getFaultMessage($response): ?string{
+		if (empty($response->fault)){
+			return null;
+		}
+		$fault   = $response->fault;
+		$message = $fault->faultstring ?? 'Unknown fault';
+		if (!empty($fault->detail->errorcode)){
+			$message .= ' [' . $fault->detail->errorcode . ']';
+		}
+		return 'The New York Times API returned a fault : ' . $message;
 	}
 
 }
