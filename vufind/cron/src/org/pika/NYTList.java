@@ -96,7 +96,7 @@ public class NYTList implements IProcessHandler {
 	}
 
 	public void addNYTItemsToList(String pikaSiteURL, Logger logger, CronProcessLogEntry processEntry, Connection pikaConn ) throws MalformedURLException {
-		// The NY Times API has calls limits. This is taken from: https://developer.nytimes.com/faq#a11
+		// The NY Times API has call limits. This is taken from: https://developer.nytimes.com/faq#a11
 		// there are two rate limits per API: 500 requests per day and 5 requests per minute.
 		// You should sleep 12 seconds between calls to avoid hitting the per minute rate limit. If you need a higher rate limit, please contact us at code@nytimes.com.
 		String        url         = pikaSiteURL + "/API/ListAPI?method=getAvailableListsFromNYT";
@@ -110,9 +110,18 @@ public class NYTList implements IProcessHandler {
 					str.append(scan.nextLine());
 				}
 			}
-			JSONObject obj     = new JSONObject(stripPHPNoticeFromJSONResponse(str, logger));
-			JSONObject result  = obj.getJSONObject("result");
-			JSONArray  results = result.getJSONObject("results").getJSONArray("lists");
+			JSONObject obj    = new JSONObject(stripPHPNoticeFromJSONResponse(str, logger));
+			JSONObject result = obj.getJSONObject("result");
+			// A successful response is the New York Times overview itself, which carries no success flag, so there is
+			// only one to check when the List API has a problem to report, e.g., a rate limit violation.
+			if (!result.optBoolean("success", true)) {
+				final String message = "Could not get the list of NY Times lists : " + result.optString("message", "Unknown error");
+				logger.error(message);
+				processEntry.addNote(message);
+				processEntry.incErrors();
+				return;
+			}
+			JSONArray results = result.getJSONObject("results").getJSONArray("lists");
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject    newResult         = (JSONObject) results.get(i);
 				String        encoded_list_name = newResult.get("list_name_encoded").toString();
