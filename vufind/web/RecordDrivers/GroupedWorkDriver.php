@@ -327,7 +327,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$interface->assign('relatedManifestations', $relatedManifestations);
 
 		//Build the link URL.
-		//If there is only one record for the work we will link straight to that.
+		//If there is only one record for the work, we will link straight to that.
 		$linkUrl = $this->getMoreInfoLinkUrl();
 		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 
@@ -475,7 +475,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
 		$interface->assign('summId', $id);
-		if (substr($id, 0, 1) == '.'){
+		if (str_starts_with($id, '.')){
 			$interface->assign('summShortId', substr($id, 1));
 		}else{
 			$interface->assign('summShortId', $id);

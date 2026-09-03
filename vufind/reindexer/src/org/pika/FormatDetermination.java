@@ -218,6 +218,11 @@ public class FormatDetermination {
 							econtentItem.setFormatCategory("eBook");
 							econtentRecord.setFormatBoost(10);
 							break;
+						case "easyreader":
+							econtentItem.setFormat("Easy Reader eBook");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(10);
+							break;
 						case "journal":
 						case "serial":
 							econtentItem.setFormat("eMagazine");
