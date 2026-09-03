@@ -3528,6 +3528,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Braille':
 			case 'CD':
 			case 'Easy Reader':
+			case 'Easy Reader eBook':
 			case 'eAudiobook':
 			case 'eBook':
 			case 'eMagazine':
@@ -3621,6 +3622,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'eBook':
 			case 'eComic':
 			case 'eMagazine':
+			case 'Easy Reader eBook':
 				return 'EBook';
 
 			case 'Graphic Novel':
