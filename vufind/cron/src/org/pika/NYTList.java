@@ -11,8 +11,17 @@ import java.sql.Connection;
 import java.util.Scanner;
 
 public class NYTList implements IProcessHandler {
-	// The NY Times API allows 5 requests per minute, so wait 12 seconds between calls that reach it.
+	// The NY Times API allows 5 requests per minute, so wait between calls that reach it.
 	private static final long NYT_API_CALL_DELAY = 14000L;
+	// The delay above is not always enough, so back off for longer again before asking for the same list a second or
+	// third time.  Each retry waits this much longer than the one before it.
+	private static final long NYT_API_RETRY_DELAY = 60000L;
+	// How many times to ask for a single list before giving up on it and counting a process error.
+	private static final int NYT_API_MAX_ATTEMPTS = 3;
+	// The rate limit fault the NY Times sends back, as it reaches us through the Pika List API.  The error code is only
+	// present when the NY Times sends the detail along with it, so fall back to the text of the fault itself.
+	private static final String NYT_API_QUOTA_ERROR_CODE = "policies.ratelimit.QuotaViolation";
+	private static final String NYT_API_QUOTA_ERROR_TEXT = "Rate limit quota violation";
 
 	private PikaSystemVariables systemVariables;
 	private String userAgent;
@@ -123,53 +132,81 @@ public class NYTList implements IProcessHandler {
 			}
 			logger.info("Got NY Times list of lists: {}", result);
 			JSONArray results = result.getJSONObject("results").getJSONArray("lists");
+			listLoop:
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject    newResult         = (JSONObject) results.get(i);
 				String        encoded_list_name = newResult.get("list_name_encoded").toString();
-				// Each of these calls to the Pika List API triggers a call to the NY Times API, so pause between them to
-				// stay under the per minute rate limit.  (The list of lists fetched above was a NY Times call as well.)
-				try {
-					Thread.sleep(NYT_API_CALL_DELAY);
-				} catch (InterruptedException e) {
-					logger.warn("Sleep was interrupted while waiting to update NY Times list {}.", encoded_list_name);
-					Thread.currentThread().interrupt();
-					break;
-				}
 				String        updateUrl         = pikaSiteURL + "/API/ListAPI?method=createUserListFromNYT&listToUpdate=" + encoded_list_name;
-				URL           updateLocation    = new URL(updateUrl);
-				HttpURLConnection updateConn    = (HttpURLConnection) updateLocation.openConnection();
-				updateConn.setRequestProperty("User-Agent", userAgent);
-				try (Scanner updateScan = new Scanner(updateConn.getInputStream())) {
-					StringBuilder updateStr = new StringBuilder();
-					while (updateScan.hasNext()) {
-						updateStr.append(updateScan.nextLine());
+
+				int     attempt       = 0;
+				boolean quotaExceeded = false;
+				do {
+					// Each of these calls to the Pika List API triggers a call to the NY Times API, so pause between them
+					// to stay under the per minute rate limit.  (The list of lists fetched above was a NY Times call as
+					// well.) A retry waits longer again, to give the rate limit the time it needs to recover.
+					long delay = attempt == 0 ? NYT_API_CALL_DELAY : attempt * NYT_API_RETRY_DELAY;
+					try {
+						Thread.sleep(delay);
+					} catch (InterruptedException e) {
+						logger.warn("Sleep was interrupted while waiting to update NY Times list {}.", encoded_list_name);
+						Thread.currentThread().interrupt();
+						break listLoop;
 					}
-					String     resultStr    = stripPHPNoticeFromJSONResponse(updateStr, logger);
-					JSONObject updateStatus = new JSONObject(resultStr);
-					JSONObject resultJSON   = updateStatus.getJSONObject("result");
-					logger.debug("NY Times List Update Status: {}", resultJSON);
-					if (resultJSON.getBoolean("success")) {
-						String message = resultJSON.getString("message").split("<br>")[1];
-						processEntry.addNote("Updated List: " + encoded_list_name + " " + message);
-						processEntry.incUpdated();
-					} else {
-						processEntry.addNote("Could not update list: " + encoded_list_name + " " + resultJSON.getString("message"));
-						logger.error("Could not update list: {} {}",  encoded_list_name, resultJSON);
-						logger.debug("Request URL was: {}", updateUrl);
+					attempt++;
+					quotaExceeded = false;
+
+					URL               updateLocation = new URL(updateUrl);
+					HttpURLConnection updateConn     = (HttpURLConnection) updateLocation.openConnection();
+					updateConn.setRequestProperty("User-Agent", userAgent);
+					try (Scanner updateScan = new Scanner(updateConn.getInputStream())) {
+						StringBuilder updateStr = new StringBuilder();
+						while (updateScan.hasNext()) {
+							updateStr.append(updateScan.nextLine());
+						}
+						String     resultStr    = stripPHPNoticeFromJSONResponse(updateStr, logger);
+						JSONObject updateStatus = new JSONObject(resultStr);
+						JSONObject resultJSON   = updateStatus.getJSONObject("result");
+						logger.debug("NY Times List Update Status: {}", resultJSON);
+						if (resultJSON.getBoolean("success")) {
+							String message = resultJSON.getString("message").split("<br>")[1];
+							processEntry.addNote("Updated List: " + encoded_list_name + " " + message);
+							processEntry.incUpdated();
+						} else {
+							String message = resultJSON.optString("message", "Unknown error");
+							// The rate limit is worth waiting out; any other failure will come back just the same.
+							if (isQuotaViolation(message) && attempt < NYT_API_MAX_ATTEMPTS) {
+								quotaExceeded = true;
+								logger.warn("Rate limit reached updating NY Times list {} on attempt {} of {}, will try again", encoded_list_name, attempt, NYT_API_MAX_ATTEMPTS);
+							} else {
+								processEntry.addNote("Could not update list: " + encoded_list_name + " " + message);
+								logger.error("Could not update list: {} {}",  encoded_list_name, resultJSON);
+								logger.debug("Request URL was: {}", updateUrl);
+								processEntry.incErrors();
+							}
+						}
+						processEntry.saveToDatabase(pikaConn, logger);
+					} catch (Exception e){
+						logger.error("Error trying to update NY Times list {}", encoded_list_name, e);
 						processEntry.incErrors();
+						// Caught exception, now try to build other lists
 					}
-					processEntry.saveToDatabase(pikaConn, logger);
-				} catch (Exception e){
-					logger.error("Error trying to update NY Times list {}", encoded_list_name, e);
-					processEntry.incErrors();
-					// Caught exception, now try to build other lists
-				}
+				} while (quotaExceeded);
 			}
 		} catch (Exception e) {
 			logger.error("Cannot reach Pika server or server down", e);
 			logger.error("Pika Response: {}", str);
 			processEntry.incErrors();
 		}
+	}
+
+	/**
+	 * Was this failure the NY Times turning us away for asking too often, rather than a problem with the list itself?
+	 *
+	 * @param message the message the Pika List API sent back with the failure
+	 * @return whether the message reports a rate limit violation
+	 */
+	private static boolean isQuotaViolation(String message) {
+		return message != null && (message.contains(NYT_API_QUOTA_ERROR_CODE) || message.contains(NYT_API_QUOTA_ERROR_TEXT));
 	}
 
 	public String stripPHPNoticeFromJSONResponse(StringBuilder updateStr, Logger logger){
