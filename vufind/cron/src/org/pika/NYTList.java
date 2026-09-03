@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class NYTList implements IProcessHandler {
 	// The NY Times API allows 5 requests per minute, so wait 12 seconds between calls that reach it.
-	private static final long NYT_API_CALL_DELAY = 12000L;
+	private static final long NYT_API_CALL_DELAY = 13000L;
 
 	private PikaSystemVariables systemVariables;
 	private String userAgent;
@@ -121,6 +121,7 @@ public class NYTList implements IProcessHandler {
 				processEntry.incErrors();
 				return;
 			}
+			logger.info("Got NY Times list of lists: {}", result);
 			JSONArray results = result.getJSONObject("results").getJSONArray("lists");
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject    newResult         = (JSONObject) results.get(i);
