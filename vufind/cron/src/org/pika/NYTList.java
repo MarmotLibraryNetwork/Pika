@@ -11,6 +11,9 @@ import java.sql.Connection;
 import java.util.Scanner;
 
 public class NYTList implements IProcessHandler {
+	// The NY Times API allows 5 requests per minute, so wait 12 seconds between calls that reach it.
+	private static final long NYT_API_CALL_DELAY = 12000L;
+
 	private PikaSystemVariables systemVariables;
 	private String userAgent;
 
@@ -64,7 +67,7 @@ public class NYTList implements IProcessHandler {
 			JSONObject groupedObject = statusObject.getJSONObject("grouped");
 			int        uptime        = Integer.parseInt(groupedObject.get("uptime").toString());
 			if (uptime > 0 && uptime < 999000000) {
-				// Now check that index size is close to the expected size we have in solr_grouped_minimum_number_records
+				// Now check that the index size is close to the expected size we have in solr_grouped_minimum_number_records
 				// If not, that indicates an incomplete index that will likely not have all the NY Time titles we want in it.
 				String documentCount = groupedObject.getJSONObject("index").get("numDocs").toString();
 				long documentsInIndex = Long.parseLong(documentCount);
@@ -93,6 +96,9 @@ public class NYTList implements IProcessHandler {
 	}
 
 	public void addNYTItemsToList(String pikaSiteURL, Logger logger, CronProcessLogEntry processEntry, Connection pikaConn ) throws MalformedURLException {
+		// The NY Times API has calls limits. This is taken from: https://developer.nytimes.com/faq#a11
+		// there are two rate limits per API: 500 requests per day and 5 requests per minute.
+		// You should sleep 12 seconds between calls to avoid hitting the per minute rate limit. If you need a higher rate limit, please contact us at code@nytimes.com.
 		String        url         = pikaSiteURL + "/API/ListAPI?method=getAvailableListsFromNYT";
 		URL           apiLocation = new URL(url);
 		StringBuilder str         = new StringBuilder();
@@ -110,6 +116,15 @@ public class NYTList implements IProcessHandler {
 			for (int i = 0; i < results.length(); i++) {
 				JSONObject    newResult         = (JSONObject) results.get(i);
 				String        encoded_list_name = newResult.get("list_name_encoded").toString();
+				// Each of these calls to the Pika List API triggers a call to the NY Times API, so pause between them to
+				// stay under the per minute rate limit.  (The list of lists fetched above was a NY Times call as well.)
+				try {
+					Thread.sleep(NYT_API_CALL_DELAY);
+				} catch (InterruptedException e) {
+					logger.warn("Sleep was interrupted while waiting to update NY Times list {}.", encoded_list_name);
+					Thread.currentThread().interrupt();
+					break;
+				}
 				String        updateUrl         = pikaSiteURL + "/API/ListAPI?method=createUserListFromNYT&listToUpdate=" + encoded_list_name;
 				URL           updateLocation    = new URL(updateUrl);
 				HttpURLConnection updateConn    = (HttpURLConnection) updateLocation.openConnection();
@@ -122,12 +137,15 @@ public class NYTList implements IProcessHandler {
 					String     resultStr    = stripPHPNoticeFromJSONResponse(updateStr, logger);
 					JSONObject updateStatus = new JSONObject(resultStr);
 					JSONObject resultJSON   = updateStatus.getJSONObject("result");
+					logger.debug("NY Times List Update Status: {}", resultJSON);
 					if (resultJSON.getBoolean("success")) {
 						String message = resultJSON.getString("message").split("<br>")[1];
 						processEntry.addNote("Updated List: " + encoded_list_name + " " + message);
 						processEntry.incUpdated();
 					} else {
 						processEntry.addNote("Could not update list: " + encoded_list_name + " " + resultJSON.getString("message"));
+						logger.error("Could not update list: {} {}",  encoded_list_name, resultJSON);
+						logger.debug("Request URL was: {}", updateUrl);
 						processEntry.incErrors();
 					}
 					processEntry.saveToDatabase(pikaConn, logger);
