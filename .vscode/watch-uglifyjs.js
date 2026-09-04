@@ -6,10 +6,12 @@
  *        excluding files already ending in .min.js (its own output).
  *
  * Per-file command (run in the file's own directory):
- *   uglifyjs <filename>.js -c arrows=false -o <filename>.min.js
+ *   uglifyjs <filename>.js -o <filename>.min.js
  *
- * arrows=false and no mangler match the style already committed for the existing
- * min.js files in this directory (compressed but not mangled, no arrow functions).
+ * No compressor and no mangler, which is what the PhpStorm watcher runs and what
+ * reproduces the committed min.js files byte for byte. They are not compressed:
+ * adding -c rewrites them wholesale, so anyone saving through VS Code would have
+ * produced a diff against every file the PhpStorm watcher had ever written.
  *
  * After minifying, also re-runs merge_javascript.php (in the parent js/ directory)
  * to rebuild the bundled js/pika.min.js from javascript_files.txt, since that
@@ -44,7 +46,7 @@ function minify(filePath) {
   console.log(`[uglifyjs] minifying ${filePath}`);
   try {
     execSync(
-      `uglifyjs "${input}" -c arrows=false -o "${output}"`,
+      `uglifyjs "${input}" -o "${output}"`,
       { cwd: dir, stdio: 'inherit' }
     );
     console.log(`[uglifyjs]  → ${path.join(dir, output)}`);
