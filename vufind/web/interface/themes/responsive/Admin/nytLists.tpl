@@ -4,9 +4,6 @@
 		For more information on using the New York Times lists, see the <a href="https://marmot-support.atlassian.net/l/c/QiEJFkxb">online documentation</a>.
 	</div>
 
-
-	<h2 class="h3">Create or Update a List</h2>
-
 	{if $error}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
@@ -15,6 +12,13 @@
 		<div class="alert alert-success">{$successMessage}</div>
 	{/if}
 
+	<h2 class="h3">Update All Lists</h2>
+	<form action="" method="post" id="updateAllListsForm">
+		<p>Create or update a Pika list for every list the New York Times is currently publishing.  This takes a single call to the New York Times API, but can take a few minutes to finish.</p>
+		<button type="submit" name="updateAllLists" value="1" class="btn btn-primary">Update All Lists</button>
+	</form>
+
+	<h2 class="h3">Create or Update a List</h2>
 	<form action="" method="post" id="buildList">
 		<div class="form-group">
 			<p>Next Publish Date for Lists: {$availableLists->results->published_date}</p>

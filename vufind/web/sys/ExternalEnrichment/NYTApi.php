@@ -55,9 +55,41 @@ class NYTApi {
 		return $url;
 	}
 
+	/**
+	 * Get every list The New York Times is currently publishing, with all of the books on each of them.
+	 *
+	 * The overview is the same for everyone who asks for it and only changes when The New York Times publishes new
+	 * lists, so it is cached to keep repeated visits to the administration page from spending requests against the
+	 * rate limit.  Add reload to the request to skip the cache and ask The New York Times again.
+	 *
+	 * @return mixed the decoded overview response
+	 */
 	public function getLists(){
 		//return $this->getList('names'); // call for fetching lists prior to May 2025
-		return $this->getList();
+		/** @var \Memcache $memCache */
+		global $memCache, $configArray, $instanceName;
+		$cacheKey = $instanceName . '_nytimes_overview';
+		if (!isset($_REQUEST['reload'])){
+			$cachedResponse = $memCache->get($cacheKey);
+			if ($cachedResponse !== false){
+				$this->logger->debug('Found the New York Times overview in the cache with key : ' . $cacheKey);
+				return $cachedResponse;
+			}
+		}
+
+		$response = $this->getList();
+
+		//Only cache a response we can use.  A fault or a response without any lists has to be asked for again rather
+		//than kept for the hour, or one rate-limited call would leave the lists unavailable for the whole of it.
+		if (!empty($response->results->lists) && self::getFaultMessage($response) === null){
+			$cacheDuration = $configArray['Caching']['nytimesAPICalls'] ?? 3600;
+			if ($memCache->set($cacheKey, $response, 0, $cacheDuration)){
+				$this->logger->debug('Cached the New York Times overview with key : ' . $cacheKey . ' for ' . $cacheDuration . ' seconds');
+			}else{
+				$this->logger->error('Failed to update memcache variable ' . $cacheKey);
+			}
+		}
+		return $response;
 	}
 
 	public function getList($listName = null){
