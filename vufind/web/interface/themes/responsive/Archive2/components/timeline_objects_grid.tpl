@@ -34,7 +34,7 @@
 			{/if}
 		</div>
 		{if $pageCount > 1}
-			<div class="d-flex justify-content-center">
+			<nav class="d-flex justify-content-center" aria-label="{translate text='Timeline pages'}">
 				<ul class="pagination collection-pager">
 					{if $page > 1}
 						<li class="page-item"><a class="page-link" href="#" onclick="return Pika.Archive2.gotoTimelinePage(1);">&laquo; First</a></li>
@@ -46,7 +46,7 @@
 						<li class="page-item"><a class="page-link" href="#" onclick="return Pika.Archive2.gotoTimelinePage({$pageCount});">Last &raquo;</a></li>
 					{/if}
 				</ul>
-			</div>
+			</nav>
 		{/if}
 	{else}
 		<p>No items found{if $selectedPlaceName} for this location{/if}.</p>

@@ -31,7 +31,7 @@
 		{$pageContent}
 	{/if}
 
-	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+	{if $pageLinks.all}<nav aria-label="{translate text='Search results pages'}">{$pageLinks.all}</nav>{/if}
 
     {include file="Search/searchTools.tpl" showAdminTools=false}
 

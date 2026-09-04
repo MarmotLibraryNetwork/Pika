@@ -5,7 +5,7 @@
 {if $pageCount > 1}
 	{assign var="prevPage" value=$page-1}
 	{assign var="nextPage" value=$page+1}
-	<div class="d-flex justify-content-center">
+	<nav class="d-flex justify-content-center" aria-label="{translate text='Collection pages'}">
 		<ul class="pagination collection-pager">
 			{if $page > 1}
 				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':1}">&laquo; First</a></li>
@@ -17,5 +17,5 @@
 				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':$pageCount}">Last &raquo;</a></li>
 			{/if}
 		</ul>
-	</div>
+	</nav>
 {/if}

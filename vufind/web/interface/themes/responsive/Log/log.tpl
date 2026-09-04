@@ -58,7 +58,7 @@
 			{include file="$logTable"}
 		</div>
 
-      {if $pageLinks.all}<div class="d-flex justify-content-center">{$pageLinks.all}</div>{/if}
+      {if $pageLinks.all}<nav class="d-flex justify-content-center" aria-label="{translate text='Log entry pages'}">{$pageLinks.all}</nav>{/if}
 	</div>
 {/strip}
 
