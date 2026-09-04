@@ -123,6 +123,11 @@ $link-color-resp: #4273AC !default; //https://webaim.org/resources/contrastcheck
 $link-color: $link-color-resp !default; // Set bootstrap default link coloring to our responsive link coloring
 
 $darkened-link-color-resp: darken($link-color-resp, 5%) !default;
+
+// Links on the tinted alert backgrounds, where $link-color-resp is too light to reach 4.5:1.
+// https://webaim.org/resources/contrastchecker/?fcolor=3C5D89&bcolor=CEE5EF  (alert-info)
+// https://webaim.org/resources/contrastchecker/?fcolor=3C5D89&bcolor=F6D3D3  (alert-danger, the tightest of the variants in use)
+$alert-link-color: #3C5D89 !default;
 // https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=F2DEDE
 // https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=EEEEEE
 

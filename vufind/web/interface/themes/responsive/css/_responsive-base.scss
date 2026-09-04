@@ -44,6 +44,21 @@ a:hover {
   color: darken($link-color-resp, 10%);
 }
 
+// Links inside an alert sit on one of Bootstrap's tinted "subtle" backgrounds rather than
+// on white, and the site link color is not dark enough for them: it measures 3.28:1 to
+// 4.42:1 across the alert variants, against the 4.5:1 WCAG 2.1 AA needs for normal text.
+// $alert-link-color clears 4.5:1 on all eight variants (worst case 4.51 on alert-dark,
+// 4.88 on alert-danger, 5.17 on the alert-info that was reported).
+// Only the resting color needs this - the hover color was already dark enough.
+.alert a {
+  color: $alert-link-color;
+
+  &:hover,
+  &:focus {
+    color: darken($alert-link-color, 10%);
+  }
+}
+
 @media print {
   a:link:after,
   a:visited:after {
