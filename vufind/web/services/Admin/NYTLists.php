@@ -90,6 +90,7 @@ class NYTLists extends Admin_Admin {
 				// Get User Lists
 				$nyTimesUserLists          = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
+				$nyTimesUserLists->deleted = 0;  // Don't include deleted lists
 				$nyTimesUserLists->whereAdd('title like "NYT - %"');
 				$nyTimesUserLists->orderBy('title');
 				$pikaLists = $nyTimesUserLists->fetchAll();
