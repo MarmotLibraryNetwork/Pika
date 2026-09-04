@@ -8,13 +8,13 @@
 	<div class="d-flex justify-content-center">
 		<ul class="pagination collection-pager">
 			{if $page > 1}
-				<li><a href="{$pagerUrlTemplate|replace:'%d':1}">&laquo; First</a></li>
-				<li><a href="{$pagerUrlTemplate|replace:'%d':$prevPage}">&lsaquo; Previous</a></li>
+				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':1}">&laquo; First</a></li>
+				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':$prevPage}">&lsaquo; Previous</a></li>
 			{/if}
-			<li class="disabled"><span>Page {$page} of {$pageCount}</span></li>
+			<li class="page-item disabled"><span class="page-link">Page {$page} of {$pageCount}</span></li>
 			{if $page < $pageCount}
-				<li><a href="{$pagerUrlTemplate|replace:'%d':$nextPage}">Next &rsaquo;</a></li>
-				<li><a href="{$pagerUrlTemplate|replace:'%d':$pageCount}">Last &raquo;</a></li>
+				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':$nextPage}">Next &rsaquo;</a></li>
+				<li class="page-item"><a class="page-link" href="{$pagerUrlTemplate|replace:'%d':$pageCount}">Last &raquo;</a></li>
 			{/if}
 		</ul>
 	</div>
