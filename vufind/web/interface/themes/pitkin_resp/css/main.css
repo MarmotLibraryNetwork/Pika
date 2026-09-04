@@ -23752,7 +23752,7 @@ img.x-twit {
   text-transform: uppercase;
   white-space: nowrap;
 }
-@media (max-width: 479px) {
+@media (max-width: 1199px) {
   .exploreMoreBar .exploreMoreBarLabel {
     white-space: normal;
   }
@@ -24038,6 +24038,65 @@ img.x-twit {
   text-transform: uppercase;
 }
 
+.browseButtonsRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.archiveComponentContainer.browseButtonBox {
+  flex: 0 0 auto;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent {
+  width: 160px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentHeader {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox a {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-decoration: none;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentIconContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 8px 0 0;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentImage {
+  width: 64px;
+  height: 64px;
+  max-width: 64px;
+  max-height: 64px;
+}
+.archiveComponentContainer.browseButtonBox .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: block;
+  padding: 8px 4px;
+}
+
 #pdfContainer {
   border: 1px solid lightgrey;
   margin: 10px;
@@ -24125,16 +24184,6 @@ img.x-twit {
   margin: 0;
 }
 
-.taxonomy-wrapper-thumbnail-col .taxonomy-thumbnail {
-  max-width: 390px;
-  float: left;
-}
-
-.taxonomy-related-thumb {
-  max-height: 120px;
-  margin: 0 auto 8px;
-}
-
 .taxonomy-map-embed {
   border: 0;
 }
@@ -24165,6 +24214,17 @@ img.x-twit {
 .timeline-year-heading {
   border-bottom: 2px solid #ccc;
   padding-bottom: 0.25em;
+}
+
+.collection-pager > li > a,
+.collection-pager > li > span {
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 40px;
+  line-height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 15px;
 }
 
 .collection-row-spacer-sm {
@@ -24230,6 +24290,24 @@ img.x-twit {
   text-align: center;
 }
 
+.random-image-component {
+  text-align: center;
+}
+.random-image-component .random-image-reload {
+  margin-top: 5px;
+}
+.random-image-component .random-image-reload.loading .bi-arrow-clockwise {
+  animation: pika-spin-refresh 1s linear infinite;
+}
+
+@keyframes pika-spin-refresh {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 .archive-audio-poster-wrapper {
   display: flex;
   justify-content: center;
@@ -24423,6 +24501,22 @@ img.x-twit {
   -webkit-box-orient: vertical;
 }
 
+#moreDetailsPanel:focus-within {
+  outline: #E15F15 solid 2px;
+}
+
+#explore-more-menu .panel-group .panel a:focus div, .panel-group .panel a:focus .panel-heading {
+  border: #E15F15 solid 2px;
+}
+
+#explore-more-menu .panel-body .section a:focus figure img {
+  outline: #E15F15 solid 2px;
+}
+
+#link-accordion.panel-group .panel a:focus div {
+  border: #E15F15 solid 2px;
+}
+
 .help-icon {
   color: blue;
 }
@@ -24511,7 +24605,7 @@ body.masqueradeMode {
   background-color: rgba(51, 51, 51, 0.6);
   border-radius: 0.5em;
   padding: 4px 0;
-  margin-top: 6px;
+  margin-top: 25px;
 }
 
 a .header-button {
