@@ -20618,6 +20618,13 @@ a:hover {
   color: rgb(37.4384236453, 77.1231527094, 114.5615763547);
 }
 
+.alert a {
+  color: #3C5D89;
+}
+.alert a:hover, .alert a:focus {
+  color: rgb(44.4670050761, 68.923857868, 101.5329949239);
+}
+
 @media print {
   a:link:after,
   a:visited:after {
