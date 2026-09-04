@@ -49,7 +49,7 @@
     // Scope: any *.js file directly in vufind/web/interface/themes/responsive/js/pika,
     //        excluding files already ending in .min.js.
     // Per-file command (run in file's own directory):
-    //   uglifyjs <file>.js -c arrows=false -o <file>.min.js
+    //   uglifyjs <file>.js -o <file>.min.js
     //
     // Prerequisites: npm install --save-dev uglify-js chokidar
     {
