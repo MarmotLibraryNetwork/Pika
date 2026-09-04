@@ -134,7 +134,7 @@
 								</div>
 							</div>
 
-							{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+							{if $pageLinks.all}<div class="d-flex justify-content-center">{$pageLinks.all}</div>{/if}
 
 							{* Header Row with Column Labels *}
 							{* d-md-flex (not d-md-block) so the row keeps flex layout and the column labels line up;
@@ -306,7 +306,7 @@
 								</div>
 							</div>
 
-							{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+							{if $pageLinks.all}<div class="d-flex justify-content-center">{$pageLinks.all}</div>{/if}
 						{elseif $historyActive == true && $isReadingHistorySearch == false}
 							{* No entries in the history, but the history is active *}
 							<div class="alert alert-info">There are no entries in your reading history.</div>

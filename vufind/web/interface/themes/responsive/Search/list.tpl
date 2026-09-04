@@ -83,7 +83,7 @@
 		{/if}
 		<div id="more-results-status" class="visually-hidden" aria-live="polite"></div>
 	{else}
-		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+		{if $pageLinks.all}<div class="d-flex justify-content-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
 	{*Additional Suggestions on the last page of search results or no results returned *}

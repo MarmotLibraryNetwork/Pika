@@ -5,7 +5,7 @@
 {if $pageCount > 1}
 	{assign var="prevPage" value=$page-1}
 	{assign var="nextPage" value=$page+1}
-	<div class="text-center">
+	<div class="d-flex justify-content-center">
 		<ul class="pagination collection-pager">
 			{if $page > 1}
 				<li><a href="{$pagerUrlTemplate|replace:'%d':1}">&laquo; First</a></li>

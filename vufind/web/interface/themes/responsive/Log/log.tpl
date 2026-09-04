@@ -58,7 +58,7 @@
 			{include file="$logTable"}
 		</div>
 
-      {if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+      {if $pageLinks.all}<div class="d-flex justify-content-center">{$pageLinks.all}</div>{/if}
 	</div>
 {/strip}
 

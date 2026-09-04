@@ -34,7 +34,7 @@
 			{/if}
 		</div>
 		{if $pageCount > 1}
-			<div class="text-center">
+			<div class="d-flex justify-content-center">
 				<ul class="pagination collection-pager">
 					{if $page > 1}
 						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage(1);">&laquo; First</a></li>
