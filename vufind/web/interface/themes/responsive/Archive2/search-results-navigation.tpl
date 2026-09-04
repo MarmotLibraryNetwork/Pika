@@ -9,7 +9,7 @@
 	   from somewhere other than the search results. *}
 	{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
 	{if isset($previousUrl) || isset($nextUrl) || $returnToSearchUrl}
-		<nav class="search-results-navigation" aria-label="{translate text='Search results navigation'}">
+		<nav class="search-results-navigation" aria-label="Search results navigation">
 			<div id="previousRecordLink" class="previous">
 				{if isset($previousUrl)}
 					<a href="{$previousUrl}?searchId={$searchId}&amp;recordIndex={$previousIndex}&amp;page={if isset($previousPage)}{$previousPage}{else}{$page}{/if}" title="{if !$previousTitle}{translate text='Previous'}{else}{$previousTitle|truncate:180:"..."|escape:'html'}{/if}">
