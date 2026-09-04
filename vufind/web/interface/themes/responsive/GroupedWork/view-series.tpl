@@ -42,5 +42,5 @@
 		{/foreach}
 	</div>
 
-	{if $pageLinks.all}<nav aria-label="{translate text='Series pages'}">{$pageLinks.all}</nav>{/if}
+	{if $pageLinks.all}<nav class="d-flex justify-content-center" aria-label="{translate text='Series pages'}">{$pageLinks.all}</nav>{/if}
 	</div>
