@@ -295,7 +295,7 @@
 				</script>
 			{/if}
 
-			{if strlen($pageLinks.all) > 0}<nav class="d-flex justify-content-center" aria-label="{translate text='List pages'}">{$pageLinks.all}</nav>{/if}
+			{if strlen($pageLinks.all) > 0}<nav class="d-flex justify-content-center" aria-label="List pages">{$pageLinks.all}</nav>{/if}
 		{else}
 				<div class="alert alert-warning">
 						{translate text='You do not have any saved resources'}

@@ -60,7 +60,7 @@
 			</button>
 		{/if}
 	{else}
-		{if $pageLinks.all}<nav class="d-flex justify-content-center" aria-label="{translate text='Search results pages'}">{$pageLinks.all}</nav>{/if}
+		{if $pageLinks.all}<nav class="d-flex justify-content-center" aria-label="Search results pages">{$pageLinks.all}</nav>{/if}
 	{/if}
 
 		{include file="Search/searchTools.tpl" showAdminTools=true}
