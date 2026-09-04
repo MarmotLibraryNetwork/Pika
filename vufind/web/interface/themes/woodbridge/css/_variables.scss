@@ -1,0 +1,55 @@
+//$lion-light-blue: #9dd1f2;
+$lion-light-blue: #0B7BC0; // (4.55) // https://webaim.org/resources/contrastchecker/?fcolor=003A68&bcolor=FFFFFF
+$lion-dark-blue: #130840;
+$lion-menu-blue: #74C1F2;
+
+
+//$woodbridge-blue: #568ebf;
+$woodbridge-blue: #3A73A6; // (5.02) // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=3A73A6
+$woodbridge-black: #000;
+
+$header-height: 100px;
+$header-logo-height: 90px;
+
+// Page Background Variables
+$body-bg-resp: #f7ece8;
+$system-message-bg: #fff; // make these white background instead of the pink
+
+$home-search-top-color: $woodbridge-blue; //Top color for background gradient in header
+$home-search-bottom-color: $woodbridge-blue;
+
+//$sidebar-link-color: $lion-light-blue;
+$menu-bar-background-color: $woodbridge-blue;
+$menu-bar-selected-background-color: $lion-dark-blue;
+
+$header-bg-color: #fff;
+
+$header-bottom-border-color: $lion-dark-blue;
+$header-bottom-border-width: 1px;
+$footer-top-border-color: $lion-dark-blue;
+
+
+$header-buttons-background-color : $woodbridge-blue;
+
+$btn-primary-bg: $woodbridge-blue;
+
+$category1MainColor: #ffffff;
+$categoryLineColor: #ffffff;
+$categoryLineShadow: #ffffff;
+$selectedCategoryBorderColor: #ffffff;
+
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $woodbridge-blue;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $lion-dark-blue;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+$browse-label-text-color: $lion-dark-blue;
+$browse-category-text-color: $lion-dark-blue;
+$selected-browse-label-search-color: $lion-dark-blue;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $woodbridge-blue;

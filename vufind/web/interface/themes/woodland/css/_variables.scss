@@ -1,0 +1,74 @@
+
+$woodland-primary-green: #32b700;
+$woodland-secondary-blue: #00847a;
+$woodland-secondary-orange: #d65d00;
+$woodland-complementary-red: #cb0020;
+
+$woodland-yellow: #fdb913;
+$woodland-blue: #336680; // (6.26) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=336680
+$woodland-teal: #00a79d;
+$woodland-accessible-teal: #00756D; // (5.57) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=00756D
+$woodland-light-teal: #7ecbb3;
+
+$dark-blue-text-color: #0A4867; // (5.67) https://webaim.org/resources/contrastchecker/?fcolor=0A4867&bcolor=FDB913
+
+//$header-height: 150px;
+$header-logo-height: 140px;
+$header-buttons-background-color: $woodland-accessible-teal;
+//$header-bg-color: #fff;
+
+
+$home-search-top-color: $woodland-yellow;
+$home-search-bottom-color: $woodland-yellow;
+$home-search-label-color: $dark-blue-text-color;
+
+
+$library-display-name-color: $dark-blue-text-color;
+$library-display-name-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+//$library-display-name-font-size: 25px;
+
+$header-bottom-border-color: $woodland-teal;
+$footer-top-border-color: $woodland-light-teal;
+
+$btn-primary-bg: $woodland-yellow;
+$btn-primary-color: $dark-blue-text-color;
+
+$menu-bar-background-color: $woodland-blue;
+$menu-bar-selected-background-color: $woodland-yellow;
+$menu-bar-selected-color: $dark-blue-text-color;
+
+$category1MainColor: #fff;
+$categoryLineColor: #fff;
+$categoryLineShadow: #fff;
+$selectedCategoryBorderColor: #fff;
+
+$browseCarouselControlBackgroundColor: #fff;
+$browseCarouselControlColor: $woodland-accessible-teal;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $woodland-yellow;
+$selectedSubCategoryBackgroundColor: $woodland-yellow;
+$selectedSubCategoryFontColor: $dark-blue-text-color;
+
+
+
+$browse-label-text-color: $dark-blue-text-color;
+$browse-category-text-color: $dark-blue-text-color;
+$selected-browse-label-search-color: $dark-blue-text-color;
+
+// Home Page Browse Category More Results button
+//$more-browse-results-bg-color: $sacramento-bronze;
+//$more-browse-results-color: #FFF;
+
+$accordion-active-header-bg-color: $woodland-accessible-teal;
+//$accordion-header-top-gradient-color: #eee;
+//$accordion-header-bottom-gradient-color: #eee;
+
+
+//No rounded corners
+$border-radius-base:             0;
+$border-radius-large:            0;
+$border-radius-small:            0;
+
+// Search Results
+$facetTitle-bg-color: #e8e8e8;

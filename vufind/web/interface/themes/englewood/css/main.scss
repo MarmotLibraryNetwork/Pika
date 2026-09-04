@@ -1,0 +1,117 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-container {
+  background: $englewood-dark-pink;
+}
+
+#horizontal-search-wrapper {
+  background-image: url('/interface/themes/englewood/images/search-bg.svg');
+  background-position-x: center;
+  background-position-y: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+
+#header-logo {
+  margin-top: 22px;
+  width: 200px;
+}
+
+a#advancedSearchLink{
+  color: white;
+}
+@include header-login-button-mixin(transparent, #fff);
+
+.loginOptions > a, .logoutOptions a {
+  text-decoration: none;
+}
+
+a .header-button {
+  font-weight: 600;
+  font-size: 18px;
+  border: 1px solid $englewood-light-orange;
+
+  &:hover {
+    text-decoration-thickness: 5px;
+    text-decoration-color: $englewood-light-green;
+    text-underline-offset: 10px;
+    background: transparent;
+    box-shadow:none;
+  }
+  &:focus {
+    text-decoration: none;
+  }
+}
+
+//.vertical-align-library-name-header;
+
+#main-content-with-sidebar > .row.breadcrumbs,
+#home-page-browse-header {
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
+}
+
+@include nashville-selected-browse-label-search;
+
+@include hide-selected-browse-label-background;
+
+@include sacramento-browse-category($selectedCategoryColor, $browse-category-font-size, 90px, #bbb, $englewood-light-green);
+
+@include sacramento-browse-category-pickers($browseCarouselControlColor, 90px, 75px);
+
+// this controls the subcategory menu button are and menu buttons on browse
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    padding: 6px 10px;
+  }
+
+  button {
+    &.selected {
+      border: 1px solid $selectedCategoryBorderColor;
+    }
+  }
+}
+
+@include hide-browse-category-results-divider;
+
+.searchTypeHome, .searchSource {
+  color: #333;
+  background-color: #fff;
+}
+
+//TODO: I think this should go into the main styling.
+#refineSearch ~ #home-account-links {
+  padding-top: 15px;
+}
+
+.sidebar-label {
+  font-weight: bold;
+}
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+@include verticalAlignThumbnailArt;
+
+.btn-primary {
+  &:hover {
+    background-color: $englewood-light-blue;
+    border-color: $englewood-dark-blue;
+  }
+}
+
+.panel-group,
+#home-page-library-section {
+  > a {
+    text-decoration-color: #333333;
+    color: #333333;
+  }
+}
+
+.facetTitle, .exploreMoreTitle, .active .exploreMoreTitle{
+  text-shadow: 1px 1px black;
+}

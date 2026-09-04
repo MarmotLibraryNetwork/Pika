@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-md-12">
+<div id="main-content" class="col-lg-12">
 	<h1 role="heading" aria-level="1" class="h2">Sierra Active Orders</h1>
 	{if $notSierra}
 		<div class="alert alert-info">Active Orders is only available for Sierra ILS systems.</div>
@@ -7,9 +7,9 @@
 		<div class="alert alert-warning">No active_orders.csv found in any indexing profile's MARC path.</div>
 	{else}
 		{if $profiles|@count > 1}
-			<form method="get" action="/Admin/ActiveOrders" class="form-inline" style="margin-bottom:1em;">
-				<label for="profileSelect">Indexing Profile: </label>
-				<select id="profileSelect" name="id" class="form-control" onchange="this.form.submit()">
+			<form method="get" action="/Admin/ActiveOrders" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+				<label for="profileSelect" class="col-form-label">Indexing Profile: </label>
+				<select id="profileSelect" name="id" class="form-select w-auto" onchange="this.form.submit()">
 					{foreach from=$profiles key=pid item=pname}
 						<option value="{$pid}"{if $pid == $selectedId} selected="selected"{/if}>{$pname|escape}</option>
 					{/foreach}
@@ -30,7 +30,7 @@
 				<p>Large numbers of order records will take a while to load.</p>
 			</div>
 			<div class="table-responsive">
-				<table class="table table-striped table-bordered table-condensed" id="activeOrdersTable">
+				<table class="table table-striped table-bordered table-sm" id="activeOrdersTable">
 					<thead>
 						<tr>
 							{foreach from=$headers item=header}

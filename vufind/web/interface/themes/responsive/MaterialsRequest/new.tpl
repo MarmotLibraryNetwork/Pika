@@ -20,11 +20,11 @@
 						WARNING CONCERNING COPYRIGHT RESTRICTIONS The copyright law of the United States (Title 17, United States Code) governs the making of photocopies or other reproductions of copyrighted material. Under certain conditions specified in the law, libraries and archives are authorized to furnish a photocopy or other reproduction. One of these specified conditions is that the photocopy or reproduction is not to be used for any purpose other than private study, scholarship, or research. If a user makes a request for, or later uses, a photocopy or reproduction for purposes in excess of fair use, that user may be liable for copyright infringement. This institution reserves the right to refuse to accept a copying order if, in its judgment, fulfillment of the order would involve violation of copyright law.
 						</p>
 					</div>
-					<div id="copyrightAgreement" class="formatSpecificField articleField col-sm-9 col-sm-offset-3">
+					<div id="copyrightAgreement" class="formatSpecificField articleField col-md-9 offset-md-3">
 						<label for="acceptCopyrightYes"><input type="radio" name="acceptCopyright" class="required" id="acceptCopyrightYes" value="1">Accept</label>
 						<label for="acceptCopyrightNo"><input type="radio" name="acceptCopyright" id="acceptCopyrightNo" value="1">Decline</label>
 					</div>
-					<div class="col-sm-9 col-sm-offset-3">
+					<div class="col-md-9 offset-md-3">
 						<input type="submit" value="Submit {translate text='Materials_Request_alt'}" class="btn btn-primary">
 					</div>
 				</div>

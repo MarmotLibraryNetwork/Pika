@@ -1,0 +1,14 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-logo {
+  border-radius: 0.5em;
+  margin-top: 7px;
+  padding: 5px;
+  background-color: $plateau-darkgreen;
+}
+
+@include header-login-button-mixin;

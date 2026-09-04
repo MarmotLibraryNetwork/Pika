@@ -13,7 +13,7 @@
 	{if $browseMode == 'grid'}
 		<div class="browse-list">
 			<a href="{$summUrl}">
-				<img class="img-responsive" src="{$bookCoverUrl}" alt=""{* Empty alt text since it just duplicates the link text*} title="{$summTitle|escape}">
+				<img class="img-fluid" src="{$bookCoverUrl}" alt=""{* Empty alt text since it just duplicates the link text*} title="{$summTitle|escape}">
 				<div><strong>{$summTitle|escape}</strong></div>
 			</a>
 		</div>
@@ -25,7 +25,7 @@
 		   figure, so the anchor cannot move inside it. *}
 		<a href="{$summUrl}">
 			<figure class="browse-thumbnail-sorted">
-				<img class="img-responsive" src="{$bookCoverUrlMedium}" alt="">
+				<img class="img-fluid" src="{$bookCoverUrlMedium}" alt="">
 				<figcaption class="explore-more-category-title">
 					{* 40 rather than the 60 the related-objects tiles use: a results grid is up to
 					   six columns wide, so its tiles are narrower, and .browse-thumbnail-sorted

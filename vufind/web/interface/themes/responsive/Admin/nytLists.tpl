@@ -20,11 +20,11 @@
 
 	<h2 class="h3">Create or Update a List</h2>
 	<form action="" method="post" id="buildList">
-		<div class="form-group">
+		<div class="mb-3">
 			<p>Next Publish Date for Lists: {$availableLists->results->published_date}</p>
 		<label for="selectedList">Pick a New York Times list to build a Pika list for: </label>
 		<!-- Give the user a list of all available lists from NYT -->
-		<select name="selectedList" id="selectedList" class="form-control">
+		<select name="selectedList" id="selectedList" class="form-select">
 			{foreach from=$availableLists->results->lists item="listInfo"}
 				<option value="{$listInfo->list_name_encoded}" {if $selectedListName == $listInfo->list_name_encoded}selected="selected"{/if}>{$listInfo->display_name}</option>
 			{/foreach}
@@ -50,7 +50,7 @@
 					</td>
 					<td>{
 						$pikaList->dateUpdated|date_format}
-						{*<button class="btn btn-primary btn-xs pull-right" onclick="$('#existingListId').val({$pikaList->id});$('#buildList').submit()">Update</button>*}
+						{*<button class="btn btn-primary btn-xs float-end" onclick="$('#existingListId').val({$pikaList->id});$('#buildList').submit()">Update</button>*}
 					</td>
 				</tr>
 			{/foreach}

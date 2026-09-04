@@ -1224,7 +1224,7 @@ class OverDriveDriver4 {
 					}
 				}
 				if (!empty($lendingPeriodDays) && isset($result['lendingPeriods'][$formatClass])){
-					// Now add the options array to the lendingPeriods array
+					// Now add the option array to the lendingPeriods array
 					$result['lendingPeriods'][$formatClass]->options = $lendingPeriodDays;
 				}
 			}

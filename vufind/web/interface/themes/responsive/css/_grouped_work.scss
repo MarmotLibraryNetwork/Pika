@@ -1,0 +1,162 @@
+//@import "bootstrap/less/variables";
+@import "variables";
+
+.graph-bar {
+  background-color: #088ec6;
+}
+
+// TODO used anymore?
+//#side-bar .addtolistlink {
+//  width: 196px;
+//}
+
+.userreviewlink, .addtolistlink {
+  background-color: #088ec6;
+  color: #fff;
+
+  &:hover {
+    background-color: #2897c6;
+    color: #fff;
+  }
+}
+
+.full-record-tools {
+  padding: 4px 0;
+}
+
+.full-rating {
+  padding: 10px 5px 4px;
+  white-space: nowrap;
+  //font-size: 11px;
+}
+
+.rating-graph {
+  margin: 4px 0;
+
+  .row {
+    margin-top: 2px;
+  }
+}
+
+.title-rating {
+  margin-top: 4px;
+}
+
+// Modify placement of the tool bar on full record views
+#main-content .result-tools-horizontal {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.share-tools {
+  background-color: #e6e6e6;
+  //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  //color: #6e6f6f;
+  // AA Fails normal text https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E6E6E6
+  //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=E7E7E7
+  // AA Fails  normal text  https://webaim.org/resources/contrastchecker/?fcolor=6E6F6F&bcolor=D7D7D7
+  //border-bottom: 1px solid #adadad;
+  font-weight: bold;
+  text-align: left;
+  padding: 5px 10px;
+  display: inline-block;
+
+  img {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+}
+
+.share-tools-label {
+  color: #524747; // Passes AAA https://webaim.org/resources/contrastchecker/?fcolor=524747&bcolor=E6E6E6
+  padding-right: 10px;
+}
+
+.share-tools-list {
+  display: inline; // make list items (icons) display inline
+
+  li {
+    display: inline-block; // BS5's .list-inline no longer does this without .list-inline-item on each li
+    padding-left: 2px;
+    padding-right: 3px;
+
+    &:hover {
+      box-shadow: 1px 1px 3px #aaa;
+      border-radius: 4px;
+    }
+  }
+}
+
+//#side-bar .share-tools{
+//  margin-top: 8px;
+//  width: 200px;
+//}
+
+// More Like this formatting //
+#more-details-accordion {
+
+  .panel-body {
+    //font-size: 12px;
+    color: $gray-dark;
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+
+  #descriptionPanelBody, .excerpt, .summary, .review {
+    //line-height: 1.7em; // body default is now 1.7  (pure, not em)
+  }
+}
+
+.review {
+  border-bottom: 1px dotted #d3d3d3;
+}
+
+.novelist-similar-item {
+  padding: 6px;
+}
+
+.novelist-similar-item-header {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.novelist-similar-item-reason {
+  font-style: italic;
+  margin-left: 6px;
+}
+
+.results-nav-fixed {
+
+}
+
+.results-nav-fixed .search-results-navigation {
+
+}
+
+@media only screen and (max-width: 767px) {
+  .results-nav-fixed.sticky {
+    position: fixed;
+    top: 40px;
+    width: 85%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 4;
+  }
+}
+
+@media only screen and (min-width: 767px) {
+  .results-nav-fixed.sticky {
+    position: fixed;
+    top: 0;
+    width: 41%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 4;
+  }
+
+
+}
+
+.results-nav-fixed.sticky + .search-results-navigation {
+  padding-top: 60px;
+}

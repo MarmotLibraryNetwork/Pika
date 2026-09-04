@@ -1,4 +1,4 @@
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $seriesTitle}
 	<h1 role="heading" aria-level="1" class="notranslate">
 		{$seriesTitle}
@@ -6,8 +6,8 @@
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">
-		<div class="result-label col-tn-3">Author: </div>
-		<div class="col-tn-9 result-value notranslate">
+		<div class="result-label col-3">Author: </div>
+		<div class="col-9 result-value notranslate">
 			{foreach from=$seriesAuthors item=author}
 				<span class="sidebarValue">{$author} </span><br>
 			{/foreach}

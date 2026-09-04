@@ -1,6 +1,6 @@
 {strip}
-<div class="controls table-responsive">
-	<table id="{$propName}" class="{if $property.sortable}sortableProperty{/if} table table-striped">
+<div class="table-responsive">
+	<table id="{$propName}" class="{if $property.sortable}sortableProperty{/if} table table-bordered table-striped">
 		<thead>
 			<tr>
 				{if $property.sortable}
@@ -20,7 +20,7 @@
 				<input type="hidden" id="{$propName}Id_{$subObject->id}" name="{$propName}Id[{$subObject->id}]" value="{$subObject->id}">
 				{if $property.sortable}
 					<td>
-					<span class="glyphicon glyphicon-resize-vertical"></span>
+					<span class="bi bi-arrows-vertical"></span>
 					<input type="hidden" id="{$propName}Weight_{$subObject->id}" name="{$propName}Weight[{$subObject->id}]" value="{$subObject->weight}">
 					</td>
 				{/if}
@@ -65,18 +65,18 @@
 					{* link to delete *}
 				<a href="#" aria-label="Delete entry" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required');updateDeleteNotice{$propName}(){literal}}{/literal};return false;">
 					{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-					<span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
+					<span class="bi bi-x-circle" title="Delete" aria-hidden="true" style="color: red;"></span>
 				</a>
 				{if $property.editLink neq ''}
 					&nbsp;<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' aria-label='Edit SubLinks' title='Edit SubLinks'>
-						<span class="glyphicon glyphicon-link" title="edit links">&nbsp;</span>
+						<span class="bi bi-link-45deg" title="edit links">&nbsp;</span>
 					</a>
 				{elseif $property.canEdit}
 					{if method_exists($subObject, 'getEditLink')}
 						{assign var="editLink" value=$subObject->getEditLink()}
 							{if $editLink}
 								&nbsp;<a href='{$editLink}' title='Edit'>
-									<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
+									<span class="bi bi-pencil-square" title="edit">&nbsp;</span>
 								</a>
 						{/if}
 					{else}
@@ -88,7 +88,7 @@
 						{assign var="directLink" value=$subObject->getDirectLink()}
 						{if $directLink}
 						&nbsp;<a href='{$subObject->getDirectLink()}' title='Direct Link'>
-							<span class="glyphicon glyphicon-link" >&nbsp;</span>
+							<span class="bi bi-link-45deg" >&nbsp;</span>
 						</a>
 						{/if}
 					{else}
@@ -107,14 +107,14 @@
 
 	{* Notice displayed when rows are marked for deletion but not yet saved *}
 	<div id="{$propName}DeleteNotice" class="alert alert-warning" role="alert" style="display:none; margin-top:5px;">
-		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp;
+		<span class="bi bi-exclamation-circle-fill" aria-hidden="true"></span>&nbsp;
 		<strong><span class="warning" id="{$propName}DeleteCount"></span></strong> item(s) marked for deletion. Click <strong>Save Changes</strong> to process.
 	</div>
 
 	<div class="{$propName}Actions">
 		<button onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</button>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
-			<div class="btn-group pull-right">
+			<div class="btn-group float-end">
 				{foreach from=$property.additionalOneToManyActions item=action}
 					{assign var="actionAllowed" value=false}
 					{if is_array($action.allowed_roles)}
@@ -130,14 +130,14 @@
 					{/if}
 					{if $actionAllowed}
 						{if empty($action.url)} {* For accessibility, use buttons instead of <a> when there is no URL *}
-							<button class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</button>
+							<button class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</button>
 						{else}
-							<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+							<a class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 						{/if}
 					{elseif $action.allowed_roles && $userRoles && (!in_array($action.allowed_roles, $userRoles))}
 						<small></small>
 					{else}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-outline-secondary{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 					{/if}
 
 				{/foreach}
@@ -172,11 +172,11 @@
 		var numAdditional{$propName} = 0;
 		function addNew{$propName}{literal}(){
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} -1;
-			var newRow = "<tr class='newRow success'>"; /*success class makes the new row visually distinct from the other rows */
+			var newRow = "<tr class='newRow table-success'>"; /*success class makes the new row visually distinct from the other rows */
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}
-				/* newRow += "<td><span class='glyphicon glyphicon-resize-vertical'></span>"; */
+				/* newRow += "<td><span class='bi bi-arrows-vertical'></span>"; */
 				newRow += "<td>"; /* hide the sort column icon for newly added rows */
 				newRow += "<input type='hidden' id='{$propName}Weight_" + numAdditional{$propName} +"' name='{$propName}Weight[" + numAdditional{$propName} +"]' value='" + (100 - numAdditional{$propName})  +"'>";
 				newRow += "</td>";
@@ -280,7 +280,7 @@
 					"render": function(data, type, row, meta){
 						// Only override for filtering; display/sort use other handlers
 						if (type === 'filter') {
-							var td = meta.settings.aoData[meta.row].anCells[meta.col];
+							var td = new $.fn.dataTable.Api(meta.settings).cell(meta.row, meta.col).node();
 							var select = $('select', td);
 							if (select.length) {
 								// Dropdown: return only the selected option's text

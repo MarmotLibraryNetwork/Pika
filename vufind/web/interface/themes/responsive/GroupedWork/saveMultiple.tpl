@@ -25,9 +25,9 @@
 		{/if}
 
 	  {if $showLists}
-		  <div class="form-group">
-			  <label for="addToList-list" class="col-sm-3">{translate text='Choose a List'}</label>
-			  <div class="col-sm-9">
+		  <div class="row mb-3">
+			  <label for="addToList-list" class="col-md-3">{translate text='Choose a List'}</label>
+			  <div class="col-md-9">
 				  <select name="list" id="addToList-list">
 					  {foreach from=$nonContainingLists item="list"}
 						  <option value="{$list.id}">{$list.title|escape:"html"}</option>
@@ -36,17 +36,17 @@
 					  {/foreach}
 				  </select>
 				  &nbsp;or&nbsp;
-				  <button class="btn btn-sm btn-default" onclick="return Pika.Account.showCreateListMultipleForm('{$textIds}')">{translate text="Create a New List"}</button>
+				  <button class="btn btn-sm btn-outline-secondary" onclick="return Pika.Account.showCreateListMultipleForm('{$textIds}')">{translate text="Create a New List"}</button>
 			  </div>
 			</div>
 		{else}
-		  <button class="btn btn-sm btn-default" onclick="return Pika.Account.showCreateListMultipleForm('{$textIds}')">{translate text="Create a New List"}</button>
+		  <button class="btn btn-sm btn-outline-secondary" onclick="return Pika.Account.showCreateListMultipleForm('{$textIds}')">{translate text="Create a New List"}</button>
 	  {/if}
 
 	  {if $showLists}
-			<div class="form-group">
-				<div class="col-sm-3"><strong>Titles To Add:</strong></div>
-				<div class="col-sm-9">
+			<div class="row mb-3">
+				<div class="col-md-3"><strong>Titles To Add:</strong></div>
+				<div class="col-md-9">
 						<ul>
 					{foreach from=$titles item="title"}
 								<li class="list-unstyled list-striped">{$title.title|escape:"html"}</li>

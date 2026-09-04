@@ -302,7 +302,7 @@ Pika.Browse = (function(){
 
 			this.loadingMoreResults = true;
 			button.prop('disabled', true);
-			loading.removeClass('hidden');
+			loading.removeClass('d-none');
 			status.text('Loading more results.');
 
 			$.getJSON(url, params, function(data){
@@ -326,7 +326,7 @@ Pika.Browse = (function(){
 				Pika.ajaxFail.apply(this, arguments);
 			}).always(function(){
 				Pika.Browse.loadingMoreResults = false;
-				loading.addClass('hidden');
+				loading.addClass('d-none');
 				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
 			});
 			return false;

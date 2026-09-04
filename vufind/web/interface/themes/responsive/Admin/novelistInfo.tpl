@@ -1,16 +1,16 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<form name="cleanupNovelistCache" method="post">
 			<h1 role="heading" aria-level="1" class="h2">NoveList Information</h1>
-			<div class="form-group">
+			<div class="mb-3">
 				<div class="row">
-					<div class="col-sm-4">
+					<div class="col-md-4">
 						<label for="checkId">Lookup Novelist Data: </label>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-md-4">
 						<input type="text" id="checkId" placeholder="ISBN" name="checkISBN">
 					</div>
-					<div class="col-sm-4">
+					<div class="col-md-4">
 						<button type="submit" name="submit" class="btn btn-info">Lookup Novelist Data by ISBN</button>
 					</div>
 				</div>
@@ -30,8 +30,8 @@
 				cache.
 			</div>
 			{if in_array('opacAdmin', $userRoles)}
-				<div class="form-group">
-					<button type="submit" name="truncateData" class="btn btn-default">Clear Cache</button>
+				<div class="mb-3">
+					<button type="submit" name="truncateData" class="btn btn-outline-secondary">Clear Cache</button>
 				</div>
 			{/if}
 		</form>

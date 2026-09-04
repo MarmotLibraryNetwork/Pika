@@ -100,7 +100,7 @@
 			{/if}
 			{if $notInterested}
 				<h2 class="h3">{translate text='Not Interested'}</h2>
-				<table class="myAccountTable table stripe" id="notInterestedTable">
+				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>
 					<tr>
 						<th>Date</th>

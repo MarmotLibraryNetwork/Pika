@@ -24,16 +24,16 @@
 		<form action="" method="get">
 			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-				<button type="submit" value='{$customAction.action}' class="btn btn-default">{$customAction.label}</button>
+				<button type="submit" value='{$customAction.action}' class="btn btn-outline-secondary">{$customAction.label}</button>
 			</div>
 		</form>
 	{elseif is_null($customAction.action) && $customAction.onclick}
-		<button class="btn btn-default{* btn-sm*}" onclick="{$customAction.onclick}">{$customAction.label}</button>
+		<button class="btn btn-outline-secondary{* btn-sm*}" onclick="{$customAction.onclick}">{$customAction.label}</button>
 	{/if}
 {/foreach}
 
 <div class="adminTableRegion" id="adminTableRegion">
-	<table class="adminTable table stripe order-column table-condensed" id="adminTable">
+	<table class="adminTable table table-striped table-sm" id="adminTable">
 		<thead>
 			<tr>
 				{foreach from=$structure item=property key=id}
@@ -208,13 +208,13 @@
 		<form action="" method="get">
 			<div>
 				<input type="hidden" name="objectAction" value='{$customAction.action}'>
-				<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
+				<button type="submit" value='{$customAction.action}' class="btn btn-sm btn-outline-secondary">{$customAction.label}</button>
 			</div>
 		</form>
 	{/if}
 
 	{if is_null($customAction.action) && $customAction.onclick}
-		<a class="btn btn-default btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
+		<a class="btn btn-outline-secondary btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
 	{/if}
 {/foreach}
 
@@ -230,9 +230,11 @@
 			}
 			$(function(){
 				$('.table').DataTable({
-					columnDefs: [{orderable: true, targets: [1,2,3,4,5]}],
 					pageLength: 100,
-					"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}],
+					"columnDefs": [
+						{"orderDataType": "dom-numeric", "type": "num", "targets": 0},
+						{"orderable": true, "targets": [1,2,3,4,5]}
+					],
 					initComplete: function(){
 						this.api().columns([1,2,3,4]).every( function(){
 							var column = this;
@@ -283,12 +285,12 @@
 			{/literal}{/if}{literal}
 			$('#adminTable').DataTable({
 				pageLength: 100,
-				"columnDefs": [{"orderDataType": "dom-numeric", "type": "numeric", "targets": 0}
+				"columnDefs": [{"orderDataType": "dom-numeric", "type": "num", "targets": 0}
 					{/literal}
 					{if $objectType == "BookClubKit\BookClubKitRequest"}
 						{* Use dom-status sorting function to sort requests that aren't closed above closed requests *}
 					{literal}
-					,{"orderDataType": "dom-status", "type": "numeric", "targets": 1}
+					,{"orderDataType": "dom-status", "type": "num", "targets": 1}
 					{/literal}{/if}{literal}
 				],
 					{/literal}

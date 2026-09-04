@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,23 +7,17 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 text-center">
+			<div id="main-content" class="col-sm-12 text-center">
 				{if $canView}
-					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
+					<div id="view-toggle" class="btn-group" role="group">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('pdf', Pika.Archive.activeBookPage);">
-							View As PDF
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('pdf', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-pdf">View As PDF</label>
 						{/if}
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('image', Pika.Archive.activeBookPage);">
-							View As Image
-						</label>
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('transcription', Pika.Archive.activeBookPage);">
-							View Transcription
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-image" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('image', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-image">View As Image</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="Pika.Archive.changeActiveBookViewer('transcription', Pika.Archive.activeBookPage);">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-transcription">View Transcription</label>
 					</div>
 
 					<div id="view-pdf" width="100%" height="600px">
@@ -49,13 +43,13 @@
 
 		<div id="download-options">
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-outline-secondary" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-outline-secondary" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-outline-secondary ">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 

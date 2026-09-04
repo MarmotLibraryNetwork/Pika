@@ -62,7 +62,7 @@
 		   Centered on the button below it, which is full width and centers its own chevron.
 		   The image is 32px against a line of text, so it needs aligning to the middle of
 		   that line rather than sitting on its baseline for the two to read as one unit. *}
-		<div id="more-results-loading" class="hidden text-center" style="margin: 10px 0;">
+		<div id="more-results-loading" class="d-none text-center" style="margin: 10px 0;">
 			<img src="{img filename='loading.gif'}" alt="" style="vertical-align: middle; margin-right: 5px;">
 			{translate text="Loading"}...
 		</div>
@@ -73,10 +73,10 @@
 		   the case of the count changing between requests. *}
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Archive2.getMoreResults()" aria-label="Load more search results">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
-		<div id="more-results-status" class="sr-only" aria-live="polite"></div>
+		<div id="more-results-status" class="visually-hidden" aria-live="polite"></div>
 	{else}
 		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
 	{/if}

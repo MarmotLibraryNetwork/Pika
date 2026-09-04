@@ -14,7 +14,7 @@
 </style>
 {strip}
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{if $showTimeline}
 				<div id="timeline-date-filters">
 					{include file="Archive2/components/timeline_date_filters.tpl"}

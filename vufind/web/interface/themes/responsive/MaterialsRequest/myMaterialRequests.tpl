@@ -11,10 +11,10 @@
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>Filters:</legend>
-			<form action="/MaterialsRequest/MyRequests" method="get" class="form-inline">
-				<div>
-					<div class="form-group">
-						<label class="control-label">Show:</label>
+			<form action="/MaterialsRequest/MyRequests" method="get">
+				<div class="d-flex flex-wrap align-items-center gap-3">
+					<div class="mb-3">
+						<label class="form-label">Show:</label>
 						<label for="openRequests" class="radio-inline">
 							{*<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if $showOpen}checked="checked"{/if}> Open {translate text='materials_request_short'|capitalize}s*}
 							<input type="radio" id="openRequests" name="requestsToShow" value="openRequests" {if $showOpen}checked="checked"{/if}> Open {'materials_request_short'|translate|capitalize}s
@@ -23,15 +23,15 @@
 							<input type="radio" id="allRequests" name="requestsToShow" value="allRequests" {if !$showOpen}checked="checked"{/if}> All {'materials_request_short'|translate|capitalize}s
 						</label>
 					</div>
-					<div class="form-group">
-						<input type="submit" name="submit" value="Update Filters" class="btn btn-sm btn-default">
+					<div class="mb-3">
+						<input type="submit" name="submit" value="Update Filters" class="btn btn-sm btn-outline-secondary">
 					</div>
 				</div>
 			</form>
 		</div>
 		<br>
 		{if count($allRequests) > 0}
-			<table id="requestedMaterials" class="table stripe table-condensed">
+			<table id="requestedMaterials" class="table table-striped table-sm">
 				<thead>
 					<tr>
 						<th>Title</th>

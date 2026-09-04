@@ -1,4 +1,4 @@
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h1 role="heading" aria-level="1" class="h2">Materials Request Requests by User Report</h1>
 		{if $error}
 			<div class="alert alert-danger">{$error}</div>
@@ -10,13 +10,13 @@
 					<fieldset class="fieldset-collapsible">
 {*					<fieldset class="fieldset-collapsible{if !empty($statusFilter)} fieldset-init-open{/if}">*}
 						<legend>Statuses to Show:</legend>
-						<div class="form-group checkbox">
+						<div class="mb-3 checkbox">
 							<label for="selectAllStatusFilter">
 								<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onclick="Pika.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
 								<strong>Select All</strong>
 							</label>
 						</div>
-						<div class="form-group"><strong>Default Status</strong>
+						<div class="mb-3"><strong>Default Status</strong>
 								{foreach from=$defaultStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -25,7 +25,7 @@
 									</div>
 								{/foreach}
 						</div>
-						<div class="form-group"><strong>Open Statuses</strong>
+						<div class="mb-3"><strong>Open Statuses</strong>
 								{foreach from=$openStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -34,7 +34,7 @@
 									</div>
 								{/foreach}
 						</div>
-						<div class="form-group"><strong>Closed Statuses</strong>
+						<div class="mb-3"><strong>Closed Statuses</strong>
 								{foreach from=$closedStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
@@ -44,27 +44,27 @@
 								{/foreach}
 						</div>
 					</fieldset>
-					<fieldset class="form-group fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
+					<fieldset class="mb-3 fieldset-collapsible{if ($startDate || $endDate)} fieldset-init-open{/if}">
 						<legend>Date:</legend>
-						<div class="form-group">
-							<label for="startDate" class="control-label col-sm-2">Start Date</label>
-							<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+						<div class="row mb-3">
+							<label for="startDate" class="col-form-label col-md-2">Start Date</label>
+							<div class="input-group date col-md-3" id="startDatePicker">
 								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 											 class="form-control" >
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-calendar" onclick="$('#startDate').focus().datepicker('show')" aria-hidden="true"></span>
+								<span class="input-group-text">
+									<span class="bi bi-calendar3" onclick="$('#startDate').focus().datepicker('show')" aria-hidden="true"></span>
 								</span>
 							</div>
 						</div>
-						<div class="form-group">
-							<label for="endDate" class="control-label col-sm-2">End Date</label>
-							<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+						<div class="row mb-3">
+							<label for="endDate" class="col-form-label col-md-2">End Date</label>
+							<div class="input-group date col-md-3" id="endDatePicker">
 								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 											 data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 											 class="form-control">
-								<span class="input-group-addon">
-											<span class="glyphicon glyphicon-calendar"
+								<span class="input-group-text">
+											<span class="bi bi-calendar3"
 														onclick="$('#endDate').focus().datepicker('show')"
 														aria-hidden="true">
 											</span>
@@ -72,7 +72,7 @@
 							</div>
 						</div>
 					</fieldset>
-					<div><input type="submit" name="submit" value="Update Filters" class="btn btn-default"></div>
+					<div><input type="submit" name="submit" value="Update Filters" class="btn btn-outline-secondary"></div>
 				</form>
 			</div>
 
@@ -80,7 +80,7 @@
 			<h2 class="h3">Table</h2>
 
 			{* Display results in table*}
-			<table id="summaryTable" class="table stripe table-bordered">
+			<table id="summaryTable" class="table table-striped table-bordered">
 				<thead>
 					<tr>
 						<th>Last Name</th>
@@ -98,7 +98,7 @@
 							<td>{$userInfo.firstName}</td>
 							<td>{$userInfo.barcode}</td>
 							{foreach from=$statuses key=status item=statusLabel}
-								<th>{if $userInfo.requestsByStatus.$status}{$userInfo.requestsByStatus.$status}{else}0{/if}</th>
+								<td><strong>{if $userInfo.requestsByStatus.$status}{$userInfo.requestsByStatus.$status}{else}0{/if}</strong></td>
 							{/foreach}
 						</tr>
 					{/foreach}
@@ -107,7 +107,7 @@
 
 			{* Export to Excel option *}
 			<form action="{$fullPath}" method="get">
-				<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-default">
+				<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel" class="btn btn-outline-secondary">
 				{foreach from=$statusFilter item=status}
 					<input type="hidden" name="statusFilter[]" value="{$status}">
 				{/foreach}

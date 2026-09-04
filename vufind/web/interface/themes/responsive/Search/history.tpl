@@ -70,7 +70,7 @@
 						</tr>
 					{/foreach}
 				</table>
-				<br><a class="btn btn-warning" role="button" href="/Search/History?deleteUnsavedSearches=true"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{translate text="history_purge"}</a>
+				<br><a class="btn btn-warning" role="button" href="/Search/History?deleteUnsavedSearches=true"><span class="bi bi-trash" aria-hidden="true"></span>&nbsp;{translate text="history_purge"}</a>
 			{/if}
 
 		{else}

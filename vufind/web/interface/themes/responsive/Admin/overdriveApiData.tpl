@@ -1,30 +1,30 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h1 role="heading" aria-level="1" class="h2">OverDrive API Data</h1>
 		<div class="navbar row">
 			<form class="form">
-				<div class="form-group col-tn-12"  style="min-width: 40%">
-					<label for="overDriveId" class="sr-only control-label">OverDrive Record Id:</label>
+				<div class="mb-3 col-12"  style="min-width: 40%">
+					<label for="overDriveId" class="visually-hidden form-label">OverDrive Record Id:</label>
 					<input id ="overDriveId" type="text" name="id" class="form-control" placeholder="OverDrive Record Id"{if !empty($overDriveId)}value="{$overDriveId}" {/if}>
 				</div>
-				<div class="form-group col-tn-12">
+				<div class="mb-3 col-12">
 					<input class="btn btn-primary" type="submit" value="Product" name="formAction">
 					<input class="btn btn-primary" type="submit" value="Metadata" name="formAction">
 					<input class="btn btn-primary" type="submit" value="Availability" name="formAction">
 				</div>
-				<div class="form-group col-tn-12">
-					<input class="btn btn-default" type="submit" value="Magazine Issues" name="formAction">
+				<div class="mb-3 col-12">
+					<input class="btn btn-outline-secondary" type="submit" value="Magazine Issues" name="formAction">
 				</div>
-				<div class="form-group col-tn-12">
-					<input class="btn btn-default" type="submit" value="Search CrossRefId" name="formAction">
+				<div class="mb-3 col-12">
+					<input class="btn btn-outline-secondary" type="submit" value="Search CrossRefId" name="formAction">
 				</div>
 			</form>
 		</div>
 		<button onclick="return Pika.OverDrive.forceUpdateFromAPI($('#overDriveId').val(), false)"
-		        class="btn btn-sm btn-default">Mark to re-fetch update From API
+		        class="btn btn-sm btn-outline-secondary">Mark to re-fetch update From API
 		</button>
 		<div class="row">
-			<div class="col-tn-12">{$overDriveAPIData}</div>
+			<div class="col-12">{$overDriveAPIData}</div>
 		</div>
 	</div>
 {/strip}

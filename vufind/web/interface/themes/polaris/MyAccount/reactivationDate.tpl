@@ -3,7 +3,7 @@
 		<input type="hidden" name="holdId" value="{$holdId}" id="holdId">
 		<input type="hidden" name="patronId" value="{$patronId}" id="patronId">
 		<input type="hidden" name="recordId" value="{$recordId}" id="recordId">
-		<div class="form-group">
+		<div class="mb-3">
 			<label for="reactivationDate">Select the date when you want the hold {translate text="thawed"}.</label>
 			<input type="text" name="reactivationDate" id="reactivationDate" class="form-control input-sm{if !$reactivateDateNotRequired} required{/if}"{if !$reactivateDateNotRequired} aria-required="true"{/if}>
 		</div>

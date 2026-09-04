@@ -1,13 +1,13 @@
 {strip}
-	<button class="btn btn-default btn-sm" onclick="$('table.logEntryDetails a.accordion-toggle.collapsed').click()">Open All Log Entries</button>
+	<button class="btn btn-outline-secondary btn-sm" onclick="$('table.logEntryDetails a.accordion-toggle.collapsed').click()">Open All Log Entries</button>
 <div class="table-responsive">
-	<table class="logEntryDetails table table-hover table-condensed">
+	<table class="logEntryDetails table table-hover table-sm">
 		<thead>
 			<tr><th>Id</th><th>Started</th><th>Finished</th><th>Elapsed</th><th>Processes Run</th><th>Had Errors?</th><th>Notes</th></tr>
 		</thead>
 		<tbody>
 			{foreach from=$logEntries item=logEntry}
-				<tr{if $logEntry->getHadErrors()} class="danger"{/if}>
+				<tr{if $logEntry->getHadErrors()} class="table-danger"{/if}>
 					<td><a href="#" class="accordion-toggle collapsed" id="cronEntry{$logEntry->id}" onclick="Pika.Log.toggleCronProcessInfo('{$logEntry->id}');return false;">{$logEntry->id}</a></td>
 					<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 					<td>{$logEntry->endTime|date_format:"%D %T"}</td>
@@ -18,7 +18,7 @@
 				</tr>
 				<tr class="logEntryProcessDetails" id="processInfo{$logEntry->id}" style="display:none">
 					<td colspan="7">
-						<table class="logEntryProcessDetails table table-striped table-condensed">
+						<table class="logEntryProcessDetails table table-striped table-sm">
 							<thead>
 								<tr><th>Process Name</th><th>Started</th><th>End Time</th><th>Elapsed</th><th>Errors</th><th>Updates</th><th>Notes</th></tr>
 							</thead>

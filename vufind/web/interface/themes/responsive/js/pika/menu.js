@@ -157,10 +157,20 @@ Pika.Menu = (function(){
 
 					// Toggle into an embedded mode
 					if (menu.is('.' + stickyMenuClass) && fixedOffset <= switchPosition) {
-						menu.removeClass(stickyMenuClass)
+						menu.removeClass(stickyMenuClass);
+						if (stickyMenuClass === 'sticky-menu-bar') {
+							menu.parent().css('min-height', ''); // release the reserved space
+						}
 					}
 					// Toggle into a fixed mode
 					if (!menu.is('.' + stickyMenuClass) && notFixedScrolledPosition >= switchPosition) {
+						if (stickyMenuClass === 'sticky-menu-bar') {
+							// Reserve the bar's height on its wrapper before it goes position:fixed so the
+							// wrapper (a BS5 flex .row) doesn't collapse to zero height. Without this the page
+							// content jumps up when the bar sticks, which fights the scroll position and makes
+							// the bar latch sticky only while scrolling back up.
+							menu.parent().css('min-height', menu.outerHeight());
+						}
 						menu.addClass(stickyMenuClass);
 						if (switchPositionAdjustment) {
 							menu.css('top', switchPositionAdjustment);
@@ -294,7 +304,7 @@ Pika.Menu = (function(){
 
 			showAccount: function(clickedElement){
 				this.showMenuSection(Pika.Menu.SideBarAccountSelectors, clickedElement);
-				$('#myAccountPanel').filter(':not(.in)').collapse('show');  // Open up the MyAccount Section, if it is not open. (.collapse('show') acts like a toggle instead of always showing. plb 2-12-2016)
+				$('#myAccountPanel').filter(':not(.show)').collapse('show');  // Open up the MyAccount Section, if it is not open. (.collapse('show') acts like a toggle instead of always showing. plb 2-12-2016) (Bootstrap 5 open-state class is .show, was .in)
 			},
 
 			showExploreMore: function(clickedElement){

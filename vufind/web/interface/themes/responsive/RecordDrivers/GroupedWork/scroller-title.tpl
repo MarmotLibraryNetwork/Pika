@@ -6,21 +6,21 @@
 		</button>
 		<div id="noResults{$index}" style="display:none">
 			<div class="row">
-				<div class="result-label col-md-3">Author:</div>
-				<div class="col-md-9 result-value notranslate">
+				<div class="result-label col-lg-3">Author:</div>
+				<div class="col-lg-9 result-value notranslate">
 					<a href='/Author/Home?author="{$author|escape:url}"'>{$author}</a>
 				</div>
 			</div>
 			{if !empty($series)}
 			<div class="series row">
-				<div class="result-label col-md-3">Series:</div>
-				<div class="col-md-9 result-value">
+				<div class="result-label col-lg-3">Series:</div>
+				<div class="col-lg-9 result-value">
 					<a href="/GroupedWork/{$noResultOriginalId}/Series">{$series}</a>
 				</div>
 			</div>
 			{/if}
 			<div class="row related-manifestation">
-				<div class="col-sm-12">
+				<div class="col-md-12">
 					The library does not own any copies of this title.
 				</div>
 			</div>

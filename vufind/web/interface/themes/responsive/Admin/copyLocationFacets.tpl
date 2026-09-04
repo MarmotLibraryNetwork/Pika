@@ -8,8 +8,8 @@
 					<input type="hidden" name="id" value="{$id}">
 					<input type="hidden" name="objectAction" value="copyDataFromLocation">
 					<div class="input-group">
-						<label for="locationToCopyFrom" class="control-label">Select a location to copy data from:</label>
-						<select id="locationToCopyFrom" name="locationToCopyFrom" class="form-control">
+						<label for="locationToCopyFrom" class="form-label">Select a location to copy data from:</label>
+						<select id="locationToCopyFrom" name="locationToCopyFrom" class="form-select">
 							{foreach from=$allLocations item=location}
 								<option value="{$location->locationId}">{$location->displayName}</option>
 							{/foreach}

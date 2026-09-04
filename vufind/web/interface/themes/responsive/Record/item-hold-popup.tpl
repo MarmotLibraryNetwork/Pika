@@ -16,7 +16,7 @@
 		{else}
 			<div class="alert alert-warning">Please select the item you would like to place a hold on.</div>
 			<ol class='hold_result_details'>
-				<select id="selectedItem" name="selectedItem" class="form-control">
+				<select id="selectedItem" name="selectedItem" class="form-select">
 					{if array_key_exists('-1', $items) == false}
 						<option class="hold_item" value="-1">Select an item</option>
 					{/if}

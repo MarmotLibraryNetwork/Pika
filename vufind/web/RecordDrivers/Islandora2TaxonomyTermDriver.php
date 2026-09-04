@@ -253,7 +253,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		// account setting (index.php) - and the template's own {if $showCovers} block mirrors
 		// this test, so leaving the URL unassigned when covers are off renders the same page
 		// it would have anyway, just without the round trips.
-		$showCovers = $interface->get_template_vars('showCovers') && $interface->get_template_vars('disableCoverArt') != 1;
+		$showCovers = $interface->getTemplateVars('showCovers') && $interface->getTemplateVars('disableCoverArt') != 1;
 		$interface->assign('bookCoverUrlMedium', $showCovers ? $this->getBookcoverUrl('medium') : '');
 
 		global $configArray;
@@ -461,7 +461,7 @@ class Islandora2TaxonomyTermDriver extends RecordInterface {
 		// list entries would make one per row. listentry.tpl paints the thumbnail only when both
 		// of these are set, so when they are not there is nothing to pay for. getSearchResult()
 		// guards the same way.
-		$showCovers = $interface->get_template_vars('showCovers') && $interface->get_template_vars('disableCoverArt') != 1;
+		$showCovers = $interface->getTemplateVars('showCovers') && $interface->getTemplateVars('disableCoverArt') != 1;
 		$interface->assign('bookCoverUrl', $showCovers ? $this->getBookcoverUrl('small') : '');
 		$interface->assign('bookCoverUrlMedium', $showCovers ? $this->getBookcoverUrl('medium') : '');
 		$interface->assign('summAjaxStatus', false);

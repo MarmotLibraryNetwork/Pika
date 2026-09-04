@@ -216,14 +216,14 @@ TitleScroller.prototype.playPauseControl = function (sender, scroller){
 	let controlWrapper = $('#' + scroller.scrollerId).parent('.titleScrollerWrapper').children('.sliderControls');
 		if(scrolling == true){
 			scroller.scrolling = false;
-			controlWrapper.children('button.pause').addClass('play glyphicon-play');
-			controlWrapper.children('button.play').removeClass('pause glyphicon-pause');
+			controlWrapper.children('button.pause').addClass('play bi-play-fill');
+			controlWrapper.children('button.play').removeClass('pause bi-pause-fill');
 			controlWrapper.children('button.play').children('span').html("Resume");
 			controlWrapper.children('button.play').attr('aria-label',"Resume");
 		}else{
 			scroller.scrolling = true;
-			controlWrapper.children('button.play').addClass('pause glyphicon-pause');
-			controlWrapper.children('button.pause').removeClass('play glyphicon-play');
+			controlWrapper.children('button.play').addClass('pause bi-pause-fill');
+			controlWrapper.children('button.pause').removeClass('play bi-play-fill');
 			controlWrapper.children('button.pause').children('span').html("Pause");
 			controlWrapper.children('button.pause').attr('aria-label',"Pause");
 		}

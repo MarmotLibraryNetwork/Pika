@@ -1,0 +1,64 @@
+$brand-primary: #d8e1e6;
+$brand-primary-alternate: #f5f5f6;
+$brand-secondary: #adadc2;
+$brand-secondary-alternate: #d3d7dd;
+$brand-highlight: #a17f6c;
+$brand-highlight-alternate: #024d75;
+$brand-body-color: #212529;
+$brand-body-bg: $brand-primary-alternate;
+
+// FONT DEFINITIONS
+$body-bg-resp: $brand-body-bg;
+$content-bg: $brand-body-bg;
+$body-text-color: $brand-body-color;
+$font-family-primary: "HelveticaNeue", "Helvetica", "Arial", sans-serif;
+$font-family-secondary: "Didot", serif;
+$font-family-sans-serif-resp:  $font-family-primary;
+$font-family-serif-resp:       $font-family-secondary;
+
+$horizontal-search-label-color: $brand-body-color;
+
+$home-page-browse-content-background-color: $brand-body-bg;
+$home-search-top-color: $brand-primary; //Top color for background gradient in header
+$home-search-bottom-color: $brand-primary;
+
+$sidebar-link-color: $brand-highlight-alternate;
+$menu-bar-background-color: $brand-secondary;
+$menu-bar-color: $brand-body-color;
+$menu-bar-selected-background-color: $brand-highlight-alternate;
+
+$header-bg-color: $brand-primary;
+
+$header-bottom-border-color: $brand-primary;
+$footer-top-border-color: $brand-secondary;
+
+
+$header-buttons-background-color : $brand-highlight;
+
+$btn-primary-bg: $brand-highlight-alternate;
+
+$category1MainColor: $brand-body-bg;
+$categoryLineColor: $brand-body-bg;
+$categoryLineShadow: $brand-body-bg;
+$selectedCategoryBorderColor: $brand-body-bg;
+
+$browseCarouselControlBackgroundColor: $brand-body-bg;
+$browseCarouselControlColor: $brand-secondary;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $brand-highlight-alternate;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+$browse-label-text-color: $brand-highlight-alternate;
+$browse-category-text-color: $brand-highlight-alternate;
+$selected-browse-label-search-color: $brand-highlight-alternate;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $brand-highlight;
+//$accordion-active-header-color: #333;
+//$accordion-active-header-shadow-color: #fff;
+
+$panel-border-radius: 0;
+$header-logo-max-height: 4em;

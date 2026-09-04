@@ -1,9 +1,9 @@
 <h1 role="heading" aria-level="1" class="h2">Archive Home</h1>
 
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{if count($relatedContentTypes) == 0 && count($relatedProjectsLibrary) == 0 && count($relatedProjectsOther) == 0}
 			<div class="row">
-				<div class="col-xs-12">
+				<div class="col-sm-12">
 					No content is available in the archive yet, please check back later.
 				</div>
 			</div>
@@ -11,10 +11,10 @@
 			{if !empty($relatedProjectsLibrary)}
 				{assign var='n' value=0}
 				<div class="row">
-					<div class="col-xs-12">
+					<div class="col-sm-12">
 						<h2 class="h3"><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h2>
 						<div id="relatedProjectsLibraryScroller" class="jcarousel-wrapper">
-							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></button>
+							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="bi bi-chevron-left"></i></button>
 
 
 							<div class="relatedTitlesLibraryContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
@@ -32,7 +32,7 @@
 									{/foreach}
 								</ul>
 							</div>
-							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></button>
+							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="bi bi-chevron-right"></i></button>
 						</div>
 					</div>
 				</div>
@@ -41,10 +41,10 @@
 			{if !empty($relatedProjectsOther)}
 				{assign var='i' value=0}
 				<div class="row">
-					<div class="col-tn-12">
+					<div class="col-12">
 						<h2 class="h3"><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h2>
 						<div id="relatedProjectOtherScroller" class="jcarousel-wrapper">
-							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="glyphicon glyphicon-chevron-left"></i></button>
+							<button class="jcarousel-control-prev" aria-label="Previous Collection"><i class="bi bi-chevron-left"></i></button>
 							<div class="relatedTitlesOtherContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 								<ul>
 									{foreach from=$relatedProjectsOther item=project}
@@ -60,17 +60,17 @@
 									{/foreach}
 								</ul>
 							</div>
-							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="glyphicon glyphicon-chevron-right"></i></button>
+							<button class="jcarousel-control-next" aria-label="Next Collection"><i class="bi bi-chevron-right"></i></button>
 						</div>
 					</div>
 				</div>
 			{/if}
 			{assign var='x' value=0}
 			<div class="row">
-				<div class="col-tn-12">
+				<div class="col-12">
 					<h2 class="h3">Types of materials in the archive</h2>
 					<div id="relatedContentTypesContainer" class="jcarousel-wrapper">
-						<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="glyphicon glyphicon-chevron-left"></i></button>
+						<button class="jcarousel-control-prev" aria-label="Previous Category"><i class="bi bi-chevron-left"></i></button>
 
 						<div class="relatedTitlesTypesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
@@ -87,7 +87,7 @@
 								{/foreach}
 							</ul>
 						</div>
-						<button class="jcarousel-control-next" aria-label="Next Category"><i class="glyphicon glyphicon-chevron-right"></i></button>
+						<button class="jcarousel-control-next" aria-label="Next Category"><i class="bi bi-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>

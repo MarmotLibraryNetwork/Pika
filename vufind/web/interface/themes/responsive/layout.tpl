@@ -31,7 +31,7 @@
 		{if $og_url}
 			<meta property="og:url" content="{$og_url|escape:html}">
 		{/if}
-		<link rel="shortcut icon" type="image/x-icon" href="{img filename=favicon.png}">
+		<link rel="shortcut icon" type="image/x-icon" href="{img filename="favicon.png"}">
 		<link rel="search" type="application/opensearchdescription+xml" title="{$librarySystemName} Catalog Search" href="/Search/OpenSearch">
 
 		{include file="cssAndJsIncludes.tpl"}
@@ -62,20 +62,20 @@
 
 					{if $google_translate_key}
 						<div class="row breadcrumbs">
-							<div class="col-xs-12 col-sm-3 col-sm-offset-9 text-right">
+							<div class="col-sm-12 col-md-3 offset-md-9 text-end">
 								<div id="google_translate_element"></div>
 							</div>
 						</div>
 					{/if}
 
 					<div id="header-wrapper" class="row">
-						<div id="header-container" class="col-tn-12">
+						<div id="header-container" class="col-12">
 							{include file='header_responsive.tpl'}
 						</div>
 					</div>
 
-					<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
-						<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar">
+					<div id="horizontal-menu-bar-wrapper" class="row d-flex d-md-none">
+						<div id="horizontal-menu-bar-container" class="col-12 col-sm-12 menu-bar">
 							{include file='horizontal-menu-bar.tpl'}
 						</div>
 					</div>
@@ -84,7 +84,7 @@
 		{if !$isUpdatePinPage}
 			{if $horizontalSearchBar}
 				<search id="horizontal-search-wrapper" class="row">
-					<div id="horizontal-search-container" class="col-xs-12">
+					<div id="horizontal-search-container" class="col-sm-12">
 						{include file="Search/horizontal-searchbox.tpl"}
 					</div>
 				</search>
@@ -100,10 +100,10 @@
 							{* tabindex="-1" keeps this region out of the normal Tab order but lets the
 							   "Skip to sidebar" link (href="#side-bar") move keyboard focus into it;
 							   without it the anchor jump scrolls but leaves focus on the link. *}
-							<div role="region" aria-label="Sidebar" class="rightSidebar col-xs-12 col-sm-4 col-sm-push-8 col-md-3 col-md-push-9 col-lg-3 col-lg-push-9" id="side-bar" tabindex="-1">
+							<div role="region" aria-label="Sidebar" class="rightSidebar col-sm-12 col-md-4 col-lg-3 col-xl-3 order-md-2" id="side-bar" tabindex="-1">
 								{include file="sidebar.tpl"}
 							</div>
-							<div class="rightSidebar col-xs-12 col-sm-8 col-sm-pull-4 col-md-9 col-md-pull-3 col-lg-9 col-lg-pull-3" id="main-content-with-sidebar" style="overflow-x: auto;">
+							<div class="rightSidebar col-sm-12 col-md-8 col-lg-9 col-xl-9 order-md-1" id="main-content-with-sidebar" style="overflow-x: auto;">
 								{* If main content overflows, use a scrollbar *}
 								{include file="main-content.tpl"}
 							</div>
@@ -112,10 +112,10 @@
 							{* tabindex="-1" keeps this region out of the normal Tab order but lets the
 							   "Skip to sidebar" link (href="#side-bar") move keyboard focus into it;
 							   without it the anchor jump scrolls but leaves focus on the link. *}
-							<div role="region" aria-label="Sidebar" class="col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar" tabindex="-1">
+							<div role="region" aria-label="Sidebar" class="col-sm-12 col-md-4 col-lg-3 col-xl-3" id="side-bar" tabindex="-1">
 								{include file="sidebar.tpl"}
 							</div>
-							<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
+							<div class="col-sm-12 col-md-8 col-lg-9 col-xl-9" id="main-content-with-sidebar">
 								{include file="main-content.tpl"}
 							</div>
 						{/if}

@@ -1,7 +1,7 @@
 {strip}
 	{if $description}
 		<div class="row">
-			<div class="result-value col-sm-12">{$description}</div>
+			<div class="result-value col-md-12">{$description}</div>
 		</div>
 		<hr>
 	{/if}

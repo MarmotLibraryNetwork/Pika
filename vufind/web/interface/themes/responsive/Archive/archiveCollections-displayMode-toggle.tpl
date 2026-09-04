@@ -1,16 +1,16 @@
 {strip}
 	{* User's viewing mode toggle switch *}
-	<div class="row" id="selected-browse-label">{* browse styling replicated here *}
-		<div class="btn-group btn-group-sm" data-toggle="buttons">
-			<button tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-default displayMode">
+	<div class="clearfix" id="selected-browse-label">{* browse styling replicated here *}
+		<div class="btn-group btn-group-sm">
+			<button tabindex="0" title="Covers" aria-label="change results to cover layout" onclick="Pika.Archive.toggleDisplayMode(this.id)" id="covers" class="btn btn-sm btn-outline-secondary displayMode">
 				<span class="thumbnail-icon"></span><span> Covers</span>
 			</button>
-			<button tabindex="0" title="Lists" aria-label="change results to list layout"  onclick="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list"class="btn btn-sm btn-default displayMode">
+			<button tabindex="0" title="Lists" aria-label="change results to list layout"  onclick="Pika.Archive.toggleDisplayMode(this.id)" type="radio" id="list"class="btn btn-sm btn-outline-secondary displayMode">
 				<span class="list-icon"></span><span> List</span>
 			</button>
 		</div>
 		<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
-			<label for="hideCovers" class="checkbox{* control-label*}"> Hide Covers
+			<label for="hideCovers" class="checkbox{* form-label*}"> Hide Covers
 				<input id="hideCovers" type="checkbox" onclick="Pika.Archive.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
 			</label>
 		</div>

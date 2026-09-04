@@ -1,7 +1,7 @@
 {strip}
 	<h1 id="pageTitle" role="heading" aria-level="1" class="h2">{$shortPageTitle}</h1>
 	<div class="adminTableRegion">
-		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
+		<table class="adminTable table table-striped table-sm" id="adminTable">
 			<thead>
 			<tr>
 				<th><label title="Content Type">Content Type</label></th>
@@ -14,18 +14,18 @@
 				{foreach from=$usageArray item=row}
 					<tr>
 						<td>{$row.displayName}</td>
-						<td class="text-right">{$row.numObjects|number_format}</td>
-						<td class="text-right">{$row.driveSpace|number_format}</td>
-						<td class="text-right">{$row.driveSpaceGB|number_format:1}</td>
+						<td class="text-end">{$row.numObjects|number_format}</td>
+						<td class="text-end">{$row.driveSpace|number_format}</td>
+						<td class="text-end">{$row.driveSpaceGB|number_format:1}</td>
 					</tr>
 				{/foreach}
 			</tbody>
 			<tfoot>
 				<tr>
 					<td></td>
-					<td class="text-right"><strong>{$totalObjects|number_format}</strong></td>
-					<td class="text-right"><strong>{$totalBytes|number_format}</strong></td>
-					<td class="text-right"><strong>{$totalDriveSpace|number_format:1} GB</strong></td>
+					<td class="text-end"><strong>{$totalObjects|number_format}</strong></td>
+					<td class="text-end"><strong>{$totalBytes|number_format}</strong></td>
+					<td class="text-end"><strong>{$totalDriveSpace|number_format:1} GB</strong></td>
 				</tr>
 			</tfoot>
 		</table>

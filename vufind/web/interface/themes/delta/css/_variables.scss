@@ -1,0 +1,90 @@
+//Variables Customizations for Englewood theme
+$header-height: 130px;
+$header-logo-height: 100px;
+
+$theme-primary-color: #46ACA4;
+$theme-primary-color-light: #9cdad5;
+$theme-primary-color-medium: #5eb7b0; /* additional light-ish color; little more readable for buttons */
+
+$link-color-resp:#326799;
+
+$other-gray: #f0f0f0;
+$border-gray: #A2A1A1;
+
+$home-search-top-color: $other-gray;
+$home-search-bottom-color:$other-gray;
+$home-search-label-color: #000;
+
+//$home-page-login-color: #000;
+
+$header-buttons-background-color: $theme-primary-color;
+
+$header-bg-color: #fff;
+
+$library-display-name-color: #000;
+$library-display-name-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$library-display-name-font-size: 25px;
+
+$header-bottom-border-color: #fff;
+$footer-top-border-color: $theme-primary-color;
+
+$btn-primary-bg: $theme-primary-color;
+$btn-primary-color: #000;
+$btn-primary-border: $theme-primary-color;
+
+$alert-info-bg: $other-gray;
+$alert-info-border: $border-gray;
+
+$menu-bar-color: #333; // https://webaim.org/resources/contrastchecker/?fcolor=333333&bcolor=46ACA4
+$menu-bar-selected-color: #000;
+$menu-bar-background-color: $theme-primary-color;
+$menu-bar-selected-background-color: $theme-primary-color-light;
+//$menu-bar-selected-color: #fff;
+
+$explore-more-bar-label-color: #333; // Sets sufficient contrast with bg color // https://webaim.org/resources/contrastchecker/?fcolor=333333&bcolor=46ACA4
+//$explore-more-bar-label-color: #000; // Sets sufficient contrast with bg color // https://webaim.org/resources/contrastchecker/?fcolor=000000&bcolor=46ACA4
+
+$category1MainColor: #fff;
+$categoryLineColor: #fff;
+$categoryLineShadow: #fff;
+$selectedCategoryBorderColor: $theme-primary-color;
+
+$jcarousel-item-border-color: #d7d7d7;
+$browseCarouselControlBackgroundColor: #fff;
+$browseCarouselControlColor: $theme-primary-color;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $theme-primary-color-light;
+$selectedSubCategoryBackgroundColor: $theme-primary-color-light;
+$selectedSubCategoryFontColor: #333;
+
+
+$browse-label-text-color: #000;
+$browse-category-text-color: #000;
+$selected-browse-label-search-color: #000;
+//$browse-category-font-size: 20px;
+
+// Home Page Browse Category More Results button
+$more-browse-results-bg-color: $theme-primary-color;
+$more-browse-results-color: #fff;
+
+$accordion-header-bg-color: #fff;
+$accordion-active-header-bg-color: $accordion-header-bg-color;
+//$accordion-header-top-gradient-color: $accordion-header-bg-color;
+//$accordion-header-bottom-gradient-color: $accordion-header-bg-color;
+$accordion-active-header-color: #333; // same as when closed;
+$accordion-active-header-shadow-color: #fff; // same as when closed;
+
+//No rounded corners
+$border-radius-base:             0;
+$border-radius-large:            0;
+$border-radius-small:            0;
+
+$sidebar-label-color: #000;
+$sidebar-label-background-color: #C6C6C6; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=000000&bcolor=C6C6C6
+
+$breadcrumb-bg: $other-gray;
+
+// Search Results
+$facetTitle-bg-color: $other-gray;
+$availableOther-status-color: #000;

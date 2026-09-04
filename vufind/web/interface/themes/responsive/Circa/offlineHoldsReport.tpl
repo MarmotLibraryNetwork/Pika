@@ -8,35 +8,35 @@
 				<div class="sidegroupContents">
 					<form id="offlineHoldsFilter">
 						<div  class="form-horizontal">
-							<div class="form-group">
-								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+							<div class="row mb-3">
+								<label for="startDate" class="col-form-label col-md-2">Start Date</label>
+								<div class="input-group date col-md-3" id="startDatePicker">
 									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control" >
-									<span class="input-group-addon">
-								<span class="glyphicon glyphicon-calendar"
+									<span class="input-group-text">
+								<span class="bi bi-calendar3"
 								      onclick="$('#startDate').focus().datepicker('show')"
 								      aria-hidden="true">
 								</span>
 							</span>
 								</div>
 							</div>
-							<div class="form-group">
-								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+							<div class="row mb-3">
+								<label for="endDate" class="col-form-label col-md-2">End Date</label>
+								<div class="input-group date col-md-3" id="endDatePicker">
 									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control">
-									<span class="input-group-addon">
-							<span class="glyphicon glyphicon-calendar"
+									<span class="input-group-text">
+							<span class="bi bi-calendar3"
 							      onclick="$('#endDate').focus().datepicker('show')"
 							      aria-hidden="true">
 								</span>
 							</span>
 								</div>
 							</div>							<br>
-							<div class="form-group">
+							<div class="mb-3">
 								<input type="submit" name="updateFilters" value="Update Filters" class="btn btn-primary">
 							</div>
 
@@ -49,7 +49,7 @@
 		<div id="main-content">
 			<h1 role="heading" aria-level="1" class="h2">Offline Holds</h1>
 			{if count($offlineHolds) > 0}
-				<table class="citation stripe" id="offlineHoldsReport">
+				<table class="table citation table-striped" id="offlineHoldsReport">
 					<thead>
 						<tr><th>Patron Barcode</th><th>Record Id</th><th>Title</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>

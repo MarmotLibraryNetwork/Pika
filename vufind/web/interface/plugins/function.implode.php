@@ -33,13 +33,14 @@
  *       (Smarty online manual)
  * @author Will Mason <will at dontblinkdesign dot com>
  * @param array $params
- * @param UInterface $smarty
+ * @param \Smarty\Template $template
  * @return null|string
  */
-function smarty_function_implode($params, &$smarty)
+function smarty_function_implode($params, \Smarty\Template $template)
 {
+	global $interface;
 	if (!isset($params['subject'])) {
-		$smarty->trigger_error("implode: missing 'subject' parameter");
+		trigger_error("implode: missing 'subject' parameter", E_USER_WARNING);
 		return;
 	}
 
@@ -62,6 +63,6 @@ function smarty_function_implode($params, &$smarty)
 	if (!isset($params['assign'])) {
 		return $implodedValue;
 	}else{
-		$smarty->assign($params['assign'], $implodedValue);
+		$interface->assign($params['assign'], $implodedValue);
 	}
 }

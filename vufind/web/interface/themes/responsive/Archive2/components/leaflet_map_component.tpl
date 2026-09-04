@@ -3,7 +3,7 @@
    equivalent migration already done for collection_map.tpl and
    components/map_component.tpl. *}
 {strip}
-<div class="col-sm-12">
+<div class="col-md-12">
 	<div class="archiveComponent">
 		<div id="collection-leaflet-map" style="height:500px; margin-top:0.5em;"></div>
 		{if $unmappedPlaces}

@@ -20,11 +20,11 @@
 		{if strlen($section.name) > 0 && count($sections) > 1}
 			<div class="accordion-group">
 				<div class="accordion-heading" id="holdings-header-{$section.name|replace:' ':'_'}">
-					<a class='accordion-toggle' data-toggle="collapse" data-target="#holdings-section-{$section.name|replace:' ':'_'}">{$section.name}</a>
+					<a class='accordion-toggle' data-bs-toggle="collapse" data-bs-target="#holdings-section-{$section.name|replace:' ':'_'}">{$section.name}</a>
 				</div>
 		{/if}
 
-		<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
+		<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}show{/if}{/if}">
 			<div class="accordion-inner">
 				<div class="striped">
 				{include file="Record/copiesTableHeader.tpl"}
@@ -47,7 +47,7 @@
 {if !$show856LinksAsTab && count($links)}
 	<div id="title_links">
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<strong style="text-decoration: underline">Links</strong>
 			</div>
 		</div>

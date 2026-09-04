@@ -1,7 +1,6 @@
 {strip}
-	<li>
+	<li class="breadcrumb-item">
 		<a href="/Archive2/Home">{translate text="Archive Home"}</a>
-		<span class="divider">&raquo;</span>
 	</li>
 	{* searchResultsUrl is rebuilt from the saved search this record was reached through (see
 	   SearchObject_Islandora2::getNextPrevLinks()); lastsearch, the last archive search of the
@@ -9,36 +8,32 @@
 	   Archive2/search-results-navigation.tpl, which links back to the same results. *}
 	{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
 	{if $returnToSearchUrl}
-		<li>
+		<li class="breadcrumb-item">
 			<a href="{$returnToSearchUrl|escape}">{translate text="Archive Search Results"}</a>
-			<span class="divider">&raquo;</span>
 		</li>
 	{/if}
 	{if $parent_title}
-		<li>
+		<li class="breadcrumb-item">
 			<span>
 				{if $parent_rel_url}<a href="{$parent_rel_url}">{/if}
 				{$parent_title|escape}
 				{if $parent_rel_url}</a>{/if}
 			</span>
-			<span class="divider">&raquo;</span>
 		</li>
 	{/if}
 	{if $display_model}
-		<li>
+		<li class="breadcrumb-item">
 			<span>{$display_model|escape}</span>
-			<span class="divider">&raquo;</span>
 		</li>
 	{elseif $vocabulary_label}
-		<li>
+		<li class="breadcrumb-item">
 			<span>{$vocabulary_label|escape}</span>
-			<span class="divider">&raquo;</span>
 		</li>
 	{/if}
 
 	{if $breadcrumbText}
-		<li>
-			<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em>
+		<li class="breadcrumb-item active" aria-current="page">
+			<em>{$breadcrumbText|truncate:30:"..."|escape}</em>
 		</li>
 	{/if}
 {/strip}

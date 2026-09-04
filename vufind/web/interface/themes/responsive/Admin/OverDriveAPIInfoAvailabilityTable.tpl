@@ -1,5 +1,5 @@
 {strip}
-	<table class="table table-condensed">
+	<table class="table table-sm">
 		<tr>
 			<td>Copies Owned (Shared + Advantage)</td>
 			<td>{$availability->copiesOwned}</td>

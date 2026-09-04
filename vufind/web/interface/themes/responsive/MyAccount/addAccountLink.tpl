@@ -2,20 +2,20 @@
 <p class="alert alert-danger" id="loginError" style="display: none"></p>
 <form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal"{* role="form" Assigning form role to html form tags is not neccessary *} onsubmit="return Pika.Account.processAjaxLogin()">
 	<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
-	<div id ='loginUsernameRow' class='form-group'>
-		<label for="username" class='control-label col-xs-12 col-sm-4'>{$usernameLabel}:</label>
-		<div class='col-xs-12 col-sm-8'>
+	<div id ='loginUsernameRow' class='row mb-3'>
+		<label for="username" class='col-form-label col-sm-12 col-md-4'>{$usernameLabel}:</label>
+		<div class='col-sm-12 col-md-8'>
 			<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
 		</div>
 	</div>
-	<div id ='loginPasswordRow' class='form-group'>
-		<label for="password" class='control-label col-xs-12 col-sm-4'>{$passwordLabel}: </label>
-		<div class='col-xs-12 col-sm-8'>
+	<div id ='loginPasswordRow' class='row mb-3'>
+		<label for="password" class='col-form-label col-sm-12 col-md-4'>{$passwordLabel}: </label>
+		<div class='col-sm-12 col-md-8'>
 			<input type="password" name="password" id="password" size="28" onkeydown="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 		</div>
 	</div>
-	<div id ='loginPasswordRow2' class='form-group'>
-		<div class='col-xs-12 col-sm-offset-4 col-sm-8'>
+	<div id ='loginPasswordRow2' class='row mb-3'>
+		<div class='col-sm-12 offset-md-4 col-md-8'>
 			<label for="showPwd" class="checkbox">
 				<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
 				{translate text="Reveal Password"}

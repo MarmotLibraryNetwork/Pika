@@ -8,32 +8,32 @@
 			<div class="issue-summary-details">
 				{if $issueSummary.identity}
 					<div class="row">
-						<div class="result-label col-xs-4">Identity</div>
-						<div class="result-value col-xs-8">{$issueSummary.identity}</div>
+						<div class="result-label col-sm-4">Identity</div>
+						<div class="result-value col-sm-8">{$issueSummary.identity}</div>
 					</div>
 				{/if}
 				{if $issueSummary.callNumber}
 					<div class="row">
-						<div class="result-label col-xs-4">Call Number</div>
-						<div class="result-value col-xs-12">{$issueSummary.callNumber}</div>
+						<div class="result-label col-sm-4">Call Number</div>
+						<div class="result-value col-sm-12">{$issueSummary.callNumber}</div>
 					</div>
 				{/if}
 				{if $issueSummary.latestReceived}
 					<div class="row">
-						<div class="result-label col-xs-4">Latest Issue Received</div>
-						<div class="result-value col-xs-8">{$issueSummary.latestReceived}</div>
+						<div class="result-label col-sm-4">Latest Issue Received</div>
+						<div class="result-value col-sm-8">{$issueSummary.latestReceived}</div>
 					</div>
 				{/if}
 				{if isset($issueSummary.holdingStatement) }
 					<div class="row">
-						<div class="result-label col-xs-4">Holdings</div>
-						<div class="result-value col-xs-8">{$issueSummary.holdingStatement}</div>
+						<div class="result-label col-sm-4">Holdings</div>
+						<div class="result-value col-sm-8">{$issueSummary.holdingStatement}</div>
 					</div>
 				{/if}
 				{if $issueSummary.libHas}
 						<div class="row">
-							<div class="result-label col-xs-4">Library Has</div>
-							<div class="result-value col-xs-8">{$issueSummary.libHas}</div>
+							<div class="result-label col-sm-4">Library Has</div>
+							<div class="result-value col-sm-8">{$issueSummary.libHas}</div>
 						</div>
 				{/if}
 

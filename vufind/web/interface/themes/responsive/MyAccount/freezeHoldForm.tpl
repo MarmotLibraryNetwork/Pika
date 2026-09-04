@@ -3,10 +3,10 @@
 	{if $reinstateDate}
 		<form name="freezeHolds">
 			<div class="row">
-				<div class="col-sm-3">
+				<div class="col-md-3">
 					<label for="suspendDate">Date to {translate text="Thaw Hold"}{if count($holdSelected) > 1}s{/if}: </label>
 				</div>
-				<div class="col-sm-9">
+				<div class="col-md-9">
 					<input type="date" id="suspendDate" name="suspendDate" value="{$reinstate|date_format:"%Y-%m-%d"}" >
 				</div>
 			</div>

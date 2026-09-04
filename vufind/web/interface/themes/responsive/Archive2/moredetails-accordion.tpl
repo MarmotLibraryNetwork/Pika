@@ -2,14 +2,14 @@
 	<div id="more-details-accordion" class="panel-group">
 		{foreach from=$moreDetailsOptions key="moreDetailsKey" item="moreDetailsOption"}
 			<div class="panel{if $moreDetailsOption.openByDefault} active{/if}" id="{$moreDetailsKey}Panel"{if $moreDetailsOption.hideByDefault} style="display:none"{/if}>
-				<a data-toggle="collapse" href="#{$moreDetailsKey}PanelBody">
+				<a data-bs-toggle="collapse" href="#{$moreDetailsKey}PanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">
 							{$moreDetailsOption.label}
 						</h2>
 					</div>
 				</a>
-				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse{if $moreDetailsOption.openByDefault} in{/if}">
+				<div id="{$moreDetailsKey}PanelBody" class="panel-collapse collapse{if $moreDetailsOption.openByDefault} show{/if}">
 					<div class="panel-body">
 						{if is_array($moreDetailsOption.body)}
 							{foreach from=$moreDetailsOption.body item=bodyPart}

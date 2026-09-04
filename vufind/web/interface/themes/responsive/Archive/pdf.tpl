@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,7 +7,7 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 hidden-tn hidden-xs text-center">
+			<div id="main-content" class="col-sm-12 d-none d-md-block text-center">
 				{if $canView}
 					<div id="pdfContainer">
 						<div id="pdfContainerBody">
@@ -25,18 +25,18 @@
 		</div>
 
 		<div id="download-options" class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				{if $canView}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
+					<a class="btn btn-outline-secondary" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 				{/if}
 				{if $allowRequestsForArchiveMaterials}
-					<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+					<a class="btn btn-outline-secondary" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 				{/if}
 				{if $showClaimAuthorship}
-					<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+					<a class="btn btn-outline-secondary" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 				{/if}
 				{if $showFavorites == 1}
-					<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</button>
+					<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-outline-secondary ">{translate text='Add to favorites'}</button>
 				{/if}
 			</div>
 		</div>

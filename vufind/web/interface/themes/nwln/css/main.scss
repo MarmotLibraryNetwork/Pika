@@ -1,0 +1,219 @@
+// Core variables and mixins
+@import "variables";
+
+@font-face {
+  font-family: "Bangla MN";
+  src: url("../fonts/BanglaMN.ttf");
+  src: url("../fonts/BanglaMN.woff") format("woff"),
+  url("../fonts/BanglaMN.eot") format("embedded-opentype"),
+  url("../fonts/BanglaMN.svg#filename") format("svg");
+}
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-logo {
+  margin-top: 0;
+  padding: 15px;
+  height: $header-logo-height;
+  max-height: none;
+}
+
+@include header-login-button-mixin();
+//.header-login-button-mixin(rgba(255,255,255,0.75), $home-page-login-color);
+a .header-button {
+  font-weight: bolder;
+  background: $header-buttons-background-color;
+
+  &:hover {
+    box-shadow: 2px 2px 5px darkgrey;
+  }
+}
+
+@include vertical-align-library-name-header;
+
+#library-name-header {
+  padding-top: 25px;
+  padding-left: 25px;
+}
+
+//#main-content-with-sidebar>.row.breadcrumbs,
+#home-page-browse-header {
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
+}
+
+@include nashville-selected-browse-label-search;
+
+@include hide-selected-browse-label-background;
+
+@include sacramento-browse-category($selectedCategoryColor, $browse-category-font-size, 90px, $border-gray, $theme-primary-color);
+
+#browse-category-carousel .browse-category.selected button {
+  color: #fff;
+  text-shadow: 1px 1px #333;
+}
+
+#browse-sub-category-menu button.selected {
+  color: #fff;
+  text-shadow: 1px 1px #333;
+}
+
+@include sacramento-browse-category-pickers($browseCarouselControlColor, 90px, 75px);
+
+// this controls the subcategory menu button are and menu buttons on browse
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    padding: 6px 10px;
+  }
+
+  button {
+    &.selected {
+      border: 1px solid $selectedCategoryBorderColor;
+    }
+  }
+}
+
+@include hide-browse-category-results-divider;
+
+// Remove gradients from accordions & facets; set a white background for body content //
+//#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+//  .panel-heading {
+//    background: $accordion-header-bg-color;
+//  }
+//
+//  .active .panel-heading {
+//    background: $accordion-active-header-bg-color;
+//  }
+//
+//  .panel, .panel-heading {
+//    border-radius: 0;
+//  }
+//
+//  .panel-body {
+//    background-color: transparent;
+//
+//  }
+//}
+
+.facetTitle, .exploreMoreTitle {
+  text-shadow: 1px 1px #fff;
+}
+
+.form-group .panel-title {
+  color: #333;
+  text-shadow: 1px 1px #fff;
+}
+
+.panel-group .panel.panel-default .panel-heading {
+  background: #f5f5f5;
+}
+
+.panel.panel-default .panel-heading {
+  background: $theme-primary-color;
+}
+
+//.facetList {
+//  background: $accordion-header-bg-color;
+//}
+
+.searchTypeHome, .searchSource {
+  color: #333;
+  background-color: #fff;
+}
+
+#horizontal-search-box #horizontal-search-label {
+  text-shadow: 1px 1px #333;
+  white-space: nowrap;
+  padding-top: 7px;
+  margin-left: -4px;
+}
+
+#advancedSearchLink {
+  text-shadow: 1px 1px #333;
+}
+
+//#more-details-accordion, #account-settings-accordion {
+//  .active {
+//    .panel-title {
+//      color: $accordion-active-header-color;
+//      text-shadow: 1px 1px #333;
+//    }
+//  }
+//
+//  .panel-title {
+//    color: $accordion-active-header-color;
+//    text-shadow: 1px 1px #333;
+//  }
+//}
+
+#account-settings-accordion, .sidebar-links {
+  a:hover, a:visited {
+    color: #fff;
+  }
+}
+
+#more-details-accordion {
+  a:hover, a:visited {
+    :not(.btn) {
+      color: #fff;
+    }
+  }
+}
+
+.sidebar-links {
+  .panel {
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          text-shadow: 1px 1px #333;
+        }
+      }
+    }
+  }
+
+}
+
+//.panel-title {
+//  color: $accordion-active-header-color;
+//  text-shadow: 1px 1px #333;
+//}
+
+//TODO: I think this should go into the main styling.
+#refineSearch ~ #home-account-links {
+  padding-top: 15px;
+}
+
+.sidebar-label {
+  font-weight: bold;
+}
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+@include verticalAlignThumbnailArt;
+
+.btn-primary {
+  &:hover {
+    background-color: $theme-primary-color-light;
+    border-color: $theme-primary-color-light;
+  }
+}
+
+.panel-group,
+#home-page-library-section {
+  > a {
+    text-decoration-color: #333333;
+    color: #333333;
+  }
+}
+
+@include sacramento-sidebar-button;
+
+.label-info {
+  background-color: $theme-primary-color;
+}
+
+.label-default {
+  background-color: $theme-primary-color-medium;
+}

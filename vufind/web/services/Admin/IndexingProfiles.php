@@ -44,7 +44,7 @@ class Admin_IndexingProfiles extends ObjectEditor {
 				if ($handle = @opendir($marcPath)){
 					while (false !== ($entry = readdir($handle))){
 						if ($entry != "." && $entry != ".."){
-							$files[$entry] = filemtime($marcPath . DIR_SEP . $entry);
+							$files[$entry] = filemtime($marcPath . DIRECTORY_SEPARATOR . $entry);
 						}
 					}
 					closedir($handle);

@@ -1,0 +1,57 @@
+$wallingford-primary: #4173A3;
+$wallingford-secondary: #5E7D2C;
+$wallingford-hover:#404040;
+$wallingford-color-light: #F8F9FA;
+$wallingford-color-dark: #212529;
+$wallingford-green-bright: #80ba3f;
+
+$wallingford-kids: #5E7D2D;
+$wallingford-teens: #6E2F8B;
+$wallingford-adults: #4173A4;
+$wallingford-all-ages: #272858;
+$wallingford-collab: #EB4912;
+
+$alert-danger-bg: #A01727;
+$alert-warning-bg: #E79F0D;
+$alert-info-bg: #104A1D;
+$alert-info-color: #FFF;
+$alert-shadow: darken($wallingford-color-light, .4);
+
+$home-search-top-color: transparent;
+$home-search-bottom-color: transparent;
+
+//$sidebar-link-color: $lion-light-blue;
+$menu-bar-background-color: $wallingford-primary;
+$menu-bar-selected-background-color: $wallingford-hover;
+
+$header-bg-color: $wallingford-all-ages;
+
+$header-bottom-border-color: $wallingford-all-ages;
+$footer-top-border-color: $wallingford-color-light;
+
+$header-buttons-background-color : $wallingford-secondary;
+
+$btn-primary-bg: $wallingford-primary;
+$btn-default-bg: $wallingford-hover;
+$btn-default-color: $wallingford-color-light;
+$btn-default-border: $wallingford-hover;
+$category1MainColor: $wallingford-color-light;
+$categoryLineColor: $wallingford-color-light;
+$categoryLineShadow: $wallingford-color-light;
+$selectedCategoryBorderColor: $wallingford-color-light;
+
+$browseCarouselControlBackgroundColor: $wallingford-color-light;
+$browseCarouselControlColor: $wallingford-primary;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: $wallingford-hover;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+$browse-label-text-color: $wallingford-color-dark;
+$browse-category-text-color: $wallingford-color-dark;
+$selected-browse-label-search-color: $wallingford-color-dark;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $wallingford-secondary;

@@ -1,0 +1,42 @@
+// Core variables and mixins
+// initial styling code taken from basalt\css\main.less plb 9-2-2014
+
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-container {
+  background-image: $header_image;
+  background-position: center;
+  border-bottom: 4px solid $vail_logo_green;
+}
+
+// padding adds dark-colored space for the logo to be displayed against a black background
+#header-logo {
+  border-radius: 0.5em;
+  margin-top: 15px;
+  padding: 20px 60px;
+}
+@include header-login-button-mixin;
+
+.header-button {
+  margin-top: 42px;
+}
+
+// custom styling of main browse category carousel
+// Hide the Carousel Controls
+@include noCarouselBrowseCategoriesMixin();
+
+// Selected Category needs to give a highlighted appearance
+@include noCarouselSelectedCategoryMixin($selectedCategoryColor);
+
+// Add traditional accent line back onto unselected carousel entries
+.browse-category {
+  background-color: $category1MainColor;
+  background: linear-gradient(to bottom, $category1MainColor, $category1MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category1MainColor 90%, $category1MainColor);
+}
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+// added by Chris 11/14/2018
+@include verticalAlignThumbnailArt;

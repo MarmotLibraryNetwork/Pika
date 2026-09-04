@@ -1,6 +1,6 @@
 {strip}
 <style>{literal}.exploreMoreBar .explore-more-option .explore-more-image{text-align:center}.exploreMoreBar .explore-more-option .explore-more-image img{margin-left:auto;margin-right:auto}{/literal}</style>
-<div class="nopadding col-sm-12">
+<div class="nopadding col-md-12">
 	<div class="exhibitPage exploreMoreBar row">
 		{if $browseCollectionTitle}
 		<div class="label-top">
@@ -11,7 +11,7 @@
 		{/if}
 		<div class="exploreMoreContainer">
 			<div class="jcarousel-wrapper" id="scrollCollection{$browseCollectionNid}">
-				<button class="jcarousel-control-prev" aria-label="Previous Collection Item"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="jcarousel-control-prev" aria-label="Previous Collection Item"><i class="bi bi-chevron-left"></i></button>
 				<div class="exploreMoreItemsContainer jcarousel">
 					<ul>
 						{foreach from=$browseCollectionItems item=item name="loop"}
@@ -32,7 +32,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<button class="jcarousel-control-next" aria-label="Next Collection Item"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="jcarousel-control-next" aria-label="Next Collection Item"><i class="bi bi-chevron-right"></i></button>
 			</div>
 		</div>
 	</div>

@@ -1,6 +1,6 @@
 {if $links}
 	<div class="panel" id="taxonomyLinksPanel">
-		<a data-toggle="collapse" href="#taxonomyLinksPanelBody">
+		<a data-bs-toggle="collapse" href="#taxonomyLinksPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Links</h2>
 			</div>

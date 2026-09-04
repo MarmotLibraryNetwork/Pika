@@ -1,0 +1,29 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+#header-logo {
+  max-height: none;
+}
+
+a .header-button {
+  border-radius: 0.5em;
+  //margin-top: 40px;
+  //line-height: 35px;
+}
+
+#browse-category-carousel .browse-category.selected {
+  background-color: $bvOrange;
+
+  button {
+    color: $selectedSubCategoryFontColor;
+  }
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    @include box-shadow(2px 2px 5px #aaa);
+  }
+}

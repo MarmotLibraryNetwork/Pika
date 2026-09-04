@@ -3,7 +3,7 @@
 	<div id="taxonomy-more-details-accordion" class="panel-group">
 
 		<div class="panel" id="taxStaffViewPanel">
-			<a data-toggle="collapse" href="#taxStaffViewPanelBody">
+			<a data-bs-toggle="collapse" href="#taxStaffViewPanelBody">
 				<div class="panel-heading">
 					<h2 class="panel-title">Staff View</h2>
 				</div>
@@ -12,14 +12,14 @@
 				<div class="panel-body">
 					{if $islandora_taxonomy_url}
 						<div class="row archive-field-row">
-							<div class="result-label col-sm-4">Islandora URL:</div>
-							<div class="result-value col-sm-8"><a href="{$islandora_taxonomy_url}" target="_blank">{$islandora_taxonomy_url}</a></div>
+							<div class="result-label col-md-4">Islandora URL:</div>
+							<div class="result-value col-md-8"><a href="{$islandora_taxonomy_url}" target="_blank">{$islandora_taxonomy_url}</a></div>
 						</div>
 					{/if}
 					{if $islandora_taxonomy_pika_json_url && $userRoles && in_array('opacAdmin', $userRoles)}
 						<div class="row archive-field-row">
-							<div class="result-label col-sm-4">Islandora Pika JSON:</div>
-							<div class="result-value col-sm-8"><a href="{$islandora_taxonomy_pika_json_url}" target="_blank">{$islandora_taxonomy_pika_json_url}</a></div>
+							<div class="result-label col-md-4">Islandora Pika JSON:</div>
+							<div class="result-value col-md-8"><a href="{$islandora_taxonomy_pika_json_url}" target="_blank">{$islandora_taxonomy_pika_json_url}</a></div>
 						</div>
 					{/if}
 					{include file="Archive2/partials/fieldRow.tpl" label="Term ID"         value=$tid}

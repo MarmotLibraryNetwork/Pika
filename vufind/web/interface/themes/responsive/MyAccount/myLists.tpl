@@ -1,4 +1,4 @@
-<form action="/MyAccount/MyLists" id="myListFormHead" class="form form-inline">
+<form action="/MyAccount/MyLists" id="myListFormHead" class="form">
 		<h1 role="heading" aria-level="1" class="h2" id="listsTitle">My Lists</h1>
 	<div class="alert alert-info">
 		For more information about User Lists, see the <a href="https://marmot-support.atlassian.net/l/c/NVtFyBaG">online documentation</a>.
@@ -7,21 +7,21 @@
 		<div class="btn-group">
 			<button onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</button>
 			{if $showConvertListsFromClassic}
-				<button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
+				<button value="importFromClassic" class="btn btn-sm btn-outline-secondary" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
 			{/if}
 		</div>
-		<div class="btn-group pull-right">
+		<div class="btn-group float-end">
 			<button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected Lists</button>
 		</div>
 	</div>
 	<hr>
 	<div class="row">
-		<div class="form-group col-sm-4" id="sortOptions">
+		<div class="mb-3 col-md-4 d-flex flex-wrap align-items-center gap-2" id="sortOptions">
 			{* Named listsSort rather than sort: this orders the lists themselves, while FavoriteHandler
 			   reads a "sort" parameter to order the entries within one list. Both accept "title", so a
 			   shared name let this page's value silently re-sort an exported spreadsheet. *}
-			<label for="listsSort" class="control-label">Sort Lists By&nbsp;</label>
-			<select class="sortMethod form-control" id="listsSort" name="listsSort">
+			<label for="listsSort" class="col-form-label">Sort Lists By</label>
+			<select class="sortMethod form-select w-auto" id="listsSort" name="listsSort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 					{/foreach}
@@ -43,7 +43,7 @@
 				<div class="result">
 
 					<div class="row result-title-row">
-						<div class="col-tn-12">
+						<div class="col-12">
 							<h2 class="h3">
 								<span class="result-index">{$smarty.foreach.myLists.iteration}.</span>&nbsp;
 								<a href="{$myList.url}" class="result-title{* notranslate*}">{$myList.name}</a>
@@ -52,54 +52,54 @@
 					</div>
 
 					<div class="row">
-						<div class="col-md-1">
+						<div class="col-lg-1">
 							<input type="checkbox" class="form-control-static myListsCheckBoxes" value="{$myList.id}" aria-label="select list to delete">
 						</div>
-						<div class="col-md-2">
+						<div class="col-lg-2">
 							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" alt="Cover Image for list &quot;{$myList.name}&quot;">
 						</div>
-						<div class="col-md-9">
+						<div class="col-lg-9">
 							<div class="row">
-								<div class="col-xs-10 col-lg-11">
+								<div class="col-sm-10 col-xl-11">
 									<div class="row related-manifestation">
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">Items:</span>
 											<span class="result-value">{if $myList.numTitles}{$myList.numTitles}{else}0{/if}</span>
 										</div>
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">List Access:</span>
 											<span class="result-value">{if $myList.isPublic}Public{else}Private{/if}</span>
 										</div>
-										<div class="col-tn-4">
+										<div class="col-4">
 											<span class="result-label">Default Sort:</span>
 											<span class="result-value">{$myList.defaultSort}</span>
 										</div>
 									</div>
 									<div class="row related-manifestation">
-										<div class="col-sm-6">
+										<div class="col-md-6">
 											<span class="result-label">Created:</span>
 											<span class="result-value">{$myList.created|date_format:"%b %d, %Y %r"}</span>
 										</div>
-										<div class="col-sm-6">
+										<div class="col-md-6">
 											<span class="result-label">Last Updated:</span>
 											<span class="result-value">{$myList.dateUpdated|date_format:"%b %d, %Y %r"}</span>
 										</div>
 
 									</div>
 									<div class="row">
-										<div class="col-tn-12">
+										<div class="col-12">
 											{if $myList.description}{$myList.description}{/if}
 										</div>
 									</div>
 									<div class="row">
-										<div class="col-tn-12">
+										<div class="col-12">
 
 											{if $myList.isPublic}
 												<div class="result-tools-horizontal btn-toolbar">
 
 													<div class="btn-group btn-group-sm">
 														<div class="share-tools">
-															<span id="share-list-tools-label-{$myList.id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+															<span id="share-list-tools-label-{$myList.id}" class="share-tools-label d-none d-md-inline">SHARE LIST</span>
 															<ul aria-labelledby="share-list-tools-label-{$myList.id}" class="share-tools-list list-inline">
 																<li>
 																	<a href="#" onclick="return Pika.Lists.emailListAction({$myList.id})" title="share via e-mail">
@@ -137,11 +137,11 @@
 												</div>
 											{else}
 												<div class="btn-group btn-group-sm">
-													<button value="emailList" class="btn btn-sm btn-default"
+													<button value="emailList" class="btn btn-sm btn-outline-secondary"
 																	onclick='return Pika.Lists.emailListAction("{$myList.id}")'
 																	title="Share via e-mail">Email List
 													</button>
-													<button value="exportToExcel" class="btn btn-sm btn-default"
+													<button value="exportToExcel" class="btn btn-sm btn-outline-secondary"
 																	onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel
 													</button>
 												</div>
@@ -150,7 +150,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
+								<div class="col-sm-2 col-md-2 col-lg-2 col-xl-1">
 									{if $staff && $myList.isPublic}
 										<div class="btn-group-vertical">
 											<button value="transferList" onclick="return Pika.Lists.transferListToUser({$myList.id}); "

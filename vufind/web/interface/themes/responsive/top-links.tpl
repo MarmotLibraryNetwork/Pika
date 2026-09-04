@@ -1,6 +1,6 @@
 {strip}
 	<div class="row">
-		<div class="col-tn-12" id="header-links">
+		<div class="col-12" id="header-links">
 			{foreach from=$topLinks item=link}
 				{if (!empty($link->url) && !empty($link->linkText))}
 					<div class="header-link-wrapper">

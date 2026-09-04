@@ -29,15 +29,15 @@
  * @category Pika
  * @author Mark Noble <pika@marmot.org>
  * @var mixed[] $params
- * @var UInterface &$smarty
+ * @var \Smarty\Template $template
  * @return null|string
  * Date: 10/8/13
  * Time: 1:51 PM
  */
-function smarty_function_formatJSON($params, &$smarty)
+function smarty_function_formatJSON($params, \Smarty\Template $template)
 {
 	if (!isset($params['subject'])) {
-		$smarty->trigger_error("implode: missing 'subject' parameter");
+		trigger_error("formatJSON: missing 'subject' parameter", E_USER_WARNING);
 		return null;
 	}
 

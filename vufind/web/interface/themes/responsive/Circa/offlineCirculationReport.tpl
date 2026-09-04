@@ -9,28 +9,28 @@
 				<div class="sidegroupContents">
 					<form id="offlineHoldsFilter">
 						<div class="form-horizontal">
-							<div class="form-group">
-								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+							<div class="row mb-3">
+								<label for="startDate" class="col-form-label col-md-2">Start Date</label>
+								<div class="input-group date col-md-3" id="startDatePicker">
 									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control" >
-									<span class="input-group-addon">
-								<span class="glyphicon glyphicon-calendar"
+									<span class="input-group-text">
+								<span class="bi bi-calendar3"
 								      onclick="$('#startDate').focus().datepicker('show')"
 								      aria-hidden="true">
 								</span>
 							</span>
 								</div>
 							</div>
-							<div class="form-group">
-								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+							<div class="row mb-3">
+								<label for="endDate" class="col-form-label col-md-2">End Date</label>
+								<div class="input-group date col-md-3" id="endDatePicker">
 									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
 									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
 									       class="form-control">
-									<span class="input-group-addon">
-							<span class="glyphicon glyphicon-calendar"
+									<span class="input-group-text">
+							<span class="bi bi-calendar3"
 							      onclick="$('#endDate').focus().datepicker('show')"
 							      aria-hidden="true">
 								</span>
@@ -47,15 +47,15 @@
 								</select>
 							</div>
 							*}
-							<div class="form-group">
-								<label for="loginsToInclude" class="control-label col-sm-2">Logins To Show</label> <input type="text" name="loginsToInclude" id="startDate" size="60" value="{$loginsToInclude}" title="Separate multiple logins with commas, leave blank to include all" class="form-control col-sm-6" style="width: auto;">
+							<div class="row mb-3">
+								<label for="loginsToInclude" class="col-form-label col-md-2">Logins To Show</label> <input type="text" name="loginsToInclude" id="startDate" size="60" value="{$loginsToInclude}" title="Separate multiple logins with commas, leave blank to include all" class="form-control col-md-6" style="width: auto;">
 							</div>
 						<div class="row">
-						<p class="alert alert-info col-sm-8 col-sm-offset-2">Separate multiple logins with commas. Leave blank to include all logins.</p>
+						<p class="alert alert-info col-md-8 offset-md-2">Separate multiple logins with commas. Leave blank to include all logins.</p>
 						</div>
-						<div class="form-group">
-							<label class="control-label col-sm-2">Status</label>
-							<div class="col-sm-6">
+						<div class="row mb-3">
+							<label class="col-form-label col-md-2">Status</label>
+							<div class="col-md-6">
 								<div class="checkbox">
 									<label for="hideNotProcessed"><input type="checkbox" name="hideNotProcessed" id="hideNotProcessed" {if $hideNotProcessed}checked="checked"{/if}> Hide Not Processed</label>
 								</div>
@@ -75,11 +75,11 @@
 								<div class="text-center">
 									<div class="btn-group-vertical">
 										<input type="submit" name="fetchStatGroups" value="Set Sierra Stat Group Numbers for circs"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 										<input type="submit" name="exportToSierra" value="Export for Sierra Offline Circulation App"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 										<input type="submit" name="markExported" value="Mark these circs as processed via export"
-										       class="btn btn-default">
+										       class="btn btn-outline-secondary">
 									</div>
 								</div>
 							{/if}
@@ -110,7 +110,7 @@
 				</pre>
 			{elseif count($offlineCirculation) > 0}
 				<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
-				<table class="table stripe" id="offlineCirculationReport">
+				<table class="table table-striped" id="offlineCirculationReport">
 					<thead>
 					<tr><th>#</th><th>Login</th><th>Stat Group</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>

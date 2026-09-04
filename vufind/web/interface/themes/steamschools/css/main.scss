@@ -1,0 +1,13 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($steamboatschools-red, #fff);
+
+@include sacramento-browse-category($steamboatschools-red, $browse-category-font-size, 90px);
+
+#browse-category-carousel .browse-category.selected button {
+  color: #fff;
+}

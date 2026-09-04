@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{include file="Archive2/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
@@ -10,27 +10,27 @@
 
 			{if $thumbnail}
 				<div class="row">
-					<div class="col-xs-12">
-						<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
+					<div class="col-sm-12">
+						<img src="{$thumbnail}" class="img-fluid thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
 						{$description}
 						<div class="clearfix"></div>
 					</div>
 				</div>
 			{elseif $description}
 				<div class="row">
-					<div class="col-xs-12">{$description}</div>
+					<div class="col-sm-12">{$description}</div>
 				</div>
 			{/if}
 
 			<div class="row collection-row-spacer">
-				<div class="col-xs-12">
-					<div id="collection-map" class="col-xs-12 collection-map-container"></div>
+				<div class="col-sm-12">
+					<div id="collection-map" class="col-sm-12 collection-map-container"></div>
 				</div>
 			</div>
 
 			{if $unmappedPlaces}
 				<div class="row collection-row-spacer-sm">
-					<div class="col-xs-12">
+					<div class="col-sm-12">
 						<button class="btn btn-info btn-xs"
 							onclick="Pika.showElementInPopup('Unmapped Locations', '#unmappedLocations');">
 							Show Unmapped Locations

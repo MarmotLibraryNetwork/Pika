@@ -1,6 +1,6 @@
 {strip}
 	{if $displaySidebarMenu}
-		<div class="hidden-xs col-sm-1 col-md-1 col-lg-1" id="vertical-menu-bar-wrapper">
+		<div class="d-none d-md-block col-md-1 col-lg-1 col-xl-1" id="vertical-menu-bar-wrapper">
 			<div id="vertical-menu-bar">
 				{*For link title attributes (for accessibility) : "The title attribute value is used to provide advisory information.
 				It typically appears when the users hovers the mouse over an element. The advisory information presented

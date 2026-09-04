@@ -1,18 +1,18 @@
-.{strip}
+{strip}
 {assign var="archiveOnly" value=false}
 	{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 		{assign var="archiveOnly" value=true}
 	{/if}
 <search id="home-page-search" class="home-page-search row"{if $displaySidebarMenu} style="display: none"{/if}>
-	<div class="col-tn-12">
+	<div class="col-12">
 		<div class="row">
-			<div class="hidden-xs-inline col-md-12 text-center">
-				<label id="home-page-search-label" for="lookfor">SEARCH <span class="glyphicon glyphicon-search" aria-hidden="true"></label></span>
+			<div class="d-block-inline col-lg-12 text-center">
+				<label id="home-page-search-label" for="lookfor">SEARCH <span class="bi bi-search" aria-hidden="true"></span></label>
 			</div>
 		</div>
-		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
+		<form method="get" action="/Union/Search" id="searchForm" onsubmit="Pika.Searches.processSearchForm();">
 			<div class="row">
-				<div class="{if $displaySidebarMenu}col-sm-12{else}col-sm-10 col-md-10 col-sm-push-1 col-md-push-1{/if}">
+				<div class="{if $displaySidebarMenu}col-md-12{else}col-md-10 col-lg-10 offset-md-1 offset-lg-1{/if}">
 					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 						<input type="hidden" name="basicType" id="basicType" value="">
 						<input type="hidden" name="genealogyType" id="genealogyType" value="">
@@ -25,7 +25,6 @@
 
 					<fieldset>
 						<div class="input-group input-group-sm">
-							<div class="input-group-sm">
 							<textarea class="form-control"{/strip}
 							       id="lookfor"
 							       placeholder="&#128269; SEARCH" {*experimental for anythink. disabled in css by default, as of now. plb 11-19-2014 *}
@@ -41,52 +40,49 @@
 											{strip}>
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
-							</div>
 
-							<div class="input-group-btn" id="search-actions">
-								<button class="btn btn-default" type="submit">GO</button>
-								<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-label="Select type of search">
-									<span class="caret"></span>
-								</button>
+							<button class="btn btn-outline-secondary" type="submit" id="search-actions">GO</button>
+							<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
+							</button>
 
-								<ul id="searchType" class="dropdown-menu text-left" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
+							<ul id="searchType" class="dropdown-menu dropdown-menu-end text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
 									{if $searchSources|@count == 1 && (array_key_exists('islandora', $searchSources) || array_key_exists('islandora2', $searchSources))}
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 									{else}
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
-										<li class="divider catalogType"></li>
+										<li class="catalogType"><hr class="dropdown-divider"></li>
 										{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
-										<li class="divider genealogyType"></li>
+										<li class="genealogyType"><hr class="dropdown-divider"></li>
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('archive', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
-										<li class="divider islandoraType"></li>
+										<li class="islandoraType"><hr class="dropdown-divider"></li>
 										{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="dropdown-item ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
-										<li class="divider ebscoType"></li>
+										<li class="ebscoType"><hr class="dropdown-divider"></li>
 									{/if}
 									{/if}
 									{if $showAdvancedSearchbox}
 										<li class="catalogType">
-											<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
+											<a class="dropdown-item" id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
 												{translate text="Advanced"}
 											</a>
 										</li>
@@ -94,12 +90,11 @@
 
 									{* Link to Search Tips Help *}
 									<li>
-										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="modalDialogTrigger">
+										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="dropdown-item modalDialogTrigger">
 											{*<i class="icon-question-sign"></i>*} {translate text='Search Tips'}
 										</a>
 									</li>
 								</ul>
-							</div>
 						</div>
 
 					</fieldset>
@@ -108,23 +103,23 @@
 
 			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
 				<div class="row text-center">
-					<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
-						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
+					<div class="col-md-10 col-lg-10 offset-md-1 offset-lg-1">
+						<select aria-label="Select type of search" name="basicType" class="searchTypeHome form-select catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'islandora2' || $searchSource == 'ebsco'}style="display:none"{/if}>
 							{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of genealogy search" name="genealogyType" class="searchTypeHome form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+						<select aria-label="Select type of genealogy search" name="genealogyType" class="searchTypeHome form-select genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora' && $searchSource != 'islandora2'}style="display:none"{/if}>
+						<select aria-label="Select type of archive search" name="islandoraType" class="searchTypeHome form-select islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora' && $searchSource != 'islandora2'}style="display:none"{/if}>
 							{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
-						<select aria-label="Select type of EBSCO search" name="ebscoType" class="searchTypeHome form-control ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
+						<select aria-label="Select type of EBSCO search" name="ebscoType" class="searchTypeHome form-select ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
 							{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $ebscoSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
@@ -133,14 +128,14 @@
 				</div>
 			{/if}
 			<div class="row text-center">
-				<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
+				<div class="col-md-10 col-lg-10 offset-md-1 offset-lg-1">
 					{if $searchSources|@count == 1}
 						{* Use the actual source key so the form submits the correct value even on a fresh session *}
 						{foreach from=$searchSources key=singleSourceKey item=singleSource}
 							<input type="hidden" name="searchSource" id="searchSource" value="{$singleSourceKey}" data-catalog_type="{$singleSource.catalogType}">
 						{/foreach}
 					{else}
-					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-control">
+					<select aria-label="Select search source" name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-select">
 						{foreach from=$searchSources item=searchOption key=searchKey}
 							<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 								{if $searchKey == $searchSource} selected="selected"{/if}
@@ -157,12 +152,12 @@
 			<div class="row">
 
 				{if $showAdvancedSearchbox || $searchType == 'advanced' || $filterList}
-					<div class="{if $recordCount || $sideRecommendations}col-tn-6 {/if}col-sm-12 text-center">
+					<div class="{if $recordCount || $sideRecommendations}col-6 {/if}col-md-12 text-center">
 						{* In Col-sm and above, display each of these as it's own row; In col-xs & below display all items within a single row *}
 
 						{* Keep Filters Switch *}
 						{if $filterList && $action != 'MyList'}
-							<div class="row">
+							<div>
 								<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 							</div>
 						{/if}
@@ -181,36 +176,12 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-tn-6{else}col-tn-12{/if} text-center visible-xs">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-6{else}col-12{/if} text-center d-none d-sm-block d-md-none">
+						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 
 			</div>
-
-{* Original *}{*<!--
-			<div class="row text-center">
-				{if $filterList}
-					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
-				{/if}
-			</div>
-			{* Return to Advanced Search Link * }
-			{if $searchType == 'advanced'}
-				<div class="row text-center">
-					<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
-				</div>
-			{elseif $showAdvancedSearchbox}
-				<div class="row text-center">
-					<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
-				</div>
-			{/if}
-
-			{* Show/Hide Search Facets & Sort Options * }
-			{if $recordCount || $sideRecommendations}
-				<div class="row text-center visible-xs">
-					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
-				</div>
-			{/if}-->*}
 
 			{if $filterList}
 				{* Data for searching within existing results *}

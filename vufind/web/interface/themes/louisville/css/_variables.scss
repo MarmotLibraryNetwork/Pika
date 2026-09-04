@@ -1,0 +1,73 @@
+// Variables for Louisville styling
+$font-family-base: "Roboto", sans-serif;
+$font-family-sans-serif-resp: "Roboto", sans-serif;
+
+// Colors taken from current catalog homepage
+//$blue-boulder-text : #0A61AE;
+$green-louisville-text : #597635;
+
+//$blue-boulder-background : #E1EAF4;
+$green-louisville : #00853f;
+$purple-louisville: #3f0085;
+$blue-louisville: #004685;
+//$pink-louisville: #850046;
+//$orange-louisville: #f47722;
+//$bright-purple: #7C14B8;
+
+
+
+// Header Variables
+//$header-height: 90px;
+$header-bg-color: #fff;
+
+// Header buttons
+$header-button-height: 55px;
+$header-button-color: #fff;
+$header-button-bg-color: $green-louisville;
+$header-button-border-color: #fff;
+$header-button-hover-color: $green-louisville;
+$header-button-hover-bg-color: #f6f6f6;
+
+// Display Name Variables
+$library-display-name-color: $green-louisville-text;
+$library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+$library-display-name-font-size: 22px;
+
+// Search Box color
+$home-search-top-color: $purple-louisville; //Top color for background gradient in header
+$home-search-bottom-color: $purple-louisville; //Bottom color for background gradient in header
+
+$btn-primary-bg: $blue-louisville;
+
+// Menu
+$menu-bar-background-color: $purple-louisville;
+$menu-bar-selected-background-color: $green-louisville;
+
+//Home Page Browse Category labels
+//$browse-header-background-color: $green-louisville-background; //#d7dce3;
+//$browse-label-text-color: $blue-boulder-text;
+//$browse-label-line-color: $blue-boulder-text;
+
+//Home Page Browse categories
+$browseCarouselControlBackgroundColor: #ffffff;
+$browse-label-text-color: black;
+
+$browse-category-font-size: 18px;
+$categoryLineShadow: #fff;
+$categoryLineColor: #fff;
+$browse-category-text-color: #000;
+$category1MainColor: #fff;
+$selectedCategoryBorderColor: $green-louisville;
+$selectedCategoryColor: $green-louisville;
+$selected-browse-label-search-color:#333;
+
+$browseCarouselControlColor:#333;
+$selectedSubCategoryBackgroundColor: $green-louisville;
+
+
+// Accordions
+$accordion-active-header-bg-color: $purple-louisville;
+$panel-border-radius: 0;
+
+// Sidebar buttons
+$sidebar-button-bg-color: $purple-louisville;

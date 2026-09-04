@@ -24,8 +24,8 @@
 	{/if}
 
 	<div class="row">
-		<div class="result-label col-sm-4">rightsstatements.org statement:</div>
-		<div class="result-value col-sm-8">
+		<div class="result-label col-md-4">rightsstatements.org statement:</div>
+		<div class="result-value col-md-8">
 			<a href='{$rightsStatementOrg}' target="_blank">
 				{$rightsStatementOrg|translate}
 			</a>

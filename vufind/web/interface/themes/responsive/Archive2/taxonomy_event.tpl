@@ -1,17 +1,17 @@
 {strip}
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{include file="Archive2/search-results-navigation.tpl"}
 			<h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{if $thumbnail && $thumbnail.url}
-				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-responsive taxonomy-thumbnail">
+				<img src="{$thumbnail.url|escape}" alt="{$term_title|escape}" class="img-fluid taxonomy-thumbnail">
 			{/if}
 		</div>
-		<div class="col-lg-6">
+		<div class="col-xl-6">
 			{include file="Archive2/partials/fieldRow.tpl" label="Alternate Name" value=$alternate_name}
 			{include file="Archive2/partials/fieldRow.tpl" label="Start Date"     value=$start_date}
 			{include file="Archive2/partials/fieldRow.tpl" label="End Date"       value=$end_date}
@@ -23,7 +23,7 @@
 	<br class="clearfix">
 	{if $term_description}
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<div class="taxonomy-description">
 					{$term_description}
 				</div>
@@ -38,12 +38,12 @@
 
 			{if $wikipediaData}
 				<div class="panel active" id="eventWikipediaPanel">
-					<a data-toggle="collapse" href="#eventWikipediaPanelBody">
+					<a data-bs-toggle="collapse" href="#eventWikipediaPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">From Wikipedia</h2>
 						</div>
 					</a>
-					<div id="eventWikipediaPanelBody" class="panel-collapse collapse in">
+					<div id="eventWikipediaPanelBody" class="panel-collapse collapse show">
 						<div class="panel-body">
 							{include file="Archive2/sections/wikipediaSection.tpl"}
 						</div>
@@ -53,12 +53,12 @@
 
 			{* Related Objects — populated via AJAX on page load *}
 			<div class="panel active" id="eventRelatedObjectsPanel">
-				<a data-toggle="collapse" href="#eventRelatedObjectsPanelBody">
+				<a data-bs-toggle="collapse" href="#eventRelatedObjectsPanelBody">
 					<div class="panel-heading">
 						<h2 class="panel-title">Related Objects</h2>
 					</div>
 				</a>
-				<div id="eventRelatedObjectsPanelBody" class="panel-collapse collapse in">
+				<div id="eventRelatedObjectsPanelBody" class="panel-collapse collapse show">
 					<div class="panel-body" id="eventRelatedObjectsContent">
 						Loading...
 					</div>
@@ -67,7 +67,7 @@
 
 			{if $notes}
 				<div class="panel" id="eventNotesPanel">
-					<a data-toggle="collapse" href="#eventNotesPanelBody">
+					<a data-bs-toggle="collapse" href="#eventNotesPanelBody">
 						<div class="panel-heading">
 							<h2 class="panel-title">Notes</h2>
 						</div>
@@ -75,7 +75,7 @@
 					<div id="eventNotesPanelBody" class="panel-collapse collapse">
 						<div class="panel-body">
 							<div class="row">
-								<div class="col-sm-12">{$notes}</div>
+								<div class="col-md-12">{$notes}</div>
 							</div>
 						</div>
 					</div>

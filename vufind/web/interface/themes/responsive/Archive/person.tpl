@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,12 +7,12 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+			<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				<div class="main-project-image">
-					<img src="{$medium_image}" class="img-responsive">
+					<img src="{$medium_image}" class="img-fluid">
 				</div>
 			</div>
-			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+			<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
 				{if $genealogyData || $birthDate || $deathDate}
 					{if $genealogyData->otherName}
 						<div class='personDetail'><span class='result-label'>Other Names: </span><span class='personDetailValue'>{$genealogyData->otherName|escape}</span></div>

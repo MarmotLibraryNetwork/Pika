@@ -1,4 +1,4 @@
-<table class="table-striped table table-condensed notranslate">
+<table class="table-striped table table-sm notranslate">
   <tr>
     <th>Last File Modification Time</th>
     <td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>

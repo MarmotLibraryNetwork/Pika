@@ -2,13 +2,15 @@
 	<h1 role="heading" aria-level="1" class="h2">Search Results</h1>
 
 		{if $searchType == 'advanced'}
-			<div id="advanced-search" class="well well-sm">
+			<div id="advanced-search" class="card">
+			<div class="card-body p-2">
 {*				<h5>Advanced Search Query : </h5>*}
 				<code id="advanced-search-display-query">{$lookfor|escape:"html"}</code>
 				<br>
-				<div class="help-block">
+				<div class="form-text">
 				<a href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 				</div>
+			</div>
 			</div>
 		{/if}
 
@@ -69,17 +71,17 @@
 		   Centered on the button below it, which is full width and centers its own chevron.
 		   The image is 32px against a line of text, so it needs aligning to the middle of
 		   that line rather than sitting on its baseline for the two to read as one unit. *}
-		<div id="more-results-loading" class="hidden text-center" style="margin: 10px 0;">
+		<div id="more-results-loading" class="d-none text-center" style="margin: 10px 0;">
 			<img src="{img filename='loading.gif'}" alt="" style="vertical-align: middle; margin-right: 5px;">
 			{translate text="Loading"}...
 		</div>
 
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Searches.getMoreResults()" aria-label="Load more search results">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
-		<div id="more-results-status" class="sr-only" aria-live="polite"></div>
+		<div id="more-results-status" class="visually-hidden" aria-live="polite"></div>
 	{else}
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}

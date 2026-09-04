@@ -157,6 +157,5 @@ CLAUDE.md
 
 # NPM
 ###############################
+# package.json and package-lock.json are committed; they define the SASS/CSS build toolchain
 node_modules
-package.json
-package-lock.json

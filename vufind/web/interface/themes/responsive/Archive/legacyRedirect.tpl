@@ -4,7 +4,7 @@
  * Islandora 2 Archive2 equivalent.  The 301 Location header is already sent by
  * the PHP controller; this page is the human-readable response body.
  *}
-<div class="col-xs-12">
+<div class="col-sm-12">
   <h1>Page Permanently Moved</h1>
 
   {if $newUrl}

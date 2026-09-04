@@ -74,7 +74,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 			if ($header == null) {
 				global $interface;
 				/** @var string $gitBranch */
-				$gitBranch = $interface->getVariable('gitBranch');
+				$gitBranch = $interface->getTemplateVariable('gitBranch');
 				if (substr($gitBranch, -1) == "\n"){
 					$gitBranch = substr($gitBranch, 0, -1);
 				}

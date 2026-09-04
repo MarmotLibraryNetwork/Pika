@@ -2,16 +2,17 @@
 	{*<h1>{$shortPageTitle}</h1>*}
 
 	<div class="btn-group">
-		<a class="btn btn-sm btn-default" href="/Admin/TranslationMaps?objectAction=edit&amp;id={$id}">Edit Map</a>
+		<a class="btn btn-sm btn-outline-secondary" href="/Admin/TranslationMaps?objectAction=edit&amp;id={$id}">Edit Map</a>
 		{foreach from=$additionalObjectActions item=action}
 			{if $smarty.server.REQUEST_URI != $action.url}
-				<a class="btn btn-default btn-sm" href='{$action.url}'>{$action.text}</a>
+				<a class="btn btn-outline-secondary btn-sm" href='{$action.url}'>{$action.text}</a>
 			{/if}
 		{/foreach}
-		<a class="btn btn-sm btn-default" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
+		<a class="btn btn-sm btn-outline-secondary" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
 	<h1 role="heading" aria-level="1" class="h2">{$mapName}</h1>
-	<div class="well">
+	<div class="card">
+		<div class="card-body">
 		<p>Translation map values can be loaded from either an INI formatted record
 			or from a CSV formatted record.
 		</p>
@@ -30,6 +31,7 @@
 			</ul>
 		</div>
 
+		</div>
 	</div>
 	<form name="importTranslationMaps" action="/Admin/TranslationMaps" method="post" id="importTranslationMaps">
 		<div>

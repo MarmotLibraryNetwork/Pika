@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $parentExhibitUrl}
 		{* Search/Archive Navigation for Exhibits within an exhibit *}
 		{include file="Archive/search-results-navigation.tpl"}
@@ -7,7 +7,7 @@
 
 	{if $main_image}
 		<div class="main-project-image">
-			<img src="{$main_image}" class="img-responsive" usemap="#map" alt='Main image for "{$title}" collection'>
+			<img src="{$main_image}" class="img-fluid" usemap="#map" alt='Main image for "{$title}" collection'>
 		</div>
 	{/if}
 
@@ -17,10 +17,10 @@
 	</h1>
 
 	<div class="lead row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{if $thumbnail && !$main_image}
 			{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-				<img src="{$thumbnail}" class="img-responsive thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
+				<img src="{$thumbnail}" class="img-fluid thumbnail exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 			{if $exhibitThumbnailURL}</a>{/if}
 			{/if}
 			{$description}
@@ -29,12 +29,12 @@
 
 
 	<div class="row">
-		<div id="exhibit-map" class="col-xs-12">
+		<div id="exhibit-map" class="col-sm-12">
 		</div>
 	</div>
 
 	<div id="exhibit-map-legend" class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			{/strip}
 			{if $mapsBrowserKey}
 				<script>
@@ -103,14 +103,14 @@
 	</div>
 
 	<div id="related-objects-header" class="row">
-		<div class="col-sm-8">
+		<div class="col-md-8">
 			{if $totalMappedLocations}
 				Showing {$totalMappedLocations} locations.  Click any location to view more information about that location.
 			{/if}
 
 		</div>
 		{if !empty($unmappedPlaces)}
-			<div class="col-sm-4">
+			<div class="col-md-4">
 				<button class="btn btn-info btn-xs" onclick="Pika.showElementInPopup('Unmapped Locations', '#unmappedLocations');">Show Unmapped Locations</button>
 			</div>
 			<div id="unmappedLocations" style="display: none">
@@ -139,25 +139,25 @@
 	{if $repositoryLink && $loggedIn && $userRoles && (in_array('archives', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles))}
 		<div id="more-details-accordion" class="panel-group">
 			<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">
-				<a href="#staffViewPanelBody" data-toggle="collapse">
+				<a href="#staffViewPanelBody" data-bs-toggle="collapse">
 					<div class="panel-heading">
 						<h2 class="panel-title">
 							Staff View
 						</h2>
 					</div>
 				</a>
-				<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
+				<div id="staffViewPanelBody" class="panel-collapse collapse {*show*}{*toggle on for open*}">
 					<div class="panel-body">
-						<a class="btn btn-small btn-default" href="{$repositoryLink}" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}" target="_blank">
 							View in Islandora
 						</a>
-						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
 							View MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-sm btn-outline-secondary" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>

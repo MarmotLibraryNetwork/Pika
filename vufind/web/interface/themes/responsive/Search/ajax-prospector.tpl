@@ -1,9 +1,9 @@
 {strip}
 	<div class="row" id="prospectorSection">
-		<div class="col-tn-12 col-sm-3">
-			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
+		<div class="col-12 col-md-3">
+			<img class="d-block mx-auto" src="{img filename='innReachEncoreLogo.png'}" alt="{$innReachEncoreName} Logo" style="max-width: 100%">
 		</div>
-		<div class="col-tn-12 col-sm-9">
+		<div class="col-12 col-md-9">
 			<h2>In {$innReachEncoreName}</h2>
 			Request items from other {$innReachEncoreName} libraries to be delivered to your local library for pickup.
 		</div>
@@ -11,7 +11,7 @@
 
 	{if $prospectorResults}
 		<div class="row" id="prospectorSearchResultsSection">
-			<div class="col-tn-12">
+			<div class="col-12">
 
 				{foreach from=$prospectorResults item=prospectorResult name="recordLoop"}
 
@@ -24,12 +24,12 @@
 						</h3>
 						{if $prospectorResult.author}
 							<div class="row">
-								<div class="col-tn-12">by {$prospectorResult.author}</div>
+								<div class="col-12">by {$prospectorResult.author}</div>
 							</div>
 						{/if}
 						{if $prospectorResult.pubDate}
 							<div class="row">
-								<div class="col-tn-12">Published: {$prospectorResult.pubDate}</div>
+								<div class="col-12">Published: {$prospectorResult.pubDate}</div>
 							</div>
 						{/if}
 					</div>
@@ -41,9 +41,9 @@
 	{/if}
 
 	<div class="row" id="prospectorLinkSection">
-		<div class="col-tn-12">
+		<div class="col-12">
 			<br>
-			<button class="btn btn-sm btn-info pull-right" onclick="window.open('{$prospectorLink}', 'child'); return false">See more results in {$innReachEncoreName}</button>
+			<button class="btn btn-sm btn-info float-end" onclick="window.open('{$prospectorLink}', 'child'); return false">See more results in {$innReachEncoreName}</button>
 		</div>
 	</div>
 

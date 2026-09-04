@@ -2,14 +2,14 @@
 	<div id="groupedRecord{$summId|escape}" class="resultsList">
 		<a id="record{$summId|escape}"></a>
 		{if isset($summExplain)}
-			<div class="hidden" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
+			<div class="d-none" id="scoreExplanationValue{$summId|escape}">{$summExplain}</div>
 		{/if}
 
 		<div class="row">
-			<div class="col-xs-12">{* May turn out to be more than one situation to consider here *}
+			<div class="col-sm-12">{* May turn out to be more than one situation to consider here *}
 				{* Title Row *}
 				<div class="row">
-					<div class="col-tn-12">
+					<div class="col-12">
 						<h3 class="h4">
 							<span class="result-index">{$resultIndex}.</span>&nbsp;
 							<a href="{$summUrl}" class="result-title notranslate">
@@ -28,8 +28,8 @@
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
-						<div class="result-value col-tn-8 notranslate">
+						<div class="result-label col-3">Author: </div>
+						<div class="result-value col-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
 									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
@@ -51,10 +51,10 @@
 					{/if}
 					{/foreach}
 
-					<div class="result-label col-tn-3">
+					<div class="result-label col-3">
 						Format{if count($relatedManifestations) > 1}s{/if}:
 					</div>
-					<div class="result-value col-tn-8">
+					<div class="result-value col-8">
 						{implode subject=$relatedManifestations|@array_keys glue=", "}
 					</div>
 
@@ -64,7 +64,7 @@
 				{if $summDescription}
 					<div class="row">
 						{* Hide in mobile view *}
-						<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
+						<div class="result-value col-md-12" id="descriptionValue{$summId|escape}">
 							{$summDescription|highlight|truncate_html:450:"..."}
 						</div>
 					</div>

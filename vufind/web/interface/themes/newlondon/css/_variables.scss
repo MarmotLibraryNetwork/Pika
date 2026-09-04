@@ -1,0 +1,65 @@
+$lion-light-blue: #9dd1f2;
+$lion-dark-blue: #130840;
+$lion-menu-blue: #74C1F2;
+
+$newlondon-brown: #8D7F7A;
+$newlondon-darkbrown: #645A57;
+$newlondon-text-brown: #a16550;
+$newlondon-tan: #E7DCD3;
+$newlondon-light-tan: #cfc8b6;
+
+$newlondon-better-brown: #BBACA1;
+
+
+$newlondon-blue: #0076B4;
+
+$newlondon-off-brown: #DDDCD4;
+
+
+$header-height: 150px;
+$header-logo-height: 131px;
+$header-logo-max-height: none;
+
+
+////$home-search-top-color: $newlondon-brown; //Top color for background gradient in header
+//$home-search-top-color: $newlondon-tan; //Top color for background gradient in header
+//$home-search-bottom-color: $newlondon-brown;
+
+$home-search-top-color: $newlondon-brown; //Top color for background gradient in header
+$home-search-bottom-color: $newlondon-darkbrown;
+
+
+//$sidebar-link-color: $lion-light-blue;
+$menu-bar-background-color: #BFA896;
+$menu-bar-selected-background-color: #797979;
+
+$header-bg-color: #fff;
+
+$header-bottom-border-color: #fff;
+$footer-top-border-color: #DDDCD4;
+
+
+$header-buttons-background-color : $newlondon-off-brown;
+
+$btn-primary-bg: $newlondon-blue;
+
+$category1MainColor: #ffffff;
+$categoryLineColor: #ffffff;
+$categoryLineShadow: #ffffff;
+$selectedCategoryBorderColor: #ffffff;
+
+$browseCarouselControlBackgroundColor: #ffffff;
+$browseCarouselControlColor: $newlondon-blue;
+
+// Selected Category color to give a highlighted appearance
+$selectedCategoryColor: #515151;
+$selectedSubCategoryBackgroundColor: $selectedCategoryColor;
+
+
+$browse-label-text-color: $lion-dark-blue;
+$browse-category-text-color: $lion-dark-blue;
+$selected-browse-label-search-color: $lion-dark-blue;
+$browse-category-font-size: 30px;
+
+// set opened accordions color
+$accordion-active-header-bg-color: $newlondon-brown;

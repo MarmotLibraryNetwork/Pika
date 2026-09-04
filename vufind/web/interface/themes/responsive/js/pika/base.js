@@ -98,8 +98,8 @@ var Pika = (function(){
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
 				if (callback != undefined){
-					var closeLightboxListener = modalDialog.on('hidden.bs.modal', function (e) {
-						modalDialog.off('hidden.bs.modal');
+					var closeLightboxListener = modalDialog.on('hidden.bs.modal.closeLightbox', function (e) {
+						modalDialog.off('hidden.bs.modal.closeLightbox');
 						callback();
 					});
 				}
@@ -405,7 +405,7 @@ var Pika = (function(){
 						}
 						, autoClose > 1 ? autoClose : 3000);
 			}else if (refreshAfterClose) {
-				modalDialog.on('hide.bs.modal', function(){
+				modalDialog.off('hide.bs.modal.refreshAfterClose').one('hide.bs.modal.refreshAfterClose', function(){
 					location.reload(true)
 				})
 			}
@@ -421,7 +421,7 @@ var Pika = (function(){
 					confirmFunction();
 				}
 			});
-			$("#modalDialog").on('shown.bs.modal', function() {
+			$("#modalDialog").off('shown.bs.modal.confirm').one('shown.bs.modal.confirm', function() {
 				$("#confirm-button").focus();
 			});
 			this.showMessageWithButtons('Confirm?', message, button);

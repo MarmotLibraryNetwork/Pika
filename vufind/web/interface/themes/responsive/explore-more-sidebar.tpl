@@ -15,7 +15,7 @@
 		<div id="exploreMoreSideBar-{$sectionId}Panel" class="panel{if $exploreMoreSection->openByDefault} active{/if}">
 
 			{* Clickable header for my account section *}
-			<a data-toggle="collapse"{* data-parent="#explore-more-accordion"*} href="#exploreMoreSideBar-{$sectionId}PanelBody">
+			<a data-bs-toggle="collapse"{* data-bs-parent="#explore-more-accordion"*} href="#exploreMoreSideBar-{$sectionId}PanelBody">
 				<div class="panel-title exploreMoreTitle">
 					{if empty($exploreMoreSection->displayName)}
 						{$archiveSections[$sectionId]}
@@ -25,14 +25,14 @@
 				</div>
 			</a>
 
-			<div id="exploreMoreSideBar-{$sectionId}PanelBody" class="panel-collapse collapse{if $exploreMoreSection->openByDefault} in{/if}">
+			<div id="exploreMoreSideBar-{$sectionId}PanelBody" class="panel-collapse collapse{if $exploreMoreSection->openByDefault} show{/if}">
 				<div class="panel-body">
 
 		{if $section.format == 'scroller'}
 		{assign var='i' value=0}
 			{* JCarousel with related titles *}
 			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
-				<button class="jcarousel-control-prev" aria-label="Previous title"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="jcarousel-control-prev" aria-label="Previous title"><i class="bi bi-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
@@ -48,15 +48,15 @@
 						{/foreach}
 					</ul>
 				</div>
-				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="bi bi-chevron-right"></i></button>
 			</div>
 		{elseif $section.format == 'subsections'}
 			{foreach from=$section.values item=section}
 				<div class="section">
 					<div class="row">
-						<div class="subsectionTitle col-xs-5">{$section.title}</div>
-						<div class="subsection col-xs-7">
-							<a href="{$section.link}"><img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail"></a>
+						<div class="subsectionTitle col-sm-5">{$section.title}</div>
+						<div class="subsection col-sm-7">
+							<a href="{$section.link}"><img src="{$section.image}" alt="{$section.description|escape}" class="img-fluid img-thumbnail"></a>
 						</div>
 					</div>
 				</div>
@@ -65,7 +65,7 @@
     {assign var='n' value=0}
 			{* Related Titles Widget *}
 			<div class="jcarousel-wrapper" id="scroll{$sectionId}">
-				<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
+				<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="bi bi-chevron-left"></i></button>
 				<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 					<ul>
 						{foreach from=$section.values item=title}
@@ -81,7 +81,7 @@
 						{/foreach}
 					</ul>
 				</div>
-				<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
+				<button class="jcarousel-control-next" aria-label="Next Title"><i class="bi bi-chevron-right"></i></button>
 			</div>
 			<a class="explore-more-scroller-link" href="{$section.link}" {if $section.openInNewWindow}target="_blank"{/if}>All Results {if $section.numFound}({$section.numFound}){/if}</a>
 
@@ -157,7 +157,7 @@
 					<a href="{$value.link}">
 						{if $value.image}
 							<figure style="text-align: center">
-								<img src="{$value.image}" alt="{if $section.showTitles}{*alt text should not duplicate captions *}{else}{$value.label|escape}{/if}" class="img-responsive img-thumbnail">
+								<img src="{$value.image}" alt="{if $section.showTitles}{*alt text should not duplicate captions *}{else}{$value.label|escape}{/if}" class="img-fluid img-thumbnail">
 								{if $section.showTitles}
 									<figcaption>
 										{$value.label}
@@ -169,7 +169,7 @@
 						{/if}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<span class="help-icon glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true"></span>
+						&nbsp;<span class="help-icon bi bi-question-circle-fill" title="{$value.linkingReason|escape}" aria-hidden="true"></span>
 					{/if}
 				</div>
 			{/foreach}
@@ -193,10 +193,10 @@
 			{foreach from=$relatedArticles item=section}
 			<div class="row">
 				<a href="{$section.link}">
-					<div class="subsection col-xs-5">
-						<img src="{$section.image}" alt="{$section.description|escape}" class="img-responsive img-thumbnail">
+					<div class="subsection col-sm-5">
+						<img src="{$section.image}" alt="{$section.description|escape}" class="img-fluid img-thumbnail">
 					</div>
-					<div class="subsectionTitle col-xs-7">{$section.title}</div>
+					<div class="subsectionTitle col-sm-7">{$section.title}</div>
 				</a>
 			</div>
 			{/foreach}
@@ -206,10 +206,10 @@
 	{* Sections for Related Content From Novelist  *}
 	{foreach from=$exploreMoreInfo item=exploreMoreOption}
 		<div class="sectionHeader"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>{$exploreMoreOption.label}</div>
-		<div class="{*col-sm-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
-			<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="glyphicon glyphicon-chevron-left"></i></button>
+		<div class="{*col-md-12 *}jcarousel-wrapper"{if $exploreMoreOption.hideByDefault} style="display: none;"{/if}>
+			<button class="jcarousel-control-prev" aria-label="Previous Title"><i class="bi bi-chevron-left"></i></button>
 			{$exploreMoreOption.body}
-			<button class="jcarousel-control-next" aria-label="Next Title"><i class="glyphicon glyphicon-chevron-right"></i></button>
+			<button class="jcarousel-control-next" aria-label="Next Title"><i class="bi bi-chevron-right"></i></button>
 		</div>
 	{/foreach}
 {/strip}
@@ -230,8 +230,9 @@
 			.on('hide.bs.collapse', function () {
 				$(this).removeClass('active');
 			})
+					/* Only run this once, .one() */
 			.one('shown.bs.collapse', function () {
-				Pika.initCarousels( $(this).children('.panel-collapse.in').find('.jcarousel') );
+				Pika.initCarousels( $(this).children('.panel-collapse.show').find('.jcarousel') );
 			});
 	{/literal}
 	{/if}

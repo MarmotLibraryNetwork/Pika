@@ -4,7 +4,7 @@
 	<div id="itemRow{$overDriveFormat->id}" class="eContentHolding">
 		<div class="eContentHoldingHeader">
 			<div class="row">
-				<div class="col-sm-9">
+				<div class="col-md-9">
 					<span class="eContentHoldingFormat">{$overDriveFormat->name}</span>
 					{if $showEContentNotes}
 						{$overDriveFormat->notes}
@@ -13,7 +13,7 @@
 			</div>
 
 			<div class="row eContentHoldingUsage">
-				<div class="col-sm-12">
+				<div class="col-md-12">
 					{$overDriveFormat->getFormatNotes()}
 				</div>
 			</div>
@@ -26,11 +26,11 @@
 		</div>
 		<div class="eContentHoldingActions">
 			{if $overDriveFormat->sampleUrl_1}
-				<a href="{$overDriveFormat->sampleUrl_1}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_1}: {$overDriveFormat->sampleName_1}{/if}</a>
+				<a href="{$overDriveFormat->sampleUrl_1}" class="btn btn-sm btn-outline-secondary">{translate text="Sample"}{if $overDriveFormat->sampleName_1}: {$overDriveFormat->sampleName_1}{/if}</a>
 				&nbsp;
 			{/if}
 			{if $overDriveFormat->sampleUrl_2}
-				<a href="{$overDriveFormat->sampleUrl_2}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_2}: {$overDriveFormat->sampleName_2}{/if}</a>
+				<a href="{$overDriveFormat->sampleUrl_2}" class="btn btn-sm btn-outline-secondary">{translate text="Sample"}{if $overDriveFormat->sampleName_2}: {$overDriveFormat->sampleName_2}{/if}</a>
 				&nbsp;
 			{/if}
 			{* Options for the user to view online or download *}

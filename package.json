@@ -1,0 +1,23 @@
+{
+  "name": "pika-css-build",
+  "private": true,
+  "description": "Build toolchain for Pika theme stylesheets (SCSS -> CSS) and vendored frontend assets. Servers do not need Node; compiled CSS and vendored assets are committed.",
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node build/css/build.mjs",
+    "build:core": "node build/css/build.mjs --theme=responsive",
+    "watch": "node build/css/build.mjs --watch",
+    "vendor": "node build/vendor.mjs"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "cssnano": "^7.0.6",
+    "postcss": "^8.4.47",
+    "sass": "^1.79.4"
+  }
+}

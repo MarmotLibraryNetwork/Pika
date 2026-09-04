@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="accessOwnershipPanel"><a data-toggle="collapse" href="#accessOwnershipPanelBody">
+	<div class="panel" id="accessOwnershipPanel"><a data-bs-toggle="collapse" href="#accessOwnershipPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Access & Ownership</h2>
 			</div>

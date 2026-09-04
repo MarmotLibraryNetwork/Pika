@@ -1,0 +1,124 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color, $header-buttons-color);
+
+body {
+  //background: url('https://www.suttercounty.org/images/framework/backgrounds/sutter-bypass.png') no-repeat center center fixed;
+  //background: url('../images/sutter-bypass.png') no-repeat center center fixed;
+  //background-size: cover;
+
+}
+
+#header-logo {
+  padding: 0;
+  margin-top: 5px;
+  height: $header-logo-height;
+}
+
+.system-message-header,
+.system-message-header ~ .breadcrumbs, // the google translate box
+.container > div:nth-child(1).breadcrumbs // the google translate box when there is no system message
+{
+  background-color: $body-bg;
+}
+
+div#more-details-accordion.panel-group .panel a .panel-title {
+  color: #fff;
+  text-shadow: none;
+}
+
+//.vertical-align-library-name-header;
+
+// Adopting Nashville styling of browse categories
+@include nashville-selected-browse-label-search;
+
+@include hide-selected-browse-label-background;
+
+@include sacramento-browse-category($selectedCategoryColor, $browse-category-font-size, 60px, #d7d7d7, $selectedCategoryColor);
+// Previous LESS
+//#browse-category-carousel .browse-category {
+//  text-shadow: none;
+//  padding: 0;
+//  margin-left: 1px;
+//  margin-right: 1px;
+//  height: 60px;
+//  cursor: pointer;
+//  font-weight: 600;
+//  border: 1px solid #d7d7d7;
+//
+//  button {
+//    height: 60px;
+//    padding: 15px;
+//    //font-size: 20px;
+//    &:hover {
+//      text-decoration: none;
+//    }
+//  }
+//
+//  &.selected button {
+//    background: $selectedCategoryColor;
+//    color: $browse-category-text-color;
+//    font-size: $browse-category-font-size;
+//
+//    &:hover {
+//      background: $selectedCategoryColor;
+//    }
+//  }
+//
+//  &:hover {
+//    background: #E4E4E4;
+//    border: 1px solid #d7d7d7;
+//    //text-decoration: none;
+//    transition: all .3s ease-in-out;
+//  }
+//
+//}
+
+
+@include sacramento-browse-category-pickers($browseCarouselControlColor);
+
+
+/* this controls the subcategory menu button are and menu buttons on browse */
+#browse-sub-category-menu {
+  margin-top: 20px;
+
+  .btn {
+    &.selected {
+      color: $sutter-text-black;
+    }
+
+    padding: 6px 10px;
+  }
+}
+
+@include hide-browse-category-results-divider;
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading {
+    background: $accordion-header-bg-color;
+    color: #FFF;
+    text-shadow: 1px 1px #555;
+  }
+
+  .active .panel-heading {
+    background: $accordion-active-header-bg-color;
+  }
+
+  .panel, .panel-heading {
+    border-radius: 0;
+  }
+
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}
+
+.sidebar-button {
+  background: $sutter-dark-blue
+}

@@ -1,5 +1,5 @@
 {strip}
-<div id="main-content" class="col-tn-12 col-xs-12">
+<div id="main-content" class="col-12 col-sm-12">
 	<h1>User Administration</h1>
 	<hr>
 	<form name="resetDisplayName" method="post" enctype="multipart/form-data" class="form-horizontal">
@@ -14,16 +14,16 @@
 			{/if}
 
 			<input type="hidden" name="userAction" value="resetDisplayName">
-			<div class="row form-group">
-				<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-				<div class="col-sm-6">
+			<div class="row mb-3">
+				<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
+				<div class="col-md-6">
 					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
-				<div class="col-sm-2">
+				<div class="col-md-2">
 					<button type="submit" class="btn btn-primary">Reset User's display name</button>
 				</div>
 			</div>
-			<div class="form-group">
+			<div class="mb-3">
 			</div>
 		</fieldset>
 	</form>
@@ -41,22 +41,22 @@
 					{/if}
 
 				<input type="hidden" name="userAction" value="showDuplicates">
-				<div class="row form-group">
-					<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-					<div class="col-sm-6">
+				<div class="row mb-3">
+					<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
+					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $duplicateBarcode} value="{$duplicateBarcode}"{/if}>
 					</div>
-					<div class="col-sm-2">
+					<div class="col-md-2">
 						<button type="submit" class="btn btn-primary">Look up Accounts</button>
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="mb-3">
 				</div>
 			</fieldset>
 		</form>
 
 		{if !empty($duplicateUsers)}
-			<table class="table-condensed">
+			<table class="table-sm">
 			<tr>
 				<th>#</th>
 				<th>First Name</th>
@@ -92,7 +92,7 @@
 												<input type="hidden" name="userAction" value="moveUserData">
 												<input type="hidden" name="userId" value="{$duplicateUser->id}">
 												<input type="hidden" name="moveUserId" value="{$userId}">
-												<button class="btn btn-sm btn-default" onclick="if(confirm('Confirm move user data to listed user #{$smarty.foreach.moveloop.iteration}')) $(this).parent('form').submit(); return false">Move data to user #{$smarty.foreach.moveloop.iteration}</button>
+												<button class="btn btn-sm btn-outline-secondary" onclick="if(confirm('Confirm move user data to listed user #{$smarty.foreach.moveloop.iteration}')) $(this).parent('form').submit(); return false">Move data to user #{$smarty.foreach.moveloop.iteration}</button>
 											</form>
 										{/if}
 									{/foreach}*}
@@ -116,36 +116,52 @@
 				<legend>Check User Reading History Actions <small>(after {$readingHistoryLogStartDate|date_format})</small></legend>
 
 				<input type="hidden" name="userAction" value="showReadingHistoryActions">
-				<div class="row form-group">
-					<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
-					<div class="col-sm-6">
+				<div class="row mb-3">
+					<label for="barcode" class="col-md-2 col-form-label">Barcode: </label>
+					<div class="col-md-6">
 						<input type="text" name="barcode" id="barcode" class="form-control"{if $readingHistoryBarcode} value="{$readingHistoryBarcode}"{/if}>
 					</div>
-					<div class="col-sm-2">
+					<div class="col-md-2">
 						<button type="submit" class="btn btn-primary">Look up Reading History Actions</button>
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="mb-3">
 				</div>
 			</fieldset>
 		</form>
 		{if !empty($readingHistoryActions) && $readingHistorySuccess}
-			<table class="table-responsive table-striped dataTable">
-				<thead>
-				<tr>
-					<th>Date</th>
-					<th>Action</th>
-				</tr>
-				</thead>
-			{foreach from=$readingHistoryActions item=historyAction}
-				<tr>
-					<td><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
-					<td>{$historyAction.action}</td>
-				</tr>
-			{/foreach}
-			</table>
+			<div class="table-responsive">
+				<table id="readingHistoryActionsTable" class="table table-striped table-sm">
+					<thead>
+					<tr>
+						<th scope="col">Date</th>
+						<th scope="col">Action</th>
+					</tr>
+					</thead>
+					{* data-order carries the raw timestamp so the column sorts chronologically;
+					   the displayed m/d/Y format is not one DataTables recognises as a date *}
+					<tbody>
+					{foreach from=$readingHistoryActions item=historyAction}
+						<tr>
+							<td data-order="{$historyAction.date}"><strong>{$historyAction.date|date_format:'%m/%d/%Y %I:%M:%S'}</strong></td>
+							<td>{$historyAction.action}</td>
+						</tr>
+					{/foreach}
+					</tbody>
+				</table>
+			</div>
+			<script>
+				{literal}
+				$(function(){
+					$('#readingHistoryActionsTable').DataTable({
+						"order": [[0, "desc"]],
+						pageLength: 25
+					});
+				});
+				{/literal}
+			</script>
 		{elseif $readingHistoryError}
-			<p class="alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
+			<p class="alert alert-warning">The user account with barcode {$readingHistoryBarcode} has not enabled/disabled/cleared their reading history.</p>
 		{/if}
 	{/if}
 </div>

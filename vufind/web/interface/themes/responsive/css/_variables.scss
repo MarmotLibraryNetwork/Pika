@@ -1,0 +1,375 @@
+//
+// Variables for Pika customization.  These can be overridden at the local theme level:
+// a library theme's main.scss imports its own variables (without !default) BEFORE this
+// file, so every declaration here must carry !default.
+//
+// This file is imported after bootstrap/scss/functions and before bootstrap/scss/bootstrap,
+// so the Bootstrap 5 variables set here override Bootstrap's !default values.
+//
+
+// ---------------------------------------------------------------------------
+// Bootstrap 5 structural overrides
+// ---------------------------------------------------------------------------
+
+// Pika's Bootstrap 3 grid carried a custom extra tier: tn (tiny) was the 0-width
+// floor tier and xs was moved to a custom 480px breakpoint. Under Bootstrap 5 the
+// classes tier-shift up one (tn->base, xs->sm, sm->md, md->lg, lg->xl) and the old
+// 480px activation is preserved by overriding sm below (Bootstrap default: 576px).
+$grid-breakpoints: (
+	xs: 0,
+	sm: 480px,
+	md: 768px,
+	lg: 992px,
+	xl: 1200px,
+	xxl: 1400px
+) !default;
+
+// Match Bootstrap 3 container behavior exactly: fluid below 768px (so no sm entry),
+// then 750/970/1170. No xxl entry, so the container stays 1170 above 1400px.
+$container-max-widths: (
+	md: 750px,
+	lg: 970px,
+	xl: 1170px
+) !default;
+
+// Bootstrap 3 gutter was 30px (Bootstrap 5 default is 1.5rem/24px); kept for
+// visual continuity and because layout math (vertical menu bar) depends on it.
+$grid-gutter-width: 30px !default;
+
+$font-size-base: .9375rem !default; // 15px — a font size of 15px with line-height of 1.7 gets us across the minimum target size of 24px for Accessibility 2.5.8 Target Size
+//$line-height-base: 1.7;  // Set body line height to recommended minimum for accessibility
+$line-height-base: 1.734 !default;  // Set body line height to recommended minimum for accessibility
+// (The additional 0.034 was originally so Bootstrap 3's @input-height-base computed to 40px;
+//  Bootstrap 5 sizes inputs via em padding, but the line height is kept for visual continuity.)
+
+// Bootstrap Icons font location (replaces the Bootstrap 3 glyphicons @icon-font-path).
+// Relative to the compiled css/main.min.css in any theme dir: themes/<theme>/css -> vufind/web/fonts
+$bootstrap-icons-font-dir: "../../../../fonts" !default;
+
+// ---------------------------------------------------------------------------
+// Legacy Bootstrap 3 palette/structure aliases still referenced by Pika partials
+// and the _bs3-compat shims. New code should prefer Bootstrap 5 variables.
+// ---------------------------------------------------------------------------
+$gray-darker: #222 !default;
+$gray-dark: #333 !default;
+$gray: #555 !default;
+$gray-lighter: #eee !default;
+$table-bg-accent: #f9f9f9 !default; // BS3 striped-row background
+$panel-inner-border: #ddd !default;
+$btn-default-color: #333 !default;
+$btn-default-border: #ccc !default;
+$btn-primary-color: #fff !default;
+
+$border-radius-base: 4px !default;
+$border-radius-large: 6px !default;
+$border-radius-small: 3px !default;
+
+$padding-base-vertical: 6px !default;
+$padding-base-horizontal: 12px !default;
+$padding-large-vertical: 10px !default;
+$padding-large-horizontal: 16px !default;
+$padding-small-vertical: 5px !default;
+$padding-xs-vertical: 1px !default;
+$padding-xs-horizontal: 5px !default;
+
+$state-success-bg: #dff0d8 !default;
+$state-info-bg: #d9edf7 !default;
+$state-warning-bg: #fcf8e3 !default;
+$state-danger-bg: #f2dede !default;
+
+$breadcrumb-color: #ccc !default;        // BS3 separator color
+$breadcrumb-active-color: #777 !default;
+$dropdown-border: rgba(0, 0, 0, .15) !default;
+
+// BS3 fixed container widths (published for partials that reference them; the
+// actual container sizing comes from $container-max-widths above)
+$container-sm: 750px !default;
+$container-md: 970px !default;
+$container-lg: 1170px !default;
+
+// Media-query breakpoint aliases (exact values from the customized BS3 grid).
+// Kept so feature partials' @media rules compile unchanged; class-based layout
+// uses the Bootstrap 5 responsive utilities generated from $grid-breakpoints.
+$screen-tn: 320px !default;
+$screen-tn-min: $screen-tn !default;
+$screen-xs: 480px !default;
+$screen-xs-min: $screen-xs !default;
+$screen-phone: $screen-xs-min !default;
+$screen-sm: 768px !default;
+$screen-sm-min: $screen-sm !default;
+$screen-tablet: $screen-sm-min !default;
+$screen-md: 992px !default;
+$screen-md-min: $screen-md !default;
+$screen-desktop: $screen-md-min !default;
+$screen-lg: 1200px !default;
+$screen-lg-min: $screen-lg !default;
+$screen-lg-desktop: $screen-lg-min !default;
+$screen-tn-max: ($screen-xs-min - 1) !default;
+$screen-xs-max: ($screen-sm-min - 1) !default;
+$screen-sm-max: ($screen-md-min - 1) !default;
+$screen-md-max: ($screen-lg-min - 1) !default;
+
+$body-bg-resp: #fff !default;
+$content-bg: #fff !default;
+//$body-text-color: #6B6B6B; // (original value)
+//$body-text-color: #736868; // https://webaim.org/resources/contrastchecker/?fcolor=736868&bcolor=DFF0D8  (contrast with $success-bg)
+//$body-text-color: #656565; // https://webaim.org/resources/contrastchecker/?fcolor=656565&bcolor=F2DEDE  (contrast with $state-danger-bg)
+$body-text-color: #454545 !default; // (7.43 AAA)  https://webaim.org/resources/contrastchecker/?fcolor=454545&bcolor=F2DEDE  (contrast with $state-danger-bg)
+                           // https://webaim.org/resources/contrastchecker/?fcolor=656565&bcolor=DFF0D8  (contrast with $success-bg)
+$body-color: $body-text-color !default;  // flow the audited body text color into Bootstrap 5
+$body-bg: #fff !default;
+$link-color-resp: #4273AC !default; //https://webaim.org/resources/contrastchecker/?fcolor=4273AC&bcolor=F5F5F5  (contrast for breadcrumb background
+//$link-color-resp: #427AB3; // https://webaim.org/resources/contrastchecker/?fcolor=427AB3&bcolor=FFFFFF
+$link-color: $link-color-resp !default; // Set bootstrap default link coloring to our responsive link coloring
+
+$darkened-link-color-resp: darken($link-color-resp, 5%) !default;
+// https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=F2DEDE
+// https://webaim.org/resources/contrastchecker/?fcolor=3B679A&bcolor=EEEEEE
+
+
+$font-family-sans-serif-resp:  "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+$font-family-serif-resp:       Georgia, "Times New Roman", Times, serif !default;
+$icon-font-path:               "../../../../fonts/" !default;
+
+$accessible-blue: #0A75E3 !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0A75E3
+// use to replace $brand-primary color (#428bca)
+
+//$accessible-red: #EC130E; // https://webaim.org/resources/contrastchecker/?fcolor=EC130E&bcolor=FFFFFF
+// Use to replace CSS color red  (#FF0000)
+$accessible-red: #D32522 !default; // https://webaim.org/resources/contrastchecker/?fcolor=D32522&bcolor=F9F9F9
+    // #f9f9f9 bg-color for table-striped
+
+$accessible-success-green: #128A0B !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=128A0B
+
+$accessible-gray-light: #797676 !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=797676
+// Use to replace bootstrap $gray-light (#999)
+
+// Replace all gray-light coloring with $accessible-gray-light
+$gray-light: $accessible-gray-light !default;
+
+// Make single-title manifestation box contrast accessible
+$label-default-bg: $accessible-gray-light !default;
+
+$primary: $accessible-blue !default; // make primary blue color an accessible contrast with #fff
+$brand-primary: $primary !default;   // legacy BS3 name, still referenced by partials/themes
+
+// Make multiple-title manifestation box contrast accessible
+$info: #097FAF !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=097FAF
+$brand-info: $info !default; // legacy BS3 name
+
+// Replace the bootstrap success green with an accessibly contrasted green
+$success: $accessible-success-green !default;
+$brand-success: $success !default; // legacy BS3 name
+
+// Keep the audited red for danger states
+$danger: $accessible-red !default;
+$brand-danger: $danger !default; // legacy BS3 name
+
+// Legacy BS3 primary-button variables (referenced by partials)
+$btn-primary-bg: $primary !default;
+$btn-primary-border: darken($btn-primary-bg, 5%) !default;
+
+// Make default badge contrast accessible
+$badge-bg: $accessible-gray-light !default;
+
+// Make warning button contrast accessible
+$btn-warning-color: $btn-default-color !default; // https://webaim.org/resources/contrastchecker/?fcolor=333333&bcolor=F0AD4E
+
+// Button modification
+$padding-small-horizontal: 5px !default;
+$btn-padding-x-sm: $padding-small-horizontal !default; // Bootstrap 5 name for the same knob
+//TODO this is to fix display of "Check Out OverDrive" buttons.  Not sure what else is impacted by this change. pascal 3/29/2024
+
+//Header Variables
+
+$system-message-bg: $body-bg-resp !default;
+$header-bg-color: #fff !default;
+$header-height: 100px !default; // there is minimum header height of 110px
+$header-logo-max-height: 6em !default;
+
+//$header-top-color: #f2f2f2; //Top color for background gradient in header
+//$header-middle-color: #dddddd; //middle color for background gradient in header $80% of header height from bottom
+//$header-bottom-color: #e0e0e0; //Bottom color for background gradient in header
+$header-bottom-border-color: #b7b7b7 !default;
+$header-bottom-border-width: 8px !default;
+
+
+//Header buttons
+$header-button-color: #222 !default;
+$header-button-bg-color: $header-bg-color !default;
+$header-button-hover-color: #fff !default;
+$header-button-hover-bg-color: rgba(51,51,51,0.7) !default;
+//$header-button-bg-color: rgba(51,51,51,0.7);
+//$header-link-color-hover: #088ec6;
+$header-button-border-color: #555 !default;
+//$header-button-border-color: #d9d8d8;
+//$header-button-border-vertical: #d9d8d8; //TODO remove all instances
+$header-button-height: 50px !default;
+
+$library-display-name-color: #595959 !default; // (6.45) // https://webaim.org/resources/contrastchecker/?fcolor=595959&bcolor=F8F6EA
+$library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif !default;
+$library-display-name-font-size: 30px !default;
+
+//Footer Variables
+$footer-top-border-color: #088ec6 !default;
+
+//Search Box color
+//$home-search-top-color: #00a4e3; //Top color for background gradient in header
+$home-search-top-color: #057DBC !default; //Top color for background gradient in header (https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC)
+$home-search-bottom-color: #147ce2 !default; //Bottom color for background gradient in header
+$home-search-label-color: #fff !default;
+$horizontal-search-label-color: $home-search-label-color !default;
+
+//Menu Bar Variables
+$menu-bar-background-color: #057DBC !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC
+$menu-bar-color: #FFF !default;
+$vertical-menu-bar-width: 40px !default;
+$menu-bar-selected-background-color: #0175E4 !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0175E4
+$menu-bar-selected-color: #FFF !default;
+$menu-bar-z-index: 101 !default;
+
+// Sidebar Login Section
+$home-page-login-color: #FFF !default;
+$home-page-login-background-color: #524747 !default; // Passes AAA large text contrast https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=524747
+
+//Sidebar font data
+$sidebar-link-color: $link-color-resp !default;
+//$sidebar-link-color: $darkened-link-color-resp; // Not need if the accordion background isn't a gray
+$sidebar-label-background-color: #414141 !default; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=414141
+$sidebar-label-color: #FFF !default;
+
+// Sidebar buttons
+$sidebar-button-color: #FFF !default;
+$sidebar-button-bg-color: #4F5253 !default; // passes AAA for normal text https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=4F5253
+// (same pair of colors as .result-tools-horizontal)
+
+//Home Page Browse Category labels
+//$browse-header-background-color: #d7dce3;
+$browse-header-background-color: $content-bg !default;
+$home-page-browse-content-background-color: $content-bg !default;
+//$browse-label-text-color: #3497d1;
+$browse-label-text-color: #2D5D82 !default;  // 7 contrast against #FFF https://webaim.org/resources/contrastchecker/?fcolor=2D5D82&bcolor=FFFFFF
+$browse-label-line-color: #bbd4e3 !default;
+//$browse-label-line-color: #2D5D82;  // 7 contrast against #FFF https://webaim.org/resources/contrastchecker/?fcolor=2D5D82&bcolor=FFFFFF
+$selected-browse-label-search-color: #0072bc !default;
+
+//Home Page Browse categories
+$browse-category-font-size: 20px !default;
+$browse-category-text-color: #fff !default;
+$categoryLineShadow: #64b7d8 !default;
+$categoryLineColor: #89cae5 !default;
+$category1MainColor: #0B7EB5 !default; //https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0B7EB5
+// Set all browse categories the same by default
+$category2MainColor: $category1MainColor !default;
+$category3MainColor: $category1MainColor !default;
+$category4MainColor: $category1MainColor !default;
+$category5MainColor: $category1MainColor !default;
+$category6MainColor: $category1MainColor !default;
+$category7MainColor: $category1MainColor !default;
+$category8MainColor: $category1MainColor !default;
+$category9MainColor: $category1MainColor !default;
+
+// Lightening the category colors likely results in inaccessible contrasts
+//$category2MainColor: lighten($category1MainColor, 3%);
+//$category3MainColor: lighten($category1MainColor, 6%);
+//$category4MainColor: lighten($category1MainColor, 9%);
+//$category5MainColor: lighten($category1MainColor, 12%);
+//$category6MainColor: lighten($category1MainColor, 15%);
+//$category7MainColor: lighten($category1MainColor, 18%);
+//$category8MainColor: lighten($category1MainColor, 21%);
+//$category9MainColor: lighten($category1MainColor, 24%);
+
+$selectedCategoryBorderColor: #3497d1 !default;
+//$selected-browse-category-color: $browse-category-text-color;
+
+
+//Home Page Browse Category Carousel Controls
+$browseCarouselControlBackgroundColor: #9e9fa3 !default;
+$browseCarouselControlColor: #d4d4d4 !default;
+
+// Home Page Browse Sub-Categories
+$selectedSubCategoryFontColor: #fff !default;
+$selectedSubCategoryBackgroundColor: $category1MainColor !default;
+
+// Home Page Browse Category More Results button
+$more-browse-results-bg-color: #e6e6e6 !default;
+$more-browse-results-color: #c7c9ca !default;
+
+//Accordions
+$accordion-active-header-bg-color: #057DBC !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC
+$accordion-active-header-color: #fff !default;
+$accordion-active-header-shadow-color: $gray !default;
+
+$accordion-header-bg-color: #eee !default;
+$accordion-header-color: $gray-dark !default;
+$accordion-header-border-color: $panel-inner-border !default;
+$accordion-header-shadow-color: #fff !default;
+
+$accordion-header-top-gradient-color: #fff !default;
+$accordion-header-bottom-gradient-color: #d7d7d7 !default;
+
+//$panel-title-font-size: 16px; (default value 16px, is ceil(($font-size-base * 1.125));
+
+// Search results
+$facetTitle-bg-color: #f2f2f2 !default;
+$facetTitle-color: #333 !default;
+
+// Explore More Bar
+$explore-more-bar-label-bg-color: $menu-bar-background-color !default;
+$explore-more-bar-label-color: $menu-bar-color !default;
+$explore-more-bar-label-width: $vertical-menu-bar-width !default;
+$explore-more-bar-border-width : 1px !default;
+$explore-more-bar-image-height: 150px !default;
+$explore-more-bar-entry-height: 200px !default;
+
+// Explore More Side Bar
+$explore-more-sidebar-bg-color: darken($explore-more-bar-label-bg-color, 5%) !default;
+$explore-more-sidebar-color: $explore-more-bar-label-color !default;
+$explore-more-sidebar-body-bg-color: #f8f8f8 !default;
+
+// List widget
+$title-color: #000075 !default;
+$subsection-title-color: $title-color !default;
+
+// Masquerade Variables
+$masquerade-color: #FFF !default;
+$masquerade-background-color: #6200a4 !default; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=6200A4
+$masquerade-bar-height: 50px !default;
+$masquerade-button-color: #003366 !default;
+$masquerade-button-bg-color: #f1dbff !default; // (AAA) https://webaim.org/resources/contrastchecker/?fcolor=003366&bcolor=F1DBFF
+
+// Digital Archive
+$archiveComponent-color: $menu-bar-color !default;
+$archiveComponentControl-background-color: $menu-bar-background-color !default;
+
+// Keyboard Focus colors
+$focus-ring-color: #E15F15 !default;
+
+// DataTables sorted-column highlight
+// Replaces the "order-column" feature of DataTables 1.x. The Bootstrap 5 build of
+// DataTables 3 still marks the sorted column's body cells with sorting_1 (and
+// sorting_2 / sorting_3 for the second and third sort columns) but ships no styling
+// for them, so Pika draws its own. Rails are used rather than a background tint
+// because Bootstrap striping paints cells with a full coverage inset box-shadow,
+// which would cover a background but cannot cover a border.
+$dt-sorted-rail-width: 1px !default;
+$dt-sorted-rail-color: $primary !default;
+$dt-sorted-rail-color-secondary: rgba($primary, 0.55) !default;
+$dt-sorted-rail-color-tertiary: rgba($primary, 0.3) !default;
+
+// Item/Record/Work Status colors
+$available-status-color: green !default; // (#008000;) (5.13:1) https://webaim.org/resources/contrastchecker/?fcolor=008000&bcolor=FFFFFF
+        //$accessible-success-green; // #128A0B; // (4.5:1) https://webaim.org/resources/contrastchecker/?fcolor=128A0B&bcolor=FFFFFF
+$checkedOut-status-color: $accessible-red !default; // ( 4.5:1)
+        //#cc0000; // (5.88:1) https://webaim.org/resources/contrastchecker/?fcolor=CC0000&bcolor=FFFFFF;
+
+$dueSoon-status-color: #B55A0A !default; // https://webaim.org/resources/contrastchecker/?fcolor=B55A0A&bcolor=F9F9F9;
+//color: #B95E04; // https://webaim.org/resources/contrastchecker/?fcolor=B95E04&bcolor=FFFFFF
+
+$overdue-status-color: #C81B0B !default; // https://webaim.org/resources/contrastchecker/?fcolor=C81B0B&bcolor=F2DEDE
+
+$nearby-status-color: #BB0099 !default; // https://webaim.org/resources/contrastchecker/?fcolor=BB0099&bcolor=FFFFFF
+
+$availableToOrder-status-color: #CF05D8 !default; // https://webaim.org/resources/contrastchecker/?fcolor=CF05D8&bcolor=FFFFFF
+
+$availableOther-status-color: #A60489 !default; // https://webaim.org/resources/contrastchecker/?fcolor=A60489&bcolor=FFFFFF

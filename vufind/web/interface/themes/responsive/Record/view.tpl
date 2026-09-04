@@ -1,7 +1,7 @@
 {include file="GroupedWork/load-full-record-view-enrichment.tpl"}
 
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
@@ -23,7 +23,7 @@
 
 {*
 			<div class="row">
-				<div class="col-sm-12">
+				<div class="col-md-12">
 					<pre>
 						{$statusSummary|@json_encode:128 nofilter}
 
@@ -44,7 +44,7 @@ the 128 is shorthand for pretty print;
 
 
 			<div class="row">
-				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+				<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 					{if $disableCoverArt != 1}
 						<div id="recordcover" class="text-center row">
 							<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
@@ -55,20 +55,22 @@ the 128 is shorthand for pretty print;
 					{/if}
 				</div>
 
-				<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+				<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
+
+
 
 					<div class="row">
-						<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
+						<div id="record-details-column" class="col-sm-12 col-md-12 col-lg-9">
 							{include file="Record/view-title-details.tpl"}
 						</div>
 
-						<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
+						<div id="recordTools" class="col-sm-12 col-md-6 col-lg-3">
 							{include file="Record/result-tools.tpl" showMoreInfo=false summShortId=$shortId module=$activeRecordProfileModule summId=$id summTitle=$title recordUrl=$recordUrl}
 						</div>
 					</div>
 
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 						{include file='GroupedWork/result-tools-horizontal.tpl' summId=$recordDriver->getPermanentId() summShortId=$recordDriver->getPermanentId() ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
 						</div>
 					</div>

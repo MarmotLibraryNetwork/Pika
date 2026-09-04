@@ -1,38 +1,39 @@
 {strip}
-	<div id="main-content" class="col-md-12">
+	<div id="main-content" class="col-lg-12">
 		<h1 role="heading" aria-level="1" class="h2">Indexing Statistics : {$indexingStatsDate}
 			{if !empty($compareTo)} vs {$compareTo}{/if}
 		</h1>
 
 		<div class="row">
-			<div class="col-tn-12"><a class="btn btn-default" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
+			<div class="col-12"><a class="btn btn-outline-secondary" href="/Admin/IndexingStats?day={$yesterday}&compareTo={$today}">Compare {$yesterday} to {$today}</a></div>
 			<br><br>
 		</div>
 
-		<div class="row">
-			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form form-inline">
-				<div class="col-sm-6">
-				<div class="form-group">
-					<label for="availableDates">Available Dates</label>
-					<select id="availableDates" name="day" class="form-control" onchange="$('#indexingDateSelection').submit()">
+		<div>
+			{* the form itself carries the row class: col-* children must be DIRECT children of the flex row in BS5 *}
+			<form id="indexingDateSelection" name="indexingDateSelection" method="get" class="form row">
+				<div class="col-md-6">
+				<div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+					<label for="availableDates" class="col-form-label">Available Dates</label>
+					<select id="availableDates" name="day" class="form-select w-auto" onchange="$('#indexingDateSelection').submit()">
 						{foreach from=$availableDates item=date}
 							<option value="{$date}"{if $date == $indexingStatsDate} selected="selected"{/if}>{$date}</option>
 						{/foreach}
 					</select>
 				</div>
-	{*			<button type="submit" class="btn btn-default btn-sm">Set Date</button>*}
+	{*			<button type="submit" class="btn btn-outline-secondary btn-sm">Set Date</button>*}
 				</div>
-				<div class="col-sm-6">
-				<div class="form-group">
-					<label for="compareTo">Compare To</label>
-					<select id="compareTo" name="compareTo" class="form-control" onchange="$('#indexingDateSelection').submit()">
+				<div class="col-md-6">
+				<div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+					<label for="compareTo" class="col-form-label">Compare To</label>
+					<select id="compareTo" name="compareTo" class="form-select w-auto" onchange="$('#indexingDateSelection').submit()">
 						<option></option>
 						{foreach from=$availableDates item=date}
 							<option value="{$date}"{if $date == $indexingStatsDate} disabled="disabled"}{elseif $date == $compareTo} selected="selected"{/if}>{$date}</option>
 						{/foreach}
 					</select>
 				</div>
-	{*			<button type="submit" class="btn btn-default btn-sm">Compare</button>*}
+	{*			<button type="submit" class="btn btn-outline-secondary btn-sm">Compare</button>*}
 				</div>
 			</form>
 		</div>
@@ -42,8 +43,8 @@
 			<div class="row">
 				{foreach from=$indexingStatHeader item=itemHeader name=indexCols}
 					{if $smarty.foreach.indexCols.index}{* Skip the first column for scope name *}
-						<div class="col-sm-4">
-							<button class="toggle-vis btn btn-default btn-primary" data-column="{$smarty.foreach.indexCols.index}"
+						<div class="col-md-4">
+							<button class="toggle-vis btn btn-outline-secondary btn-primary" data-column="{$smarty.foreach.indexCols.index}"
 							        style="width: 100%">{$itemHeader}</button>
 						</div>
 					{/if}
@@ -58,13 +59,14 @@
 					<br>
 					<table class="table">
 						<tr>
-							<th class="success">Increased since {$pastDate}</th>
-							<th class="danger">Decreased since {$pastDate}</th>
+							<th class="table-success">Increased since {$pastDate}</th>
+							<th class="table-danger">Decreased since {$pastDate}</th>
 						</tr>
 					</table>
 					<br>
 				{/if}
-				<table class="table table-condensed stripe order-column table-hover" id="reindexingStats">
+				<div class="table-responsive">
+				<table class="table table-sm table-striped table-hover" id="reindexingStats">
 					<thead>
 					<tr>
 						{foreach from=$indexingStatHeader item=itemHeader}
@@ -76,12 +78,13 @@
 					{foreach from=$indexingStats item=statsRow}
 						<tr>
 							{foreach from=$statsRow item=statCell name=statsLoop}
-								<td{if !empty($compareTo)}{if $statCell > 0} class="success"{elseif $statCell < 0} class="danger"{/if}{/if}>{$statCell}</td>
+								<td{if !empty($compareTo)}{if $statCell > 0} class="table-success"{elseif $statCell < 0} class="table-danger"{/if}{/if}>{$statCell}</td>
 							{/foreach}
 						</tr>
 					{/foreach}
 					</tbody>
 				</table>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -89,7 +92,7 @@
 <script>
 	{literal}
 	$(function(){
-/* Close side bar menu
+/* Close sidebar menu
 		$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();
 */
 

@@ -48,7 +48,7 @@ class Admin_ActiveOrders extends Admin_Admin {
 		$allProfiles  = new IndexingProfile();
 		$allProfiles->find();
 		while ($allProfiles->fetch()) {
-			$csvPath = $allProfiles->marcPath . DIR_SEP . 'active_orders.csv';
+			$csvPath = $allProfiles->marcPath . DIRECTORY_SEPARATOR . 'active_orders.csv';
 			if (file_exists($csvPath)) {
 				$profileList[$allProfiles->id] = $allProfiles->name;
 				if ($allProfiles->sourceName === 'ils') {
@@ -67,7 +67,7 @@ class Admin_ActiveOrders extends Admin_Admin {
 		$selectedId = $_REQUEST['id'] ?? $defaultId;
 		$profile    = new IndexingProfile();
 		$profile->get($selectedId);
-		$csvPath = $profile->marcPath . DIR_SEP . 'active_orders.csv';
+		$csvPath = $profile->marcPath . DIRECTORY_SEPARATOR . 'active_orders.csv';
 
 		// Stream the file directly for download requests
 		if (!empty($_REQUEST['download'])) {

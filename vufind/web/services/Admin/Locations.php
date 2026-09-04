@@ -142,6 +142,7 @@ class Locations extends ObjectEditor {
 
 			$location->update();
 			header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
+			die();
 		}else{
 			//Prompt user for the location to copy from
 			$allLocations = $this->getAllObjects();

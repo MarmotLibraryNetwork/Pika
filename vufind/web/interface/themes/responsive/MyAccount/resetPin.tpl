@@ -1,5 +1,5 @@
 {strip}
-	<div id="page-content" class="col-xs-12">
+	<div id="page-content" class="col-sm-12">
 
 		<h1 role="heading" aria-level="1" class="h2">{translate text='Reset My PIN'}</h1>
       {if $resetPinResult.error}
@@ -21,36 +21,32 @@
 				{if $bc}
 					<input type="hidden" name="bc" value="{$bc}">
 				{/if}
-				<div class="form-group">
-					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New PIN'}:</label></div>
-					<div class="col-xs-8">
+				<div class="row mb-3">
+					<div class="col-sm-4"><label for="pin1" class="form-label">{translate text='New PIN'}:</label></div>
+					<div class="col-sm-8">
 						<div class="input-group">
 							<input type="password" name="pin1" id="pin1" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-								<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-							</span>
+							<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin1')" class="btn btn-outline-secondary" type="button"><span class="bi bi-eye-slash" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="bi bi-eye" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 						</div>
 					</div>
 				</div>
-				<div class="form-group">
-					<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New PIN'}:</label></div>
-					<div class="col-xs-8">
+				<div class="row mb-3">
+					<div class="col-sm-4"><label for="pin2" class="form-label">{translate text='Re-enter New PIN'}:</label></div>
+					<div class="col-sm-8">
 						<div class="input-group">
 							<input type="password" name="pin2" id="pin2" value="" size="{if $pinMinimumLength}{$pinMinimumLength}{else}4{/if}" maxlength="{if $pinMaximumLength}{$pinMaximumLength}{else}30{/if}" class="form-control required{if $numericOnlyPins} digits{elseif $alphaNumericOnlyPins} alphaNumeric{/if}">
-							<span class="input-group-btn" style="vertical-align: top"{* Override so button stays in place when input requirement message displays *}>
-								<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-default" type="button"><span class="glyphicon glyphicon-eye-close" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="glyphicon glyphicon-eye-open" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
-							</span>
+							<button aria-label="{translate text='PIN'} is hidden, click to show" onclick="$('span', this).toggle(); $(this).attr('aria-label',$(this).children('span:visible').children('div').text()); return Pika.pwdToText('pin2')" class="btn btn-outline-secondary" type="button"><span class="bi bi-eye-slash" aria-hidden="true" title="Show {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is hidden, click to show.</div></span><span class="bi bi-eye" style="display: none" title="Hide {translate text='PIN'}"><div class="hiddenText">{translate text='PIN'} is visible, click to hide.</div></span></button>
 						</div>
 					</div>
-					<div class="col-tn-12">
+					<div class="col-12">
 						<br>
 						<div class="alert alert-info">
 							{include file="MyAccount/passwordRequirements.tpl"}
 						</div>
 					</div>
 				</div>
-				<div class="form-group">
-					<div class="col-xs-8 col-xs-offset-4">
+				<div class="row mb-3">
+					<div class="col-sm-8 offset-sm-4">
 						<input id="resetPinSubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My PIN'}">
 					</div>
 				</div>

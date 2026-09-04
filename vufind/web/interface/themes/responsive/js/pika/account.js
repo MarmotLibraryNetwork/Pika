@@ -344,14 +344,9 @@ Pika.Account = (function(){
 				Pika.confirm('Renew All Items?', function () {
 					Pika.loadingMessage();
 					$.getJSON("/MyAccount/AJAX?method=renewAll", function (data) {
-						Pika.showMessage(data.title, data.modalBody, data.success);
-						// autoclose when all successful
-						if (data.success || data.renewed > 0) {
-							// Refresh page on close when a item has been successfully renewed, otherwise stay
-							$("#modalDialog").on('hidden.bs.modal', function (e) {
-								location.reload(true);
-							});
-						}
+						// Refresh page on close when an item has been successfully renewed, otherwise stay
+						var reload = data.success || data.renewed > 0;
+						Pika.showMessage(data.title, data.modalBody, data.success, reload); // autoclose when all successful
 					}).fail(Pika.ajaxFail);
 				})
 			}, null, true);

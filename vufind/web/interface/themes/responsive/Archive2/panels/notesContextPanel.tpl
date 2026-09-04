@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="notesContextPanel"><a data-toggle="collapse" href="#notesContextPanelBody">
+	<div class="panel" id="notesContextPanel"><a data-bs-toggle="collapse" href="#notesContextPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Notes & Contextual Metadata</h2>
 			</div>

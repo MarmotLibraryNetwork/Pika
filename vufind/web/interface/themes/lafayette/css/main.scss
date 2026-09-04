@@ -1,0 +1,110 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@font-face {
+  font-family: "Open Sans", Verdana, Helvetica, sans-serif;
+}
+
+body {
+  font-family: "Open Sans", Verdana, Helvetica, sans-serif;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+  font-family: "Open Sans", Verdana, Helvetica, sans-serif;
+}
+
+.h3, h3 {
+  color: $mid-blue;
+}
+
+
+#more-browse-results:after {
+  content: "Get More Results";
+  margin-left: 5px;
+  margin-bottom: 0;
+  display: block;
+  line-height: 1.42857143;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid #fff;
+  border-radius: 0;
+  background-image: none;
+  color: #333;
+  background-color: #fff;
+}
+
+a .header-button {
+  border: none;
+  line-height: 55px !important;
+  border-radius: 0;
+  margin-top: 25px;
+  background-color: $light-blue;
+  color: #FFF !important;
+  text-shadow: none;
+  font-weight: bold;
+
+  &:hover {
+    border-bottom: 2px solid $grey-lafayette;
+    background-color: $grey-lafayette;
+    color: white !important;
+    text-shadow: none;
+    font-weight: bold;
+    text-decoration: none !important;
+  }
+}
+
+.browse-label-text {
+  line-height: inherit;
+}
+
+#browse-category-carousel .browse-category {
+  text-shadow: none;
+  border-radius: 10px;
+  height: inherit;
+  max-height: 100px;
+
+  &:hover {
+    background: #f6f6f6;
+  }
+
+  button {
+    font-weight: bold;
+    height: 55px;
+  }
+
+  &.selected {
+    font-size: 15px;
+    background: $lafayette-light-green;
+
+    //:hover {
+    //  background: $lafayette-light-green;
+    //}
+
+    button {
+      //color: #fff;
+      :hover {
+        background: $lafayette-light-green;
+      }
+    }
+  }
+}
+
+.jcarousel-control-next,
+.jcarousel-control-prev {
+  box-shadow: none;
+}
+
+.sidebar-links .panel-heading {
+  background: #e7e7e7;
+}
+
+.sidebar-links .active .panel-heading {
+  background: $grey-lafayette;
+}

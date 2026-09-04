@@ -10,7 +10,7 @@
 			</div>
     {if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
 			<div>
-				<a class="btn btn-sm btn-default" href="/Admin/LibrarianReviews?objectAction=edit&id={$librarianReview->id}">Edit Librarian Review</a>
+				<a class="btn btn-sm btn-outline-secondary" href="/Admin/LibrarianReviews?objectAction=edit&id={$librarianReview->id}">Edit Librarian Review</a>
 			</div>
     {/if}
 		</div>

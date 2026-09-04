@@ -974,7 +974,7 @@ function getSQLUpdates(){
 		global $configArray;
 		$storagePath = $configArray['Site']['coverPath'];
 		$files       = [];
-		if ($handle = opendir($storagePath . DIR_SEP . "original")){
+		if ($handle = opendir($storagePath . DIRECTORY_SEPARATOR . "original")){
 			while (false !== ($entry = readdir($handle))){
 				if ($entry != "." && $entry != ".."){
 					$value = '(\'' . htmlentities($entry, ENT_QUOTES) . '\')';

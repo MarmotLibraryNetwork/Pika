@@ -105,12 +105,12 @@ abstract class ObjectEditor extends Admin_Admin {
 	abstract function getObjectStructure();
 
 	/**
-	 * The name of the column which defines this as unique
+	 * The name of the column that defines this as unique
 	 */
 	abstract function getPrimaryKeyColumn();
 
 	/**
-	 * The id of the column which serves to join other columns
+	 * The id of the column that serves to join other columns
 	 */
 	abstract function getIdKeyColumn();
 
@@ -389,7 +389,16 @@ abstract class ObjectEditor extends Admin_Admin {
 	function display($mainContentTemplate = null, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
 		global $interface;
 		if (empty($mainContentTemplate)){
-			$mainContentTemplate = $interface->getVariable('pageTemplate'); // The main template may get set in other places in Object Editor
+			$mainContentTemplate = $interface->getTemplateVariable('pageTemplate'); // The main template may get set in other places in Object Editor
+		}
+		if (empty($mainContentTemplate)){
+			// No template was ever set for this request. That happens when a custom object action redirects
+			// but does not end the request; rendering now would include an empty template name and throw.
+			// Let the redirect stand rather than fataling.
+			global $pikaLogger;
+			$objectAction = $_REQUEST['objectAction'] ?? 'none';
+			$pikaLogger->warn("No template was set while displaying {$this->getToolName()} for object action '{$objectAction}'. A custom object action must call die() after redirecting.");
+			return;
 		}
 		if (empty($pageTitle)){
 			$pageTitle = $this->getPageTitle();

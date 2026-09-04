@@ -13,10 +13,10 @@
 			<input type="hidden" name="source" value="{$source}">
 			<input type="hidden" name="id" value="{$id}">
 			{if count($existingWidgets) > 0}
-				<div class="form-group">
-					<label for="widget" class="col-sm-4">Select a widget:</label>
-					<div class="col-sm-8">
-						<select aria-label="Select widget" id="widgetId" name="widgetId" class="form-control">
+				<div class="row mb-3">
+					<label for="widget" class="col-md-4">Select a widget:</label>
+					<div class="col-md-8">
+						<select aria-label="Select widget" id="widgetId" name="widgetId" class="form-select">
 							<option value="-1">Create a new widget</option>
 							{foreach from=$existingWidgets item=widgetName key=widgetId}
 								<option value="{$widgetId}">{$widgetName}</option>
@@ -25,9 +25,9 @@
 					</div>
 				</div>
 			{/if}
-			<div class="form-group">
-				<label for="widgetName" class="col-sm-4">New Widget Name / New Tab Name:</label>
-				<div class="col-sm-8">
+			<div class="row mb-3">
+				<label for="widgetName" class="col-md-4">New Widget Name / New Tab Name:</label>
+				<div class="col-md-8">
 					<input type="text" id="widgetName" name="widgetName" value="" class="form-control required" aria-required="true">
 				</div>
 			</div>

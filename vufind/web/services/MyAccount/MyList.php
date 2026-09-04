@@ -297,7 +297,7 @@ class MyAccount_MyList extends MyAccount {
 		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
 		// Set properties
-		$gitBranch = $interface->getVariable('gitBranch');
+		$gitBranch = $interface->getTemplateVariable('gitBranch');
 		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 			->setLastModifiedBy('Pika ' . $gitBranch)
 			->setTitle('Office 2007 XLSX Document')

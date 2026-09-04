@@ -2,7 +2,7 @@
 {if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
 {if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=null}{/if}
 {if $allowEdit}
-<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
+<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-outline-secondary btn-sm">Return to My Lists</a>
 {/if}
 {if isset($favList)}
 	{strip}
@@ -26,21 +26,21 @@
 			{if $favList->deleted == 1}
 				<p class="alert alert-danger">Sorry, this list has been deleted.</p>
 			{else}
-				{if $favList->description}<div class="listDescription well" id="listDescription">{$favList->description|escape}</div>{/if}
+				{if $favList->description}<div class="listDescription card"><div class="card-body" id="listDescription">{$favList->description|escape}</div></div>{/if}
 				{if $allowEdit}
 					<div id="listEditControls" style="display:none" class="collapse">
-						<div class="form-group">
-							<label for="listTitleEdit" class="control-label">Title: </label>
+						<div class="mb-3">
+							<label for="listTitleEdit" class="form-label">Title: </label>
 							<input type="text" id="listTitleEdit" name="newTitle" value="{$favList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 						</div>
-						<div class="form-group">
-							<label for="listDescriptionEdit" class="control-label">Description: </label>&nbsp;
+						<div class="mb-3">
+							<label for="listDescriptionEdit" class="form-label">Description: </label>&nbsp;
 							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$favList->description|escape:"html"}</textarea>
 						</div>
-						<div class="form-group">
+						<div class="mb-3">
 
-							<label for="defaultSort" class="control-label">Default Sort: </label>
-							<select id="defaultSort" name="defaultSort" class="form-control">
+							<label for="defaultSort" class="form-label">Default Sort: </label>
+							<select id="defaultSort" name="defaultSort" class="form-select">
 								{foreach from=$defaultSortList item=sortValue key=sortLabel}
 									<option value="{$sortLabel}"{if $sortLabel == $defaultSort} selected="selected"{/if}>
 										{translate text=$sortValue}
@@ -60,41 +60,41 @@
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
-							<button type="button" class="btn btn-sm btn-default btn-toolbar dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Share <span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Share</button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
-								{if $favList->public}<li><a href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
-								<li><a href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
-								{if $favList->public}<li><a href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
-								<li><a href="#" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
+								{if $favList->public}<li><a class="dropdown-item" href="#" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>{/if}
+								<li><a class="dropdown-item" href="#" onclick='return Pika.Lists.printListAction()'>Print List</a></li>
+								{if $favList->public}<li><a class="dropdown-item" href="#" id="copyList" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</a></li>{/if}
+								<li><a class="dropdown-item" href="#" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</a></li>
 								{if $favList->public && $showShareOnExternalSites}
 									<li>
-										<a href="https://bsky.app/intent/compose?text={$favList->title|escape:"html"}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank"> Share on Bluesky
-											<span class="pull-right">{include file="images/bluesky-svg.tpl"}</span>
+										<a class="dropdown-item" href="https://bsky.app/intent/compose?text={$favList->title|escape:"html"}%20{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank"> Share on Bluesky
+											<span class="float-end">{include file="images/bluesky-svg.tpl"}</span>
 										</a>
 									</li>
-									<li><a href="https://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>
-									<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>
-									<li><a href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="X Share">Share on X <img class="pull-right x-twit" src="{img filename='x-icon.png'}" alt="Share on X"></a></li>
+									<li><a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook"></a></li>
+									<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="float-end" linkClass="dropdown-item"}</li>
+									<li><a class="dropdown-item" href="https://x.com/intent/post?text={$favList->title|escape:"html"}&url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="X Share">Share on X <img class="float-end x-twit" src="{img filename='x-icon.png'}" alt="Share on X"></a></li>
 									{/if}
 							</ul>
 						</div>
 						<div class="btn-group">
-							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
+							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-outline-secondary" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
 
 							{if $favList->public == 0}
-								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Public</button>
+								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-outline-secondary" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Public</button>
 
 							{else}
-								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Admin Options <span class="caret"></span></button>
+								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Admin Options</button>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
-									<li><a href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Private</a></li>
+									<li><a class="dropdown-item" href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Private</a></li>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
-								<li><a href="#" id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a></li>
+								<li><a class="dropdown-item" href="#" id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a></li>
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-									<li><a href="#" id="FavHome" onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
+									<li><a class="dropdown-item" href="#" id="FavHome" onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
 									{if $favList->public !=0}
-										<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
+										<li><a class="dropdown-item" href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
 									{/if}
 								{/if}
 
@@ -110,7 +110,7 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-sm">
 									<div class="share-tools">
-										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+										<span id="share-list-tools-label-{$favList->id}" class="share-tools-label d-none d-md-inline">SHARE LIST</span>
 										<ul aria-labelledby="share-list-tools-label-{$favList->id}" class="share-tools-list list-inline">
 											<li>
 												<a href="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
@@ -146,7 +146,7 @@
 									</div>
 								</div>
 								<div class="btn-group btn-group-sm">
-									<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
+									<button value="copyList" id="copyList" class="btn btn-sm btn-outline-secondary" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
 								</div>
 
 							</div>
@@ -154,17 +154,17 @@
 					</div>
 					<div class="btn-group">
 
-						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return Pika.Lists.citeListAction({$favList->id},{$pageNum},{$pageSize},"{$listSort}")'>Generate Citations</button>
+						<button value="citeList" id="FavCite" class="btn btn-sm btn-outline-secondary" onclick='return Pika.Lists.citeListAction({$favList->id},{$pageNum},{$pageSize},"{$listSort}")'>Generate Citations</button>
 
 						<div class="btn-group" role="group">
 
-							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Sort &nbsp;<span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-outline-secondary btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Sort</button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
 									<li>
-										<a{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{else} href="#" onclick='return false;'{/if}> {* only add link on un-selected options *}
+										<a class="dropdown-item"{if !$sortData.selected} href="{$sortData.sortUrl|escape}"{else} href="#" onclick='return false;'{/if}> {* only add link on un-selected options *}
 											{translate text=$sortData.desc}
-											{if $sortData.selected} <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{/if}
+											{if $sortData.selected} <span class="bi bi-check-lg" aria-hidden="true"></span>{/if}
 										</a>
 									</li>
 								{/foreach}
@@ -177,7 +177,7 @@
 
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal},{$pageNum}, {$pageSize}, "{$listSort}");'>Delete Selected</button>
+							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-outline-secondary" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal},{$pageNum}, {$pageSize}, "{$listSort}");'>Delete Selected</button>
 							<button value="clearList" id="ClearLists" class="btn btn-sm btn-warning" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize},"{$listSort}");'>Clear List</button>
 							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction({$pageNum}, {$pageSize},"{$listSort}");'>Delete List</button>
 						</div>
@@ -191,16 +191,19 @@
 
 	{if $favList->deleted == 0}
 		{if $resourceList}
-			<form class="navbar form-inline">
-				<label for="pagesize" class="control-label">Records Per Page</label>&nbsp;
-				<select id="pagesize" class="pagesize form-control{* input-sm*}">
-					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
-					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
-					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
-					<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
-					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
-				</select>
-				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+			<form class="navbar">
+				{* BS5 .navbar is a flex row with justify-content: space-between — the page-size group sits left, Hide Covers right *}
+				<div class="d-flex flex-wrap align-items-center gap-2">
+					<label for="pagesize" class="col-form-label">Records Per Page</label>
+					<select id="pagesize" class="pagesize form-select w-auto{* input-sm*}">
+						<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
+						<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
+						<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
+						<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
+						<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+					</select>
+				</div>
+				<label for="hideCovers" class="form-label checkbox"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
 
@@ -212,7 +215,7 @@
 
 			{if $recordCount}
 				<div class="resulthead row">
-					<div class="col-xs-12">
+					<div class="col-sm-12">
 							{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
 								&nbsp;There are a total of <span class="badge">{$favList->numValidListItems()}</span> valid entries on the list.
 					</div>
@@ -225,7 +228,7 @@
 
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 					<strong>Drag-and-Drop!</strong> Just drag the list items into the order you like.
 				</div>
 			{/if}

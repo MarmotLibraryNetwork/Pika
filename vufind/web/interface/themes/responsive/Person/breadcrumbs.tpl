@@ -6,13 +6,12 @@
    results from the navigation bar on this page. *}
 {assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
 {if $returnToSearchUrl}
-	<li>
-		<a href="{$returnToSearchUrl|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Search Results"}</a> <span class="divider">&raquo;</span>
+	<li class="breadcrumb-item">
+		<a href="{$returnToSearchUrl|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Search Results"}</a>
 	</li>
 {/if}
 {if $breadcrumbText}
-	<li>
-		<em aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
+	<li class="breadcrumb-item active" aria-current="page">
+		<em>{$breadcrumbText|truncate:30:"..."|escape}</em>
 	</li>
 {/if}
-

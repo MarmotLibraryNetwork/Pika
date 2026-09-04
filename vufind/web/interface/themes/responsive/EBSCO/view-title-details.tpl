@@ -3,8 +3,8 @@
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-md-3">Author: </div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">Author: </div>
+			<div class="col-lg-9 result-value">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>
 		</div>
@@ -12,8 +12,8 @@
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Published'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">{translate text='Published'}:</div>
+			<div class="col-lg-9 result-value">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
 		</div>
@@ -21,8 +21,8 @@
 
 	{if $showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Physical Description'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">{translate text='Physical Description'}:</div>
+			<div class="col-lg-9 result-value">
 				{implode subject=$recordDriver->getPhysicalDescriptions()|escape glue=", "}
 			</div>
 		</div>
@@ -30,8 +30,8 @@
 
 	{if $showFormats}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Format'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">{translate text='Format'}:</div>
+			<div class="col-lg-9 result-value">
 				{implode subject=$recordDriver->getFormats() glue=", "}
 			</div>
 		</div>
@@ -39,8 +39,8 @@
 
 	{if $showEditions && $recordDriver->getEdition()}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Edition'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">{translate text='Edition'}:</div>
+			<div class="col-lg-9 result-value">
 				{implode subject=$recordDriver->getEdition() glue=", "}
 			</div>
 		</div>
@@ -48,8 +48,8 @@
 
 	{if $recordDriver->getAllSubjectHeadings()}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Subjects'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-lg-3">{translate text='Subjects'}:</div>
+			<div class="col-lg-9 result-value">
 				{foreach from=$recordDriver->getAllSubjectHeadings() item=subject}
 					<div>
 					{$subject}

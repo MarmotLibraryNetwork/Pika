@@ -1,4 +1,4 @@
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $loggedIn}
 
 		{include file="MyAccount/patronWebNotes.tpl"}
@@ -50,14 +50,14 @@
 					{/if}
 
 					{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-					<form id="readingListForm" class="form-inline readingHistoryActionForm">
+					<form id="readingListForm" class="readingHistoryActionForm">
 						{* Reading History Actions *}
 						<div class="row">
 							<input type="hidden" name="page" value="{$page}">
 							<input type="hidden" name="patronId" value="{$selectedUser}">
 							<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
 
-							<div id="readingListActionsTop" class="col-xs-6">
+							<div id="readingListActionsTop" class="col-sm-6">
 								<div class="btn-group btn-group-sm">
 									{if $historyActive == true}
 										<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button>
@@ -70,8 +70,8 @@
 								</div>
 							</div>
 							{if $historyActive == true}
-								<div class="col-xs-6">
-									<div class="btn-group btn-group-sm pull-right">
+								<div class="col-sm-6">
+									<div class="btn-group btn-group-sm float-end">
 								{if $transList}
 									<button class="btn btn-sm btn-danger " onclick="return Pika.Account.ReadingHistory.deleteAllAction()">Delete All</button>
 								{/if}
@@ -87,27 +87,32 @@
 							<hr>
 							{* Reading history search *}
 							<div class="row readingHistorySearch">
-								<div class="col-xs-3">
+								<div class="col-sm-3">
 									<label for="searchTerm">Search Reading History</label>
 								</div>
-								<div class="col-xs-6">
+								<div class="col-sm-5">
 									<input type="search" name="searchTerm" id="searchTerm" class="form-control"  onkeydown="{literal}if(event.key == 'Enter') {return Pika.Account.ReadingHistory.searchReadingHistoryAction();}{/literal}" value="{if $searchTerm}{$searchTerm|escape}{*Escape to prevent javascript injection*}{/if}">
 								</div>
-								<div class="col-xs-3">
-									<select name="searchBy" id="searchBy" class="form-control" aria-label="Search by">
-										<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
-										<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
-									</select>
-									<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+								{* col-auto sizes this column to its content so the select and Search button
+								   wrap to the next line together as a unit when the row runs out of room,
+								   instead of the button wrapping alone inside a fixed-width column *}
+								<div class="col-auto">
+									<div class="input-group">
+										<select name="searchBy" id="searchBy" class="form-select" aria-label="Search by">
+											<option value="title"{if $searchBy == 'title'} selected{/if}>by Title</option>
+											<option value="author"{if $searchBy == 'author'} selected{/if}>by Author</option>
+										</select>
+										<button class="btn btn-outline-secondary" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+									</div>
 								</div>
 							</div>
 							<hr>
 							{* Results Page Options *}
-							<div id="pager" class="col-xs-12">
+							<div id="pager" class="col-sm-12">
 								<div class="row">
-									<div class="form-group col-sm-5" id="recordsPerPage">
-										<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-										<select id="pagesize" class="pagesize form-control{* input-sm*}">
+									<div class="mb-3 col-md-5 d-flex flex-wrap align-items-center gap-2" id="recordsPerPage">
+										<label for="pagesize" class="col-form-label">Records Per Page</label>
+										<select id="pagesize" class="pagesize form-select w-auto{* input-sm*}">
 											<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 											<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 											<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
@@ -115,16 +120,16 @@
 											<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 										</select>
 									</div>
-									<div class="form-group col-sm-5" id="sortOptions">
-										<label for="sortMethod" class="control-label">Sort By&nbsp;</label>
-										<select class="sortMethod form-control" id="sortMethod" name="accountSort">
+									<div class="mb-3 col-md-5 d-flex flex-wrap align-items-center gap-2" id="sortOptions">
+										<label for="sortMethod" class="col-form-label">Sort By</label>
+										<select class="sortMethod form-select w-auto" id="sortMethod" name="accountSort">
 											{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 												<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 											{/foreach}
 										</select>
 									</div>
-									<div class="form-group col-sm-2" id="coverOptions">
-										<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+									<div class="mb-3 col-md-2" id="coverOptions">
+										<label for="hideCovers" class="form-label checkbox float-end"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 									</div>
 								</div>
 							</div>
@@ -132,19 +137,21 @@
 							{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 							{* Header Row with Column Labels *}
-							<div class="row hidden-xs">
-								<div class="col-sm-1">
+							{* d-md-flex (not d-md-block) so the row keeps flex layout and the column labels line up;
+							   hidden below md where the col-md-* grid is inactive and records show their own labels *}
+							<div class="row d-none d-md-flex">
+								<div class="col-md-1">
 									<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All" aria-label="Select All/Deselect All">
 								</div>
 								{if $showCovers}
-									<div class="col-sm-2">
+									<div class="col-md-2">
 										<strong>{translate text='Cover'}</strong>
 									</div>
 								{/if}
-								<div class="{if $showCovers}col-sm-7{else}col-sm-9{/if}">
+								<div class="{if $showCovers}col-md-7{else}col-md-9{/if}">
 									<strong>{translate text='Title'}</strong>
 								</div>
-								<div class="col-sm-2">
+								<div class="col-md-2">
 									<strong>{translate text='Last Read Around'}</strong>
 								</div>
 							</div>
@@ -157,10 +164,10 @@
 							<div class="striped">
 								{foreach from=$transList item=record name="recordLoop" key=recordKey}
 									<div class="row">
-										<div class="col-tn-12">
+										<div class="col-12">
 
 											<div class="row result-title-row">
-												<div class="col-xs-12">
+												<div class="col-sm-12">
 													<h2 class="h3">
 														{if $record.recordId && $record.linkUrl}
 															<a href="{$record.linkUrl}" class="title">{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
@@ -179,36 +186,36 @@
 											<div class="row">
 												{* Cover Column *}
 												{if $showCovers}
-													<div class="col-tn-3">
+													<div class="col-3">
 														<div class="row">
-															<div class="col-xs-12 col-sm-1">
+															<div class="col-sm-12 col-md-1">
 																<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}" aria-label="Select title to delete">
 															</div>
-															<div class="col-xs-12 col-sm-10">
+															<div class="col-sm-12 col-md-10">
 																{if $record.coverUrl}
 																	{if $record.recordId && $record.linkUrl}
 																		<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-																			<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
+																			<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
 																		</a>
 																	{else} {* Cover Image but no Record-View link *}
-																		<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
+																		<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-fluid" alt="{if !$record.title}Cover image for reading history item.{else}Cover image for {$record.title}.{/if}">
 																	{/if}
 																{/if}
 															</div>
 														</div>
 													</div>
 												{else}
-													<div class="col-tn-1">
+													<div class="col-1">
 														<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}" aria-label="Select title to delete">
 													</div>
 												{/if}
 
 												{* Title Details Column *}
-												<div class="{if $showCovers}col-tn-7 col-sm-7{else}col-tn-9 col-sm-9{/if}">
+												<div class="{if $showCovers}col-7 col-md-7{else}col-9 col-md-9{/if}">
 													{if $record.author}
 														<div class="row">
-															<div class="result-label col-tn-3">{translate text='Author'}</div>
-															<div class="result-value col-tn-9">
+															<div class="result-label col-3">{translate text='Author'}</div>
+															<div class="result-value col-9">
 																{if is_array($record.author)}
 																	{foreach from=$summAuthor item=author}
 																		<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
@@ -222,16 +229,16 @@
 
 													{if $record.publicationDate}
 														<div class="row">
-															<div class="result-label col-tn-3">{translate text='Published'}</div>
-															<div class="result-value col-tn-9">
+															<div class="result-label col-3">{translate text='Published'}</div>
+															<div class="result-value col-9">
 																{$record.publicationDate|escape}
 															</div>
 														</div>
 													{/if}
 
 													<div class="row">
-														<div class="result-label col-tn-3">{translate text='Format'}</div>
-														<div class="result-value col-tn-9">
+														<div class="result-label col-3">{translate text='Format'}</div>
+														<div class="result-value col-9">
 															{if is_array($record.format)}
 																{implode subject=$record.format glue=", "}
 															{else}
@@ -244,8 +251,8 @@
 														{* $showRatings is set by UInterface method loadDisplayOptions() *}
 														{if $record.recordId != -1 && $record.ratingData}
 															<div class="row">
-																<div class="result-label col-tn-3">Rating&nbsp;</div>
-																<div class="result-value col-tn-9">
+																<div class="result-label col-3">Rating&nbsp;</div>
+																<div class="result-value col-9">
 																	{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 																</div>
 															</div>
@@ -254,7 +261,7 @@
 												</div>
 
 												{* Last Read Date Column *}
-												<div class="col-tn-12 {if $showCovers}col-tn-offset-3{else}col-tn-offset-1{/if} col-sm-2 col-sm-offset-0">
+												<div class="col-12 {if $showCovers}offset-3{else}offset-1{/if} col-md-2 offset-md-0">
 													<div class="row">
 														{* on xs viewports, the offset lines up the date with the title details *}
 														{if is_numeric($record.checkout)}
@@ -269,8 +276,8 @@
 													</div>
 													{if $record.permanentId}
 														<div class="row">
-															<div class="col-tn-12 result-tools-horizontal{*to get the brown gradient to apply to button*}">
-																<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-small">Add To List</button>
+															<div class="col-12 result-tools-horizontal{*to get the brown gradient to apply to button*}">
+																<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-sm">Add To List</button>
 															</div>
 														</div>
 													{/if}
@@ -285,7 +292,7 @@
 							<hr>
 
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<div id="readingListActionsBottom" class="btn-group btn-group-sm">
 										{if $historyActive == true}
 											<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button>

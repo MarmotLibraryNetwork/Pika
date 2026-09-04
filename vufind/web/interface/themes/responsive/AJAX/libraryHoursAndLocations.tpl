@@ -1,9 +1,9 @@
 {strip}
 	{if count($libraryLocations) > 1}
 	<form{* role="form" Assigning form role to html form tags is not neccessary *}>
-		<div class="form-group">
+		<div class="mb-3">
 			<label for="selectLibrary">Select a Location</label>
-			<select name="selectLibrary" id="selectLibrary" onchange="return Pika.showLocationHoursAndMap();" class="form-control">
+			<select name="selectLibrary" id="selectLibrary" onchange="return Pika.showLocationHoursAndMap();" class="form-select w-auto">
 				{foreach from=$libraryLocations item=curLocation}
 					<option value="{$curLocation.id}">{$curLocation.name}</option>
 				{/foreach}
@@ -17,7 +17,7 @@
 				<h3>{$curLocation.name}</h3>
 			</div>
 			<div class="row">
-				<div class="col-xs-12 col-sm-3">
+				<div class="col-sm-12 col-md-3">
 					<dl>
 						{if $curLocation.address}
 						<dt>Address</dt>
@@ -32,7 +32,7 @@
 					</dl>
 				</div>
 				{if $curLocation.address}
-				<div class="col-xs-12 col-sm-9">
+				<div class="col-sm-12 col-md-9">
 					<a href="{$curLocation.map_link}"><img src="{$curLocation.map_image}" alt="Map"></a>
 					<br><a href="{$curLocation.map_link}">Directions</a>
 				</div>
@@ -42,7 +42,7 @@
 				<h4>Hours</h4>
 				{foreach from=$curLocation.hours item=curHours}
 					<div class="row">
-						<div class="col-xs-12 col-sm-4 result-label">
+						<div class="col-sm-12 col-md-4 result-label">
 							{if $curHours->day == 0}
 								Sunday
 							{elseif $curHours->day == 1}
@@ -59,7 +59,7 @@
 								Saturday
 							{/if}
 						</div>
-						<div class="col-xs-12 col-sm-8 text-left">
+						<div class="col-sm-12 col-md-8 text-start">
 							{if $curHours->closed}
 								Closed
 							{else}

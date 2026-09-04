@@ -4,7 +4,7 @@
 			{$obituary->source}{if $obituary->sourcePage} page {$obituary->sourcePage}{/if}{if $obituary->formattedObitDate()} - {$obituary->formattedObitDate()}{/if}
 			{if $userIsAdmin}
 				<div class="btn-toolbar">
-					<a href='/Admin/Obituaries?objectAction=edit&amp;id={$obituary->obituaryId}' title='Edit this Obituary' class='btn btn-default'>
+					<a href='/Admin/Obituaries?objectAction=edit&amp;id={$obituary->obituaryId}' title='Edit this Obituary' class='btn btn-outline-secondary'>
 						Edit
 					</a>
 					<a href='/Admin/Obituaries?objectAction=delete&amp;id={$obituary->obituaryId}' title='Delete this Obituary' onclick='return confirm("Removing this obituary will permanently remove it from the system.	Are you sure?")' class='btn btn-sm btn-danger'>

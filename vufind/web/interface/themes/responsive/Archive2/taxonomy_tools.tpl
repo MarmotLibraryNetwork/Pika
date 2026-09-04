@@ -8,7 +8,7 @@
 	{if $showFavorites == 1}
 		<div id="download-options">{* Use the same button container as archive objects to get common styling *}
 			<div class="taxonomy-tools">
-				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$termListEntryDomId|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive2.showSaveToListForm(this, '{$termListEntryDomId|escape}');" class="btn btn-outline-secondary">{translate text='Add to favorites'}</button>
 			</div>
 		</div>
 	{/if}

@@ -1,0 +1,42 @@
+// Variables for Flatirons Consortium styling
+
+// Colors taken from current catalog homepage
+$blue-boulder-text : #0A61AE;
+$green-boulder : #4F823A;
+$light-blue-boulder : #669; // (5.34) https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=666699
+$blue-boulder : #1A2B4B;
+$bright-purple : #7C14B8;
+
+
+// Header Variables
+$header-height: 90px;
+$header-button-bg-color: #CCC;
+$header-bottom-border-color: #fff;
+
+// Display Name Variables
+$library-display-name-font: "Verdana", Arial, Helvetica, sans-serif;
+$library-display-name-font-size: 27px;
+$library-display-name-color: #484848;
+
+// Search Box color
+$home-search-top-color: $blue-boulder; //Top color for background gradient in header
+$home-search-bottom-color: $blue-boulder; //Bottom color for background gradient in header
+
+// Menu Bar
+$menu-bar-background-color: $blue-boulder;
+$menu-bar-selected-background-color: $green-boulder;
+
+$sidebar-button-bg-color: $blue-boulder;
+
+//Home Page Browse categories
+$browse-category-font-size: 20px;
+$categoryLineShadow: $blue-boulder;
+$categoryLineColor: $blue-boulder;
+$category1MainColor: $green-boulder;
+$selectedCategoryBorderColor: #525355;
+//$browse-label-text-color: #fff;  // This blends the text into the background (both are #fff)
+
+
+//Accordions
+$accordion-active-header-bg-color: $blue-boulder;
+$panel-border-radius: 0;

@@ -22,7 +22,7 @@
 				<tbody>
 					{foreach from=$sqlUpdates item=update key=updateKey}
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
-					{if isset($update.success)}{if $update.success} success{elseif $update.continueOnError} warning{else} danger{/if}{/if}"
+					{if isset($update.success)}{if $update.success} table-success{elseif $update.continueOnError} table-warning{else} table-danger{/if}{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input aria-label="Select this database update" type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
 						<td>{$update.release}</td>
@@ -37,12 +37,11 @@
 					{/foreach}
 				</tbody>
 			</table>
-			<div class="form-inline">
-				<div class="form-group">
+			<div class="d-flex flex-wrap align-items-center gap-2">
+				<div class="mb-3">
 					<input type="submit" name="submit" class="btn btn-primary" value="Run Selected Updates">
 				</div>
-				<div class="form-group checkbox checkbox-inline">
-					&nbsp; &nbsp;
+				<div class="mb-3 checkbox checkbox-inline">
 					<label for="hideUpdatesThatWereRun">
 						<input type="checkbox" name="hideUpdatesThatWereRun" id="hideUpdatesThatWereRun" checked="checked"
 						       onclick="$('.updateRun').toggle();"> Hide updates that have been run

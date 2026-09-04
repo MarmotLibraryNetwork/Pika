@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{if $parentExhibitUrl}
 		{* Search/Archive Navigation for Exhibits within an exhibit *}
 		{include file="Archive/search-results-navigation.tpl"}
@@ -8,7 +8,7 @@
 
 	{if $main_image}
 		<div class="main-project-image">
-			<img src="{$main_image}" class="img-responsive" usemap="#map" alt='Main image for "{$title}" collection'>
+			<img src="{$main_image}" class="img-fluid" usemap="#map" alt='Main image for "{$title}" collection'>
 		</div>
 	{/if}
 
@@ -18,10 +18,10 @@
 	</h1>
 
 	<div class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 		{if $thumbnail && !$main_image}
 			{if $exhibitThumbnailURL}<a href="{$exhibitThumbnailURL}">{/if}
-			<img src="{$thumbnail}" class="img-responsive exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
+			<img src="{$thumbnail}" class="img-fluid exhibit-thumbnail" alt='Thumbnail for "{$title}" collection'>
 			{if $exhibitThumbnailURL}</a>{/if}
 			<span id="exhibitMainDescriptionContainer" class="lead">
 				{$description}
@@ -43,25 +43,25 @@
 		<div class="row">
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">
-					<a href="#staffViewPanelBody" data-toggle="collapse">
+					<a href="#staffViewPanelBody" data-bs-toggle="collapse">
 						<div class="panel-heading">
 							<h2 class="panel-title">
 								Staff View
 							</h2>
 						</div>
 					</a>
-					<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
+					<div id="staffViewPanelBody" class="panel-collapse collapse {*show*}{*toggle on for open*}">
 						<div class="panel-body">
-							<a class="btn btn-small btn-default" href="{$repositoryLink}" target="_blank">
+							<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}" target="_blank">
 								View in Islandora
 							</a>
-							<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
+							<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
 								View MODS Record
 							</a>
-							<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
+							<a class="btn btn-sm btn-outline-secondary" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 								Edit MODS Record
 							</a>
-							<a class="btn btn-small btn-default" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
+							<a class="btn btn-sm btn-outline-secondary" href="#" onclick="return Pika.Archive.clearCache('{$pid}');" target="_blank">
 								Clear Cache
 							</a>
 						</div>

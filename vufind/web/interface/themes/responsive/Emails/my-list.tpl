@@ -37,10 +37,10 @@
     {$title.format}
 {if $title.url}    {$url}{$title.url}
 {/if}{/if}{*
-*}{section name=listEntry loop=$listEntries}{*
+*}{foreach from=$listEntries item=listEntry}{*
     If the list entry has a note, see whether it belongs to this work. An archive document's Solr
     id is its uniqueKey rather than the id the list stores, so it is matched on listEntryId - the
     node id for an object, tax_vocabulary:tid for a taxonomy term.
-*}{if $listEntries[listEntry]->notes && ($listEntries[listEntry]->groupedWorkPermanentId == $title.id || $listEntries[listEntry]->groupedWorkPermanentId == $title.PID || $listEntries[listEntry]->groupedWorkPermanentId == $title.listEntryId)}    {translate text="Notes"}: {$listEntries[listEntry]->notes}
-{/if}{/section}---------------------
+*}{if $listEntry->notes && ($listEntry->groupedWorkPermanentId == $title.id || $listEntry->groupedWorkPermanentId == $title.PID || $listEntry->groupedWorkPermanentId == $title.listEntryId)}    {translate text="Notes"}: {$listEntry->notes}
+{/if}{/foreach}---------------------
 {/foreach}{/if}

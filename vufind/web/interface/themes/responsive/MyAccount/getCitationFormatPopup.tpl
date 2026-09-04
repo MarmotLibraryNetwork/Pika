@@ -8,9 +8,9 @@
 		<input type="hidden" name="page" id="myListPage" value="{$pageNum}">
 		<input type="hidden" name="pagesize" id="myListPageSize" value="{$pageSize}">
 		<input type="hidden" name="sort" id="myListSort" value="{$listSort}">
-		<div class="form-group">
+		<div class="mb-3">
 			<label for="citationFormat">{translate text='Citation Format'}:</label>
-			<select name="citationFormat" id="citationFormat" class="form-control">
+			<select name="citationFormat" id="citationFormat" class="form-select">
 				{foreach from=$citationFormats item=formatName key=format}
 					<option value="{$format}">{$formatName}</option>
 				{/foreach}

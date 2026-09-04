@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		<h1 role="heading" aria-level="1" class="h2">Import Lists from Classic Catalog</h1>
 	{if $importResults && $importResults.success}
 		<div class="alert alert-success">
@@ -11,7 +11,8 @@
 		</div>
 	{/if}
 	{if $importResults.errors}
-		<div class="well">
+		<div class="card">
+		<div class="card-body">
 			<p class="alert alert-warning">The following errors occurred. For any titles that failed to import, you can search the catalog for these titles to re-add to your lists.</p>
 			<ul class="list-group">
 				{foreach from=$importResults.errors item=error}
@@ -19,8 +20,10 @@
 				{/foreach}
 			</ul>
 		</div>
+		</div>
 {* TODO: use with newer bootstrap
-		<div class="well">
+		<div class="card">
+		<div class="card-body">
 			<p>The following errors occurred. For titles that failed to import, you can search the catalog for these titles to re-add them to your lists.</p>
 			<p>
 			<ul class="list-group">
@@ -30,8 +33,9 @@
 			</ul>
 			</p>
 		</div>
+		</div>
 *}
 	{/if}
-		<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
+		<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-outline-secondary btn-sm">Return to My Lists</a>
 	</div>
 {/strip}

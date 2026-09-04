@@ -1,5 +1,5 @@
 {strip}
-<div class="col-xs-12">
+<div class="col-sm-12">
 	{include file="Archive2/search-results-navigation.tpl"}
 	<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
@@ -9,20 +9,20 @@
 
 	<div class="row">
 	{if $thumbnail}
-		<div {if $randomImageComponents}class="col-xs-6 text-center"{else}class="col-xs-12 text-center"{/if}>
+		<div {if $randomImageComponents}class="col-sm-6 text-center"{else}class="col-sm-12 text-center"{/if}>
 
-			<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-fit" alt="{$title|escape}">
+			<img src="{$thumbnail}" class="img-fluid thumbnail collection-thumbnail-fit" alt="{$title|escape}">
 
 		</div>
 	{/if}
 	{if $randomImageComponents}
-		<div {if $thumbnail}class="col-xs-6 text-center"{else}class="col-xs-12 text-center"{/if}>
+		<div {if $thumbnail}class="col-sm-6 text-center"{else}class="col-sm-12 text-center"{/if}>
 		{foreach from=$randomImageComponents item=random}
 			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object id=$random.id sourceNids=$random.sourceNids}
 		{/foreach}
 		</div>
 	{/if}
-		<div class="col-xs-12" class="lead">
+		<div class="col-sm-12" class="lead">
 			{$description}
 		</div>
 	</div>

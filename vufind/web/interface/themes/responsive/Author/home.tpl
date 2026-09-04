@@ -2,7 +2,7 @@
 <div>
 	<h1 role="heading" aria-level="1" class="h2">{$authorName}</h1>
 	<div class="row">
-		<div id="wikipedia_placeholder" class="col-xs-12">
+		<div id="wikipedia_placeholder" class="col-sm-12">
 		</div>
 	</div>
 
@@ -56,7 +56,7 @@
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
 			<button type="button" id="more-browse-results" onclick="return Pika.Searches.getMoreResults()" aria-label="Load more search results">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
 		{/if}
 	{else}

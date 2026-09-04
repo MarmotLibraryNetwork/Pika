@@ -16,11 +16,11 @@
 	{/if}
 
 	<form action="" method="post" id="buildList">
-		<div class="form-group">
+		<div class="mb-3">
 			<label for="selectedList">Pick a {$listsTitle} list to build a Pika list for: </label>
 			<div class="alert alert-warning">Current year is an included option but may not have a list yet.</div>
 			<!-- Give the user a list of all available lists from NYT -->
-			<select name="selectedList" id="selectedList" class="form-control">
+			<select name="selectedList" id="selectedList" class="form-select">
 				{foreach from=$availableLists item="year"}
 					<option value="{$year}" {if $selectedListName == $year}selected="selected"{/if}>{$year}</option>
 				{/foreach}

@@ -2,8 +2,8 @@
 {foreach from=$related_place item=place}
 	{if $place.relation eq 'local:pml'}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Postmark Location: </div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Postmark Location: </div>
+			<div class="result-value col-md-8">
 				{if $place.tid}
 					<a href="/Archive2/Place/{$place.tid}">{$place.name|escape}</a>
 				{else}

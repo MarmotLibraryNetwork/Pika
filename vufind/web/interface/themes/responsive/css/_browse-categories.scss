@@ -1,0 +1,840 @@
+//@import "bootstrap/less/variables";
+@import "variables";
+
+// Browse Formatting
+#home-page-browse-header {
+  background-color: $browse-header-background-color;
+  padding-bottom: 15px;
+}
+
+#home-page-browse-content {
+  padding: 15px;
+  background-color: $home-page-browse-content-background-color;
+}
+
+// Original browse category label styling of a background center-line
+@mixin browse-label-center-line($browse-label-line-color: #bbd4e3, $browse-label-text-color: #2D5D82) {
+  #browse-label {
+    height: 5px;
+    background-color: $browse-label-line-color;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-right: -15px;
+    }
+
+  .browse-label-text {
+    color: $browse-label-text-color;
+    background-color: $browse-header-background-color;
+    font-size: 22px;
+    line-height: 5px;
+    text-transform: uppercase;
+    display: inline-block; // this makes the h1 not full width so that the background displays
+    vertical-align: top; // Brings the text up so that the background line centers on the text
+    margin: auto;  // Keeps the text over the background line
+    padding: 0 8px; // adds some white space between the text and the background line
+    z-index: 2; // places the text above the line for #browse-label
+    position: relative; // needed to allow z-index to go into effect
+  }
+}
+
+//#browse-label {
+//  height: 5px;
+//  background-color: $browse-label-line-color;
+//  margin-top: 15px;
+//  margin-bottom: 15px;
+//  margin-right: -15px;
+//  z-index: -1; // make sure this line is under the content of browse-label-text
+//}
+
+.browse-label-text {
+  color: $browse-label-text-color;
+  font-size: 22px;
+  text-transform: uppercase;
+  margin-top: 10px;  // Override h1 margins
+  margin-bottom: 0;
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    background-color: $browseCarouselControlBackgroundColor;
+    color: $browseCarouselControlColor;
+    font-size: 50px;
+    border:none;
+    padding-inline: 0;
+    z-index: 1; // Ensure the button is above the carousel card on narrow views.
+
+    &:focus {
+      text-decoration: none;
+      outline: none;
+    }
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  button.jcarousel-control-next:after {
+    content: "›";
+  }
+
+  button.jcarousel-control-prev:before {
+    content: "‹";
+  }
+
+  .jcarousel-pagination a {
+    &, &:hover, &:active, &:visited {
+      outline: none;
+    }
+  }
+}
+
+#browse-category-carousel .browse-category {
+  font-size: $browse-category-font-size;
+  padding: 10px;
+  text-shadow: 1px 1px $gray;
+  background-color: #5fb7db;
+  height: 100px;
+  margin-left: 4px;
+  margin-right: 4px;
+  vertical-align: unset;
+  //border-radius: $browse-category-border-radius; //TODO: turn on
+  &:focus-within {
+    border: 2px solid $focus-ring-color;
+  }
+  button {
+    color: $browse-category-text-color;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    height: 100%;
+    width: 100%;
+    padding-inline: 0;
+    &:focus {
+      outline: none;
+    }
+    &:hover {
+      text-decoration: underline; // emulate link behavior
+    }
+  }
+
+
+  &.selected {
+    border: 2px solid $selectedCategoryBorderColor;
+    font-size: $browse-category-font-size + 3; // decreased size of increase, set relative to base font size  plb 9-17-2014
+
+    &:focus-within {
+      border: $focus-ring-color 2px solid;
+    }
+  }
+
+  &.category0 {
+    background-color: $category1MainColor;
+  }
+  &.category1 {
+    background-color: $category2MainColor;
+  }
+  &.category2 {
+    background-color: $category3MainColor;
+  }
+  &.category3 {
+    background-color: $category4MainColor;
+  }
+  &.category4 {
+    background-color: $category5MainColor;
+  }
+  &.category5 {
+    background-color: $category6MainColor;
+  }
+  &.category6 {
+    background-color: $category7MainColor;
+  }
+  &.category7 {
+    background-color: $category8MainColor;
+  }
+  &.category8 {
+    background-color: $category9MainColor;
+  }
+}
+
+// Original styling of browse category carousel items
+@mixin addDecorativeGradientToBrowseCategory() {
+  .browse-category {
+    &.category0 {
+      background-color: $category1MainColor;
+      background: linear-gradient(to bottom, $category1MainColor, $category1MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category1MainColor 90%, $category1MainColor);
+    }
+    &.category1 {
+      background-color: $category2MainColor;
+      background: linear-gradient(to bottom, $category2MainColor, $category2MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category2MainColor 90%, $category2MainColor);
+    }
+    &.category2 {
+      background-color: $category3MainColor;
+      background: linear-gradient(to bottom, $category3MainColor, $category3MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category3MainColor 90%, $category3MainColor);
+    }
+    &.category3 {
+      background-color: $category4MainColor;
+      background: linear-gradient(to bottom, $category4MainColor, $category4MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category4MainColor 90%, $category4MainColor);
+    }
+    &.category4 {
+      background-color: $category5MainColor;
+      background: linear-gradient(to bottom, $category5MainColor, $category5MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category5MainColor 90%, $category5MainColor);
+    }
+    &.category5 {
+      background-color: $category6MainColor;
+      background: linear-gradient(to bottom, $category6MainColor, $category6MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category6MainColor 90%, $category6MainColor);
+    }
+    &.category6 {
+      background-color: $category7MainColor;
+      background: linear-gradient(to bottom, $category7MainColor, $category7MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category7MainColor 90%, $category7MainColor);
+    }
+    &.category7 {
+      background-color: $category8MainColor;
+      background: linear-gradient(to bottom, $category8MainColor, $category8MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category8MainColor 90%, $category8MainColor);
+    }
+    &.category8 {
+      background-color: $category9MainColor;
+      background: linear-gradient(to bottom, $category9MainColor, $category9MainColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $category9MainColor 90%, $category9MainColor);
+    }
+  }
+}
+
+@mixin sacramento-browse-category($selectedCategoryColor, $browse-category-font-size, $height: 60px, $border-gray: #d7d7d7, $selectedCategoryBorderColor: #d7d7d7) {
+  #browse-category-carousel .browse-category {
+    text-shadow: none;
+    padding: 0;
+    margin-left: 1px;
+    margin-right: 1px;
+    height: $height;
+    cursor: pointer;
+    border: 1px solid $border-gray;
+
+    &:focus-within {
+      border: 1px solid $focus-ring-color;
+    }
+
+    button {
+      height: 100%;
+      width: 100%;
+      padding-inline: 0;
+      font-weight: 600;
+
+      &:focus {
+        height: 100%;
+      }
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    &.selected {
+      border: 1px solid $selectedCategoryBorderColor;
+
+      &:focus-within {
+        border: 1px solid $focus-ring-color;
+      }
+
+      button {
+        background: $selectedCategoryColor;
+        font-size: $browse-category-font-size;
+
+        &:hover {
+          background: $selectedCategoryColor;
+        }
+      }
+    }
+
+    &:hover {
+      background: #E4E4E4;
+      transition: all .3s ease-in-out;
+    }
+  }
+}
+
+@mixin selected-browse-label-mixin($side: right) {
+  margin-#{$side}: 20px;
+  float: $side;
+  background-color: $content-bg;
+  padding: 0 8px;
+}
+
+#selected-browse-label {
+  background-color: $home-page-browse-content-background-color;
+  background: linear-gradient(to bottom, $home-page-browse-content-background-color, $home-page-browse-content-background-color 44%, $browse-label-line-color 45%, $browse-label-line-color 55%, $home-page-browse-content-background-color 56%);
+  margin-bottom: 5px;
+
+  // Browse Mode Toggle switch //
+  & > div.btn-group {
+    span.thumbnail-icon {
+      @include bi-icon("grid-3x3-gap-fill"); // was glyphicon-th
+    }
+
+    span.grid-icon {
+      @include bi-icon("list"); // was glyphicon-list
+    }
+
+    // search results normal, short citation (lists) mode. (list with important details) //
+    span.list-icon {
+      //was glyphicon-list-alt
+      @include bi-icon("list-ul"); // was glyphicon-th-list
+    }
+
+    span {
+      @media (max-width: $screen-xs-max) {
+        display: none;
+      }
+    }
+
+    @include selected-browse-label-mixin();
+    //  background-color: #fff;
+    //  margin-left: 20px;
+    //  padding: 0 8px;
+  }
+}
+
+// Archive2 Collection page Covers/List toggle (same icon pair as #selected-browse-label above)
+#collection-displayMode-toggle {
+  div.btn-group span.thumbnail-icon {
+    @include bi-icon("grid-3x3-gap-fill"); // was glyphicon-th
+  }
+
+  div.btn-group span.list-icon {
+    @include bi-icon("list-ul"); // was glyphicon-th-list
+  }
+}
+
+.selected-browse-label-search {
+  font-size: 20px;
+  color: $selected-browse-label-search-color;
+  vertical-align: top;
+  @include selected-browse-label-mixin(left);
+
+  a {
+    color: $selected-browse-label-search-color;
+  }
+}
+
+@mixin nashville-selected-browse-label-search() {
+  .selected-browse-label-search {
+    margin-left: 0;
+    float: left;
+    padding: 0 3px;
+    font-weight: 600;
+  }
+}
+
+#selected-browse-search-link {
+  .icon-before {
+    // by default, use the search magnifying glass icon before the text
+    @include bi-icon("search"); // was glyphicon-search
+  }
+  .icon-after {
+    // by default, turn off any icon after the text
+    //display:none
+  }
+}
+
+.browse-rating {
+  margin-top: 5px;
+}
+
+.row.home-page-browse-grid:before, .row.home-page-browse-thumbnails:before {
+  display:none;
+}
+
+.home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 10px;
+}
+
+@media (min-width: $screen-xs-max) {
+  .home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 10px;
+  }
+}
+
+@media (min-width: $screen-sm-max) {
+  .home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px 10px;
+  }
+}
+
+@media (min-width: $screen-md-max) {
+  .home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px 10px;
+  }
+}
+
+.home-page-browse-thumbnails {
+  @media (min-width: 0) {
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  //three columns works to this size because of content shuffling at $screen-sm-min
+  @media (min-width: $screen-xs-min) {
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
+  @media (min-width: $screen-md-min) {
+    -webkit-column-count: 4;
+    -moz-column-count:    4;
+    column-count:         4;
+  }
+  @media (min-width: $screen-lg-min) {
+    -webkit-column-count: 6;
+    -moz-column-count:    6;
+    column-count:         6;
+  }
+}
+//Browse thumbnails if we have 1-8 objects
+.browse-thumbnails-few {
+  @media (min-width: 0) {
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  //three columns works to this size because of content shuffling at $screen-sm-min
+  @media (min-width: $screen-xs-min) {
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media (min-width: $screen-md-min) {
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media (min-width: $screen-lg-min) {
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+}
+
+//Browse thumbnails if we have 9-18 objects
+.browse-thumbnails-medium {
+  @media (min-width: 0) {
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  //three columns works to this size because of content shuffling at $screen-sm-min
+  @media (min-width: $screen-xs-min) {
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media (min-width: $screen-sm-min) {
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media (min-width: $screen-md-min) {
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
+  @media (min-width: $screen-lg-min) {
+    -webkit-column-count: 4;
+    -moz-column-count:    4;
+    column-count:         4;
+  }
+}
+
+.home-page-browse-grid {
+  @media (min-width: 0) {
+    -webkit-column-count: 1;
+    -moz-column-count: 1;
+    column-count: 1;
+  }
+  @media (min-width: $screen-xs-min) and (max-width: $screen-xs-max) {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
+  @media (min-width: $screen-sm-min) {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
+
+  @media (min-width: $screen-md-min) {
+    -webkit-column-count: 3;
+    -moz-column-count: 3;
+    column-count: 3;
+  }
+}
+
+// Browsing with Covers Only
+.browse-thumbnail {
+  @include bs3-thumbnail;
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  display: inline-block;
+  text-align: center; // was BS3 .text-center() mixin
+
+  img {
+    width: 100%;
+  }
+
+  &:hover {
+    box-shadow: 5px 5px 10px #DCDCDC;
+  }
+}
+
+.browse-thumbnail-sorted {
+  @include bs3-thumbnail;
+  border-width: 0;
+  height: 210px;
+  overflow: hidden;
+  text-align: center;
+
+  img {
+    max-height: 150px;
+  }
+
+  &:hover {
+    box-shadow: 5px 5px 10px #DCDCDC;
+  }
+}
+
+// Browsing with Lists
+.browse-list {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  display: inline-block;
+  text-align: left; // was BS3 .text-left() mixin
+  width: 100%;
+
+  img {
+    // was BS3 .img-thumbnail() mixin
+    padding: 4px;
+    line-height: $line-height-base;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    transition: border .2s ease-in-out;
+    max-width: 100%;
+    height: auto;
+    float: left;
+    margin: 0 4px 10px 0;
+    width: 80px;
+    border-radius: $border-radius-small;
+  }
+
+  &:hover {
+    box-shadow: 5px 5px 10px #DCDCDC;
+  }
+}
+
+#more-browse-results {
+  background-color: $more-browse-results-bg-color;
+  color: $more-browse-results-color;
+  text-align: center; // was BS3 .text-center() mixin
+  padding: 2px;
+  //cursor: pointer;
+  border-radius: 4px;
+  line-height: 0;
+  width: 100%;
+
+  span {
+    font-weight: bold;
+    font-size: 33px;
+  }
+
+  &:focus {
+    outline: 2px solid $focus-ring-color;
+  }
+}
+
+// Browse Sub-Categories
+#browse-sub-category-menu {
+  margin-top: $padding-large-vertical;
+
+  button {
+    margin-right: $padding-small-horizontal;
+    margin-bottom: $padding-small-vertical;
+    &.selected {
+      color: $selectedSubCategoryFontColor;
+      background-color: $selectedSubCategoryBackgroundColor;
+    }
+    &:focus {
+      outline: $focus-ring-color solid 2px;
+    }
+
+  }
+}
+
+.selected-browse-sub-category-label-search-text {
+  //  display: none; // default till content is put in place
+  &::before { // Dividing Character between Main Category Header & Sub-Category
+    content: ' \00bb \00a0'; // html entity &#187; &nbsp;
+  }
+}
+
+// Mixin that hides the Jcarousel controls and shows all the categories as a grid
+@mixin noCarouselBrowseCategoriesMixin($titlesPerRow: 4) {
+  #browse-category-carousel {
+    overflow: visible; // allow all list items to be seen
+    left: 0;
+    width: 95%;
+    margin-left: 5%;
+
+    ul {
+      position: static; // restore positioning behavior
+      width: 100%;
+    }
+
+    li {
+      // set number items to display in a row based on screen size
+      // default 4 per row, small 2 per row, middle 3 per row, tiny 1 per row
+      //width: 23% !important;
+      width: round(100 / $titlesPerRow - 2) * 1% !important;
+      @media (max-width: $screen-sm-max) {
+        //width: 31% !important;
+        width: round(100 / ($titlesPerRow - 1) - 2) * 1% !important;
+      }
+      @media (max-width: $screen-xs-max) {
+        //width: 48% !important;
+        width: round(100 / ($titlesPerRow - 2) - 2) * 1% !important;
+      }
+      @media (max-width: $screen-tn-max) {
+        //width: 48% !important;
+        width: round(100 / ($titlesPerRow - 3) - 2) * 1% !important;
+      }
+      float: left; // retains float left; ul positional is more critical. plb 9-16-2014
+    }
+  }
+
+  // hide scrolling controls
+  #browse-category-picker {
+    .jcarousel-control-prev, .jcarousel-control-next, .jcarousel-pagination {
+      display: none;
+    }
+  }
+
+}
+
+// Gives Selected Category a highlighted appearance
+@mixin noCarouselSelectedCategoryMixin($selectedCategoryColor: $category6MainColor) {
+  .browse-category.selected {
+    background-color: $selectedCategoryColor;
+    background: linear-gradient(to bottom, $selectedCategoryColor, $selectedCategoryColor 82%, $categoryLineShadow 83%, $categoryLineColor 84%, $categoryLineColor 88%, $categoryLineShadow 89%, $selectedCategoryColor 90%, $selectedCategoryColor);
+    font-size: $browse-category-font-size + 2;
+  }
+}
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+@mixin verticalAlignThumbnailArt() {
+  .browse-thumbnail {
+    div:first-child {
+      height: 180px;
+      display: flex;
+      align-items: center;
+    }
+    a {
+      img {
+        max-height: 180px;
+      }
+    }
+  }
+  .column-fix {
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    -o-column-break-inside: avoid;
+    column-break-inside: avoid;
+    display: table;
+  }
+}
+
+
+// Browse Category customization mixins based on anythink theme
+
+// mixin to select all the typical states of <a> like tags
+// (took a LESS detached ruleset; in Sass the rules are passed as a @content block)
+@mixin allLinkStates() {
+  &, &:hover, &:active, &:visited {
+    @content;
+  }
+}
+
+@mixin hide-selected-browse-label-background() {
+  #selected-browse-label {
+    background: none;
+
+    > .btn-group {
+      margin-right: 0;
+      padding: 0 3px;
+    }
+  }
+}
+
+@mixin hide-browse-label() {
+  #browse-label {
+    display: none;
+  }
+
+  @include hide-selected-browse-label-background;
+}
+
+@mixin anythink-browse-label($browse-label-text-color, $browse-label-bg-color: #fff) {
+  #browse-label {
+    background-color: $browse-label-bg-color;
+    border-bottom: 1px solid $browse-label-text-color;
+    //margin: 25px 0 15px;
+    //height: auto;
+    padding-bottom: 20px;
+    .browse-label-text {
+      font-weight: 600;
+    }
+  }
+}
+
+@mixin browse-category($selectedCategoryColor, $browse-category-text-color: #FFF, $button-vAlign: top, $button-height:auto) {
+  // the category text
+  #browse-category-carousel .browse-category {
+    padding-top: 20px; // extra padding on top to center text
+    height: 120px;
+
+    button {
+      text-shadow: none;
+      text-transform: uppercase;
+      font-size: large;
+      font-weight: 500;
+      background:none;
+      border:0;
+      height: $button-height;
+      vertical-align: $button-vAlign;
+      padding-inline:0;
+
+      &:focus {
+        outline:none// hide outlining of clicked category
+      }
+    }
+
+    &.selected {
+      border: none;
+      background-color: $selectedCategoryColor;
+      background: $selectedCategoryColor;
+      background: linear-gradient(to bottom, $selectedCategoryColor 0%, $selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+
+      button {
+        color:  $browse-category-text-color;
+      }
+    }
+  }
+
+  #browse-sub-category-menu {
+    button.selected {
+      background-color: $selectedCategoryColor;
+    }
+  }
+}
+
+@mixin anythink-browse-category-picker($browseCarouselControlColor, $selectedCategoryColor, $control-bg-color: $content-bg) {
+  // Left/Right Arrows on browse category carousel
+  #browse-category-picker {
+    .jcarousel-control-prev, .jcarousel-control-next {
+      background-color: $control-bg-color;
+      color: $browseCarouselControlColor;
+
+      &:active, &:hover {
+        color: $selectedCategoryColor;
+        text-decoration: none;
+      }
+
+      box-shadow: none; // was BS3 .box-shadow() mixin
+      font-size: 20px;
+    }
+
+    button {
+      &.jcarousel-control-next:after {
+        content: "▶";
+      }
+
+      &.jcarousel-control-prev:before {
+        content: "◀";
+      }
+    }
+
+    // indicator dots at bottom of browse category carousel
+    .jcarousel-pagination a {
+      &.active {
+        background: $browseCarouselControlColor;
+        // keep shadowing in place on active item
+        box-shadow: 0 0 2px #4E443C; // was BS3 .box-shadow() mixin
+      }
+
+      @include allLinkStates {
+        outline: none;
+      }
+    }
+  }
+}
+
+@mixin hide-browse-category-results-divider() {
+  #home-page-browse-results hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 0 solid #eee;
+  }
+}
+
+@mixin anythink-selected-browse-label($bg-line-color) {
+  #selected-browse-label {
+    color: black; //TODO: set color
+    background: none; //override line through label
+    padding: 20px 0;
+    border-top: 1px solid $bg-line-color;
+  }
+
+  .selected-browse-label-search {
+    background: none;
+  }
+
+  #selected-browse-search-link {
+    text-transform: uppercase;
+  }
+}
+
+@mixin sacramento-browse-category-pickers($browseCarouselControlColor, $control-height: 60px, $control-line-height: 60px, $hover-bgcolor: #E4E4E4) {
+  #browse-category-picker {
+    .jcarousel-control-prev, .jcarousel-control-next {
+      height: $control-height;
+      line-height: $control-line-height;
+      border: 1px solid #ccc;
+
+      &:hover {
+        text-decoration: none;
+        background: $hover-bgcolor;
+        transition: all .3s ease-in-out;
+      }
+    }
+
+    .jcarousel-pagination a {
+      &.active {
+        background: $browseCarouselControlColor;
+        // keep shadowing in place on active item
+        box-shadow: 0 0 2px #4E443C; // was BS3 .box-shadow() mixin
+      }
+
+      &, &:hover, &:active, &:visited {
+        outline: none
+      }
+    }
+  }
+
+  .jcarousel-wrapper {
+    margin: 10px auto;
+    position: relative;
+  }
+}

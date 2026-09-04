@@ -1,8 +1,8 @@
 {strip}
 	{if $recordDriver}
 	<div class="row">
-		<div class="result-label col-md-2">{translate text='Tags'}:</div>
-		<div class="result-value col-md-10">
+		<div class="result-label col-lg-2">{translate text='Tags'}:</div>
+		<div class="result-value col-lg-10">
 			{if $recordDriver->getTags()}
 				{foreach from=$recordDriver->getTags() item=tag name=tagLoop}
 					<a href="/Search/Results?tag={$tag->tag|escape:"url"}">{$tag->tag|escape:"html"}</a> <span class="badge btn-info">{$tag->cnt}</span>
@@ -20,7 +20,7 @@
 			{/if}
 			<br>
 			<div>
-				<button onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-default">
+				<button onclick="return Pika.GroupedWork.showTagForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-outline-secondary">
 					{translate text="Add Tag"}
 				</button>
 			</div>

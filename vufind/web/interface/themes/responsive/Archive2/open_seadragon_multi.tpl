@@ -108,9 +108,9 @@
   <div class="osd-multi-wrap">
     <div id="openseadragon-viewer"></div>
     <div id="openseadragon-strip-row">
-      <button type="button" id="osd-strip-prev" class="osd-strip-arrow" aria-label="Scroll thumbnails backward"><i class="glyphicon glyphicon-chevron-left" aria-hidden="true"></i></button>
+      <button type="button" id="osd-strip-prev" class="osd-strip-arrow" aria-label="Scroll thumbnails backward"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
       <div id="openseadragon-strip"></div>
-      <button type="button" id="osd-strip-next" class="osd-strip-arrow" aria-label="Scroll thumbnails forward"><i class="glyphicon glyphicon-chevron-right" aria-hidden="true"></i></button>
+      <button type="button" id="osd-strip-next" class="osd-strip-arrow" aria-label="Scroll thumbnails forward"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
     </div>
   </div>
 

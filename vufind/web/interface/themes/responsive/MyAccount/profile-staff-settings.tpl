@@ -1,9 +1,9 @@
 {strip}
 	<div class="row">
-		<div id="pika-roles-label" class="col-tn-12 lead">Roles</div>
+		<div id="pika-roles-label" class="col-12 lead">Roles</div>
 	</div>
 	<div class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 			<ul id="pika-roles" aria-labelledby="pika-roles-label">
 				{foreach from=$profile->roles item=role}
 					<li>
@@ -40,7 +40,7 @@
 				{/foreach}
 			</ul>
 		</div>
-		<div class="col-tn-12">
+		<div class="col-12">
 			<div class="alert alert-info">
 				For more information about what each role can do, see the <a target="_blank" href="https://marmot-support.atlassian.net/l/c/zJP1kcDf">online documentation</a>.
 			</div>
@@ -52,11 +52,11 @@
 
 		{if $userIsStaff}
 			<div class="row">
-				<div class="col-tn-12 lead">Staff Auto Logout Bypass</div>
+				<div class="col-12 lead">Staff Auto Logout Bypass</div>
 			</div>
-			<div class="form-group row">
-				<div class="col-xs-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout'}:</label></div>
-				<div class="col-xs-8">
+			<div class="row mb-3 row">
+				<div class="col-sm-4"><label for="bypassAutoLogout" class="form-label">{translate text='Bypass Automatic Logout'}:</label></div>
+				<div class="col-sm-8">
 					{if !$offline}
 						<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
 					{else}
@@ -68,13 +68,13 @@
 
 		{if $profile->hasRole('library_material_requests')}
 			<div class="row">
-				<div class="lead col-tn-12">Materials Request Management</div>
+				<div class="lead col-12">Materials Request Management</div>
 			</div>
-			<div class="form-group row">
-				<div class="col-xs-4">
-					<label for="materialsRequestReplyToAddress" class="control-label">Reply-To Email Address:</label>
+			<div class="row mb-3 row">
+				<div class="col-sm-4">
+					<label for="materialsRequestReplyToAddress" class="form-label">Reply-To Email Address:</label>
 				</div>
-				<div class="col-xs-8">
+				<div class="col-sm-8">
 					{if !$offline}
 						<input type="text" id="materialsRequestReplyToAddress" name="materialsRequestReplyToAddress" class="form-control multiemail" value="{$user->materialsRequestReplyToAddress}">
 					{else}
@@ -82,11 +82,11 @@
 					{/if}
 				</div>
 			</div>
-			<div class="form-group row">
-				<div class="col-xs-4">
-					<label for="materialsRequestEmailSignature" class="control-label">Email Signature:</label>
+			<div class="row mb-3 row">
+				<div class="col-sm-4">
+					<label for="materialsRequestEmailSignature" class="form-label">Email Signature:</label>
 				</div>
-				<div class="col-xs-8">
+				<div class="col-sm-8">
 					{if !$offline}
 						<textarea id="materialsRequestEmailSignature" name="materialsRequestEmailSignature" class="form-control">{$user->materialsRequestEmailSignature}</textarea>
 					{else}
@@ -98,8 +98,8 @@
 
 
 		{if !$offline}
-			<div class="form-group">
-				<div class="col-xs-8 col-xs-offset-4">
+			<div class="row mb-3">
+				<div class="col-sm-8 offset-sm-4">
 					<input type="submit" value="Update My Staff Settings" name="updateStaffSettings" class="btn btn-sm btn-primary">
 				</div>
 			</div>

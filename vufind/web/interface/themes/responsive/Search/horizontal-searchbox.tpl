@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
+	<form method="get" action="/Union/Search" id="searchForm" class="row" onsubmit="Pika.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
 
@@ -27,17 +27,17 @@
 			{/if}
 		{/if}
 
-		<div class="col-sm-9 col-xs-12">
+		<div class="col-md-9 col-sm-12">
 			<div class="row">
-				<div class="col-lg-1 col-md-2 col-sm-2 col-xs-12">
+				<div class="col-xl-1 col-lg-2 col-md-2 col-sm-12">
 					<label id="horizontal-search-label" for="lookfor"{* class=""*}>{translate text="Search for"} </label>
 				</div>
 				<div class="
 				{if $hiddenSearchSource}
-				col-lg-9 col-md-8
+				col-xl-9 col-lg-8
 				{else}
-				col-lg-6 col-md-5
-				{/if} col-sm-10 col-xs-12">
+				col-xl-6 col-lg-5
+				{/if} col-md-10 col-sm-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
 							          id="lookfor"
@@ -55,32 +55,32 @@
 					</textarea>
 				</div>
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource}
-				col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0
+				<div class="col-xl-2 offset-xl-0 col-lg-2 offset-lg-0 {if $hiddenSearchSource}
+				col-md-10 offset-md-2 col-sm-12 offset-sm-0
 				{else}
-				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
+				col-md-3 offset-md-4 col-sm-5 offset-sm-0
 				{/if}">
 				{if $archiveOnly}
-					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-control islandoraType" id="islandoraSearchTypes">
+					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-select islandoraType" id="islandoraSearchTypes">
 						{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 				{else}
-					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if in_array($searchSource, array('genealogy', 'islandora2', 'islandora'))}style="display:none"{/if}>
+					<select name="basicType" aria-label="Type of catalog search" class="searchTypeHorizontal form-select catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if in_array($searchSource, array('genealogy', 'islandora2', 'islandora'))}style="display:none"{/if}>
 						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 
 					{*TODO: How to chose the Genealogy Search type initially *}
-					<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
+					<select name="genealogyType" aria-label="Type of genealogy search" class="searchTypeHorizontal form-select genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
 						{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 
-					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
+					<select name="islandoraType" aria-label="Type of archive search" class="searchTypeHorizontal form-select islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora2'}style="display:none"{/if}{if $searchSource == 'islandora'} disabled{/if}>
 						{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
@@ -89,8 +89,8 @@
 				</div>
 
 					{if !$hiddenSearchSource}
-						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7"{* {if $archiveOnly} style="margin-top:-1px;"{/if} I don't know why this is done. pascal 6/15/2026 *}>
-							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
+						<div class="col-xl-3 col-lg-3 col-md-5 col-sm-7"{* {if $archiveOnly} style="margin-top:-1px;"{/if} I don't know why this is done. pascal 6/15/2026 *}>
+							<select name="searchSource" id="searchSource" aria-label="Select search source" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-select">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource} selected="selected"{/if}
@@ -108,17 +108,16 @@
 		</div>
 
 		{* GO Button & Search Links*}
-		<div id="horizontal-search-button-container" class="col-sm-3 col-xs-12">
+		<div id="horizontal-search-button-container" class="col-md-3 col-sm-12">
 			<div class="row">
-				<div class="col-tn-3 col-xs-3 col-sm-4 col-md-4">
-					<button class="btn btn-default" type="submit">
-						<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+				<div class="col-3 col-sm-3 col-md-4 col-lg-4">
+					<button class="btn btn-outline-secondary" type="submit">
+						<span class="bi bi-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
-						{*<span class="visible-xs-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
 					</button>
 				</div>
 
-				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
+				<div id="horizontal-search-additional" class="col-5 col-sm-5 col-md-12 col-lg-8">
 					{* Keep Applied Filters Checkbox *}
 					{if $filterList && $action != 'MyList'}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
@@ -143,8 +142,8 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="col-tn-3 col-xs-3 visible-xs">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<div class="col-3 col-sm-3 d-none d-sm-block d-md-none">
+						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 			</div>

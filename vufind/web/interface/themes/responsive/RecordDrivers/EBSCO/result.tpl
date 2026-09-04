@@ -1,7 +1,7 @@
 {strip}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList">
 	<div class="row result-title-row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			<h2 class="h3">
 			<span class="result-index">{$resultIndex}.</span>&nbsp;
 			<a href="{$summUrl}" class="result-title notranslate">
@@ -13,7 +13,7 @@
 
 	<div class="row">
 	{if $showCovers}
-		<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
+		<div class="coversColumn col-sm-3 col-md-3{if !$viewingCombinedResults} col-lg-3 col-xl-2{/if} text-center">
 			{if $disableCoverArt != 1 && $bookCoverUrlMedium}
 				<a href="{$summUrl}">
 					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
@@ -27,27 +27,27 @@
 		</div>
 	{/if}
 
-		<div class="{if !$showCovers}col-xs-12{else}col-tn-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">
+		<div class="{if !$showCovers}col-sm-12{else}col-9 col-md-9{if !$viewingCombinedResults} col-lg-9 col-xl-10{/if}{/if}">
 
 		{if $summAuthor}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text='Author'}:</div>
-				<div class="col-tn-9 result-value">{$summAuthor|escape}</div>
+				<div class="result-label col-3">{translate text='Author'}:</div>
+				<div class="col-9 result-value">{$summAuthor|escape}</div>
 			</div>
 		{/if}
 
 		{if strlen($summSourceDatabase)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text='Found in'}:</div>
-				<div class="col-tn-9 result-value">{$summSourceDatabase|escape}</div>
+				<div class="result-label col-3">{translate text='Found in'}:</div>
+				<div class="col-9 result-value">{$summSourceDatabase|escape}</div>
 			</div>
 		{/if}
 
 		{if $summPublicationDates || $summPublishers || $summPublicationPlaces}
 			<div class="row">
 
-				<div class="result-label col-tn-3">Published: </div>
-				<div class="col-tn-9 result-value">
+				<div class="result-label col-3">Published: </div>
+				<div class="col-9 result-value">
 					{$summPublicationPlaces.0|escape}{$summPublishers.0|escape}{$summPublicationDates.0|escape}
 				</div>
 			</div>
@@ -55,8 +55,8 @@
 
 		{if strlen($summFormats)}
 			<div class="row">
-				<div class="result-label col-tn-3">Format: </div>
-				<div class="col-tn-9 result-value">
+				<div class="result-label col-3">Format: </div>
+				<div class="col-9 result-value">
 					<span class="iconlabel">{translate text=$summFormats}</span>
 				</div>
 			</div>
@@ -64,14 +64,14 @@
 
 		{if $summPhysical}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text='Physical Desc'}:</div>
-				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
+				<div class="result-label col-3">{translate text='Physical Desc'}:</div>
+				<div class="col-9 result-value">{$summPhysical.0|escape}</div>
 			</div>
 		{/if}
 
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Full Text'}:</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}Yes{else}No{/if}</div>
+			<div class="result-label col-3">{translate text='Full Text'}:</div>
+			<div class="col-9 result-value">{if $summHasFullText}Yes{else}No{/if}</div>
 		</div>
 
 	</div>

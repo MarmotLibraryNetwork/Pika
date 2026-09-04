@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="physicalFormatPanel"><a data-toggle="collapse" href="#physicalFormatPanelBody">
+	<div class="panel" id="physicalFormatPanel"><a data-bs-toggle="collapse" href="#physicalFormatPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Physical & Format Details</h2>
 			</div>

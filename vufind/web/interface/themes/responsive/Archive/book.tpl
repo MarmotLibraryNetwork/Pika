@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,27 +7,19 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div id="main-content" class="col-xs-12 text-center">
+			<div id="main-content" class="col-sm-12 text-center">
 				{if $canView}
-					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
+					<div id="view-toggle" class="btn-group" role="group">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'pdf');">
-							{*TODO: set bookPID*}
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'pdf');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-pdf">{*TODO: set bookPID*}
 
-							View As PDF
-						</label>
+							View As PDF</label>
 						{/if}
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'image');">
-
-							View As Image
-						</label>
-						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'transcription');">
-
-							View Transcription
-						</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'image');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-image">View As Image</label>
+						<input type="radio" class="btn-check" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'transcription');">
+							<label class="btn btn-group-small btn-outline-secondary" for="view-toggle-transcription">View Transcription</label>
 					</div>
 
 					<br>
@@ -55,31 +47,31 @@
 
 		<div id="download-options">
 			{*
-			<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download Book As PDF</a>
-			<a class="btn btn-default" href="/Archive/{$activePage}/DownloadPDF" id="downloadPageAsPDF">Download Page As PDF</a>
+			<a class="btn btn-outline-secondary" href="/Archive/{$pid}/DownloadPDF">Download Book As PDF</a>
+			<a class="btn btn-outline-secondary" href="/Archive/{$activePage}/DownloadPDF" id="downloadPageAsPDF">Download Page As PDF</a>
 			*}
 			<br>
 			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
-				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
+				<a class="btn btn-outline-secondary" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
-				<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Log in to Download PDF</a>
+				<a class="btn btn-outline-secondary" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Log in to Download PDF</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-outline-secondary" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-outline-secondary" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default">{translate text='Add to favorites'}</button>
+				<button onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-outline-secondary">{translate text='Add to favorites'}</button>
 			{/if}
 		</div>
 
 		{if $canView}
 			<div class="row">
-				<div class="col-xs-12 text-center">
+				<div class="col-sm-12 text-center">
 					<div class="jcarousel-wrapper" id="book-sections">
-						<button class="jcarousel-control-prev" aria-label="Previous Page"><i class="glyphicon glyphicon-chevron-left"></i></button>
+						<button class="jcarousel-control-prev" aria-label="Previous Page"><i class="bi bi-chevron-left"></i></button>
 						<div class="relatedTitlesContainer jcarousel"> {* relatedTitlesContainer used in initCarousels *}
 							<ul>
 								{assign var=pageCounter value=1}
@@ -112,7 +104,7 @@
 								{/foreach}
 							</ul>
 						</div>
-						<button class="jcarousel-control-next" aria-label="Next Page"><i class="glyphicon glyphicon-chevron-right"></i></button>
+						<button class="jcarousel-control-next" aria-label="Next Page"><i class="bi bi-chevron-right"></i></button>
 					</div>
 				</div>
 			</div>

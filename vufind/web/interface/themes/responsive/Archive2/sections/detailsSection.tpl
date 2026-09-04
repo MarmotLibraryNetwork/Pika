@@ -22,8 +22,8 @@
 		{if $linked_agents_display}
 			{foreach from=$linked_agents_display item=agent}
 				<div class="row archive-field-row">
-					<div class="result-label col-sm-4">{$agent.label|escape}: </div>
-					<div class="result-value col-sm-8">
+					<div class="result-label col-md-4">{$agent.label|escape}: </div>
+					<div class="result-value col-md-8">
 						{if $agent.vocabulary eq 'corporate_body' && $agent.tid}
 							<a href="/Archive2/Organization/{$agent.tid}">{$agent.name|escape}</a>
 						{elseif $agent.vocabulary eq 'person' && $agent.tid}
@@ -36,8 +36,8 @@
 			{/foreach}
 		{else}
 			<div class="row archive-field-row">
-				<div class="result-label col-sm-4">Linked Agent: </div>
-				<div class="result-value col-sm-8"><span class="text-muted">Not provided</span></div>
+				<div class="result-label col-md-4">Linked Agent: </div>
+				<div class="result-value col-md-8"><span class="text-muted">Not provided</span></div>
 			</div>
 		{/if}
 	{/if}
@@ -53,8 +53,8 @@
 	{if $display_model eq 'Postcard' && $material}
 		{if $material}
 			<div class="row archive-field-row">
-				<div class="result-label col-sm-4">Material:</div>
-				<div class="result-value col-sm-8">
+				<div class="result-label col-md-4">Material:</div>
+				<div class="result-value col-md-8">
 					{if is_array($material)}
 						{foreach from=$material item=materialLine}
 							<div>{$materialLine|escape}</div>
@@ -71,8 +71,8 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Publisher" value=$publisher}
 	{if ($display_model ne 'Art') && !$map_section_enabled && ($coordinates.lat || $coordinates.lng)}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">{if $coordinates_text}{$coordinates_text|escape}{else}Location{/if}:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">{if $coordinates_text}{$coordinates_text|escape}{else}Location{/if}:</div>
+			<div class="result-value col-md-8">
 				<dl class="archive-field-values list-unstyled">
 					{if $coordinates.lat}
 						<dt>Latitude:</dt>

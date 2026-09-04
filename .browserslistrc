@@ -1,0 +1,4 @@
+# Browser support targets for autoprefixer (and any other browserslist consumers).
+# The previous LESS pipeline ran autoprefixer with no explicit browser list,
+# which resolves to "defaults" — kept identical here.
+defaults

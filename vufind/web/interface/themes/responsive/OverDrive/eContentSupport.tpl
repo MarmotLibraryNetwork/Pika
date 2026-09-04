@@ -1,4 +1,4 @@
-<div class="col-tn-12">
+<div class="col-12">
 	<div class="alert alert-info">
 		Need help downloading a title or using the title on your device?  Please fill out this support form.
 	</div>
@@ -7,25 +7,25 @@
 		<input type="hidden" name="overDriveErrorMessages" value="{$overDriveErrorMessages}">
 		{if $overDriveId}<input type="hidden" name="overDriveId" value="{$overDriveId}">{/if}
 		{if !$loggedIn}
-			<div class="form-group">
-				<label for='libraryCardNumber' class="control-label">Library Card Number:  <span class="required-input">*</span></label><input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" size="20">
+			<div class="mb-3">
+				<label for='libraryCardNumber' class="form-label">Library Card Number:  <span class="required-input">*</span></label><input type="text" name="libraryCardNumber" id="libraryCardNumber" class="required form-control" aria-required="true" maxlength="20" size="20">
 			</div>
 		{/if}
-		<div class="form-group">
-			<label for="name" class="control-label">Name: <span class="required-input">*</span></label><input type="text" name="name" id="name" class="required form-control" aria-required="true" maxlength="120" size="60" value="{$name}">
+		<div class="mb-3">
+			<label for="name" class="form-label">Name: <span class="required-input">*</span></label><input type="text" name="name" id="name" class="required form-control" aria-required="true" maxlength="120" size="60" value="{$name}">
 		</div>
-		<div class="form-group">
-			<label for="email" class="control-label">E-mail: <span class="required-input">*</span></label><input type="text" name="email" id="email" class="required email form-control" aria-required="true" maxlength="120" size="60" value="{$email}">
+		<div class="mb-3">
+			<label for="email" class="form-label">E-mail: <span class="required-input">*</span></label><input type="text" name="email" id="email" class="required email form-control" aria-required="true" maxlength="120" size="60" value="{$email}">
 		</div>
-		<div class="form-group">
-			<label for="bookAuthor" class="control-label">Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control" value="{$titleAndAuthor}">
+		<div class="mb-3">
+			<label for="bookAuthor" class="form-label">Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control" value="{$titleAndAuthor}">
 		</div>
-		<div class="form-group">
-			<label for="device" class="control-label">Device:</label><input type="text" name="device" id="device"{if $deviceName} value="{$deviceName}"{/if} maxlength="120" size="60" class="form-control">
+		<div class="mb-3">
+			<label for="device" class="form-label">Device:</label><input type="text" name="device" id="device"{if $deviceName} value="{$deviceName}"{/if} maxlength="120" size="60" class="form-control">
 		</div>
-		<div class="form-group">
-			<label for="format" class="control-label">Format:</label>
-			<select id="format" name="format" class="form-control">
+		<div class="mb-3">
+			<label for="format" class="form-label">Format:</label>
+			<select id="format" name="format" class="form-select">
 					{if empty($formats) || count($formats) > 1}
 						{* Only show the default option if there are multiples to select. Or no formats set. *}
 						<option value="na">-Select a Format-</option>
@@ -42,9 +42,9 @@
 					{/foreach}
 			</select>
 		</div>
-		<div class="form-group">
-			<label for="operatingSystem" class="control-label">Operating System:</label>
-			<select name="operatingSystem" id="operatingSystem" class="form-control">
+		<div class="mb-3">
+			<label for="operatingSystem" class="form-label">Operating System:</label>
+			<select name="operatingSystem" id="operatingSystem" class="form-select">
 				<option value="">-Select an Operating System-</option>
 				<option value="Win-11">Windows 11</option>
 				<option value="Win-10">Windows 10</option>
@@ -62,12 +62,12 @@
 				<option value="other">Other - Please specify Below</option>
 			</select>
 		</div>
-		<div class="form-group">
-			<label for="problem" class="control-label">Please describe your issue: <span class="required-input">*</span></label><br>
+		<div class="mb-3">
+			<label for="problem" class="form-label">Please describe your issue: <span class="required-input">*</span></label><br>
 			<textarea rows="10" cols="40" name="problem" id="problem" class="form-control required"></textarea>
 		</div>
 		{if $lightbox == false}
-			<div class="form-group">
+			<div class="mb-3">
 				<button class="btn btn-sm btn-primary" onclick='return $("#eContentSupport").validate()'>Submit</button>
 			</div>
 		{/if}

@@ -3,14 +3,14 @@
 
 	{* Logo Div *}
 	{* In mobile view this div is the top div and spans across the screen *}
-	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+	<div class="col-sm-12 col-md-3 col-lg-3 col-xl-3">
 		<a href="{if !empty($logoLink)}{$logoLink}{else}/{*empty link to home page*}{/if}" title="{$logoLinkTitleAttribute}">
-			<img id="header-logo" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+			<img id="header-logo" src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="Logo for {$librarySystemName}" {if $showDisplayNameInHeader && $librarySystemName}class="float-start"{/if}>
 		</a>
 	</div>
 
 	{* Heading Info Div *}
-	<div id="headingInfo" class="hidden-xs hidden-sm col-md-5 col-lg-5">
+	<div id="headingInfo" class="d-none d-lg-block col-lg-5 col-xl-5">
 		{if $showDisplayNameInHeader && $librarySystemName}
 			<p id="library-name-header">{$librarySystemName}</p>
 		{/if}
@@ -25,7 +25,7 @@
 
 	{if !$isUpdatePinPage}
 	<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
+		<div class="d-none d-md-block col-md-2 offset-md-5 col-lg-2 offset-lg-0 col-xl-2 offset-xl-0 mx-3">
 			<a id="headerMyAccountLink" href="/MyAccount/Home">
 				<div class="header-button header-primary">
 					{translate text="Your Account"}
@@ -33,7 +33,7 @@
 			</a>
 		</div>
 
-		<div class="hidden-xs col-sm-2 col-md-2 col-lg-2">
+		<div class="d-none d-md-block col-md-2 col-lg-2 col-xl-2 mx-3">
 			<a id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 				<div class="header-button header-primary">
 					{translate text="Log Out"}
@@ -42,10 +42,10 @@
 		</div>
 	</div>
 
-	<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
+	<div class="loginOptions col-md-2 offset-md-7 col-lg-2 offset-lg-2 offset-xl-2 col-xl-2"{if $loggedIn} style="display: none;"{/if}>
 		{if $showLoginButton == 1}
 			<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this);{/if}">
-				<div class="hidden-xs header-button header-primary">
+				<div class="d-none d-md-block header-button header-primary">
 					{translate text="LOGIN"}
 				</div>
 			</a>
@@ -54,7 +54,7 @@
 	{else}
 		{* Show log out option on Force Pin Update so users can log out if they choose *}
 		<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
-			<div class="hidden-xs col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2">
+			<div class="d-none d-md-block col-md-2 offset-md-7 col-lg-2 offset-lg-2 offset-xl-2 col-xl-2 mx-3">
 				<a  id="headerLogoutLink" href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}>
 					<div class="header-button header-primary">
 						{translate text="Log Out"}

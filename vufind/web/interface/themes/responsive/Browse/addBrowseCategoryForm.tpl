@@ -14,13 +14,13 @@
 			{/if}
 			<input type="hidden" name="method" value="createBrowseCategory">
 			<input type="hidden" name="searchSource" value="{$searchSource|default:'catalog'}" id="searchSource">
-			<div class="form-group">
-				<label for="categoryName" class="control-label">New Category Name</label>
+			<div class="mb-3">
+				<label for="categoryName" class="form-label">New Category Name</label>
 				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required" aria-required="true">
 			</div>
 			{if $property} {* If data for Select tag is present, use the object editor template to build the <select> *}
-			<div class="form-group">
-				<label for="make-as-a-sub-category-ofSelect" class="control-label">Add as a Sub-Category to (optional) : </label>
+			<div class="mb-3">
+				<label for="make-as-a-sub-category-ofSelect" class="form-label">Add as a Sub-Category to (optional) : </label>
 				{include file="DataObjectUtil/enum.tpl"} {* create select list *}
 			</div>
 			{/if}

@@ -2,12 +2,12 @@
 {if $params.pagesize}{assign var="pageSize" value=$params.pagesize}{else}{assign var="pageSize" value=20}{/if}
 {if $params.sort}{assign var="listSort" value=$params.sort}{else}{assign var="listSort" value=null}{/if}
 
-<a href="/MyAccount/MyList/{$favList->id}?page={$pageNum}&pagesize={$pageSize}&sort={$listSort}" title="Return to My List" class="btn btn-default btn-sm">Return to My List</a>
+<a href="/MyAccount/MyList/{$favList->id}?page={$pageNum}&pagesize={$pageSize}&sort={$listSort}" title="Return to My List" class="btn btn-outline-secondary btn-sm">Return to My List</a>
 
 <h1 role="heading" aria-level="1" class="h2" id="listTitle"><a href="/MyAccount/MyList/{$favList->id}?page={$pageNum}&pagesize={$pageSize}&sort={$listSort}">{$favList->title|escape:"html"}</a></h1>
 
 {if $favList->description}
-	<div class="listDescription well" id="listDescription">{$favList->description|escape}</div>
+	<div class="listDescription card"><div class="card-body" id="listDescription">{$favList->description|escape}</div></div>
 {/if}
 {* Not needed. Two links already back to list above
 <div id="listTopButtons" class="btn-toolbar">

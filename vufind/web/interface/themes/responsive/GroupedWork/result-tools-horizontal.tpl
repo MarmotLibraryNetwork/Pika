@@ -9,7 +9,7 @@
 				</div>
 			{/if}
 			{if $showComments == 1}
-				<div class="btn-group btn-group-sm{if $module == 'Search' || ($action == 'MyList' && $module == 'MyAccount')} hidden-xs{/if}">
+				<div class="btn-group btn-group-sm{if $module == 'Search' || ($action == 'MyList' && $module == 'MyAccount')} d-none d-md-inline-flex{/if}">
 					{* Hide Review Button for xs views in Search Results & User Lists *}
 					<button id="userreviewlink{$summShortId}" class="btn btn-sm"{* title="Add a Review"*} onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}')">
 						Add a Review

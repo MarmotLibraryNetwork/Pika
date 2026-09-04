@@ -1,22 +1,22 @@
 {strip}
-<button onclick="return Pika.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
-<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
-<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload NoveList Data</button>
+<button onclick="return Pika.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload Cover</button>
+<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload Enrichment</button>
+<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload NoveList Data</button>
 		{if $loggedIn && $userIsStaff}
-			<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
-			<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
+			<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Reindex</button>
+			<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Regrouping</button>
 
 				{if $userRoles && in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles)}
 					<a href="/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape:'url'}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
-						 target="_blank" class="btn btn-sm btn-default">Merge this Work to another
+						 target="_blank" class="btn btn-sm btn-outline-secondary">Merge this Work to another
 					</a>
 				{/if}
 		{/if}
     {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
-			<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+			<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-outline-secondary">Add Librarian Review</a>
     {/if}
 		{if $loggedIn && $enableArchive && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
-	<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
+	<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-outline-secondary">Clear Islandora Cache</button>
 {/if}
 
 
@@ -24,12 +24,12 @@
 	{include file="Record/qrcode.tpl"}
 
 <h3>Grouping Information</h3>
-<table class="table-striped table table-condensed notranslate">
+<table class="table-striped table table-sm notranslate">
 	<tr>
 		<th>Grouped Work ID</th>
 		<td><span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 			{if $userIsStaff}
-				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			{/if}
 		</td>
 	</tr>
@@ -43,12 +43,12 @@
 <div class="enrichmentInfo"{if $novelistPrimaryISBN} style="display: none"{/if}>
 	<h3>Enrichment Information</h3>
 	<div class="row">
-		<div class="col-xs-6 col-sm-3"><strong>Novelist Primary ISBN</strong></div>
-		<div id="novelistPrimaryISBN" class="col-xs-6 col-sm-9">{$novelistPrimaryISBN}</div>
+		<div class="col-sm-6 col-md-3"><strong>Novelist Primary ISBN</strong></div>
+		<div id="novelistPrimaryISBN" class="col-sm-6 col-md-9">{$novelistPrimaryISBN}</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-6 col-sm-3"><strong>Review ISBN</strong></div>
-		<div id="isbnForReviews" class="col-xs-6 col-sm-9"></div>
+		<div class="col-sm-6 col-md-3"><strong>Review ISBN</strong></div>
+		<div id="isbnForReviews" class="col-sm-6 col-md-9"></div>
 	</div>
 </div>
 <h3>Solr Fields</h3>
@@ -57,11 +57,11 @@
 			{if strpos($field, "scoping_details") === false
 			&& strpos($field, "item_details") === false
 			&& strpos($field, "record_details") === false}
-				<div class="col-md-5 col-lg-4"><strong>{$field|escape}</strong></div>
-				<div class="col-md-7 col-lg-8">
+				<div class="col-lg-5 col-xl-4"><strong>{$field|escape}</strong></div>
+				<div class="col-lg-7 col-xl-8">
 				{implode subject=$values glue='<br>' sort=true}
 				</div>
-				<div class="clearfix visible-sm-block"></div>
+				<div class="clearfix d-none d-md-block"></div>
       {/if}
 			</div>
 	{/foreach}
@@ -70,9 +70,9 @@
 		{foreach from=$details key='field' item='values'}
 			<div class="row" style="border: solid #ddd; border-width: 1px 0 0 0">
 			{if strpos($field, "scoping_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
-				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
+				<table id="scoping_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: anywhere; font-size: smaller;table-layout: fixed">
 					<tr>
 						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Is Home Pick Up Only</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Home Pick Up PTypes</th><th>Local Url</th>
 					</tr>
@@ -87,9 +87,9 @@
 				</table>
 				</div>
 			{elseif strpos($field, "item_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
-					<table id="item_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
+					<table id="item_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
 							<th>Bib Id</th><th>Item Id</th><th>Shelf Location</th><th>Call Num</th><th>Format</th><th>Format Category</th><th>Num Copies</th><th>Is Order Item</th><th>Is eContent</th><th>eContent Source</th>{*<th>eContent File</th>*}<th>Item URL</th>{*<th>subformat</th>*}<th>Detailed Status</th><th>Last Checkin</th><th>Location</th>
 						</tr>
@@ -104,9 +104,9 @@
 					</table>
 				</div>
 			{elseif strpos($field, "record_details") !== false}
-				<div class="col-tn-12">
+				<div class="col-12">
 				<h4>{$field|escape}</h4>
-					<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
+					<table id="record_details" class="table-striped table table-sm table-bordered notranslate" style="overflow-wrap: break-word; font-size: smaller;table-layout: fixed">
 						<tr>
 							<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged</th>
 						</tr>

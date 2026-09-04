@@ -1,6 +1,6 @@
 {strip}
 	<div id="home-page-browse-header" class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 			<div class="row text-center" id="browse-label">
 				<h1 role="heading" aria-level="1" class="browse-label-text">Browse the Catalog</h1>
 			</div>
@@ -29,7 +29,7 @@
 				{*<div class="clearfix"></div> // Doesn't seem to be needed *}
 
 			</div>
-			<div id="browse-sub-category-menu" class="row text-center">
+			<div id="browse-sub-category-menu" class="text-center">
 				{* Initial load of content done by AJAX call on page load, unless sub-category is specified via URL *}
 				{if $subCategoryTextId}
 					{include file="Search/browse-sub-category-menu.tpl"}
@@ -38,15 +38,15 @@
 		</div>
 	</div>
 	<div id="home-page-browse-content" class="row">
-		<div class="col-tn-12">
+		<div class="col-12">
 
-			<div class="row" id="selected-browse-label">
+			<div class="clearfix" id="selected-browse-label">
 
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<button onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-default browseMode">
+				<div class="btn-group btn-group-sm">
+					<button onclick="Pika.Browse.toggleBrowseMode(this.id)" id="covers" aria-label="change browse titles to cover layout" tabindex="0" title="Covers" class="btn btn-sm btn-outline-secondary browseMode">
 						<span class="thumbnail-icon"></span><span> Covers</span>
 					</button>
-					<button onclick="Pika.Browse.toggleBrowseMode(this.id);" id="grid" aria-label="change browse titles to grid layout" tabindex="0" title="Grid" class="btn btn-sm btn-default browseMode">
+					<button onclick="Pika.Browse.toggleBrowseMode(this.id);" id="grid" aria-label="change browse titles to grid layout" tabindex="0" title="Grid" class="btn btn-sm btn-outline-secondary browseMode">
 						<span class="grid-icon"></span><span> Grid</span>
 					</button>
 				</div>
@@ -76,15 +76,15 @@
 			   Centered on the button below it, which is full width and centers its own chevron.
 			   The image is 32px against a line of text, so it needs aligning to the middle of
 			   that line rather than sitting on its baseline for the two to read as one unit. *}
-			<div id="more-results-loading" class="hidden text-center" style="margin: 10px 0;">
+			<div id="more-results-loading" class="d-none text-center" style="margin: 10px 0;">
 				<img src="{img filename='loading.gif'}" alt="" style="vertical-align: middle; margin-right: 5px;">
 				{translate text="Loading"}...
 			</div>
 
 			<button type="button" id="more-browse-results" onclick="return Pika.Browse.getMoreResults()" aria-label="Load more results for browse category">
-				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				<span class="bi bi-chevron-down" aria-hidden="true"></span>
 			</button>
-			<div id="more-results-status" class="sr-only" aria-live="polite"></div>
+			<div id="more-results-status" class="visually-hidden" aria-live="polite"></div>
 
 		</div>
 	</div>

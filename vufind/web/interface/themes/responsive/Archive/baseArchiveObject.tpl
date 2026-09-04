@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">
@@ -7,19 +7,19 @@
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h1>
 		<div class="row">
-			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+			<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				<div class="main-project-image">
 					{if $large_image}<a href="{$large_image}">{/if}
-					<img src="{$medium_image}" class="img-responsive" alt="Main image for {$title|escape}">
+					<img src="{$medium_image}" class="img-fluid" alt="Main image for {$title|escape}">
 						{if $large_image}</a>{/if}
 				</div>
 
 			</div>
-			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+			<div id="main-content" class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
 				{if !empty($alternateNames)}
 					<div class="row">
-						<div class="result-label col-sm-4">Alternate Name{if count($alternateNames) > 1}s{/if}: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Alternate Name{if count($alternateNames) > 1}s{/if}: </div>
+						<div class="result-value col-md-8">
 							{foreach from=$alternateNames item=alternateName}
 								{$alternateName}<br>
 							{/foreach}
@@ -29,8 +29,8 @@
 
 				{if strlen($placeStartDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Founded: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Founded: </div>
+						<div class="result-value col-md-8">
 							{$placeStartDate}
 						</div>
 					</div>
@@ -38,8 +38,8 @@
 
 				{if strlen($placeEndDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Dissolved: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Dissolved: </div>
+						<div class="result-value col-md-8">
 							{$placeEndDate}
 						</div>
 					</div>
@@ -47,8 +47,8 @@
 
 				{if strlen($organizationStartDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Established: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Established: </div>
+						<div class="result-value col-md-8">
 							{$organizationStartDate}
 						</div>
 					</div>
@@ -56,8 +56,8 @@
 
 				{if strlen($organizationEndDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Dissolved: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Dissolved: </div>
+						<div class="result-value col-md-8">
 							{$organizationEndDate}
 						</div>
 					</div>
@@ -65,8 +65,8 @@
 
 				{if $eventStartDate || $eventEndDate}
 					<div class="row">
-						<div class="result-label col-sm-4">Date: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Date: </div>
+						<div class="result-value col-md-8">
 							{$eventStartDate} {if $eventEndDate} to {$eventEndDate}{/if}
 						</div>
 					</div>
@@ -74,8 +74,8 @@
 
 				{if $relatedPlaces && $recordDriver->getType() == 'event'}
 					<div class="row">
-						<div class="result-label col-sm-4">Took place at: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Took place at: </div>
+						<div class="result-value col-md-8">
 							{foreach from=$relatedPlaces item=entity}
 								<a href='{$entity.link}'>
 									{$entity.label}
@@ -94,8 +94,8 @@
 
 				{if $primaryUrl}
 					<div class="row">
-						<div class="result-label col-sm-4">Website: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Website: </div>
+						<div class="result-value col-md-8">
 							<a href="{$primaryUrl}">{$primaryUrl}</a>
 						</div>
 					</div>
@@ -103,8 +103,8 @@
 
 				{if $addressInfo && $addressInfo.hasDetailedAddress}
 					<div class="row">
-						<div class="result-label col-sm-4">Address: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Address: </div>
+						<div class="result-value col-md-8">
 							<address>
 								{if $addressInfo.addressStreetNumber || $addressInfo.addressStreet}
 									{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}<br>
@@ -124,8 +124,8 @@
 					</div>
 					{if $addressInfo.addressCounty}
 						<div class="row">
-							<div class="result-label col-sm-4">County: </div>
-							<div class="result-value col-sm-8">
+							<div class="result-label col-md-4">County: </div>
+							<div class="result-value col-md-8">
 									{if $addressInfo.addressCounty}
 										{$addressInfo.addressCounty}
 									{/if}
@@ -134,8 +134,8 @@
 					{/if}
 					{if $addressInfo.addressCountry}
 						<div class="row">
-							<div class="result-label col-sm-4">Country: </div>
-							<div class="result-value col-sm-8">
+							<div class="result-label col-md-4">Country: </div>
+							<div class="result-value col-md-8">
 									{if $addressInfo.addressCountry}
 										{$addressInfo.addressCountry}
 									{/if}
@@ -144,8 +144,8 @@
 					{/if}
 					{if $addressInfo.addressOtherRegion}
 						<div class="row">
-							<div class="result-label col-sm-4">Other Region: </div>
-							<div class="result-value col-sm-8">
+							<div class="result-label col-md-4">Other Region: </div>
+							<div class="result-value col-md-8">
 									{if $addressInfo.addressOtherRegion}
 										{implode subject=$addressInfo.addressOtherRegion}
 									{/if}
@@ -158,13 +158,13 @@
 				{if $mapsKey && $addressInfo.latitude && $addressInfo.longitude}
 					{if $addressInfo.latitude && $addressInfo.longitude}
 						<div class="row">
-							<div class="result-label col-sm-4">Location: </div>
-							<div class="result-value col-sm-8">
+							<div class="result-label col-md-4">Location: </div>
+							<div class="result-value col-md-8">
 								<iframe title="Google map for {$title}" width="100%" height="" style="border:0" src="https://www.google.com/maps/embed/v1/place?q={$addressInfo.latitude|escape}%2C%20{$addressInfo.longitude|escape}&key={$mapsKey}" allowfullscreen></iframe>
 							</div>
 						</div>
 						<div class="row">
-							<div class="result-value col-sm-8 col-sm-offset-4">
+							<div class="result-value col-md-8 offset-md-4">
 								{$addressInfo.latitude}, {$addressInfo.longitude}
 							</div>
 						</div>

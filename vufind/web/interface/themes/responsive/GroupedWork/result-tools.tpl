@@ -1,7 +1,7 @@
 {strip}
 	{if $showFavorites == 1}
 		<div class="text-center row">
-			<div class="col-xs-12">
+			<div class="col-sm-12">
 				<button type="button" onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm addtolistlink">{translate text='Add to favorites'}</button>
 			</div>
 		</div>

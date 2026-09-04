@@ -181,7 +181,7 @@ class ReadingHistory extends MyAccount {
 
 		// Set properties
 		global $interface;
-		$gitBranch = $interface->getVariable('gitBranch');
+		$gitBranch = $interface->getTemplateVariable('gitBranch');
 		$objPHPExcel->getProperties()->setCreator('Pika ' . $gitBranch)
 			->setLastModifiedBy('Pika ' . $gitBranch)
 			->setTitle("Office 2007 XLSX Document")

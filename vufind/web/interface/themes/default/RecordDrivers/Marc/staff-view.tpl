@@ -1,33 +1,33 @@
 {strip}
 {if $recordDriver}
 	<div class="row">
-		<div class="result-label col-xs-3">Grouped Work ID: </div>
-		<div class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">
+		<div class="result-label col-sm-3">Grouped Work ID: </div>
+		<div class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">
 			<span id="groupedWorkIdCol">{$recordDriver->getPermanentId()}</span>
 		</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
-				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('groupedWorkIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+			<div class="col-sm-2">
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('groupedWorkIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 	<div class="row">
-		<div class="result-label col-xs-3">{$recordDriver->getModule()} ID:</div>
-		<div id="recordIdCol" class="{if $userIsStaff}col-xs-7{else}col-xs-9{/if} result-value">{$id}</div>
+		<div class="result-label col-sm-3">{$recordDriver->getModule()} ID:</div>
+		<div id="recordIdCol" class="{if $userIsStaff}col-sm-7{else}col-sm-9{/if} result-value">{$id}</div>
 		{if $userIsStaff}
-			<div class="col-xs-2">
-				<button class="btn btn-sm btn-default pull-right" onclick="Pika.copyText('recordIdCol')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
+			<div class="col-sm-2">
+				<button class="btn btn-sm btn-outline-secondary float-end" onclick="Pika.copyText('recordIdCol')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy</button>
 			</div>
 		{/if}
 	</div>
 
 	<div class="row">
-		<div class="col-xs-12">
+		<div class="col-sm-12">
 			<div class="btn-group" role="group" aria-label="...">
-				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
-				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-default">Reload Cover</button>
-				<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
-				<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear NoveList Data</button>
+				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-outline-secondary">Go To Grouped Work</a>
+				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-outline-secondary">Reload Cover</button>
+				<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Reload Enrichment</button>
+				<button onclick="return Pika.GroupedWork.reloadNovelistData('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Clear NoveList Data</button>
 				{if $staffClientUrl}
 					<a href="{$staffClientUrl}" class="btn btn-sm btn-info">View in Staff Client</a>
 				{/if}
@@ -39,30 +39,30 @@
 		{if $loggedIn}
 				{if $userIsStaff}
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 {*							<div class="btn-group" role="group" aria-label="...">*}
 									{if $classicUrl}
 										<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Classic</a>
 									{/if}
-							<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
+							<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-outline-secondary">{translate text="Download Marc"}</a>
 {*							</div>*}
                 {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
-									<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+									<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-outline-secondary">Add Librarian Review</a>
                 {/if}
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-xs-12">
+						<div class="col-sm-12">
 {*							<div class="btn-group" role="group" aria-label="...">*}
-							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
-							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping
+							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Reindex</button>
+							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Force Regrouping
 							</button>
                 {if $recordExtractable}
-									<button onclick="return Pika.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')" class="btn btn-sm btn-default">Force Extract from {$ils}</button>
+									<button onclick="return Pika.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')" class="btn btn-sm btn-outline-secondary">Force Extract from {$ils}</button>
                 {/if}
 
                 {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A" target="_blank" class="btn btn-sm btn-default">UnMerge from Work</a>
+									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A" target="_blank" class="btn btn-sm btn-outline-secondary">UnMerge from Work</a>
                 {/if}
 
 {*							</div>*}
@@ -70,9 +70,9 @@
 					</div>
             {if $enableArchive && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 {*									<div class="btn-group" role="group" aria-label="...">*}
-									<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
+									<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-outline-secondary">Clear Islandora Cache</button>
 {*									</div>*}
 								</div>
 							</div>
@@ -92,27 +92,27 @@
 			{if $matchedByAccessUrl}
 				<div class="alert alert-warning">Extract Information was matched by id in access url instead of record id.</div>
 			{/if}
-			<table class="table-striped table table-condensed notranslate">
-					{foreach from=$hooplaExtract key='field' item='values'}
-							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
-								<tr>
-									<th>{$field|escape}</th>
-									<td>
-											{if $field == 'dateLastUpdated'}
-												{$values|date_format:"%b %d, %Y %r"}
-											{elseif !empty($values)}
-												{implode subject=$values glue=', ' sort=true}
-											{/if}
-									</td>
-								</tr>
-							{/if}
-					{/foreach}
+			<table class="table-striped table table-sm notranslate">
+				{foreach from=$hooplaExtract key='field' item='values'}
+					{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
+						<tr>
+							<th>{$field|escape}</th>
+							<td>
+									{if $field == 'dateLastUpdated'}
+										{$values|date_format:"%b %d, %Y %r"}
+									{elseif !empty($values)}
+										{implode subject=$values glue=', ' sort=true}
+									{/if}
+							</td>
+						</tr>
+					{/if}
+				{/foreach}
 			</table>
 		{/if}
 
     {if $marcRecord}
 			<h3>Record Information</h3>
-			<table class="table-striped table table-condensed notranslate">
+			<table class="table-striped table table-sm notranslate">
 			{if isset($lastRecordExtractTime)}
 				<tr>
 					<th>Last {$ils} Extract Time</th>
@@ -138,7 +138,7 @@
 
 			<div id="formattedMarcRecord">
 				<h3>MARC Record</h3>
-				<table class="table table-condensed table-bordered notranslate">
+				<table class="table table-sm table-bordered notranslate">
 					<tbody>
 						{*Output leader*}
 						<tr><th colspan="3">LEADER</th><td>{$marcRecord->getLeader()}</td></tr>

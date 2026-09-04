@@ -3,7 +3,7 @@
 	<div class="archiveComponent browseFilterContainer">
 		<div class="archiveComponentBody">
 			<div class="archiveComponentBox">
-				<a href="#" data-toggle="modal" data-target="#browseSubjectsModal{$browseSubjectsId}">
+				<a href="#" data-bs-toggle="modal" data-bs-target="#browseSubjectsModal{$browseSubjectsId}">
 					<div class="archiveComponentIconContainer">
 						<img src="{$browseSubjectsImage}" width="100" height="100" alt=""{* "Alternative text of images should not be repeated as text" *} class="archiveComponentImage">
 					</div>
@@ -19,20 +19,20 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close Window">&times;</button>
 				<h2 class="modal-title h3" id="browseSubjectsModalLabel{$browseSubjectsId}">{$browseSubjectsTitle}</h2>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close Window"></button>
 			</div>
 			<div class="modal-body">
 				{foreach from=$browseSubjectsItems item=subject}
 					<div class="row archive-field-row">
-						<div class="result-value col-sm-12">
+						<div class="result-value col-md-12">
 							<a href="{$subject.url}">{$subject.name|escape}</a> ({$subject.count})
 						</div>
 					</div>
 				{/foreach}
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
 			</div>
 		</div>
 	</div>

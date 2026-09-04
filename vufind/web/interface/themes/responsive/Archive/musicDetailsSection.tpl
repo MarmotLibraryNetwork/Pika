@@ -1,8 +1,8 @@
 {strip}
 	{if $musicGenres}
 		<div class="row">
-			<div class="result-label col-sm-4">Genres: </div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Genres: </div>
+			<div class="result-value col-md-8">
 				{foreach from=$musicGenres item="musicGenre"}
 					{if $musicGenre.link}<a href="{$musicGenre.link}">{/if}
 					{$musicGenre.label}{if $musicGenre.lccn} ({$musicGenre.lccn}){/if}
@@ -14,8 +14,8 @@
 
 	{if $albums}
 		<div class="row">
-			<div class="result-label col-sm-4">Album Information: </div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Album Information: </div>
+			<div class="result-value col-md-8">
 				{foreach from=$albums item="album"}
 					{$album.title}
 					{if $album.track}

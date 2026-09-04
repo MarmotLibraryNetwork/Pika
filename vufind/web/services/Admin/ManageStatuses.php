@@ -103,5 +103,6 @@ class ManageStatuses extends ObjectEditor {
 			}
 		}
 		header("Location: /Admin/ManageStatuses");
+		die();
 	}
 }

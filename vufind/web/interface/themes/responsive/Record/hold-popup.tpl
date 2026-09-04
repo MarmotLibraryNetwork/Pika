@@ -46,10 +46,10 @@
 
 			{* Responsive theme enforces that the user is always logged in before getting here*}
 			<div id="holdOptions">
-				<div id="pickupLocationOptions" class="form-group">
-					<label class="control-label" for="campus">{translate text="I want to pick this up at"}: </label>
-					<div class="controls">
-						<select name="campus" id="campus" class="form-control">
+				<div id="pickupLocationOptions" class="mb-3">
+					<label class="form-label" for="campus">{translate text="I want to pick this up at"}: </label>
+					<div>
+						<select name="campus" id="campus" class="form-select">
 							{if count($pickupLocations) > 0}
 								{foreach from=$pickupLocations item=location}
 									{if is_string($location)}
@@ -65,11 +65,11 @@
 						</select>
 					</div>
 				</div>
-					{*<div id="userOption" class="form-group"{*if count($pickupLocations[0]->pickupUsers) < 2} style="display: none"{/if* }>{* display if the first location will need a user selected*}
-					<div id="userOption" class="form-group"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
-						<label for="user" class="control-label">{translate text="Place hold for the chosen location using account"}: </label>
-						<div class="controls">
-							<select name="user" id="user" class="form-control">
+					{*<div id="userOption" class="mb-3"{*if count($pickupLocations[0]->pickupUsers) < 2} style="display: none"{/if* }>{* display if the first location will need a user selected*}
+					<div id="userOption" class="mb-3"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
+						<label for="user" class="form-label">{translate text="Place hold for the chosen location using account"}: </label>
+						<div>
+							<select name="user" id="user" class="form-select">
 								{* Built by jQuery below *}
 							</select>
 						</div>
@@ -100,22 +100,22 @@
 						{/literal}
 					</script>
           {if $allowStaffPlacedHoldRequest}
-						<div id="staffPlacedHolds" class="form-group has-success">
-							<label for="patronBarcode" class="control-label">Or place hold for patron with {$patronBarcodeLabel} :</label>
-							<div class="controls">
+						<div id="staffPlacedHolds" class="mb-3 has-success">
+							<label for="patronBarcode" class="form-label">Or place hold for patron with {$patronBarcodeLabel} :</label>
+							<div>
 								<input type="text" name="patronBarcode" id="patronBarcode" class="form-control" size="10">
 							</div>
 						</div>
           {/if}
           {if $showHoldCancelDate}
-					<div id="cancelHoldDate" class="form-group">
-						<label class="control-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
-						<div class="input-group input-append date controls" id="cancelDatePicker">
+					<div id="cancelHoldDate" class="mb-3">
+						<label class="form-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
+						<div class="input-group date" id="cancelDatePicker">
 							{* data-provide attribute loads the datepicker through bootstrap data api *}
 							{* start date sets minimum, end date sets maximum, date sets initial value: days from today, eg +8d is 8 days from now. *}
 							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10"
 							       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+1y">
-							<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#canceldate').focus().datepicker('show')" aria-hidden="true"></span></span>
+							<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#canceldate').focus().datepicker('show')" aria-hidden="true"></span></span>
 						</div>
 
 							<p><i>{translate text="automatic_cancellation_notice"}</i></p>
@@ -134,7 +134,7 @@
 					{/foreach}
 				{/if}
 				<br>
-				<div class="form-group">
+				<div class="mb-3">
 					<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $isOpac == true}checked="checked"{/if}> Log me out after requesting the item.</label>
 					<input type="hidden" name="holdType" value="hold">
 				</div>

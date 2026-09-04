@@ -1,5 +1,5 @@
 {strip}
-<div class="col-sm-12">
+<div class="col-md-12">
 	<div class="archiveComponent">
 		<div class="archiveComponentHeader">Browse by Location</div>
 		<div id="collection-map-component" class="collection-map-component-container"></div>

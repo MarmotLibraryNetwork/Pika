@@ -1,0 +1,35 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color);
+
+
+a img#header-logo {
+  margin-left: -15px;
+}
+
+.sidebar-button {
+  padding: 5px 15px;
+  background-color: $accordion-header-bg-color;
+  //background: linear-gradient(to bottom, $accordion-header-top-gradient-color, $accordion-header-bottom-gradient-color);
+  color: #fff;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  text-shadow: 1px 1px $gray;
+}
+
+@include anythink-browse-label($browse-label-text-color);
+
+.browse-category.category0, .browse-category.category1, .browse-category.category2, .browse-category.category3, .browse-category.category4, .browse-category.category5 {
+  background-color: #F9F9F0;
+  background: linear-gradient(to bottom, #F9F9F0 0%, #F9F9F0 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+}
+
+@include browse-category($selectedCategoryColor);
+
+@include anythink-browse-category-picker($browseCarouselControlColor, $selectedCategoryColor, $content-bg);
+
+@include anythink-selected-browse-label($browse-label-text-color);

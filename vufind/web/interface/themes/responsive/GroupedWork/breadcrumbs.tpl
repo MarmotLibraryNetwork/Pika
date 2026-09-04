@@ -4,18 +4,17 @@
 	   Keep in step with GroupedWork/search-results-navigation.tpl, which links to the same place. *}
 	{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
 	{if $returnToSearchUrl}
-		<li>
-			&nbsp;
+		<li class="breadcrumb-item">
 			<a href="{$returnToSearchUrl|escape}#record{$recordDriver->getPermanentId()|escape:"url"}">{translate text="Catalog Search Results"}</a>
-			<span class="divider">&raquo;</span></li>
+		</li>
 	{/if}
 	{if $breadcrumbText}
-		<li>
-			&nbsp;
-			<a href="" aria-current="page">{$breadcrumbText|truncate:30:"..."|escape}</a> <span class="divider">&raquo;</span>
+		<li class="breadcrumb-item active" aria-current="page">
+			<a href="">{$breadcrumbText|truncate:30:"..."|escape}</a>
 		</li>
 	{/if}
 	{if $action == "Series"}
-		<li>&nbsp;NoveList Series <span class="divider">&raquo;</span> <em aria-current="page">{$pageTitleShort}</em></li>
+		<li class="breadcrumb-item">NoveList Series</li>
+		<li class="breadcrumb-item active" aria-current="page"><em>{$pageTitleShort}</em></li>
 	{/if}
 {/strip}

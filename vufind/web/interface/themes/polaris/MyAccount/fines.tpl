@@ -54,8 +54,8 @@
 									{if $fine.details}
 										{foreach from=$fine.details item=detail}
 											<div class="row">
-												<div class="col-xs-3"><strong>{$detail.label}</strong></div>
-												<div class="col-xs-7">{$detail.value}</div>
+												<div class="col-sm-3"><strong>{$detail.label}</strong></div>
+												<div class="col-sm-7">{$detail.value}</div>
 											</div>
 										{/foreach}
 									{/if}
@@ -70,7 +70,7 @@
 					{/foreach}
 				</tbody>
 				<tfoot>
-				<tr class="info">
+				<tr class="table-info">
 					<th>Total</th>
 					{if $showDate}
 						<td></td>

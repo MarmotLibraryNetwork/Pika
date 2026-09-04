@@ -48,6 +48,7 @@ class Compound extends ArchiveObject
     public function launch()
     {
         global $interface;
+        global $configArray;
 
         parent::launch();
 
@@ -163,18 +164,62 @@ class Compound extends ArchiveObject
                 return parent::display('wrapper.tpl', $title, 'Search/home-sidebar.tpl');
             }
 
-            // Otherwise, use individual viewers for each child
+            // Otherwise, use individual viewers for each child.
+            // Pre-extract each child's media data here so the helper templates no
+            // longer need {php} blocks (removed in Smarty 5).
             foreach ($childObjects as $childObject) {
                 $objectModel = $childObject->getObjectModel();
                 $viewer = $this->getViewerForModel($objectModel);
-                $title = $childObject->getTitle();
 
-                $childrenData[] = [
-                    'mediaObject' => $childObject,
+                $childData = [
                     'viewer' => $viewer,
                     'objectModel' => $objectModel,
-                    'title' => $title,
+                    'title' => $childObject->getTitle(),
+                    'nid' => $childObject->getNodeId(),
                 ];
+
+                switch ($viewer) {
+                    case 'video':
+	                    $video                    = $childObject->getVideo();
+	                    $poster                   = $childObject->getThumbnail();
+	                    $captions                 = $childObject->getCaptions();
+	                    $childData['videoUrl']    = $video->fileUrl ?? '';
+	                    $childData['videoMime']   = $video->mime ?? 'video/mp4';
+	                    $childData['posterUrl']   = $poster->fileUrl ?? null;
+	                    $childData['captions']    = $captions !== null ? json_decode(json_encode($captions), true) : [];
+	                    $childData['transcripts'] = $childObject->getTranscripts();
+                        break;
+                    case 'audio':
+	                    $audio                          = $childObject->getAudio();
+	                    $thumb                          = $childObject->getThumbnail();
+	                    $captions                       = $childObject->getCaptions();
+	                    $childData['audioUrl']          = $audio->fileUrl ?? '';
+	                    $childData['audioMime']         = $audio->mime ?? 'audio/mpeg';
+	                    $childData['videoThumbnailUrl'] = $thumb->fileUrl ?? null;
+	                    $childData['captions']          = $captions !== null ? json_decode(json_encode($captions), true) : [];
+	                    $childData['transcripts']       = $childObject->getTranscripts();
+                        break;
+                    case 'pdfjs':
+	                    $pdf                     = $childObject->getOriginalMedia();
+	                    $islandoraUrl            = $configArray['Islandora2']['url'] ?? '';
+	                    $childData['pdf_url']    = $pdf->fileUrl ?? '';
+	                    $childData['iframe_src'] = rtrim($islandoraUrl, '/') . '/libraries/pdf.js/web/viewer.html?file=' . urlencode($pdf->fileUrl ?? '');
+                        break;
+                    case 'open_seadragon':
+	                    $serviceFile    = $childObject->getServiceFile();
+	                    $serviceFileUrl = null;
+                        if ($serviceFile && isset($serviceFile->fileUrl)) {
+                            $baseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
+                            $serviceFileUrl = $baseUrl . '/cantaloupe/iiif/2/' . urlencode($serviceFile->fileUrl);
+                        }
+                        $childData['service_file_url'] = $serviceFileUrl;
+                        break;
+                    case 'mirador':
+                        // Mirador only needs the node ID, already set above.
+                        break;
+                }
+
+                $childrenData[] = $childData;
             }
         } else {
             $this->logger->error('mediaObject does not have getChildObjects method.', ['nid' => $this->mediaObject->getNodeId()]);

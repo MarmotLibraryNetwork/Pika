@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="locationPanel"><a data-toggle="collapse" href="#locationPanelBody">
+	<div class="panel" id="locationPanel"><a data-bs-toggle="collapse" href="#locationPanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Location</h2>
 			</div>
@@ -10,8 +10,8 @@
 				{* Local Identifier *}
 				{if !empty($local_identifier)}
 					<div class="row">
-						<div class="result-label col-sm-4">Local Identifier{if is_array($local_identifier) && count($local_identifier) > 1}s{/if}: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Local Identifier{if is_array($local_identifier) && count($local_identifier) > 1}s{/if}: </div>
+						<div class="result-value col-md-8">
 						{if is_array($local_identifier)}{implode subject=$local_identifier glue=', '}{else}{$local_identifier}{/if}
 						</div>
 					</div>
@@ -20,8 +20,8 @@
 				{* Located At *}
 				{if !empty($located_at)}
 					<div class="row">
-						<div class="result-label col-sm-4">Located at: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Located at: </div>
+						<div class="result-value col-md-8">
 							{if is_array($located_at)}
 								{foreach from=$located_at item=location}
 									<div>{$location}</div>
@@ -36,8 +36,8 @@
 				{* Shelf Location *}
 				{if !empty($shelf_location)}
 					<div class="row">
-						<div class="result-label col-sm-4">Shelf Location: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Shelf Location: </div>
+						<div class="result-value col-md-8">
 							{if is_array($located_at)}
 								{foreach from=$shelf_location item=location}
 									<div>{$location}</div>

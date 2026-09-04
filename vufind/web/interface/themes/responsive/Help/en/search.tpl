@@ -1,6 +1,6 @@
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-md-4">
+		<div class="col-lg-4">
 			<ul class="HelpMenu">
 				<li><a href="#Phrase Searches">Phrase Searches</a></li>
 				<li><a href="#Wildcard Searches">Wildcard Searches</a></li>
@@ -17,7 +17,7 @@
 				</li>
 			</ul>
 		</div>
-		<div class="col-md-8">
+		<div class="col-lg-8">
 			<dl class="Content">
 				<dt><a name="Phrase Searches"></a>Phrase Searches ("")</dt>
 				<dd>

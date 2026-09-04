@@ -3,8 +3,8 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Material Description" value=$material_description}
 	{if $material}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Material:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Material:</div>
+			<div class="result-value col-md-8">
 				{if is_array($material)}
 					{foreach from=$material item=materialLine}
 						<div>{$materialLine|escape}</div>
@@ -17,8 +17,8 @@
 	{/if}
 	{if $artMaterials}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Art Materials:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Art Materials:</div>
+			<div class="result-value col-md-8">
 				{foreach from=$artMaterials item=artMat}
 					<div>
 						{if $artMat.aatNumber}
@@ -34,8 +34,8 @@
 	{include file="Archive2/partials/fieldRow.tpl" label="Technique" value=$technique}
 	{if $artTechniques}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Art Technique:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Art Technique:</div>
+			<div class="result-value col-md-8">
 				{foreach from=$artTechniques item=artTech}
 					<div>
 						{if $artTech.aatNumber}
@@ -50,8 +50,8 @@
 	{/if}
 	{if $stylePeriods}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Style / Period:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Style / Period:</div>
+			<div class="result-value col-md-8">
 				{foreach from=$stylePeriods item=stylePeriod}
 					<div>
 						{if $stylePeriod.aatNumber}
@@ -66,8 +66,8 @@
 	{/if}
 	{if $measurement}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Measurement:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Measurement:</div>
+			<div class="result-value col-md-8">
 				{if is_array($measurement)}
 					{foreach from=$measurement item=measurementLine}
 						<div>{$measurementLine|escape}</div>
@@ -80,8 +80,8 @@
 	{/if}
 	{if $installationDates}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">{$installationLabel}:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">{$installationLabel}:</div>
+			<div class="result-value col-md-8">
 				{foreach from=$installationDates item=installationDate}
 					<div>{$installationDate|escape}</div>
 				{/foreach}
@@ -90,8 +90,8 @@
 	{/if}
 	{if ($display_model eq 'Art') && ($coordinates.lat || $coordinates.lng)}
 		<div class="row archive-field-row">
-			<div class="result-label col-sm-4">Installation Location:</div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-md-4">Installation Location:</div>
+			<div class="result-value col-md-8">
 				<dl class="archive-field-values list-unstyled">
 					{if $coordinates.lat}
 						<dt>Latitude:</dt>

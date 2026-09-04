@@ -12,10 +12,10 @@
 				<a href='/Admin/People?objectAction=edit&amp;id={$id}' title='Edit this person' class='btn btn-primary'>
 					Edit
 				</a>
-				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-default'>
+				<a href='/Admin/Marriages?objectAction=add&amp;personId={$id}' title='Add a Marriage' class='btn btn-outline-secondary'>
 					Add Marriage
 				</a>
-				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-default'>
+				<a href='/Admin/Obituaries?objectAction=add&amp;personId={$id}' title='Add an Obituary' class='btn btn-outline-secondary'>
 					Add Obituary
 				</a>
 			</div>
@@ -26,7 +26,7 @@
 	{/if}
 	{* Display Person Image *}
 	<div class="row">
-		<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
+		<div class="col-sm-4 col-md-5 col-lg-4 col-xl-3 text-center">
 				<p>
 			{if $disableCoverArt != 1}
 				<div id="recordcover" class="text-center">
@@ -40,7 +40,7 @@
 				</div>
 			{/if}
 		</div>
-		<div {*id="main-content"*} class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
+		<div {*id="main-content"*} class="col-sm-8 col-md-7 col-lg-8 col-xl-9">
 			{if $person->otherName}
 				<div class='personDetail'><span class='result-label'>Other Names: </span><span class='personDetailValue'>{$person->otherName|escape}</span></div>
 			{/if}

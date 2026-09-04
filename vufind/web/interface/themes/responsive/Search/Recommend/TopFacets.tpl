@@ -10,13 +10,13 @@
 					<ul id="categoryValues" class="row list-unstyled" aria-label="{$cluster.label}">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop" key="i"}
 							{if $thisFacet.isApplied}
-								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} col-tn-offset-1{/if}">
+								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} offset-1{/if}">
 									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
 										<div class="row">
-											<div class="col-xs-6">
+											<div class="col-sm-6">
 												<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape} selected">
 											</div>
-											<div class="col-xs-6 formatCategoryLabel">
+											<div class="col-sm-6 formatCategoryLabel">
 												{$thisFacet.value|escape}
 												<br>(Remove)
 											</div>
@@ -24,13 +24,13 @@
 									</a>
 								</li>
 							{else}
-								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} col-tn-offset-1{/if}">
+								<li class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-2{if $thisFacet.value=="Books" && count($cluster.list) < 6}{* Add offset to first column *} offset-1{/if}">
 									<a href="{$thisFacet.url|escape}">
 										<div class="row">
-											<div class="col-xs-6">
+											<div class="col-sm-6">
 												<img src="{img filename=$thisFacet.imageName}" alt="{translate text=$thisFacet.value|escape}">
 											</div>
-											<div class="col-xs-6 formatCategoryLabel">
+											<div class="col-sm-6 formatCategoryLabel">
 												{translate text=$thisFacet.value|escape}<br>({$thisFacet.count|number_format:0:".":","})
 											</div>
 										</div>
@@ -44,13 +44,13 @@
 			{/if}
 		{elseif stripos($title, 'availability_toggle') !== false}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
-				<div class="col-tn-12">
+				<div class="col-12">
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" aria-label="{$cluster.label}">
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
 								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" aria-pressed="true" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{else}
-								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-outline-secondary" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
 							{/if}
 						{/foreach}
 					</div>

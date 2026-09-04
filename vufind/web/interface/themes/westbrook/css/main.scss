@@ -1,0 +1,36 @@
+// Core variables and mixins
+@import "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive-base";
+
+@include header-login-button-mixin($header-buttons-background-color, $westbrook-black);
+a .header-button {
+  line-height: 50px;
+}
+
+#header-logo {
+  //margin-top: 10px;
+  padding: 0;
+  //background-color: #fff;
+  height: $header-logo-height;
+  //border-radius: 0.5em;
+}
+
+.system-message-header {
+  background-color: $body-bg-resp;
+}
+// Browse Category customizations based on AnyThink
+@include anythink-browse-label($browse-label-text-color);
+
+@include browse-category($selectedCategoryColor);
+
+@include anythink-browse-category-picker($browseCarouselControlColor, $selectedCategoryColor, $content-bg);
+
+@include anythink-selected-browse-label($browse-label-text-color);
+
+
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+@include verticalAlignThumbnailArt();

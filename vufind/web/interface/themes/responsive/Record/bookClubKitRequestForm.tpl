@@ -19,24 +19,24 @@
 		<input type="hidden" name="homeLibraryId" value="{$homeLibraryId}">
 		<input type="hidden" name="recordId" value="{$recordId}">
 		<input type="hidden" name="status" value="Open">
-		<div class="form-group">
-			<label for="title" class="control-label">Title:</label>
+		<div class="mb-3">
+			<label for="title" class="form-label">Title:</label>
 			<input type="text" name="title" id="title" class="form-control" maxlength="255" size="60" readonly aria-readonly="true" value="{$title}">
 		</div>
-		<div class="form-group">
-			<label for="name" class="control-label">Name: <span class="required-input">*</span></label>
+		<div class="mb-3">
+			<label for="name" class="form-label">Name: <span class="required-input">*</span></label>
 			<input type="text" name="name" id="name" class="required form-control" aria-required="true" maxlength="120" size="60" value="{$name}">
 		</div>
-		<div class="form-group">
-			<label for="libraryCardNumber" class="control-label">Library Card Number:</label>
+		<div class="mb-3">
+			<label for="libraryCardNumber" class="form-label">Library Card Number:</label>
 			<input type="text" name="libraryCardNumber" id="libraryCardNumber" class="form-control" maxlength="20" size="20" readonly aria-readonly="true" value="{$libraryCardNumber}">
 		</div>
-		<div class="form-group">
-			<label for="email" class="control-label">E-mail: <span class="required-input">*</span></label>
+		<div class="mb-3">
+			<label for="email" class="form-label">E-mail: <span class="required-input">*</span></label>
 			<input type="text" name="email" id="email" class="required email form-control" aria-required="true" maxlength="120" size="60" value="{$email}">
 		</div>
-		<div class="form-group">
-			<label for="phone" class="control-label">Contact number:</label>
+		<div class="mb-3">
+			<label for="phone" class="form-label">Contact number:</label>
 			<input type="text" name="phone" id="phone" class="form-control" maxlength="30" size="30" value="{$phone}">
 		</div>
 	</form>

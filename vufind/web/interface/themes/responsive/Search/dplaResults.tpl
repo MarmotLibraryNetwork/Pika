@@ -7,7 +7,7 @@
 		{foreach from=$searchResults item=result name="recordLoop"}
 			<div class="dplaResult result">
 				<div class="row {*result-title-row*}">
-					<div class="col-tn-12">
+					<div class="col-12">
 						<h3 class="h4">
 							<span class="result-index">{$smarty.foreach.recordLoop.iteration}.</span>&nbsp;
 							<a class="result-title" href="{$result.link}">{$result.title}</a>
@@ -16,17 +16,17 @@
 				</div>
 				<div class="row">
 					{if $showCovers}
-						<div class="col-tn-4 col-md-2">
+						<div class="col-4 col-lg-2">
 							{if $result.object}
-								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="Thumbnail for '{$result.title}'">
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-fluid" alt="Thumbnail for '{$result.title}'">
 							{/if}
 						</div>
 					{/if}
-					<div class="{if $showCovers}col-tn-8 col-md-10{else}col-tn-12{/if}">
+					<div class="{if $showCovers}col-8 col-lg-10{else}col-12{/if}">
 						{if $result.format}
 							<div class="row">
-								<div class="result-label col-tn-2">{translate text='Format'}:</div>
-								<div class="col-tn-10 result-value">{$result.format|escape}</div>
+								<div class="result-label col-2">{translate text='Format'}:</div>
+								<div class="col-10 result-value">{$result.format|escape}</div>
 							</div>
 						{/if}
 

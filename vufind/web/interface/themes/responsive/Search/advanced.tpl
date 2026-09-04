@@ -19,7 +19,7 @@
 		padding-left: 0;
 	}
 	.group .groupSearchDetails {
-		width: 100%
+		width: 100%;
 		/*text-align: right;*/
 		padding: 3px 5px;
 	}
@@ -62,15 +62,12 @@
 	#groupJoin strong {
 		font-size: 125%;
 	}
-	.keepFilters input {
-		vertical-align: middle;
-	}
 	#facetTable {
 		width: auto;
 		margin-left: auto;
 		margin-right: auto;
 	}
-	#facetTable .form-inline .form-control {
+	#facetTable .range-filter .form-control {
 		width: auto;
 		margin: auto 4px;
 	}
@@ -79,14 +76,13 @@
 <div id="page-content" class="content">
 	<div id="main-content" class="advSearchContent">
 
-		<div class="dropdown pull-right">
-			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		<div class="dropdown float-end">
+			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 				{translate text="Search Tips"}
-				&nbsp;<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
-				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
-				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
+				<li><a href="/Help/Home?topic=advsearch" class="dropdown-item modalDialogTrigger" data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
+				<li><a href="/Help/Home?topic=search" class="dropdown-item modalDialogTrigger" data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
 			</ul>
 		</div>
 
@@ -114,15 +110,15 @@
 					{* An empty div; This is the target for the javascript that builds this screen *}
 					<div id="searchHolder"></div>
 
-					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
-					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-circle"></span>&nbsp;{translate text="Clear Search"}</button>
+					<button class="btn btn-outline-secondary" onclick="addGroup();return false;"><span class="bi bi-plus-lg"></span>&nbsp;{translate text="add_search_group"}</button>
+					<button class="btn btn-outline-secondary" onclick="resetSearch();return false;"><span class="bi bi-x-circle"></span>&nbsp;{translate text="Clear Search"}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
-					<button type="submit" class="btn btn-primary pull-right">{translate text="Find"}</button>
+					<button type="submit" class="btn btn-primary float-end">{translate text="Find"}</button>
 					<br><br>
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
 							<div class="panel panel-default {if !empty($searchFilters)} active{/if}">
-								<a href="#facetPanel" data-toggle="collapse" role="button">
+								<a href="#facetPanel" data-bs-toggle="collapse" role="button">
 									<div class="panel-heading">
 										<h2 class="panel-title">
 											{translate text='Optional Filters'}
@@ -130,7 +126,7 @@
 									</div>
 								</a>
 
-								<div id="facetPanel" class="panel-collapse collapse{if !empty($searchFilters)} in{/if}">
+								<div id="facetPanel" class="panel-collapse collapse{if !empty($searchFilters)} show{/if}">
 									<div class="panel-body">
 
 									<div class="alert alert-info">
@@ -166,12 +162,12 @@
 														<th><label for="{$facetInfo.facetName}">{translate text=$label}:</label></th>
 														<td>
 															{if $facetInfo.facetName == "publishDate"}
-															<div class="form-inline">
-																<div class="form-group">
+															<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																<div class="mb-3 d-flex align-items-center gap-1">
 																	<label for="publishDateyearfrom" class="yearboxlabel">From: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearfrom" id="publishDateyearfrom" value="{$facetInfo.from}">
 																</div>
-																<div class="form-group">
+																<div class="mb-3 d-flex align-items-center gap-1">
 																	<label for="publishDateyearto" class="yearboxlabel">To: </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearto" id="publishDateyearto" value="{$facetInfo.to}">
 																</div>
@@ -185,29 +181,29 @@
 																</div>
 															{elseif $facetInfo.facetName == "lexile_score"}
 																<div id="lexile-range"></div>
-																<div class="form-inline">
-																	<div class="form-group">
+																<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="lexile_scorefrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom" id="lexile_scorefrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="form-group">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="lexile_scoreto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto" id="lexile_scoreto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
-																<div class="form-inline">
-																	<div class="form-group">
+																<div class="range-filter d-flex flex-wrap align-items-center gap-2">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="{$facetInfo.from}">
 																	</div>
-																	<div class="form-group">
+																	<div class="mb-3 d-flex align-items-center gap-1">
 																		<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To: </label>
 																		<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="{$facetInfo.to}">
 																	</div>
 																</div>
 															{else}
-																<select id="{$facetInfo.facetName}" name="filter[]" class="form-control">
+																<select id="{$facetInfo.facetName}" name="filter[]" class="form-select">
 																	{foreach from=$facetInfo.values item="value" key="display"}
 																		{if strlen($display) > 0}
 																			<option value="{$value.filter|escape}"{if $value.selected && !empty($value.filter)} selected="selected"{/if}>{$display|escape|truncate:80}</option>
@@ -221,7 +217,7 @@
 											{/if}
 
 										</table>
-										<button type="submit" class="btn btn-primary pull-right">{translate text="Find"}</button>
+										<button type="submit" class="btn btn-primary float-end">{translate text="Find"}</button>
 									</div>
 								</div>
 							</div>

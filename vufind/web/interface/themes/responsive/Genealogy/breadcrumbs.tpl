@@ -1,5 +1,6 @@
 {if $searchId}
-	<li>Genealogy {translate text="Search"} <span class="divider">&raquo;</span> {$lookfor|capitalize|escape:"html"} <span class="divider">&raquo;</span></li>
+	<li class="breadcrumb-item">Genealogy {translate text="Search"}</li>
+	<li class="breadcrumb-item active" aria-current="page">{$lookfor|capitalize|escape:"html"}</li>
 {elseif $pageTemplate!=""}
-	<li>{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate} <span class="divider">&raquo;</span></li>
+	<li class="breadcrumb-item active" aria-current="page">{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate}</li>
 {/if}

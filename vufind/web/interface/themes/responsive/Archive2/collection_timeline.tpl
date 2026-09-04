@@ -1,5 +1,5 @@
 {strip}
-	<div class="col-xs-12">
+	<div class="col-sm-12">
 		{include file="Archive2/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
@@ -9,15 +9,15 @@
 
 		{if $thumbnail}
 		<div class="row">
-			<div class="col-xs-12">
-				<img src="{$thumbnail}" class="img-responsive thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
+			<div class="col-sm-12">
+				<img src="{$thumbnail}" class="img-fluid thumbnail collection-thumbnail-float-left" alt="{$title|escape}">
 				{$description}
 				<div class="clearfix"></div>
 			</div>
 		</div>
 		{elseif $description}
 		<div class="row">
-			<div class="col-xs-12">{$description}</div>
+			<div class="col-sm-12">{$description}</div>
 		</div>
 		{/if}
 

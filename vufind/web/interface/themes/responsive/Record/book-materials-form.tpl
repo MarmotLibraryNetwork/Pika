@@ -8,20 +8,20 @@
 		<input type="hidden" name="id" value="{$id|replace:'ils:':''}">
 	<fieldset>
 		<div class="row">
-			{*<div class="form-group col-sm-5">*}
-			<div class="form-group col-sm-6 col-sm-offset-3">
-				<label for="startDate" class="control-label">Start Date</label>
+			{*<div class="mb-3 col-md-5">*}
+			<div class="mb-3 col-md-6 offset-md-3">
+				<label for="startDate" class="form-label">Start Date</label>
 				<div class="input-group">
 					<input id="startDate" name="startDate" type="text" class="form-control required" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.startDate} value="{$smarty.request.startDate}" {/if}
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#startDate').datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-sm-5 ui-front">
-				<label for="startTime" class="control-label">Start Time</label>
+			{*<div class="mb-3 col-md-5 ui-front">
+				<label for="startTime" class="form-label">Start Time</label>
 				<input id="startTime" name="startTime" type="text" class="form-control bookingTime required"  placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.startTime} value="{$smarty.request.startTime}" {/if}
 								>
@@ -30,21 +30,21 @@
 		</div>
 		<hr>
 		<div class="row">
-			{*<div class="form-group col-sm-5">*}
-			<div class="form-group col-sm-6 col-sm-offset-3">
+			{*<div class="mb-3 col-md-5">*}
+			<div class="mb-3 col-md-6 offset-md-3">
 
-			<label for="endDate" class="control-label" >End Date</label>
-				<div class="input-group input-append date">
+			<label for="endDate" class="form-label" >End Date</label>
+				<div class="input-group date">
 					<input id="endDate" name="endDate" type="text" class="form-control" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.endDate} value="{$smarty.request.endDate}" {/if}
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
 					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
-					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
+					<span class="input-group-text"><span class="bi bi-calendar3" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
 			</div>
-			{*<div class="form-group col-sm-5 ui-front">
-				<label for="endTime" class="control-label">End Time</label>
+			{*<div class="mb-3 col-md-5 ui-front">
+				<label for="endTime" class="form-label">End Time</label>
 				<input id="endTime" name="endTime" type="text" class="form-control bookingTime required" placeholder="{$smarty.now|date_format:'%l:%M%p'|lower}"
 				       {if $smarty.request.endTime} value="{$smarty.request.endTime}" {/if}
 								>
@@ -54,11 +54,11 @@
 </form>
 	<hr>
 	<div class="row">
-		<button id="calendarButton" class="btn btn-info center-block" type="button" data-toggle="collapse" data-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
+		<button id="calendarButton" class="btn btn-info d-block mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#bookingCalendar" aria-expanded="false" aria-controls="bookingCalendar" style="display: none; margin-bottom: 10px;">
 			Show/Hide Hourly Calendar
 		</button>
 
-		<div class="col-xs-10 col-xs-offset-1">
+		<div class="col-sm-10 offset-sm-1">
 			<style>
 				#bookingCalendar table td.active {ldelim} {* muted text applied to closed and unavailable times. *}
 					color: #999999;
@@ -88,10 +88,10 @@
 					Pika.Record.submitBookMaterialForm();
 				},
 				highlight: function(e){
-					$(e).closest('.form-group').addClass('has-error')
+					$(e).closest('.mb-3').addClass('has-error')
 				},
 				unhighlight: function(e){
-					$(e).closest('.form-group').removeClass('has-error')
+					$(e).closest('.mb-3').removeClass('has-error')
 				}
  			});
 

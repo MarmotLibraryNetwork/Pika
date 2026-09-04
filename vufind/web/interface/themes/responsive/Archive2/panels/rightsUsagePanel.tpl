@@ -1,6 +1,6 @@
 {* Not part of the Library Archive More Details settings. This panel predates the section-based accordion and is not currently referenced. *}
 {strip}
-	<div class="panel" id="rightsUsagePanel"><a data-toggle="collapse" href="#rightsUsagePanelBody">
+	<div class="panel" id="rightsUsagePanel"><a data-bs-toggle="collapse" href="#rightsUsagePanelBody">
 			<div class="panel-heading">
 				<h2 class="panel-title">Rights & Usage</h2>
 			</div>
@@ -10,8 +10,8 @@
 				{include file="Archive2/partials/fieldRow.tpl" label="Rights" value=$rights}
 				{if $rights_creator || $debugDetails}
 					<div class="row archive-field-row">
-						<div class="result-label col-sm-4">Rights Creator: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Rights Creator: </div>
+						<div class="result-value col-md-8">
 							{if $rights_creator}
 								{foreach from=$rights_creator item=creator name=creatorLoop}
 									{if $creator.vocabulary eq 'corporate_body' && $creator.tid}
@@ -31,8 +31,8 @@
 				{include file="Archive2/partials/fieldRow.tpl" label="Rights Expiration" value=$rights_expiration}
 				{if $rights_holder || $debugDetails}
 					<div class="row archive-field-row">
-						<div class="result-label col-sm-4">Rights Holder: </div>
-						<div class="result-value col-sm-8">
+						<div class="result-label col-md-4">Rights Holder: </div>
+						<div class="result-value col-md-8">
 							{if $rights_holder}
 								{foreach from=$rights_holder item=holder name=holderLoop}
 									{if $holder.vocabulary eq 'corporate_body' && $holder.tid}

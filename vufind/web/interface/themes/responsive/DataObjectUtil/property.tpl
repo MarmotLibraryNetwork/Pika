@@ -4,35 +4,35 @@
 	{assign var=propValue value=$property.default}
 {/if}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
-	<div class="form-group" id="propertyRow{$propName}">
+	<div class="mb-3" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
 			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}
 				{if $property.required}<span class="required-input">*</span>{/if}
 				{if $property.isIndexingSetting}
-					&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+					&nbsp;<span class="bi bi-clock" aria-hidden="true" title="This setting is a change to indexing"></span>
 				{/if}
 			</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
-			<div class="col-xs-11">
+			<div class="col-sm-11">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
 					{if $property.isIndexingSetting}
-						&nbsp;<span class="glyphicon glyphicon-time" title="This setting is a change to indexing"></span>
+						&nbsp;<span class="bi bi-clock" title="This setting is a change to indexing"></span>
 					{/if}
 			</div>
-			<div class="col-xs-1">
-				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
+			<div class="col-sm-1">
+				<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon bi bi-question-circle-fill" title="Help" aria-hidden="true"></span></a>
 			</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'checkboxWarn' && $property.type != 'header'}
 			{if !empty($property.helpLink)}
 				<div class="row">
-					<div class="col-xs-11">
+					<div class="col-sm-11">
 						<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
 					</div>
-					<div class="col-xs-1">
-						<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
+					<div class="col-sm-1">
+						<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon bi bi-question-circle-fill" title="Help" aria-hidden="true"></span></a>
 					</div>
 				</div>
 			{else}
@@ -40,7 +40,7 @@
 					{$property.label}
 					{if $property.required}<span class="required-input">*</span>{/if}
 					{if $property.isIndexingSetting}
-						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+						&nbsp;<span class="bi bi-clock" aria-hidden="true" title="This setting is a change to indexing"></span>
 					{/if}
 				</label>
 			{/if}
@@ -48,21 +48,21 @@
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
-				<div class="panel panel-default">
+				<div class="panel panel-default{if $property.open} active{/if}">
 					<div class="panel-heading row">
-						<div class="panel-title col-tn-11">
-							<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
+						<div class="panel-title col-11">
+							<a data-bs-toggle="collapse" data-bs-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
 								{$property.label}
 							</a>
 						</div>
 						{if $property.helpLink}
-							<div class="col-tn-1">
-								<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon glyphicon glyphicon-question-sign" title="Help" aria-hidden="true"></span></a>
+							<div class="col-1">
+								<a href="{$property.helpLink}" aria-label="Help Link" target="_blank"><span class="help-icon bi bi-question-circle-fill" title="Help" aria-hidden="true"></span></a>
 							</div>
 						{/if}
 					</div>
 
-					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse {if $property.open}active{else}collapse{/if}">
+					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse collapse{if $property.open} show{/if}">
 						<div class="panel-body">
 							{if $property.instructions}
 								<div class="alert alert-info">
@@ -168,7 +168,7 @@
 
 			{* Display a table of the association with the ability to add and edit new values *}
 			<div class="row">
-				<div class="col-md-12 custom-file">
+				<div class="col-lg-12 custom-file">
 					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input">
 					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}
 				</div>
@@ -177,8 +177,8 @@
 			<div class="row">
 				<br>
 
-				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
-				<div class="col-md-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
+				<div class="col-lg-2"><label for="fileName" class="label-left">File Name</label></div>
+				<div class="col-lg-7"><input type="text" id="fileName" name="fileName" value="{$propValue}" class="form-control"></div>
 
 			</div>
 			{/if}
@@ -219,7 +219,7 @@
 					})
 						.done(function (data) {
 							if (data.exists == "true") {
-								$("<br><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+								$("<br><div class='row'><div class='col-lg-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
 								$("#overWriteOverRide").change(function() {
@@ -241,7 +241,7 @@
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
 					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {if $property.boldTheLabel}<strong>{/if}{$property.label}{if $property.boldTheLabel}</strong>{/if}
 					{if $property.isIndexingSetting}
-						&nbsp;<span class="glyphicon glyphicon-time" aria-hidden="true" title="This setting is a change to indexing"></span>
+						&nbsp;<span class="bi bi-clock" aria-hidden="true" title="This setting is a change to indexing"></span>
 					{/if}
 				</label>
 			</div>
@@ -253,7 +253,7 @@
 						$(varSelectorId).prop('checked',false);
 						Pika.confirm("{$property.warning}. This cannot be undone. Please make sure you are aware of the risks before saving", function(){ldelim}
 							$(varSelectorId).prop('checked',true);
-							$('.modal-footer button.btn-default').click();
+							$('.modal-footer button.btn-outline-secondary').click();
                 {rdelim});
               {rdelim}
             {rdelim});
@@ -269,5 +269,5 @@
 {/if}
 
 {if $property.showDescription}
-	<div class="well well-sm">{$property.description}</div>
+	<div class="card"><div class="card-body p-2">{$property.description}</div></div>
 {/if}

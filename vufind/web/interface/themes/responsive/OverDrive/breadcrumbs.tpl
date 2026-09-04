@@ -1,23 +1,21 @@
-{strip}&nbsp;
+{strip}
 	{* Prefer the results url rebuilt from this record's own saved search over lastsearch, the
 	   last search made anywhere in the session - see SearchObject_Solr::getNextPrevLinks().
 	   Keep in step with GroupedWork/search-results-navigation.tpl, which links to the same place. *}
 	{assign var="returnToSearchUrl" value=$searchResultsUrl|default:$lastsearch}
-	<li>
+	<li class="breadcrumb-item">
 		{if $returnToSearchUrl}
 			<a href="{$returnToSearchUrl|escape}#record{$id|escape:"url"}">{translate text="Return to Search Results"}</a>
-			<span class="divider">&raquo;</span>
 		{else}
 			Catalog
 		{/if}
 	</li>
 	{if $recordDriver}
-		<li>
-			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" aria-current="page">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
-			<span class="divider">&raquo;</span>
+		<li class="breadcrumb-item active" aria-current="page">
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}">{$recordDriver->getBreadcrumb()|truncate:30:"..."|escape}</a>
 		</li>
-		<li>
-		&nbsp;<em>{$groupedWorkDriver->getFormatCategory()}</em>{/if}
-	<span class="divider">&raquo;</span>
-	</li>
+		<li class="breadcrumb-item">
+			<em>{implode subject=$recordDriver->getFormats() glue=", "}</em>
+		</li>
+	{/if}
 {/strip}
