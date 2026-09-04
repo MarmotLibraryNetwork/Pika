@@ -130,7 +130,7 @@ class MyAccount_CheckedOut extends MyAccount{
 						$sortKey =  $curTitle['user'] . '-' . $sortTitle;
 					}
 					$sortKey = strtolower($sortKey);
-					$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
+					$sortKey = mb_convert_encoding($sortKey . '-' . $curTransaction, 'UTF-8', 'ISO-8859-1');
 
 					$itemBarcode = $curTitle['barcode'] ?? null;
 					$itemId      = $curTitle['itemid'] ?? null;

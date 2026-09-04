@@ -25,7 +25,6 @@ require_once ROOT_DIR . '/sys/Islandora2/CollectionObject.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
-require_once ROOT_DIR . '/sys/Pager.php';
 
 use Islandora2\CollectionObject;
 use Islandora2\I2ObjectFactory;
@@ -107,7 +106,7 @@ class Collection extends ArchiveObject
 
     /**
      * Fetches a paginated page of child objects for the collection and assigns
-     * them — along with pager links and record-count metadata — to the template.
+     * them — along with pager and record-count metadata — to the template.
      *
      * @param int $nid Node ID of the parent collection.
      */
@@ -134,18 +133,13 @@ class Collection extends ArchiveObject
             ];
         }
 
-        $pager = new \VuFindPager([
-            'totalItems' => $total,
-            'fileName'   => '/Archive2/Collection/' . $nid . '?page=%d',
-            'perPage'    => $limit,
-        ]);
-
         $interface->assign('collectionChildren', $collectionChildren);
         $interface->assign('recordCount',  $total);
         $interface->assign('recordStart',  ($page - 1) * $limit + 1);
         $interface->assign('recordEnd',    min($page * $limit, $total));
         $interface->assign('page',         $page);
-        $interface->assign('pageLinks',    $pager->getLinks());
+        $interface->assign('pageCount',    (int)ceil($total / $limit));
+        $interface->assign('pagerUrlTemplate', '/Archive2/Collection/' . $nid . '?page=%d');
     }
 
     /**
@@ -324,7 +318,7 @@ class Collection extends ArchiveObject
                 $title    = '';
                 $srcNid   = 0;
                 if ($source instanceof CollectionObject) {
-                    $children = $this->resolveOrderedChildren($source, self::SCROLLER_ITEM_LIMIT);
+                    $children = $source->getOrderedChildObjects(self::SCROLLER_ITEM_LIMIT);
                     foreach ($children as $obj) {
                         $items[] = [
                             'nid'       => $obj->getNodeId(),
@@ -358,11 +352,10 @@ class Collection extends ArchiveObject
                 if ($childNid > 0) {
                     $childCollection = $factory->fromNodeId($childNid);
                     if ($childCollection instanceof CollectionObject) {
-                        // Titles are ordered by each child's field_weight (the
-                        // per-item ordering set in the Islandora admin). usort is
-                        // stable on PHP 8, so equal/zero weights keep API order.
-                        $children = $childCollection->getChildObjects();
-                        usort($children, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
+                        // Titles follow the same curator-defined order as the rest of
+                        // the collection: field_pika_coll_order first, falling back to
+                        // field_weight for any members it doesn't name.
+                        $children = $childCollection->getOrderedChildObjects();
                         $childItems = [];
                         foreach ($children as $obj) {
                             $childItems[] = [
@@ -380,30 +373,18 @@ class Collection extends ArchiveObject
                 }
 
             } elseif ($type === 'randomImage') {
-                $sourceNids = !empty($parts[1])
+                $sourceNids   = !empty($parts[1])
                     ? array_map('trim', explode(',', $parts[1]))
                     : [$nid];
-                $randomNid    = (int)$sourceNids[array_rand($sourceNids)];
-                $randomSource = $factory->fromNodeId($randomNid);
-                if ($randomSource instanceof CollectionObject) {
-                    $total = $randomSource->getTotalChildCount();
-                    if ($total > 0) {
-                        // number=1 means page N is item N, giving a uniform random pick across all children
-                        $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
-                        if (!empty($response['children'])) {
-                            $randomObj = $factory->fromNode($response['children'][0]);
-                            if ($randomObj) {
-                                $thumb = $randomObj->getThumbnail();
-                                $randomImageComponents[] = [
-                                    'object' => [
-                                        'title'     => $randomObj->getTitle(),
-                                        'url'       => getObjRelativeUrl($randomObj),
-                                        'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
-                                    ],
-                                ];
-                            }
-                        }
-                    }
+                $randomObject = self::pickRandomChildImage($sourceNids);
+                if ($randomObject !== null) {
+                    $randomImageComponents[] = [
+                        // Distinguishes multiple randomImage components on one page
+                        // (each targets its own placeholder for the reload button).
+                        'id'         => $nid . '_' . count($randomImageComponents),
+                        'sourceNids' => implode(',', $sourceNids),
+                        'object'     => $randomObject,
+                    ];
                 }
 
             } elseif ($type === 'browseAllObjects') {
@@ -498,6 +479,79 @@ class Collection extends ArchiveObject
     }
 
     /**
+     * Picks a random child object from across one or more candidate collections
+     * and returns the display data for the "random image" component. Shared by
+     * loadCustomComponents() (initial page render) and
+     * Archive2_AJAX::getRandomImageComponent() (the reload button), so both pick
+     * from the same logic.
+     *
+     * Each candidate collection's chance of being chosen is weighted by its child
+     * count, so every child across every candidate collection is equally likely to
+     * be picked — picking the collection uniformly first would badly
+     * over-represent children of a small collection (e.g. one of three) against a
+     * large one (e.g. thousands). Candidates that fail to load, have no children,
+     * or fail the subsequent fetch are dropped and the remaining weighted
+     * candidates are tried before giving up, so one empty or briefly-erroring
+     * collection in the list doesn't turn every other reload into a dead end.
+     *
+     * @param int[] $sourceNids Candidate collection node ids.
+     * @return array{title: string, url: string, thumbnail: string}|null Null if no
+     *                          candidate collection has any children.
+     */
+    public static function pickRandomChildImage(array $sourceNids): ?array
+    {
+        $factory = new I2ObjectFactory();
+
+        $candidates = []; // nid => total child count
+        foreach (array_unique(array_map('intval', $sourceNids)) as $candidateNid) {
+            if ($candidateNid <= 0) {
+                continue;
+            }
+            $candidateSource = $factory->fromNodeId($candidateNid);
+            if (!($candidateSource instanceof CollectionObject)) {
+                continue;
+            }
+            $total = $candidateSource->getTotalChildCount();
+            if ($total > 0) {
+                $candidates[$candidateNid] = $total;
+            }
+        }
+
+        while (!empty($candidates)) {
+            $weightTotal = array_sum($candidates);
+            $pick        = rand(1, $weightTotal);
+            $randomNid   = 0;
+            foreach ($candidates as $candidateNid => $total) {
+                $pick -= $total;
+                if ($pick <= 0) {
+                    $randomNid = $candidateNid;
+                    break;
+                }
+            }
+            $total = $candidates[$randomNid];
+            unset($candidates[$randomNid]);
+
+            // number=1 means page N is item N, giving a uniform random pick across all children
+            $response = (new Request())->fetchChildren($randomNid, rand(1, $total), 1);
+            if (empty($response['children'])) {
+                continue;
+            }
+            $randomObj = $factory->fromNode($response['children'][0]);
+            if (!$randomObj) {
+                continue;
+            }
+            $thumb = $randomObj->getThumbnail();
+            return [
+                'title'     => $randomObj->getTitle(),
+                'url'       => getObjRelativeUrl($randomObj),
+                'thumbnail' => $thumb ? $thumb->thumbnailUrl : '',
+            ];
+        }
+
+        return null;
+    }
+
+    /**
      * Builds an Archive2 search-results URL filtered to a single facet value and
      * scoped to the given collection (members of $nid).
      *
@@ -585,20 +639,6 @@ class Collection extends ArchiveObject
     }
 
     /**
-     * Resolves the ordered list of child objects to show for a collection.
-     *
-     * The curator-defined `field_pika_coll_order` drives both membership and
-     * order: nodes it names come first, in that order. Some migrated sub-
-     * collections have no membership at all and exist only as an order list, so
-     * a named node that isn't a member is fetched directly by id. Any members
-     * not named in the order list are appended in API order. When no order is
-     * configured, the membership children are returned as-is.
-     *
-     * @param CollectionObject $source Collection whose children to resolve.
-     * @param int|null         $cap    Maximum items to return, or null for all.
-     * @return array Ordered I2Object instances.
-     */
-    /**
      * Expand a list of collection nids with every collection nested inside them,
      * so maps aggregate markers from the nested collections' children too.
      *
@@ -669,32 +709,5 @@ class Collection extends ArchiveObject
             fn($n) => $n > 0
         ));
         return empty($nids) ? [$defaultNid] : $nids;
-    }
-
-    private function resolveOrderedChildren(CollectionObject $source, ?int $cap): array
-    {
-        $members = [];
-        foreach ($source->getChildObjects() as $obj) {
-            $members[$obj->getNodeId()] = $obj;
-        }
-
-        $factory = new I2ObjectFactory();
-        $ordered = [];
-        foreach ($source->getCollectionOrder() as $oid) {
-            if (isset($members[$oid])) {
-                $ordered[] = $members[$oid];
-                unset($members[$oid]);
-            } else {
-                $obj = $factory->fromNodeId($oid);
-                if ($obj !== null) {
-                    $ordered[] = $obj;
-                }
-            }
-            if ($cap !== null && count($ordered) >= $cap) {
-                return $ordered;
-            }
-        }
-        $ordered = array_merge($ordered, array_values($members));
-        return $cap !== null ? array_slice($ordered, 0, $cap) : $ordered;
     }
 }

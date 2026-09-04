@@ -1,8 +1,7 @@
-{* This template doesn't use taxonomy_wrapper.tpl *}
 {strip}
 	<div class="row">
 		<div class="col-sm-12">
-			{include file="Archive/search-results-navigation.tpl"}
+			{include file="Archive2/search-results-navigation.tpl"}
 			<h1 role="heading" aria-level="1" class="h2">{$term_title}</h1>
 		</div>
 	</div>
@@ -30,12 +29,13 @@
 			<div class="taxonomy-description">
 				{$term_description}
 			</div>
-
 		</div>
 	</div>
 {/if}
 
-<div class=" taxonomy-detail taxonomy-person">
+	{include file="Archive2/taxonomy_tools.tpl"}
+
+	<div class=" taxonomy-detail taxonomy-person">
 	<div id="more-details-accordion" class="panel-group">
 
 		{if $wikipediaData}
@@ -214,6 +214,7 @@
 
 		</div>
 	</div>
+
 	{include file="Archive2/panels/taxonomy_metadata_panel.tpl"}
 
 	<script>

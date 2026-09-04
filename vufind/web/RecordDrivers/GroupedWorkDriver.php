@@ -327,7 +327,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$interface->assign('relatedManifestations', $relatedManifestations);
 
 		//Build the link URL.
-		//If there is only one record for the work we will link straight to that.
+		//If there is only one record for the work, we will link straight to that.
 		$linkUrl = $this->getMoreInfoLinkUrl();
 		$linkUrl .= '?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('recordIndex') . '&amp;page=' . $interface->getTemplateVars('page');
 
@@ -475,7 +475,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
 		$interface->assign('summId', $id);
-		if (substr($id, 0, 1) == '.'){
+		if (str_starts_with($id, '.')){
 			$interface->assign('summShortId', substr($id, 1));
 		}else{
 			$interface->assign('summShortId', $id);
@@ -486,7 +486,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory("Loaded related manifestations for {$this->getUniqueID()}");
 
 		//Build the link URL.
-		//If there is only one record for the work we will link straight to that.
+		//If there is only one record for the work, we will link straight to that.
 		$relatedRecords = $this->getRelatedRecords();
 		$timer->logTime('Loaded related records');
 		$memoryWatcher->logMemory('Loaded related records');
@@ -495,6 +495,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     = $firstRecord['url'];
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
 			$linkUrl     .= '?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('resultIndex') . '&amp;page=' . $interface->getTemplateVars('page');
+			$linkUrl .= '&amp;searchSource=' . $interface->getTemplateVars('searchSource');
 		}else{
 			//We use resultIndex here instead of recordIndex to fix a previous/next button display issue
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->getTemplateVars('searchId') . '&amp;recordIndex=' . $interface->getTemplateVars('resultIndex') . '&amp;page=' . $interface->getTemplateVars('page');
@@ -1343,6 +1344,10 @@ class GroupedWorkDriver extends RecordInterface {
 	private $relatedRecords = null;
 	private $relatedItemsByRecordId = null;
 
+	/**
+	 * @param $forCovers
+	 * @return array|null
+	 */
 	public function getRelatedRecords($forCovers = false){
 		$this->loadRelatedRecords($forCovers);
 		return $this->relatedRecords;
@@ -1357,6 +1362,12 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * Populate all the Related Records data for this Grouped Work.
+	 *
+	 * @param $forCovers  bool When loading related records for cover generation, some data population can be skipped
+	 * @return void
+	 */
 	private function loadRelatedRecords($forCovers = false){
 		global $timer;
 		global $memoryWatcher;
@@ -1410,7 +1421,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			//Sort the records based on format and then edition
-			uasort($relatedRecords, [$this, "compareRelatedRecords"]);
+			uasort($relatedRecords, [$this, 'compareRelatedRecords']);
 
 			$this->relatedRecords = $relatedRecords;
 			$timer->logTime("Finished loading related records {$this->getUniqueID()}");
@@ -1420,6 +1431,9 @@ class GroupedWorkDriver extends RecordInterface {
 	/**
 	 * The vast majority of record information is stored within the index.
 	 * This routine parses the information from the index and restructures it for use within the user interface.
+	 *
+	 * A manifestation is a collection of records and editions for the work that all have the same format.
+	 * For eContent, the manifestation is also confined to the same eContent source as well as the same format.
 	 *
 	 * @return array|null
 	 */
@@ -3499,23 +3513,36 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private function getSchemaOrgType($pikaFormat){
 		switch ($pikaFormat){
+			case 'Adult Literacy Book':
 			case 'Audio':
 			case 'Audio Book':
 			case 'Audio Cassette':
 			case 'Audio CD':
+			case 'Board Book':
 			case 'Book':
 			case 'Book Club Kit':
+			case 'Book with Audio CD':
+			case 'Book with CD-ROM':
+			case 'Book with DVD':
+			case 'Book with DVD-ROM':
+			case 'Braille':
+			case 'CD':
+			case 'Easy Reader':
+			case 'Easy Reader eBook':
 			case 'eAudiobook':
 			case 'eBook':
 			case 'eMagazine':
-			case 'CD':
+			case 'Illustrated Edition':
 			case 'Journal':
 			case 'Large Print':
 			case 'Manuscript':
+			case 'MP3 Audio CD':
 			case 'Musical Score':
 			case 'Newspaper':
 			case 'Playaway':
+			case 'Read-Along Book':
 			case 'Serial':
+			case 'Yoto Story Card':
 				return 'Book';
 
 			case 'eComic':
@@ -3523,12 +3550,19 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'ComicStory';
 
 			case 'eMusic':
+			case 'Music Cassette':
+			case 'Music CD':
+			case 'Music CD With Blu-Ray':
+			case 'Music CD With DVD':
 			case 'Music Recording':
 			case 'Phonograph':
+			case 'Yoto Music Card':
 				return 'MusicRecording';
 
 			case 'Blu-ray':
+			case 'Blu-Ray/4K Ultra HD Blu-Ray Combo Pack':
 			case 'DVD':
+			case 'DVD Blu-ray Combo Pack':
 			case 'eVideo':
 			case 'VHS':
 			case 'Video':
@@ -3550,13 +3584,21 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Xbox 360':
 			case 'Xbox 360 Kinect':
 			case 'Xbox One':
+			case 'Xbox Series X':
 				return 'Game';
 
 			case 'Web Content':
+			case 'Online Materials':
+			case 'Digital Newspaper':
 				return 'WebPage';
 
 			default:
 				$this->logger->info("No schema.org format set for $pikaFormat");
+			case 'Kit':
+			case 'Microfilm':
+			case 'Physical Object':
+			case 'Slide':
+			case 'Resource Kit':
 				return 'CreativeWork';
 		}
 	}
@@ -3580,6 +3622,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'eBook':
 			case 'eComic':
 			case 'eMagazine':
+			case 'Easy Reader eBook':
 				return 'EBook';
 
 			case 'Graphic Novel':
@@ -3587,7 +3630,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'Paperback';
 
 			default:
-				$this->logger->info('No schema.org book format set for ' . $pikaFormat);
+				//$this->logger->info('No schema.org book format set for ' . $pikaFormat);
 			case 'Book Club Kit':
 			case 'Read-Along Book':
 			case 'Newspaper':

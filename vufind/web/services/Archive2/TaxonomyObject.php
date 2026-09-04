@@ -104,19 +104,18 @@ class TaxonomyObject extends \Action
         $interface->assign('vocabulary_name',        $this->taxonomyObject->getVocabularyName());
         $vocabularyMachineName = $this->taxonomyObject->getVocabularyMachineName();
         $interface->assign('vocabulary_machine_name', $vocabularyMachineName);
-        $vocabularyLabels = [
-            'corporate_body' => 'Organization',
-            'person'         => 'Person',
-            'place'          => 'Place',
-            'event'          => 'Event',
-        ];
-        $interface->assign('vocabulary_label', $vocabularyLabels[$vocabularyMachineName] ?? ucwords(str_replace('_', ' ', $vocabularyMachineName)));
+        $interface->assign('vocabulary_label', \getTaxonomyVocabularyLabel($vocabularyMachineName));
+        // The id the Add to favorites button hands back to Archive2 AJAX. It matches what
+        // Islandora2TaxonomyTermDriver::getUniqueID() emits in search results, so both routes
+        // into showSaveToListForm() normalize to the same stored tax_{vocabulary}:{tid}.
+        $interface->assign('termListEntryDomId', 'islandora2-term-' . ($vocabularyMachineName ?: 'term') . '-' . $this->taxonomyObject->getTid());
         $interface->assign('is_shown_in_search',     $this->taxonomyObject->isShownInSearch());
         $interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
         $interface->assign('pid',                    $this->taxonomyObject->getPid());
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());
         $interface->assign('lastsearch',             $_SESSION['lastArchive2SearchURL'] ?? false);
+        \assignArchive2SearchResultsNavigation();
         $interface->assign('archivePage',            true);
         $interface->assign('showExploreMore',        true);
         $interface->assign('maps_key',               $mapsKey);

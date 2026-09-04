@@ -17,8 +17,11 @@
 	<hr>
 	<div class="row">
 		<div class="mb-3 col-md-4 d-flex flex-wrap align-items-center gap-2" id="sortOptions">
-			<label for="sort" class="col-form-label">Sort Lists By</label>
-			<select class="sortMethod form-select w-auto" id="sort" name="sort">
+			{* Named listsSort rather than sort: this orders the lists themselves, while FavoriteHandler
+			   reads a "sort" parameter to order the entries within one list. Both accept "title", so a
+			   shared name let this page's value silently re-sort an exported spreadsheet. *}
+			<label for="listsSort" class="col-form-label">Sort Lists By</label>
+			<select class="sortMethod form-select w-auto" id="listsSort" name="listsSort">
 					{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 						<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 					{/foreach}
@@ -189,10 +192,10 @@
 			});
 
 			// Add event listener for click to sort options
-			$('#sort').on('click', function(){
+			$('#listsSort').on('click', function(){
 				let val = checkSelectedOption(this);
 				if(val !== null) {
-						Pika.Account.changeAccountSort(val, 'sort');
+						Pika.Account.changeAccountSort(val, 'listsSort');
 				}
 			}).on('keypress', function(e){
 				// Add event listener for keypress (accessibility)

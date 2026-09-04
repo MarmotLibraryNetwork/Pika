@@ -192,7 +192,7 @@ GROUP BY t2.ilsId
 //	const string itemRecordtag = '989';
 	const string itemRecordTag = '949';
 	const string itemBarcodeSubfield = 'p';
-	function getBibIdFromItemBarcode(array $itemBarcodes = null){
+	function getBibIdFromItemBarcode(?array $itemBarcodes = null){
 		// Use the array below if the passed in parameter for $itemBarcodes is null
 		$itemBarcodes ??= [
 

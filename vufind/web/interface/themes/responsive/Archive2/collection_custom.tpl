@@ -1,6 +1,6 @@
 {strip}
 <div class="col-sm-12">
-	{include file="Archive/search-results-navigation.tpl"}
+	{include file="Archive2/search-results-navigation.tpl"}
 	<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
 	{if $can_view == false}
@@ -18,7 +18,7 @@
 	{if $randomImageComponents}
 		<div {if $thumbnail}class="col-sm-6 text-center"{else}class="col-sm-12 text-center"{/if}>
 		{foreach from=$randomImageComponents item=random}
-			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object}
+			{include file="Archive2/components/random_image_component.tpl" randomObject=$random.object id=$random.id sourceNids=$random.sourceNids}
 		{/foreach}
 		</div>
 	{/if}
@@ -92,27 +92,27 @@
 		</div>
 	{/if*}
 
-	{if $browseSubjectComponents}
-		<div class="row">
-			{foreach from=$browseSubjectComponents item=subjectBox}
-				{include file="Archive2/components/browse_subjects_component.tpl"
-					browseSubjectsTitle=$subjectBox.title
-					browseSubjectsImage=$subjectBox.image
-					browseSubjectsItems=$subjectBox.items
-					browseSubjectsId=$subjectBox.id}
-			{/foreach}
-		</div>
-	{/if}
+	{if $browseSubjectComponents || $browseRelatedComponents}
+		<div class="row browseButtonsRow">
+			{if $browseSubjectComponents}
+				{foreach from=$browseSubjectComponents item=subjectBox}
+					{include file="Archive2/components/browse_subjects_component.tpl"
+						browseSubjectsTitle=$subjectBox.title
+						browseSubjectsImage=$subjectBox.image
+						browseSubjectsItems=$subjectBox.items
+						browseSubjectsId=$subjectBox.id}
+				{/foreach}
+			{/if}
 
-	{if $browseRelatedComponents}
-		<div class="row">
-			{foreach from=$browseRelatedComponents item=relatedBox}
-				{include file="Archive2/components/browse_related_component.tpl"
-					browseRelatedTitle=$relatedBox.title
-					browseRelatedImage=$relatedBox.image
-					browseRelatedItems=$relatedBox.items
-					browseRelatedId=$relatedBox.id}
-			{/foreach}
+			{if $browseRelatedComponents}
+				{foreach from=$browseRelatedComponents item=relatedBox}
+					{include file="Archive2/components/browse_related_component.tpl"
+						browseRelatedTitle=$relatedBox.title
+						browseRelatedImage=$relatedBox.image
+						browseRelatedItems=$relatedBox.items
+						browseRelatedId=$relatedBox.id}
+				{/foreach}
+			{/if}
 		</div>
 	{/if}
 

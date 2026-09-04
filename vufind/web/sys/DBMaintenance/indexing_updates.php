@@ -234,6 +234,22 @@ function getIndexingUpdates(): array{
 			],
 		],
 
+		'2026.03.0_add_tonie_format' => [
+			'release'         => '2026.03.0',
+			'title'           => 'Add Tonie Format',
+			'description'     => 'Add Tonie format to translation maps',
+			'continueOnError' => true,
+			'sql'             => [
+				"INSERT INTO `translation_map_values` ( `translationMapId`, `value`, `translation`) VALUES
+					((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format'),
+					'Tonie', 'Tonie')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_category'),
+					'Tonie', 'Audio Books')
+					,((SELECT id FROM translation_maps WHERE indexingProfileId = (SELECT id FROM indexing_profiles WHERE sourceName = 'ils') AND name = 'format_boost'),
+					'Tonie', '4')"
+			],
+		],
+
 	];
 }
 

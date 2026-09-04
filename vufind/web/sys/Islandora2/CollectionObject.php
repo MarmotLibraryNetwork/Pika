@@ -23,6 +23,8 @@ namespace Islandora2;
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
 require_once ROOT_DIR . '/sys/Islandora2/Request.php';
 require_once ROOT_DIR . '/sys/Islandora2/JsonApiClient.php';
+require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
+require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 
 class CollectionObject extends I2Object
 {
@@ -241,11 +243,10 @@ class CollectionObject extends I2Object
         $terms  = (new JsonApiClient())->fetchChildrenFiltered($nid, $filterField);
         $result = [];
         foreach ($terms as $term) {
-            $segment  = ISLANDORA2_VOCAB_URL_MAP[$term['vocabulary']] ?? 'TaxonomyTerm';
             $result[] = [
                 'tid'   => $term['tid'],
                 'name'  => $term['name'],
-                'url'   => '/Archive2/' . $segment . '/' . urlencode((string)$term['tid']),
+                'url'   => getTaxonomyRelativeUrlFromParts((int)$term['tid'], $term['vocabulary'] ?? null),
                 'count' => $term['count'] ?? 0,
             ];
         }
@@ -316,7 +317,55 @@ class CollectionObject extends I2Object
     }
 
     /**
-     * Returns a paginated page of children as I2Object instances.
+     * Returns this collection's children ordered for display: the curator-defined
+     * `field_pika_coll_order` drives both membership and order first, and any
+     * remaining members are appended in `field_weight` order (the same per-item
+     * curator ordering every object's children fall back to via getChildObjects()).
+     *
+     * Nodes named in field_pika_coll_order come first, in that order. Some
+     * migrated sub-collections have no membership at all and exist only as an
+     * order-list entry, so a named node that isn't a member is fetched directly
+     * by id. When no order is configured, members are returned in field_weight
+     * order as-is.
+     *
+     * @param int|null $cap Maximum items to return, or null for all.
+     * @return array Ordered I2Object instances.
+     */
+    public function getOrderedChildObjects(?int $cap = null): array
+    {
+        $members = [];
+        foreach ($this->getChildObjects() as $obj) {
+            $members[$obj->getNodeId()] = $obj;
+        }
+
+        $factory = new I2ObjectFactory();
+        $ordered = [];
+        foreach ($this->getCollectionOrder() as $oid) {
+            if (isset($members[$oid])) {
+                $ordered[] = $members[$oid];
+                unset($members[$oid]);
+            } else {
+                $obj = $factory->fromNodeId($oid);
+                if ($obj !== null) {
+                    $ordered[] = $obj;
+                }
+            }
+            if ($cap !== null && count($ordered) >= $cap) {
+                return $ordered;
+            }
+        }
+        $ordered = array_merge($ordered, array_values($members));
+        return $cap !== null ? array_slice($ordered, 0, $cap) : $ordered;
+    }
+
+    /**
+     * Returns a paginated page of children as I2Object instances, fetched
+     * directly from the API for just the requested page.
+     *
+     * Unlike getOrderedChildObjects(), this does not apply field_pika_coll_order
+     * or a global field_weight sort — doing so would require fetching every
+     * child of the collection on every page view, which is too costly for large
+     * collections. Cost stays independent of collection size.
      *
      * @return array Array of I2Object instances for the requested page.
      */

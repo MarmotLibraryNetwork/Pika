@@ -26,6 +26,80 @@ Pika.Archive2 = (function(){
 		collectionDisplayMode: 'covers',
 
 		/**
+		 * The page of archive search results currently at the bottom of the covers grid.
+		 *
+		 * Archive2/list.tpl seeds this with the page the server rendered rather than leaving it
+		 * at 1: covers view has no pager, but a patron can still arrive on a later page from a
+		 * bookmark or from the "back to results" link on an object or term page, and counting
+		 * from 1 there would re-request a batch that is already on screen.
+		 */
+		curPage: 1,
+
+		/** Whether a batch of covers results is in flight; see getMoreResults(). */
+		loadingMoreResults: false,
+
+		/**
+		 * Ids of "random image" components (see nextRandomImage()) with a reload
+		 * request in flight. Keyed rather than a single flag since a page can carry
+		 * more than one randomImage component, each reloading independently.
+		 */
+		loadingRandomImage: {},
+
+		/**
+		 * Append the next batch of archive search results to the covers grid.
+		 *
+		 * Mirrors Pika.Searches.getMoreResults() for the catalog: the current query string is
+		 * reused with the page advanced, so every search term, facet, and sort the patron set
+		 * still applies to the batch that comes back.
+		 */
+		getMoreResults: function(){
+			// A batch takes long enough to fetch that the button can be clicked again before the
+			// first one lands; without this guard both requests ask for the same page and the
+			// same tiles get appended twice.
+			if (this.loadingMoreResults){
+				return false;
+			}
+			var url      = '/Archive2/AJAX',
+					params   = Pika.replaceQueryParam('page', this.curPage + 1) + '&method=getMoreSearchResults',
+					status   = $('#more-results-status'),
+					loading  = $('#more-results-loading'),
+					button   = $('#more-browse-results'),
+					divClass = 'home-page-browse-thumbnails'; // the wrapper Archive/covers-list.tpl builds
+			params = Pika.replaceQueryParam('view', 'covers', params); // the button only exists in covers view
+
+			this.loadingMoreResults = true;
+			button.prop('disabled', true);
+			loading.removeClass('d-none');
+			status.text('Loading more results.');
+
+			$.getJSON(url + params, function(data){
+				if (data.success === false){
+					status.text('');
+					Pika.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
+				}else{
+					var newDiv = $(data.records).hide();
+					$('.' + divClass).filter(':last').after(newDiv);
+					newDiv.fadeIn('slow');
+					if (data.lastPage){
+						$('#more-browse-results').hide();
+						status.text('Loaded the last of the results.');
+					}else{
+						Pika.Archive2.curPage++;
+						status.text('More results loaded.');
+					}
+				}
+			}).fail(function(){
+				status.text('');
+				Pika.ajaxFail.apply(this, arguments);
+			}).always(function(){
+				Pika.Archive2.loadingMoreResults = false;
+				loading.addClass('d-none');
+				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
+			});
+			return false;
+		},
+
+		/**
 		 * Syncs the in-memory display mode with what the server already rendered
 		 * (the toggle button PHP marked "active", per the archive2CollectionDisplayMode
 		 * cookie / library defaultArchiveCollectionBrowseMode setting), so later AJAX
@@ -220,6 +294,44 @@ Pika.Archive2 = (function(){
 				objectsContainer.css('opacity', 1);
 				Pika.ajaxFail();
 			});
+		},
+
+		/**
+		 * Reload a custom collection's "random image" component with a newly
+		 * picked random image, in place. Called by the reload button in
+		 * random_image_component.tpl.
+		 *
+		 * @param {string} id         Component instance id (matches the placeholder's
+		 *                            "randomImagePlaceholder_" suffix)
+		 * @param {string} sourceNids Comma-separated collection node ids to pick from
+		 */
+		nextRandomImage: function(id, sourceNids) {
+			// Without this guard, clicking again before the first response lands fires a
+			// second overlapping request; whichever happens to land last wins, which isn't
+			// necessarily the one requested last. Mirrors the guard in getMoreResults().
+			if (this.loadingRandomImage[id]) {
+				return false;
+			}
+			var placeholder = $('#randomImagePlaceholder_' + id),
+					button      = $('#randomImageReload_' + id);
+
+			this.loadingRandomImage[id] = true;
+			button.prop('disabled', true).addClass('loading');
+
+			$.getJSON('/Archive2/AJAX', {
+				method: 'getRandomImageComponent',
+				nids: sourceNids
+			}, function(data) {
+				if (data.success) {
+					placeholder.html(data.html);
+				} else if (data.message) {
+					Pika.showMessage('Error', data.message);
+				}
+			}).fail(Pika.ajaxFail).always(function() {
+				Pika.Archive2.loadingRandomImage[id] = false;
+				button.prop('disabled', false).removeClass('loading');
+			});
+			return false;
 		},
 
 		/**

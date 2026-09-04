@@ -35,13 +35,15 @@
 		</div>
 		{if $pageCount > 1}
 			<div class="text-center">
-				<ul class="pagination pagination-sm timeline-pager">
+				<ul class="pagination collection-pager">
 					{if $page > 1}
-						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage({$page} - 1);">&laquo; Previous</a></li>
+						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage(1);">&laquo; First</a></li>
+						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage({$page} - 1);">&lsaquo; Previous</a></li>
 					{/if}
 					<li class="disabled"><span>Page {$page} of {$pageCount}</span></li>
 					{if $page < $pageCount}
-						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage({$page} + 1);">Next &raquo;</a></li>
+						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage({$page} + 1);">Next &rsaquo;</a></li>
+						<li><a href="#" onclick="return Pika.Archive2.gotoTimelinePage({$pageCount});">Last &raquo;</a></li>
 					{/if}
 				</ul>
 			</div>

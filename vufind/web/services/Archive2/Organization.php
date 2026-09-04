@@ -55,8 +55,6 @@ class Organization extends TaxonomyObject
         $interface->assign('organization_url',     $org->getOrganizationUrl());
         $interface->assign('org_addresses',        $org->getAddresses());
 
-        $interface->assign('taxonomy_type_template', 'taxonomy_corporate_body');
-
         $title = $this->taxonomyObject->getTitle();
         parent::display('taxonomy_corporate_body.tpl', $title);
     }

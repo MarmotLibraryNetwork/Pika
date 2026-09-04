@@ -49,6 +49,7 @@ public class SetDefaultPins implements IProcessHandler {
 	private String              pikaUrl;
 	private Logger              logger;
 	private String              userApiToken = "";
+	private String              userAgent;
 	private int linesOfFileProcessed = 0;
 	private int numTotalUsersProcessed = 0;
 	private int numUsersNotFoundinPikaUserTable = 0;
@@ -86,7 +87,7 @@ public class SetDefaultPins implements IProcessHandler {
 		}
 
 		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
-		if (userApiToken == null || userApiToken.length() == 0) {
+		if (userApiToken == null || userApiToken.isEmpty()) {
 			logger.error("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get user API token for Pika in ConfigIni settings.  Please add token to the System section.");
@@ -94,8 +95,14 @@ public class SetDefaultPins implements IProcessHandler {
 			return;
 		}
 
+		userAgent = PikaConfigIni.getIniValue("Site", "internalUserAgent");
+		if (userAgent == null || userAgent.isEmpty()) {
+			logger.warn("No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
+			userAgent = "Pika";
+		}
+
 		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
-		if (pikaUrl == null || pikaUrl.length() == 0) {
+		if (pikaUrl == null || pikaUrl.isEmpty()) {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
@@ -111,7 +118,7 @@ public class SetDefaultPins implements IProcessHandler {
 		linesOfFileProcessed = linesReadPreviously;
 
 		String ilsPatronExportFilePath = processSettings.get("ilsPatronExportFilePath"); // Full path and name of the csv file to process
-		if (ilsPatronExportFilePath == null || ilsPatronExportFilePath.length() == 0) {
+		if (ilsPatronExportFilePath == null || ilsPatronExportFilePath.isEmpty()) {
 			String message = "Default Password CSV setting not set";
 			logger.error(message);
 			processLog.incErrors();
@@ -120,7 +127,7 @@ public class SetDefaultPins implements IProcessHandler {
 			return;
 		}
 		String neverPikaPatronsFilePath = processSettings.get("neverPikaPatronsFilePath");
-		if (neverPikaPatronsFilePath == null || neverPikaPatronsFilePath.length() == 0) {
+		if (neverPikaPatronsFilePath == null || neverPikaPatronsFilePath.isEmpty()) {
 			String message = "Never Pika CSV setting not set";
 			logger.error(message);
 			processLog.incErrors();
@@ -233,7 +240,8 @@ public class SetDefaultPins implements IProcessHandler {
 		String          token      = md5(barcode);
 		String          requestUrl = pikaUrl + "/API/UserAPI?method=setDefaultPin&userId=" + userId;
 		String          postData    = "defaultPin=" + defaultPin + "&token=" + token;
-		URLPostResponse response   = Util.postToURL(requestUrl, postData, "application/x-www-form-urlencoded", null, logger);
+		// Pass the internal user agent so that the forward proxy does not block the call to Pika itself
+		URLPostResponse response   = Util.postToURL(requestUrl, postData, "application/x-www-form-urlencoded", null, logger, userAgent);
 		if (response.isSuccess()) {
 			String patronDataJson = response.getMessage();
 			try {

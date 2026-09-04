@@ -66,7 +66,7 @@ class HooplaDriver
 	 * @param HooplaRecordDriver|null $hooplaRecord  RecordDriver for the marc record
 	 * @return string The id for the Hoopla API
 	 */
-	public static function recordIDtoHooplaID(SourceAndId $hooplaRecordId, HooplaRecordDriver $hooplaRecord = null){
+	public static function recordIDtoHooplaID(SourceAndId $hooplaRecordId, ?HooplaRecordDriver $hooplaRecord = null){
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaId      = preg_replace('/^MWT/', '', $hooplaRecordId->getRecordId());
 		$hooplaExtract = new HooplaExtract();
@@ -153,7 +153,7 @@ class HooplaDriver
 			$error_message = curl_strerror($errno);
 			$this->logger->warning('Curl error in getAPIResponse: ' . $error_message);
 		}
-		curl_close($ch);
+		// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
@@ -199,7 +199,7 @@ class HooplaDriver
 			$error_message = curl_strerror($errno);
 			$this->logger->warning('Curl error: ' . $error_message);
 		}
-		curl_close($ch);
+		// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 		return $http_code == 204;
 	}
 
@@ -375,7 +375,7 @@ class HooplaDriver
 //				$err  = curl_getinfo($curl);
 //				$headerRequest = curl_getinfo($curl, CURLINFO_HEADER_OUT);
 //			}
-			curl_close($curl);
+			// curl_close($curl); - deprecated in PHP 8.5, the CurlHandle frees itself
 
 			if ($response) {
 				$json = json_decode($response);

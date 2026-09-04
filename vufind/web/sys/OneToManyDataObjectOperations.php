@@ -115,7 +115,7 @@ trait OneToManyDataObjectOperations {
 	 * @return array
 	 */
 	private function getOneToManyOptions($oneToManyDBObjectClassName, $orderBy = null){
-		$oneToManyOptions = array();
+		$oneToManyOptions = [];
 		$parentIdColumn   = $this->getKeyThis();
 		$oneToManyColumn  = $this->getKeyOther();
 		if ($parentIdColumn && $this->$parentIdColumn && $oneToManyColumn){

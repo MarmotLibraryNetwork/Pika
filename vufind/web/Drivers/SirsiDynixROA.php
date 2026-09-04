@@ -97,7 +97,7 @@ abstract class SirsiDynixROA extends HorizonAPI { //TODO: This class doesn't nee
 //		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 //		TODO: debugging only, comment out later.
 		$this->logger->debug("Web service response\r\n$json"); //TODO: For debugging
-		curl_close($ch);
+		// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 
 		if ($json !== false && $json !== 'false'){
 			return json_decode($json);

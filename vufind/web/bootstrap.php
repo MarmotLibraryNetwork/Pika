@@ -347,15 +347,14 @@ function loadSearchInformation(){
 	}elseif (isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
 		$searchSource = $_SESSION['searchSource'];
 	}else{
+		//TODO: NOTE: This runs before loadModuleActionId(), so module isn't known
 		//Use a default search source
 		$module = $_GET['module'] ?? null;
 		if ($module == 'Person'){
 			$searchSource = 'genealogy';
 		}elseif ($module == 'Archive'){
 			$searchSource = 'islandora';
-//			$searchSource = 'islandora2';
 		}elseif ($module == 'Archive2'){
-			//$searchSource = 'islandora';
 			$searchSource = 'islandora2';
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';

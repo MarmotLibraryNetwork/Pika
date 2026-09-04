@@ -300,6 +300,10 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('summUrl', $this->getLinkUrl());
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
+		// An object has no vocabulary. Assigned so a taxonomy term earlier in the same list
+		// does not leave its Taxonomy row showing on this one — Smarty variables persist
+		// between the rows of a list.
+		$interface->assign('summVocabularyLabel', null);
 //		$interface->assign('summShortId', null);
 //		$interface->assign('summTitleStatement', null);
 		$interface->assign('summAuthor', null);
@@ -316,9 +320,10 @@ class Islandora2Driver extends RecordInterface
 			$listEntry                         = new UserListEntry();
 			$listEntry->groupedWorkPermanentId = $this->nodeId;
 			$listEntry->listId                 = $listId;
-			if ($listEntry->find(true)){
-				$interface->assign('listEntryNotes', $listEntry->notes);
-			}
+			// Always assign, even when there is no entry: Smarty variables persist between the
+			// rows of a list, so an unassigned value would show the previous row's notes. Now
+			// that taxonomy terms share this template the rows are no longer all objects.
+			$interface->assign('listEntryNotes', $listEntry->find(true) ? $listEntry->notes : '');
 			$interface->assign('listEditAllowed', $allowEdit);
 		}
 
@@ -327,6 +332,9 @@ class Islandora2Driver extends RecordInterface
 
     /**
      * Provide a browse tile result.
+     *
+     * Archive2 uses its own tile template, which captions the thumbnail with the title.
+     * Archive 1 keeps the uncaptioned RecordDrivers/Islandora/browse_result.tpl.
      *
      * @return string
      */
@@ -338,7 +346,7 @@ class Islandora2Driver extends RecordInterface
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		return 'RecordDrivers/Islandora/browse_result.tpl';
+		return 'RecordDrivers/Islandora/browse_result_archive2.tpl';
 	}
 
     public function getRecordUrl()
@@ -354,6 +362,18 @@ class Islandora2Driver extends RecordInterface
 
         return '/Archive2/' . $displayModel . '/' . urlencode((string)$this->nodeId);
     }
+
+	/**
+	 * SearchObject_Islandora2::getNextPrevLinks() locates a record by its position in the
+	 * whole result set, so the link out of the search results has to carry resultIndex; the
+	 * default recordIndex is only the position within the current page of results, which
+	 * would make every record on page two navigate as though it were on page one.
+	 *
+	 * @return string
+	 */
+	protected function getSearchPositionVariable(){
+		return 'resultIndex';
+	}
 
     public function getAbsoluteUrl()
     {
@@ -702,16 +722,20 @@ class Islandora2Driver extends RecordInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Alternative title for the object, or '' when none is set.
-	 * @return string
+	 * Alternative titles for the object, or an empty array when none are set.
+	 *
+	 * The Islandora field is multi-valued, so an object can carry several
+	 * alternative titles.
+	 *
+	 * @return string[]
 	 */
-	public function getAlternativeTitle(): string{
+	public function getAlternativeTitles(): array{
 			$obj = $this->ensureI2Object();
 			if (!$obj) {
-				return '';
+				return [];
 			}
-			$alternativeTitle = $this->firstNonEmptyString($obj->alternative_title); // magic __get → field_alternative_title
-			return $alternativeTitle;
+			$alternativeTitles = $this->nonEmptyStrings($obj->alternative_title); // magic __get → field_alternative_title
+			return $alternativeTitles;
 	}
 
 	/**
@@ -728,23 +752,25 @@ class Islandora2Driver extends RecordInterface
 
 	/**
 	 * Normalize a raw node field value that may be a plain string or a list of
-	 * strings (Drupal multi-value field) down to its first non-empty string.
+	 * strings (Drupal multi-value field) down to a list of its non-empty strings.
 	 *
 	 * @param mixed $raw
-	 * @return string
+	 * @return string[]
 	 */
-	private function firstNonEmptyString($raw): string {
+	private function nonEmptyStrings($raw): array {
 		if (is_string($raw)){
-			return $raw;
+			return $raw === '' ? [] : [$raw];
 		}
 		if (is_array($raw)){
+			$values = [];
 			foreach ($raw as $item){
 				if (is_string($item) && $item !== ''){
-					return $item;
+					$values[] = $item;
 				}
 			}
+			return $values;
 		}
-		return '';
+		return [];
 	}
 
 	/**

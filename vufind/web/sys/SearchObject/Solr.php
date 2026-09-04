@@ -645,14 +645,15 @@ class SearchObject_Solr extends SearchObject_Base {
 		if ($IDList){
 			//Reorder the documents based on the list of id's
 			$x = 0;
-			$nullHolder = null;
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
-				$current = &$nullHolder; // empty out in case we don't find the matching record
-				reset($this->indexResult['response']['docs']);
+				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
 					if ($doc['id'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
@@ -2407,10 +2408,53 @@ class SearchObject_Solr extends SearchObject_Base {
 
 				/** @var SearchObject_Solr $searchObject */
 				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
-				if ($searchObject === false){
+				if (!($searchObject instanceof SearchObject_Solr)){
+					// The saved search was made against another index (archive, genealogy).  It holds
+					// no catalog results to navigate, and its terms do not belong in the catalog
+					// search box either.
 					return;
 				}
 				$searchObject->setPage($currentPage);
+				// The saved search carries the source it was made under, so the object is already
+				// scoped the way the results page was, and renderSearchUrl() below returns the
+				// patron to that same scope rather than to the library default (D-5474).  Searches
+				// saved before the source was stored with them carry none; for those, fall back to
+				// the source on the link the patron followed here, which bootstrap has already
+				// validated (D-5467).  Either way processSearch() below can then scope the
+				// neighboring results the way the results page did.
+				if (!$searchObject->hasRestoredSearchSource()){
+					$searchObject->setSearchSource($_REQUEST['searchSource'] ?? 'local');
+				}
+
+				// Link back to the results out of the saved search itself rather than leaving it to
+				// $_SESSION['lastSearchURL'], which holds only the last search made anywhere in the
+				// session - so a search in a second tab redirected this link too.
+				$interface->assign('searchResultsUrl', $searchObject->renderSearchUrl());
+
+				// Repopulate the search box from the search this record was reached through, so the
+				// patron can amend it rather than retype it (D-5467).  setUpSearchDisplayOptions() in
+				// index.php has already filled these in, but it runs before the controller does and
+				// works from loadLastSearch(), which only knows the most recent search of the whole
+				// session, whatever index that was made against.  A second tab, or a shared link,
+				// therefore left the wrong search - or none at all - sitting in the box.  The saved
+				// search this record carries is the one the patron actually followed to get here.
+				//
+				// displayQuery() reads searchTerms[0] without checking it is there, and a search can
+				// be filters only, so fall back to an empty phrase rather than leave another search
+				// in the box.  An advanced search assigns its display string here the same way
+				// index.php does; the search box does not print it, because searchType says so.
+				$lookfor = empty($searchObject->getSearchTerms()) ? '' : $searchObject->displayQuery();
+				$interface->assign('lookfor', $lookfor);
+				$interface->assign('searchType', $searchObject->getSearchType());
+				$interface->assign('searchIndex', $searchObject->getSearchIndex());
+				$interface->assign('filterList', $searchObject->getFilterList());
+				// The source belongs in the search box with the rest of it, or the select beside GO
+				// drops back to the library default on any page reached by a link that does not carry
+				// searchSource - the Prev/Next bar, and anything relying on the session having kept
+				// the right one.  It is a key of the searchSources list the select is built from, so
+				// an unrecognized value selects nothing and the browser shows the first option.
+				$interface->assign('searchSource', $searchObject->getSearchSource());
+
 				//Run the search
 				$result = $searchObject->processSearch(true);
 

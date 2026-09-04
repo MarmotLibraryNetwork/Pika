@@ -474,7 +474,8 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
-     * Return all children as I2Objects.
+     * Return all children as I2Objects, ordered by field_weight (the curator-set
+     * per-item ordering in the Islandora admin).
      *
      * Page 1 is fetched synchronously; any remaining pages are fetched in
      * parallel via MultiCurl (max 250 children per request).
@@ -501,6 +502,9 @@ abstract class I2Object implements MediaObjectInterface
                 $children[] = $obj;
             }
         }
+
+        // usort is stable on PHP 8, so equal/zero weights keep API order.
+        usort($children, fn($a, $b) => $a->getWeight() <=> $b->getWeight());
 
         $this->childrenObjects = $children;
         return $children;

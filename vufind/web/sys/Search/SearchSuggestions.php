@@ -28,11 +28,47 @@ class SearchSuggestions {
 		'Author'
 	];
     
-    public static $disallowedSearchSuggestionWords = ['a', 'an', 'be', 'in', 'is', 'it', 'of', 'on', 'or', 'the', 'to'];
+	/**
+	 * Words that carry no meaning for suggestion matching and are stripped out of a search phrase before it is
+	 * used to look up search or spelling suggestions.  See D-4982 and D-5425.
+	 *
+	 * Keep these lowercase; stripDisallowedWords() matches case-insensitively.
+	 */
+	public static $disallowedSearchSuggestionWords = ['a', 'an', 'be', 'in', 'is', 'it', 'of', 'on', 'or', 'the', 'to'];
 		//TODO: read stopwords.txt; store in memcache
+
+	/**
+	 * Strip the disallowed words above out of a search phrase, matching whole words only.
+	 *
+	 * DO NOT change this back to str_replace()/str_ireplace().  Those match substrings, so every word in the list
+	 * also gets cut out of the middle of ordinary words: 'the' turns "mother" into "mor", and with the short words
+	 * added in D-5425 "The Lion King" becomes "Li Kg", "tortilla flat" becomes "ttill flt" and "beloved" becomes
+	 * "loved".  That mangled phrase is what then gets handed to the fulltext match against search_stats and to the
+	 * per-word spell checker, so it invents worse replacement terms than the ones this list exists to suppress --
+	 * the exact failure D-4982 was opened for.  Commit 9c6f0ae302 fixed the same whole-word problem in the spelling
+	 * replacement in getSpellingSearches() below.
+	 *
+	 * Returns an empty string when nothing is left after stripping (eg a search for "it is on"); callers must treat
+	 * that as "no suggestions" rather than searching on it, because an empty phrase matches every stat row.
+	 *
+	 * @param string $searchTerm
+	 * @return string
+	 */
+	private static function stripDisallowedWords(string $searchTerm): string{
+		$quotedWords = array_map(function ($word){
+			return preg_quote($word, '/');
+		}, self::$disallowedSearchSuggestionWords);
+		$strippedTerm = preg_replace('/\b(?:' . implode('|', $quotedWords) . ')\b/i', '', $searchTerm);
+		//Collapse the whitespace the removed words leave behind so the phrase doesn't explode() into empty words
+		return trim(preg_replace('/\s+/', ' ', $strippedTerm));
+	}
     
 	static function getCommonSearchesMySql($searchTerm, bool $sortByNumSearches = true){
-        $searchTerm = str_ireplace(self::$disallowedSearchSuggestionWords, '', $searchTerm);
+		$searchTerm = self::stripDisallowedWords($searchTerm);
+		if ($searchTerm === ''){
+			//The whole phrase was disallowed words; there is nothing meaningful left to match on
+			return [];
+		}
 		$suggestions = self::getSearchSuggestions($searchTerm);
 		if ($sortByNumSearches){
 			$array = [];
@@ -108,7 +144,11 @@ class SearchSuggestions {
 	 * @return array
 	 */
 	static function getSpellingSearches(string $searchTerm, bool $sortByNumSearches = true){
-        $searchTerm = str_ireplace(self::$disallowedSearchSuggestionWords, '', $searchTerm);
+		$searchTerm = self::stripDisallowedWords($searchTerm);
+		if ($searchTerm === ''){
+			//The whole phrase was disallowed words; there is nothing meaningful left to match on
+			return [];
+		}
 		//First check for things we don't want to load spelling suggestions for
 		if (SearchStatNew::isSearchPhraseToIgnore($searchTerm)){
 			return [];

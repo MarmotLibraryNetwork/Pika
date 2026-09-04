@@ -48,7 +48,8 @@ Pika.Searches = (function(){
 	});
 	return {
 		searchGroups: [],
-		curPage: 1,
+		curPage: 1, // seeded from the rendered page by Search/list.tpl; see getMoreResults()
+		loadingMoreResults: false, // whether a batch of covers results is in flight; see getMoreResults()
 		displayMode: 'list', // default display Mode for results
 		displayModeClasses: { // browse mode to css class correspondence
 			covers:'home-page-browse-thumbnails',
@@ -123,25 +124,53 @@ Pika.Searches = (function(){
 		},
 
 		getMoreResults: function(){
+			// A batch takes long enough to fetch that the button can be clicked again before the
+			// first one lands; without this guard both requests ask for the same page and the
+			// same titles get appended twice.
+			if (this.loadingMoreResults){
+				return false;
+			}
 			var url = '/Search/AJAX',
 					params = Pika.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
+					status   = $('#more-results-status'),
+					loading  = $('#more-results-loading'),
+					button   = $('#more-browse-results'),
 					divClass = this.displayModeClasses[this.displayMode];
 			params = Pika.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
 			if (params.search(/[?;&]replacementTerm=/) != -1) {
 				var searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
 				params = Pika.replaceQueryParam('lookfor', searchTerm, params);
 			}
+
+			this.loadingMoreResults = true;
+			button.prop('disabled', true);
+			loading.removeClass('d-none');
+			status.text('Loading more results.');
+
 			$.getJSON(url+params, function(data){
 				if (data.success == false){
+					status.text('');
 					Pika.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
 					var newDiv = $(data.records).hide();
 					$('.'+divClass).filter(':last').after(newDiv);
 					newDiv.fadeIn('slow');
-					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
-					else Pika.Searches.curPage++;
+					if (data.lastPage){
+						button.hide(); // hide the load more results
+						status.text('Loaded the last of the results.');
+					}else{
+						Pika.Searches.curPage++;
+						status.text('More results loaded.');
+					}
 				}
-			}).fail(Pika.ajaxFail);
+			}).fail(function(){
+				status.text('');
+				Pika.ajaxFail.apply(this, arguments);
+			}).always(function(){
+				Pika.Searches.loadingMoreResults = false;
+				loading.addClass('d-none');
+				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
+			});
 			return false;
 		},
 

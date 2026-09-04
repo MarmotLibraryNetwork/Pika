@@ -545,7 +545,7 @@ class Solr implements IndexEngine {
 	 * @param string $idFieldToReturn
 	 * @return array of the filtered ids
 	 */
-	function getFilteredIds(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
+	function getFilteredIds(array $ids, ?array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'id'){
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -618,7 +618,7 @@ class Solr implements IndexEngine {
 	 * @param string $idFieldToReturn
 	 * @return array of the filtered PIDs
 	 */
-	function getFilteredPIDs(array $ids, array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'):array{
+	function getFilteredPIDs(array $ids, ?array $filters = null, int $batchSize = 100, string $idFieldToReturn = 'PID'):array{
 		$solrDocArray = [];
 		$numIds       = count($ids);
 		if ($numIds) {
@@ -691,7 +691,7 @@ class Solr implements IndexEngine {
 	 * @param string $returnField    Solr field to return from matching documents (e.g. 'its_node_id', 'its_tid')
 	 * @return array                 Array of $returnField values for matching documents
 	 */
-	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
+	function getLegacyPIDs(array $pids, string $pidField = 'ss_legacy_pid', ?array $filters = null, int $batchSize = 100, string $returnField = 'its_node_id'){
 		$solrDocArray = [];
 		$numIds       = count($pids);
 		if ($numIds) {
@@ -748,6 +748,79 @@ class Solr implements IndexEngine {
 	}
 
 	/**
+	 * Search Solr for legacy PIDs and return several fields from each matching document.
+	 *
+	 * getLegacyPIDs() returns a flat list of one field's values, which loses which PID produced
+	 * which result. This returns the documents themselves so the caller can keep that
+	 * association — needed when converting a table of stored PIDs in bulk rather than looking
+	 * up one at a time.
+	 *
+	 * @param string[] $pids         Legacy PID strings to search for (e.g. 'person:12345')
+	 * @param string   $pidField     Solr field to search against ('ss_legacy_pid' or 'ss_legacy_entity_pid')
+	 * @param string[] $returnFields Solr fields to return; include $pidField to match results back
+	 * @param array|null $filters    Optional search filters to apply
+	 * @param int      $batchSize    Number of PIDs to query per request
+	 * @return array                 Array of Solr document arrays
+	 */
+	function getLegacyPidDocuments(array $pids, string $pidField, array $returnFields, ?array $filters = null, int $batchSize = 100): array {
+		$solrDocArray = [];
+		$numIds       = count($pids);
+		if ($numIds === 0){
+			return $solrDocArray;
+		}
+
+		$this->pingServer();
+		$this->client->setDefaultJsonDecoder(true);
+
+		$startIndex = 0;
+		$lastBatch  = false;
+		do {
+			$endIndex = $startIndex + $batchSize;
+			if ($endIndex >= $numIds) {
+				$lastBatch = true;
+				$endIndex  = $numIds;
+				$batchSize = $numIds - $startIndex;
+			}
+			$tmpIds   = array_slice($pids, $startIndex, $batchSize);
+			$idString = implode(' ', $tmpIds);
+			$idString = str_replace(':', '\:', $idString); // escape colon characters in PIDs
+			$options  = [
+				'q'    => "$pidField:($idString)",
+				'q.op' => 'OR',
+				'fl'   => implode(',', $returnFields),
+				// A single PID can match more than one document; ask for enough room to see
+				// the duplicates rather than silently truncating at one row per PID.
+				'rows' => $batchSize * 2,
+				'wt'   => 'json'
+			];
+
+			if (!empty($filters)){
+				$options['fq'] = $filters;
+			}
+			$queryString = $this->buildSolrQueryString($options);
+
+			if (strlen($queryString) > 8000){
+				$result = $this->client->post($this->host . '/select', $queryString);
+			}else{
+				$result = $this->client->get($this->host . '/select', $queryString);
+			}
+
+			if ($this->client->isError()) {
+				$this->logger->error('getLegacyPidDocuments: ' . $this->client->getErrorMessage());
+			} else {
+				$result       = $this->_process($result);
+				$solrDocArray = array_merge($solrDocArray, $result['response']['docs'] ?? []);
+			}
+
+			if (!$lastBatch) {
+				$startIndex = $endIndex;
+			}
+		} while (!$lastBatch);
+
+		return $solrDocArray;
+	}
+
+	/**
 	 * Retrieve full Solr documents for an array of Islandora2 node IDs.
 	 *
 	 * Uses a /select query against the its_node_id field rather than the /get
@@ -756,9 +829,12 @@ class Solr implements IndexEngine {
 	 * @param int[]|string[] $nids   Node IDs to retrieve
 	 * @param array|null     $filters Optional search filters to apply
 	 * @param int            $batchSize Number of node IDs per request
+	 * @param string         $idField Solr id field to query. Pass 'its_tid' to retrieve
+	 *                                taxonomy terms instead, which live in the same core but
+	 *                                carry no its_node_id of their own.
 	 * @return array         Array of Solr document arrays
 	 */
-	function getIslandora2NodeIds(array $nids, array $filters = null, int $batchSize = 100): array {
+	function getIslandora2NodeIds(array $nids, ?array $filters = null, int $batchSize = 100, string $idField = 'its_node_id'): array {
 		$solrDocArray = [];
 		$numIds       = count($nids);
 		if ($numIds) {
@@ -779,7 +855,7 @@ class Solr implements IndexEngine {
 				$tmpIds   = array_slice($nids, $startIndex, $batchSize);
 				$idString = implode(' ', $tmpIds); // integers — no colon escaping needed
 				$options  = [
-					'q'    => "its_node_id:($idString)",
+					'q'    => "$idField:($idString)",
 					'q.op' => 'OR',
 					'fl'   => '*',
 					'rows' => $batchSize,
@@ -939,8 +1015,10 @@ class Solr implements IndexEngine {
 
 							}
 							break;
-						case 'shortId': // Genealogy Id number field
-						case 'its_node_id':  // Islandora2 node id field
+						case 'shortId':     // Genealogy Id number field
+						case 'its_node_id': // Islandora2 node id field
+						case 'its_tid':     // Islandora2 taxonomy id field
+							//TODO: this should be made into a specific searchspec type, integersOnly
 						if (!ctype_digit($fieldValue)){
 								// If the search phrase isn't all numbers, don't add this clause to the query
 								continue 2;
@@ -1646,7 +1724,7 @@ class Solr implements IndexEngine {
 			}
 
 			if (isset($facet['additionalOptions'])) {
-				//Currently this is only used by the Archive Mapped Timeline Exhibits (Collections)
+				//Currently, this is only used by the Archive Mapped Timeline Exhibits (Collections)
 				$options = array_merge($options, $facet['additionalOptions']);
 				unset($facet['additionalOptions']);
 			}
@@ -1662,7 +1740,7 @@ class Solr implements IndexEngine {
 		//Check to see if there are filters we want to show all values for
 		if ($isPikaGroupedWorkIndex && isset($filters) && is_array($filters)) {
 			foreach ($filters as $key => $value) {
-				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
+				if (str_starts_with($value, 'availability_toggle') || str_starts_with($value, 'availability_by_format')) {
 					$filters[$key] = '{!tag=avail}' . $value;
 				}
 			}

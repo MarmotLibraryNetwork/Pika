@@ -29,10 +29,10 @@
 							</li>
 						{else}
 							<li id="exploreMore{$smarty.foreach.loop.index}" class="explore-more-option">
-								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
+								<figure class="thumbnail">
 									<div class="explore-more-image">
-										<a href='{$exploreMoreCategory.link}' title="{$exploreMoreCategory.label|escape}">
-											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
+										<a href='{$exploreMoreCategory.link}' aria-label="{$exploreMoreCategory.label|escape}">
+											<img src="{$exploreMoreCategory.image}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 										</a>
 									</div>
 									<figcaption class="explore-more-category-title">

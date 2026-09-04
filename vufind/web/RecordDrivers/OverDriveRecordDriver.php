@@ -622,7 +622,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 *                                      If none is provided, the first shared account is assumed.
 	 * @return false|int libraryId for the appropriate OverDrive Advantage Account
 	 */
-	public function getLibraryIdForOverDriveAdvantageAccount(int $sharedCollectionId = null){
+	public function getLibraryIdForOverDriveAdvantageAccount(?int $sharedCollectionId = null){
 		//For eContent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
 

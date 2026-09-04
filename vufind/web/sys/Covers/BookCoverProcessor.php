@@ -140,7 +140,7 @@ class BookCoverProcessor {
 		$this->getDefaultCover();
 	}
 
-	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
+	private function loadCoverBySpecifiedSource($coverSource, ?SourceAndId $sourceAndId = null){
 		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
 //			case 'Zinio':
@@ -453,6 +453,52 @@ class BookCoverProcessor {
 	}
 
 	/**
+	 * Http stream options for calls that stay inside our own infrastructure: cover fetches that loop back to this
+	 * site.
+	 *
+	 * These requests go out through our forward proxy service and come back to us. Sending the internal user
+	 * agent is what tells the proxy to let them through untouched; without it, the proxy interferes with the calls
+	 * the catalog makes to itself. Any new internal fetch should use this rather than the external options.
+	 *
+	 * @param int|null $timeout Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array Options for stream_context_create()
+	 */
+	private function getInternalHttpContextOptions(?int $timeout = null){
+		$userAgent = empty($this->configArray['Site']['internalUserAgent']) ? 'Pika' : $this->configArray['Site']['internalUserAgent'];
+		return $this->buildHttpContextOptions($userAgent, $timeout);
+	}
+
+	/**
+	 * Http stream options for calls out to outside content providers, such as Google Books or Syndetics.
+	 *
+	 * These identify us with the catalog user agent, which is what providers see and what some of them key their
+	 * rate limits on. The proxy doesn't need to be bypassed for traffic that genuinely leaves our network.
+	 *
+	 * @param int|null $timeout Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array Options for stream_context_create()
+	 */
+	private function getExternalHttpContextOptions(?int $timeout = null){
+		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
+		return $this->buildHttpContextOptions($userAgent, $timeout);
+	}
+
+	/**
+	 * @param string $userAgent  User agent to identify the request with
+	 * @param int|null $timeout  Seconds to wait on a fetch; null falls back to PHP's default_socket_timeout
+	 *
+	 * @return array
+	 */
+	private function buildHttpContextOptions(string $userAgent, ?int $timeout = null){
+		$httpOptions = ['header' => "User-Agent: {$userAgent}\r\n"];
+		if (!empty($timeout)){
+			$httpOptions['timeout'] = $timeout;
+		}
+		return ['http' => $httpOptions];
+	}
+
+	/**
 	 * Get a cover image from a source, check & adjust image sizing,
 	 * check whether or not it is a good image to use,
 	 * then save as a PNG file to best sent on to the user
@@ -469,12 +515,7 @@ class BookCoverProcessor {
 			$this->logger->info("Processing $url");
 		}
 
-		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-		$context   = stream_context_create([
-			'http' => [
-				'header' => "User-Agent: {$userAgent}\r\n",
-			],
-		]);
+		$context = stream_context_create($this->getExternalHttpContextOptions());
 
 		$this->logTime('Fetch image from external url');
 		if (isset($url) && $image = @file_get_contents($url, false, $context)){
@@ -619,7 +660,7 @@ class BookCoverProcessor {
 					}
 					// We no longer need the temp file:
 					@unlink($tempFile);
-					imagedestroy($imageResource);
+					// imagedestroy($imageResource); - deprecated in PHP 8.5, the GdImage frees itself
 					if (!$conversionOk){
 						return false;
 					}
@@ -854,10 +895,14 @@ class BookCoverProcessor {
 	}
 
 	private function getUserListCover($listId){
-		require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
-		require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
-		$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-		$defaultImage = imagecreatefrompng(ROOT_DIR . "/interface/themes/default/images/lists_small.png");
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$font         = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
+		$defaultImage = imagecreatefrompng(ROOT_DIR . '/interface/themes/default/images/lists_small.png');
+
+		// These fetches loop back to our own server, and each one may in turn call out to an external cover provider,
+		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
+		$context = stream_context_create($this->getInternalHttpContextOptions(10));
 
 		if ($this->reload){
 			unlink($this->cacheFile);
@@ -872,12 +917,9 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 4){
-					if ($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							$resizedResource        = imagescale($listEntryImageResource, 50);
-							$imageArray[$x]         = $resizedResource;
-						}
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						$resizedResource = imagescale($listEntryImageResource, 50);
+						$imageArray[$x]  = $resizedResource;
 					}else{
 						$finalCover = $defaultImage;
 					}
@@ -900,16 +942,13 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 3){
-					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							if ($x == 0){
-								$resizedResource = imagescale($listEntryImageResource, -1, 98);
-							}else{
-								$resizedResource = imagescale($listEntryImageResource, 50);
-							}
-							$imageArray[$x] = $resizedResource;
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						if ($x == 0){
+							$resizedResource = imagescale($listEntryImageResource, -1, 98);
+						}else{
+							$resizedResource = imagescale($listEntryImageResource, 50);
 						}
+						$imageArray[$x] = $resizedResource;
 					}else{
 						$finalCover = $defaultImage;
 					}
@@ -931,13 +970,10 @@ class BookCoverProcessor {
 				$x          = 0;
 				$finalCover = imagecreatetruecolor(100, 100);
 				while ($x < 2){
-					if($bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($listItems[$x])){
-						if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)){
-							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
-							$resizedResource        = imagescale($listEntryImageResource, -1, 100);
-							$imageArray[$x]         = $resizedResource;
-							}
-						}else{
+					if ($listEntryImageResource = $this->getUserListEntryCoverImage($listItems[$x], $context)){
+						$resizedResource = imagescale($listEntryImageResource, -1, 100);
+						$imageArray[$x]  = $resizedResource;
+					}else{
 						$finalCover = $defaultImage;
 					}
 					$x++;
@@ -958,24 +994,70 @@ class BookCoverProcessor {
 	}
 	/**
 	 * @param string $itemId GroupedWorkId or ArchivePID taken from an entry in a User List
-	 * @return string|void  A Cover url to fetch
+	 * @return string|false  A Cover url to fetch, or false when one can't be determined
 	 */
 	private function getBookcoverUrlForUserListImageCreation($itemId){
-		$isArchiveId = strpos($itemId, ':') !== false;
-		if ($isArchiveId){
-			require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-			/** @var IslandoraDriver $islandoraObject */
-			$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($itemId);
-			$bookcoverUrl    = $islandoraObject->getBookcoverUrl();
-		}else{
-			$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		$bookcoverUrl = false;
+		switch (parseUserListEntryId((string)$itemId)['type']){
+			case USER_LIST_ENTRY_ARCHIVE_OBJECT:
+				$archiveObject = new Islandora2Driver($itemId);
+				if (!empty($archiveObject->getNodeId())){
+					$bookcoverUrl = $archiveObject->getBookcoverUrl();
+				}
+				break;
+			case USER_LIST_ENTRY_TAXONOMY_TERM:
+				require_once ROOT_DIR . '/RecordDrivers/Islandora2TaxonomyTermDriver.php';
+				// The term driver reads the tid and vocabulary out of the stored id; resolving
+				// its thumbnail costs one Islandora call, memcached per term.
+				$term         = new Islandora2TaxonomyTermDriver($itemId);
+				$bookcoverUrl = $term->getBookcoverUrl('medium');
+				break;
+			case USER_LIST_ENTRY_LEGACY:
+				// An unconverted Islandora 1 PID. It should never reach here (getListEntries()
+				// filters these out), and there is nothing to resolve it against.
+				break;
+			default:
+				$bookcoverUrl = $this->configArray['Site']['coverUrl'] . '/bookcover.php?size=medium&type=grouped_work&id=' . $itemId;
+				break;
 		}
-		if(@is_array(getimagesize($bookcoverUrl))){
-			return $bookcoverUrl;
-		}else{
+		if (empty($bookcoverUrl)){
+			$this->logger->error('No cover url could be determined for user list entry: ' . $itemId);
+			return false;
+		}
+		return $bookcoverUrl;
+	}
+
+
+	/**
+	 * Fetch the cover image for one User List entry and turn it into an image resource.
+	 *
+	 * The url used to be checked with getimagesize() before being fetched, but getimagesize() downloads the whole
+	 * image to read its header, so every cover was pulled twice. For a four-item list that is eight requests back
+	 * to our own server instead of four. Whether imagecreatefromstring() can read the response is the same
+	 * "is this really an image" test the getimagesize() call was making, so one fetch now does both jobs.
+	 *
+	 * @param string $itemId    GroupedWorkId or Archive Node Id taken from an entry in a User List
+	 * @param resource $context Stream context carrying our internal user agent
+	 *
+	 * @return GdImage|false The image resource, or false if the cover couldn't be fetched or read
+	 */
+	private function getUserListEntryCoverImage($itemId, $context){
+		$bookcoverUrl = $this->getBookcoverUrlForUserListImageCreation($itemId);
+		if (empty($bookcoverUrl)){
+			return false;
+		}
+		$listEntryCoverImage = @file_get_contents($bookcoverUrl, false, $context);
+		if ($listEntryCoverImage === false){
 			$this->logger->error('Image was not returned when retrieving: ' . $bookcoverUrl);
 			return false;
 		}
+		$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+		if ($listEntryImageResource === false){
+			$this->logger->error('Image data could not be read when retrieving: ' . $bookcoverUrl);
+			return false;
+		}
+		return $listEntryImageResource;
 	}
 
 	private function getGroupedWorkCover(){
@@ -1460,12 +1542,7 @@ class BookCoverProcessor {
 		if (is_callable('json_decode')){
 			$url = 'https://books.google.com/books?jscmd=viewapi&bibkeys=ISBN:' . $this->isn . '&callback=addTheCover';
 
-			$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-			$context   = stream_context_create([
-				'http' => [
-					'header' => "User-Agent: {$userAgent}\r\n",
-				],
-			]);
+			$context = stream_context_create($this->getExternalHttpContextOptions());
 
 			$json = @file_get_contents($url, false, $context);
 			if (!empty($json) && $json != 'addTheCover({});'){

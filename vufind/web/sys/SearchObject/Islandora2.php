@@ -43,10 +43,13 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// ss_type is required: it is the discriminator Islandora2Driver uses to take the lightweight
 	// Solr path instead of a per-record API fetch. score is a Solr pseudo-field, only returned when listed.
 	// The remaining fields mirror Islandora2Driver's solrFields map.
-	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score';
-	// Include doucment Id field for the solr explaination matching, which keys of id field
+	private $fields = 'id,ss_type,its_node_id,twm_X3b_en_title_ws_token,twm_X3b_en_field_description_long_ws_token,sm_format,ss_model,ss_library,sm_genre,sm_legacy_resource_type,itm_field_member_of,ss_legacy_pid,ds_created,score'
+	// Taxonomy Fields:
+	// ss_vid is the vocabulary machine name (person, geo_location, corporate_body, event);
+	// the term driver needs it to build the typed /Archive2/{Person|Place|Organization|Event} URL.
+	. ',its_tid,ss_vid,tm_X3b_en_name,tm_X3b_en_description,ss_legacy_entity_pid';
+	// Include document Id field for the solr explanation matching, which keys of id field
 	//TODO: modified date field
-	//TODO: which created date field should we use?
 	// ds_created is an ISO 8601 / RFC 3339 timestamp with a Z (Zulu = UTC) designator
 	//its_edtf_year,sm_field_display_title
 
@@ -59,9 +62,15 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	// OTHER VARIABLES
 	const string IDFIELD = 'its_node_id';
 	const string TITLE_FIELD = 'twm_X3b_en_title_ws_token';
+	// Taxonomy terms share this Solr core with the archive objects but are identified by
+	// their own fields; a term document carries no its_node_id at all.
+	const string TAXONOMY_IDFIELD = 'its_tid';
+	const string TAXONOMY_TITLE_FIELD = 'tm_X3b_en_name';
+	const string TAXONOMY_VOCABULARY_FIELD = 'ss_vid';
 
 	// Display Modes //
 	public $viewOptions = ['list', 'covers'];
+	const int COVERS_VIEW_PAGE_SIZE = 24;
 	private Logger $logger;
 
 	public function __construct(){
@@ -230,6 +239,7 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		$this->sort         = $minified->sr;
 		$this->hiddenFilters= $minified->hf;
 		$this->facetConfig  = $minified->fc;
+		$this->restoreSearchSource($minified);
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
@@ -610,130 +620,168 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Taken from the Islandora1 class. It contains Collection/Exhibit handling that
-	 * we ultimately abandoned.  So may be able to simplify to the traditional handling
-	 * found in the other versions of the Search Object.
+	 * Set the number of results per page the archive results page uses.
 	 *
-	 * TODO: Disable initially
-	 * Current Archive search doesn't appear to use this.
-	 * @param $searchId
-	 * @param $recordIndex
-	 * @param $page
-	 * @param $preventQueryModification
+	 * Covers view lays the results out as a grid of image tiles, which looks better with a
+	 * full set of 24 rather than the standard page size.  The results page and
+	 * getNextPrevLinks() have to agree on this: the previous/next arithmetic converts a
+	 * record's position in the whole result set into a page plus an offset within that
+	 * page, so a different page size there lands on the wrong record.
+	 *
+	 * @access public
 	 * @return void
 	 */
-	public function getNextPrevLinks($searchId=null, $recordIndex=null, $page=null, $preventQueryModification = false){
+	public function initResultsPageSize(){
+		if ($this->getView() == 'covers'){
+			$this->setLimit(self::COVERS_VIEW_PAGE_SIZE);
+		}
+	}
+
+	/**
+	 * Assign the previous & next result links shown on archive object and taxonomy term pages.
+	 *
+	 * Follows the catalog implementation in SearchObject_Solr::getNextPrevLinks().  The link
+	 * a patron follows out of the search results carries the id of the saved search plus the
+	 * position of that record within it, so the saved search is re-run here and the records
+	 * on either side read back out of the result set.  When the record sits at the start or
+	 * the end of a page, the adjacent page is searched as well to find its neighbor.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function getNextPrevLinks(){
 		global $interface;
-		//global $timer;
+		global $timer;
+
 		//Setup next and previous links based on the search results.
-		if (is_null($searchId)) {
-			if (!empty($_REQUEST['searchId']) && ctype_digit($_REQUEST['searchId'])) {
-				$searchId = $_REQUEST['searchId'];
+		if (empty($_REQUEST['searchId']) || empty($_REQUEST['recordIndex'])
+			|| !ctype_digit((string)$_REQUEST['searchId']) || !ctype_digit((string)$_REQUEST['recordIndex'])){
+			return;
+		}
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+		$s     = new SearchEntry();
+		$s->id = $_REQUEST['searchId'];
+		if (!$s->find(true)){
+			return;
+		}
+
+		$currentPage = !empty($_REQUEST['page']) && ctype_digit((string)$_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('page', $currentPage);
+
+		$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+		if (!($searchObject instanceof SearchObject_Islandora2)){
+			// The saved search was made against a different index; it holds no archive results to navigate.
+			return;
+		}
+		// A saved search stores neither the display mode nor the page size, so restore both
+		// the way the results page did before working out where this record sits.
+		$searchObject->initView();
+		$searchObject->initResultsPageSize();
+		$searchObject->setPage($currentPage);
+
+		// Render the link back to the results out of the saved search itself rather than
+		// leaving it to $_SESSION['lastArchive2SearchURL'], which only holds the last archive
+		// search made in this session: it is empty for a record reached from a shared or
+		// bookmarked link, and stale once the patron has run another archive search in
+		// another tab.  The saved search always describes the results this record came from,
+		// down to the page and display mode the patron was on.
+		$interface->assign('searchResultsUrl', $searchObject->renderSearchUrl());
+
+		// Repopulate the search box with the search this record was reached through, so the
+		// patron can amend it rather than retype it (D-5466).  setUpSearchDisplayOptions() in
+		// index.php has already filled these in from loadLastSearch(), but it runs before the
+		// controller does and only knows the last search of the session, whatever index that
+		// was made against; and it has no way to recover the archive search type at all, since
+		// a record url carries no islandoraType.  Assigning here overrides all of that with the
+		// search actually behind this record.
+		//
+		// An archive search can be facets only, with no search terms at all, and displayQuery()
+		// reads searchTerms[0] without checking it is there; fall back to an empty phrase rather
+		// than leave whatever setUpSearchDisplayOptions() found in the session sitting in the box.
+		$lookfor = empty($searchObject->getSearchTerms()) ? '' : $searchObject->displayQuery();
+		$interface->assign('lookfor', $lookfor);
+		$interface->assign('searchType', $searchObject->getSearchType());
+		$interface->assign('islandoraSearchIndex', $searchObject->getSearchIndex());
+		$interface->assign('filterList', $searchObject->getFilterList());
+
+		//Run the search
+		$result = $searchObject->processSearch(true);
+		if (PEAR_Singleton::isError($result) || $searchObject->getResultTotal() <= 0){
+			return;
+		}
+
+		//Check to see if we need to run a search for the next or previous page
+		$currentResultIndex  = (int)$_REQUEST['recordIndex'] - 1;
+		$recordsPerPage      = $searchObject->getLimit();
+		$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+		if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+			//Need to run a search for the previous page
+			$interface->assign('previousPage', $currentPage - 1);
+			$previousSearchObject = clone $searchObject;
+			$previousSearchObject->setPage($currentPage - 1);
+			$previousSearchObject->processSearch(true);
+			$previousResults = $previousSearchObject->getNavigationDocuments();
+		}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+			//Need to run a search for the next page
+			$interface->assign('nextPage', $currentPage + 1);
+			$nextSearchObject = clone $searchObject;
+			$nextSearchObject->setPage($currentPage + 1);
+			$nextSearchObject->processSearch(true);
+			$nextResults = $nextSearchObject->getNavigationDocuments();
+		}
+
+		$recordSet = $searchObject->getNavigationDocuments();
+		//Record set is 0 based, but we are passed a 1 based index
+		if ($currentResultIndex > 0){
+			if (isset($previousResults)){
+				$previousRecord = $previousResults[count($previousResults) - 1] ?? null;
+			}else{
+				$previousRecord = $recordSet[$adjustedResultIndex - 1] ?? null;
+			}
+			if (!empty($previousRecord) && $this->assignNextPrevRecord($previousRecord, 'previous')){
+				//Convert back to 1 based index
+				$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
 			}
 		}
-		if (is_null($recordIndex)) {
-			if (!empty($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['recordIndex'])) {
-				$recordIndex = $_REQUEST['recordIndex'];
-			} else {
-				$recordIndex = 1;
+		if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+			if (isset($nextResults)){
+				$nextRecord = $nextResults[0] ?? null;
+			}else{
+				$nextRecord = $recordSet[$adjustedResultIndex + 1] ?? null;
+			}
+			if (!empty($nextRecord) && $this->assignNextPrevRecord($nextRecord, 'next')){
+				//Convert back to 1 based index
+				$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 			}
 		}
-		if ($searchId) {
-			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$s = new SearchEntry();
-			if ($s->get($searchId)){
-				//rerun the search
-				$interface->assign('searchId', $searchId);
-				if (is_null($page)) {
-					$page = !empty($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				}
-				$interface->assign('page', $page);
+		$timer->logTime('Got next/previous links');
+	}
 
-				/** @var SearchObject_Islandora2 $searchObject */
-				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
-				if ($searchObject === false){
-					return;
-				}
-				$searchObject->setPage($page);
-				$searchObject->setLimit(24); // Assume 24 for Archive Searches; or // TODO: Add pagelimit to saved search?
-				//Run the search
-				$result = $searchObject->processSearch(true, false, $preventQueryModification); // prevent query modification needed for Map Exhibits
-
-				//Check to see if we need to run a search for the next or previous page
-				$currentResultIndex  = $recordIndex - 1;
-				$recordsPerPage      = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($page - 1));
-
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
-					//Need to run a search for the previous page
-					$interface->assign('previousPage', $page - 1);
-					$previousSearchObject = clone $searchObject;
-					$previousSearchObject->setPage($page - 1);
-					$previousSearchObject->processSearch(true, false, $preventQueryModification);
-					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
-					//Need to run a search for the next page
-					$nextSearchObject = clone $searchObject;
-					$interface->assign('nextPage', $page + 1);
-					$nextSearchObject->setPage($page + 1);
-					$nextSearchObject->processSearch(true, false, $preventQueryModification);
-					$nextResults = $nextSearchObject->getResultRecordSet();
-				}
-
-				if (!PEAR_Singleton::isError($result)) {
-					if ($searchObject->getResultTotal() > 0) {
-						$recordSet = $searchObject->getResultRecordSet();
-						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
-							}else{
-								$previousId = $adjustedResultIndex - 1;
-								if (isset($recordSet[$previousId])){
-									$previousRecord = $recordSet[$previousId];
-								}
-							}
-
-							//Convert back to 1 based index
-							if (isset($previousRecord)) {
-								$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-								if (key_exists(self::IDFIELD, $previousRecord)) {
-									$interface->assign('previousType', $this->resultsModule);
-									$interface->assign('previousUrl', $previousRecord['url']);
-									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
-									$previousTitle = is_array($previousRecord[self::TITLE_FIELD]) ? $previousRecord[self::TITLE_FIELD][0] : $previousRecord[self::TITLE_FIELD];
-									$interface->assign('previousTitle', $previousTitle);
-								}
-							}
-						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
-
-							if (isset($nextResults)){
-								$nextRecord = $nextResults[0];
-							}else{
-								$nextRecordIndex = $adjustedResultIndex + 1;
-								if (isset($recordSet[$nextRecordIndex])){
-									$nextRecord = $recordSet[$nextRecordIndex];
-								}
-							}
-							//Convert back to 1 based index
-							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-							if (isset($nextRecord)) {
-								if (key_exists(self::IDFIELD, $nextRecord)) {
-									$interface->assign('nextType', $this->resultsModule);
-									$interface->assign('nextUrl', $nextRecord['url']);
-									// TITLE_FIELD is a multivalued Solr field, so unwrap the first value
-									$nextTitle = is_array($nextRecord[self::TITLE_FIELD]) ? $nextRecord[self::TITLE_FIELD][0] : $nextRecord[self::TITLE_FIELD];
-									$interface->assign('nextTitle', $nextTitle);
-								}
-							}
-						}
-
-					}
-				}
-			}
-			//$timer->logTime('Got next/previous links');
+	/**
+	 * Assign the url & title of one of the previous/next navigation links.
+	 *
+	 * The url comes from the record driver rather than the 'url' entry getResultRecordSet()
+	 * adds to each document, because that entry already carries the search parameters of the
+	 * page the patron came from; the navigation template appends the parameters that belong
+	 * to this neighboring record instead.
+	 *
+	 * @access private
+	 * @param  array  $record A solr document from the result set
+	 * @param  string $prefix Either 'previous' or 'next'; the template variables are named for it
+	 * @return bool           Whether the link could be built
+	 */
+	private function assignNextPrevRecord($record, $prefix){
+		global $interface;
+		$recordDriver = RecordDriverFactory::initRecordDriver($record);
+		if (PEAR_Singleton::isError($recordDriver)){
+			return false;
 		}
+		$interface->assign($prefix . 'Type', $this->resultsModule);
+		$interface->assign($prefix . 'Url', $recordDriver->getRecordUrl());
+		$interface->assign($prefix . 'Title', $recordDriver->getTitle());
+		return true;
 	}
 
 	/**
@@ -792,8 +840,14 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 				// use $IDList as the order guide for the HTML
 				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
-					if (!empty($doc[self::IDFIELD]) && $doc[self::IDFIELD] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+					// getEntryIdForDoc() rather than the raw IDFIELD: a taxonomy term document
+					// has no node id, and the list stores it as tax_{vocabulary}:{tid}.
+					$docEntryId = self::getEntryIdForDoc($doc);
+					if ($docEntryId !== '' && $docEntryId == $currentId) {
+						// A copy, not a reference. A reference would still point into $indexResult when
+						// the next iteration runs $current = null, blanking the document out of the array
+						// that this loop is still reading; getEntryIdForDoc() would then be handed a null.
+						$current = $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
@@ -865,9 +919,27 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			$recordDriver           = RecordDriverFactory::initRecordDriver($solrDocument);
 			$solrDocument['url']    = $recordDriver->getLinkUrl();
 			$solrDocument['format'] = $recordDriver->getFormat();
+			// The id user_list_entry stores for this document, so a caller can match it back to
+			// its list entry. An object's is its_node_id, but a term's is tax_{vocabulary}:{tid}
+			// and appears nowhere in the document; the Solr 'id' is the uniqueKey, not the entry.
+			$solrDocument['listEntryId'] = self::getEntryIdForDoc($solrDocument);
 			$recordSet[$key]        = $solrDocument;
 		}
 		return $recordSet;
+	}
+
+	/**
+	 * The raw solr documents of the current page of results, for getNextPrevLinks().
+	 *
+	 * getResultRecordSet() is the richer version of this, but it builds a record driver for
+	 * every document on the page to enrich it; the previous/next lookup only ever reads one
+	 * document out of the page, and builds the driver for that one itself.
+	 *
+	 * @access  public
+	 * @return  array   The solr documents returned by the last search.
+	 */
+	public function getNavigationDocuments(){
+		return $this->indexResult['response']['docs'] ?? [];
 	}
 
 	/**
@@ -883,7 +955,9 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 			if (!PEAR_Singleton::isError($archiveObjectDriver)){
 				if (method_exists($archiveObjectDriver, 'getListWidgetTitle')){
 					if (!empty($orderedListOfIDs)){
-						$position = array_search($solrDoc[self::IDFIELD], $orderedListOfIDs);
+						// getEntryIdForDoc() rather than the raw IDFIELD: a taxonomy term
+						// document carries no node id.
+						$position = array_search(self::getEntryIdForDoc($solrDoc), $orderedListOfIDs);
 						if ($position !== false){
 							$widgetTitles[$position] = $archiveObjectDriver->getListWidgetTitle();
 						}
@@ -961,14 +1035,81 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	}
 
 	/**
-	 * Set an overriding array of archive Node Ids.
+	 * Set an overriding array of archive entry Ids.
+	 *
+	 * Accepts both Islandora 2 node ids and taxonomy term ids in their user list entry form
+	 * (tax_{vocabulary}:{tid}). The two entity types live in the same Solr core but are
+	 * identified by different fields, so they are queried as a union.
+	 *
+	 * The prefix has to come off before the query is built: Solr.php drops an its_node_id or
+	 * its_tid clause whose value is not all digits.
 	 *
 	 * @access  public
-	 * @param   array  $ids archive Node IDs to load
+	 * @param   array  $ids archive Node IDs and/or taxonomy term entry IDs to load
 	 */
 	public function setQueryIDs($ids){
-		$this->query = self::IDFIELD . ':(' . implode(' ', $ids) . ')';
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		$nodeIds = $termIds = [];
+		foreach ($ids as $id){
+			$parsed = parseUserListEntryId((string)$id);
+			// Both fields are integer fields, so anything non-numeric is dropped rather than
+			// interpolated. An unconverted legacy PID reaching here would otherwise put a bare
+			// colon inside the clause and make the whole query malformed, failing the entire
+			// list rather than just that entry.
+			if ($parsed['type'] === USER_LIST_ENTRY_TAXONOMY_TERM && ctype_digit($parsed['id'])){
+				$termIds[] = $parsed['id'];
+			}elseif ($parsed['type'] === USER_LIST_ENTRY_ARCHIVE_OBJECT && ctype_digit($parsed['id'])){
+				$nodeIds[] = $parsed['id'];
+			}else{
+				$this->getLogger()->warning('Ignoring an archive list id that is neither a node id nor a taxonomy term id', ['id' => $id]);
+			}
+		}
+
 		// The default q.op for Islandora2 is OR so we can just use a space instead of adding an explicit OR
+		$clauses = [];
+		if (!empty($nodeIds)){
+			$clauses[] = self::IDFIELD . ':(' . implode(' ', $nodeIds) . ')';
+		}
+		if (!empty($termIds)){
+			$clauses[] = self::TAXONOMY_IDFIELD . ':(' . implode(' ', $termIds) . ')';
+		}
+
+		if (empty($clauses)){
+			// An empty query would ask Solr for everything; ask for a node id that cannot exist
+			// instead, so the caller gets the empty result set it actually meant.
+			$this->query = self::IDFIELD . ':(-1)';
+		}elseif (count($clauses) === 1){
+			$this->query = $clauses[0];
+		}else{
+			$this->query = '(' . implode(' OR ', $clauses) . ')';
+		}
+	}
+
+	/**
+	 * The user list entry id for an archive Solr document, node or taxonomy term.
+	 *
+	 * Callers match a returned document back to the id they asked for. A node answers with
+	 * its_node_id, but a taxonomy term has no node id at all — it has to be rebuilt into the
+	 * tax_{vocabulary}:{tid} form the list stores.
+	 *
+	 * @param  array $doc  An Islandora 2 Solr document.
+	 * @return string      The stored entry id, or '' when the document is neither.
+	 */
+	public static function getEntryIdForDoc(array $doc): string{
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		if (!empty($doc[self::IDFIELD])){
+			$nodeId = is_array($doc[self::IDFIELD]) ? reset($doc[self::IDFIELD]) : $doc[self::IDFIELD];
+			return (string)$nodeId;
+		}
+		if (!empty($doc[self::TAXONOMY_IDFIELD])){
+			$tid        = is_array($doc[self::TAXONOMY_IDFIELD]) ? reset($doc[self::TAXONOMY_IDFIELD]) : $doc[self::TAXONOMY_IDFIELD];
+			$vocabulary = $doc[self::TAXONOMY_VOCABULARY_FIELD] ?? null;
+			if (is_array($vocabulary)){
+				$vocabulary = reset($vocabulary);
+			}
+			return buildTaxonomyUserListEntryId((int)$tid, $vocabulary);
+		}
+		return '';
 	}
 
 
@@ -1216,76 +1357,172 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	 */
 	public function buildExcel($result = null){
 		//TODO: this wouldn't work for archive searches
+  	// First, get the search results if none were provided
+		if (is_null($result)) {
+			$this->limit = 2000;
+			$result = $this->processSearch(false, false);
+		}
 
-//		// First, get the search results if none were provided
-//		// (we'll go for 50 at a time)
-//		if (is_null($result)) {
-//			$this->limit = 2000;
-//			$result = $this->processSearch(false, false);
-//		}
-//
-//		// Prepare the spreadsheet
-//		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-//		$objPHPExcel->getProperties()->setTitle("Search Results");
-//
-//		$objPHPExcel->setActiveSheetIndex(0);
-//		$objPHPExcel->getActiveSheet()->setTitle('Results');
-//
-//		//Add headers to the table
-//		$sheet = $objPHPExcel->getActiveSheet();
-//		$curRow = 1;
-//		$curCol = 1;
-//		$sheet->setCellValue([$curCol++, $curRow], 'First Name');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Last Name');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Birth Date');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Death Date');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Veteran Of');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Cemetery');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Addition');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Block');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Lot');
-//		$sheet->setCellValue([$curCol++, $curRow], 'Grave');
-//		$maxColumn = $curCol -1;
-//
-//        $_count = count($result['response']['docs']);
-//		for ($i = 0; $i < $_count; $i++) {
-//			$curDoc = $result['response']['docs'][$i];
-//			$curRow++;
-//			$curCol = 1;
-//			//TODO: Need to export information to Excel
-//		}
-//
-//		for ($i = 0; $i < $maxColumn; $i++){
-//			$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-//		}
-//
-//		//Output to the browser
-//		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-//		header("Cache-Control: no-store, no-cache, must-revalidate");
-//		header("Cache-Control: post-check=0, pre-check=0", false);
-//		header("Pragma: no-cache");
-//		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//		header('Content-Disposition: attachment;filename="Results.xlsx"');
-//
-//		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xlsx');
-//		$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-//		$objPHPExcel->disconnectWorksheets();
-//		unset($objPHPExcel);
+		// Prepare the spreadsheet
+		$objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+		$objPHPExcel->getProperties()->setTitle("Search Results");
+		$objPHPExcel->getProperties()->setCreator('Pika')
+			->setLastModifiedBy('Pika')
+			->setTitle('Office 2007 XLSX Document')
+			->setSubject('Office 2007 XLSX Document')
+			->setDescription('Office 2007 XLSX, generated using PHP.')
+			->setKeywords('office 2007 openxml php')
+			->setCategory('List Items');
+
+		//Initiate and add headers to the document
+		$objPHPExcel->setActiveSheetIndex(0)
+			->setCellValue('A1', 'Title')
+			->setCellValue('B1', 'Format')
+			->setCellValue('C1', 'Contributing Library')
+			->setCellValue('D1', 'Record ID')
+			->setCellValue('E1', 'Description');
+		$objPHPExcel->getActiveSheet()->setTitle('Results');
+
+		$a = 2;
+		foreach ($result['response']['docs'] as $resultItem){
+			$objPHPExcel->setActiveSheetIndex(0)
+				->setCellValue('A' . $a, $resultItem['twm_X3b_en_title_ws_token'][0] ?? $resultItem['tm_X3b_en_name'][0])
+				// ucwords and str_replace are here to turn corporate_body into Corporate Body which looks better to my eye and
+				// more closely matches the provided formats
+				->setCellValue('B' . $a, $resultItem['ss_model'] ?? ucwords(str_replace('_', ' ', $resultItem['ss_vid'])))
+				->setCellValue('C' . $a, $resultItem['ss_library'])
+				->setCellValue('D' . $a, $resultItem['its_node_id'] ?? $resultItem['its_tid'])
+				->setCellValue('E' . $a, $resultItem['twm_X3b_en_field_description_long_ws_token'][0] ?? $resultItem['tm_X3b_en_description'][0]);
+			$a++;
+		}
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+
+		//Output to the browser
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="Results.xls"');
+		header('Cache-Control: max-age=0');
+
+		$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, 'Xls');
+		$objWriter->save('php://output');
+
+		$objPHPExcel->disconnectWorksheets();
+		unset($objPHPExcel);
 	}
 
 	/**
-	 * Retrieve full Solr documents for an array of Islandora2 node IDs, with standard filters applied.
+	 * Return the subset of the given archive user list entry IDs that survive the current
+	 * search filters.
 	 *
-	 * Delegates to {@see \Solr::getIslandora2NodeIds()} which queries the its_node_id
-	 * field via /select. Standard search filters (library visibility, private collections, etc.)
-	 * are applied via {@see setFinalFilterQuery()}.
+	 * Standard search filters (library visibility, private collections, etc.) are applied via
+	 * {@see setFinalFilterQuery()}. Node IDs and taxonomy term IDs are queried separately,
+	 * because a term document carries no its_node_id, and both are mapped back to the
+	 * tax_{vocabulary}:{tid} / node id form the list stores.
 	 *
-	 * @param int[]|string[] $nids  Islandora2 node IDs to retrieve
-	 * @return array                Array of matching Solr document arrays
+	 * Note this returns IDs, not documents. It used to return the raw Solr documents while its
+	 * only caller (FavoriteHandler, the list facet-filter branch) fed the result straight into
+	 * array_intersect() against a list of ID strings, which could never match.
+	 *
+	 * @param int[]|string[] $ids  Archive user list entry IDs to filter
+	 * @return string[]            The entry IDs that matched, in Solr's order
 	 */
-	function getFilteredNodeIds($nids):array{
+	function getFilteredNodeIds($ids):array{
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 		$filterQuery = $this->setFinalFilterQuery();
-		return $this->indexEngine->getIslandora2NodeIds($nids, $filterQuery);
+
+		$nodeIds = $termIds = [];
+		foreach ($ids as $id){
+			$parsed = parseUserListEntryId((string)$id);
+			if ($parsed['type'] === USER_LIST_ENTRY_TAXONOMY_TERM){
+				$termIds[] = $parsed['id'];
+			}else{
+				$nodeIds[] = $parsed['id'];
+			}
+		}
+
+		$docs = [];
+		if (!empty($nodeIds)){
+			$docs = $this->indexEngine->getIslandora2NodeIds($nodeIds, $filterQuery, 100, self::IDFIELD);
+		}
+		if (!empty($termIds)){
+			$docs = array_merge($docs, $this->indexEngine->getIslandora2NodeIds($termIds, $filterQuery, 100, self::TAXONOMY_IDFIELD));
+		}
+
+		$entryIds = [];
+		foreach ($docs as $doc){
+			$entryId = self::getEntryIdForDoc($doc);
+			if ($entryId !== ''){
+				$entryIds[] = $entryId;
+			}
+		}
+		return $entryIds;
+	}
+
+	/**
+	 * Resolve legacy Islandora 1 entity PIDs to their Islandora 2 taxonomy terms, keeping the
+	 * association between each PID and the term it resolved to.
+	 *
+	 * getLegacyEntitiesTIDs() returns a bare list of TIDs, which is enough when looking up one
+	 * PID at a time but loses which PID produced which TID — and it cannot say what vocabulary
+	 * a term belongs to. Both matter when converting a table of stored PIDs in bulk, so this
+	 * asks Solr for the three fields together and keys the result by PID.
+	 *
+	 * Like getLegacyEntitiesTIDs(), no standard search filters are applied, so a term that is
+	 * currently hidden or private still resolves. That is deliberate for a data migration: the
+	 * entry should point at the right term whether or not the term is visible today.
+	 *
+	 * @param string[] $pids  Legacy Islandora 1 entity PIDs to look up
+	 * @return array          Map of legacy PID => ['tid' => int, 'vocabulary' => string|null].
+	 *                        PIDs with no match are absent; a PID matching more than one term
+	 *                        keeps the first and is reported in $duplicatePids.
+	 * @param string[] $duplicatePids  Out-parameter listing PIDs that matched multiple terms.
+	 */
+	function getLegacyEntityTermsByPid(array $pids, array &$duplicatePids = []): array{
+		$termsByPid    = [];
+		$duplicatePids = [];
+		if (empty($pids)){
+			return $termsByPid;
+		}
+
+		$docs = $this->indexEngine->getLegacyPidDocuments(
+			$pids,
+			'ss_legacy_entity_pid',
+			['ss_legacy_entity_pid', self::TAXONOMY_IDFIELD, self::TAXONOMY_VOCABULARY_FIELD]
+		);
+
+		foreach ($docs as $doc){
+			$pid = $doc['ss_legacy_entity_pid'] ?? null;
+			if (is_array($pid)){
+				$pid = reset($pid);
+			}
+			$tid = $doc[self::TAXONOMY_IDFIELD] ?? null;
+			if (is_array($tid)){
+				$tid = reset($tid);
+			}
+			if (empty($pid) || empty($tid)){
+				continue;
+			}
+			if (isset($termsByPid[$pid])){
+				$duplicatePids[$pid] = $pid;
+				continue; // keep the first match, as convertArchivePidToCorporateBodyTid() does
+			}
+			$vocabulary = $doc[self::TAXONOMY_VOCABULARY_FIELD] ?? null;
+			if (is_array($vocabulary)){
+				$vocabulary = reset($vocabulary);
+			}
+			$termsByPid[$pid] = [
+				'tid'        => (int)$tid,
+				'vocabulary' => !empty($vocabulary) ? strtolower((string)$vocabulary) : null,
+			];
+		}
+
+		$duplicatePids = array_values($duplicatePids);
+		return $termsByPid;
 	}
 
 	/**
@@ -1408,25 +1645,33 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 	private function getStandardFilters(){
 		global $configArray;
 		$filters = [
-			'ss_type:islandoraobject',   // ignore other drupal things
-			'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
-			//'!ss_name_1:Page',           // Hide Page objects //TODO: temp, remove
+			//'ss_type:islandoraobject',   // ignore other drupal things
+			'ss_search_api_datasource:("entity:node" OR "entity:taxonomy_term")',
+			//'ss_search_api_datasource:("entity:node","entity:taxonomy_term")', // could be simplified to this with q.op=OR
+			'bs_pika_show_in_search:1 OR bs_geo_show_in_search:1',  // Pika Option: Show in Search Results
+			//'bs_pika_show_in_search:1',  // Pika Option: Show in Search Results
 			'!ss_model:Page',           // Hide Page objects
 			'!itm_field_library:29478', // Hide Boulder Objects (contributing library taxonomy tid) (theoretically number-filtering is quicker)
 			//'!ss_name_23:Boulder',      // Hide Boulder Objects
 
 			// these shouldn't show due to pika controls
 			//'!itm_field_member_of:567', // Hide objects member of Boulder (top) Collection; catches some things without library
-			//'!itm_field_member_of:530', //BD test? //TODO: these might not exist; and just need a full reindex to remove from search
-			//'!itm_field_member_of:640', // BD test?
 		];
 
 		// Pika Search Options
 		// Pika Usage
-		$filters[] = $configArray['Site']['isProduction']
-			? 'ss_pika_usage:yes'  // Production: Show "yes" only
-			: '!ss_pika_usage:no'; // Test: Show "yes" and "testonly" (by excluding "no")
-
+		if ($configArray['Site']['isProduction']){
+			// Production: Show "yes" only
+			$filters[] = '(ss_pika_usage:yes OR ss_taxo_pika_usage:yes)';
+		}else{
+			// Test: Show "yes" and "testonly" (by excluding "no").
+			// Kept as separate filters: Solr only supplies the implicit *:* for an all-negative
+			// query at the top level of an fq, so combining these inside parens matches nothing.
+			// Combining these two in a single filter within parentheses returns no results.
+			// To correctly combine, use: '(*:* -ss_pika_usage:no -ss_taxo_pika_usage:no)'
+			$filters[] = '!ss_pika_usage:no';
+			$filters[] = '!ss_taxo_pika_usage:no';
+		}
 		global /** @var \Library $library */ $library;
 		if (!isset($library)){
 			$this->getLogger()->error('Library not set when calling '. __FUNCTION__. '. Needed for correct standard filtering.');

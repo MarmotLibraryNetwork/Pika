@@ -118,10 +118,5 @@ class Fines extends MyAccount {
  * @return mixed|string    string to be displayed
  */
 function formatNumber($number){
-	// money_format() does not exist on windows
-	if (function_exists('money_format')){
-		return money_format('%.2n', $number);
-	}else{
-		return safeMoneyFormat($number);
-	}
+	return safeMoneyFormat($number);
 }

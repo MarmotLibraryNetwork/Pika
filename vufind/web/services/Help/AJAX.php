@@ -277,7 +277,8 @@ class Help_AJAX extends AJAXHandler {
 						'message' => "<p class='alert alert-danger'>We're sorry, an error occurred while submitting your report.</p>" . $emailResult->getMessage()
 					];
 				}elseif ($emailResult){
-					$this->logger->warn('Accessibility Report was sent successfully with following message: ' . $emailResult);
+					$this->logger->warn('Accessibility Report was sent successfully');
+					// Use warning level to keep successful submissions in production logging
 					return [
 						'title'   => 'Accessibility Report Sent',
 						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
@@ -294,7 +295,7 @@ class Help_AJAX extends AJAXHandler {
 			$this->logger->warn('Accessibility Report submission without "submit" request variable set.');
 			return [
 				'title' => 'Error',
-				'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+				'message' => "<p class='alert alert-danger'>We're sorry: your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
 			];
 		}
 

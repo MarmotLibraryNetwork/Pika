@@ -1,6 +1,6 @@
 {strip}
 	<div class="col-sm-12">
-		{include file="Archive/search-results-navigation.tpl"}
+		{include file="Archive2/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
 		{if $can_view == false}

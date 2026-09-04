@@ -43,17 +43,10 @@ use Pika\Logger;
  */
 class Archive_LegacyRedirect extends Action
 {
-    /**
-     * Legacy entity PIDs are namespaced by their type (e.g. "place:2455"), and objects never
-     * use these namespaces. This maps each entity namespace to its Islandora 2 taxonomy
-     * vocabulary machine name, so the PID prefix alone routes an entity to the right lookup.
-     */
-    private const ENTITY_PID_NAMESPACE_VOCAB_MAP = [
-        'person'       => 'person',
-        'place'        => 'geo_location',
-        'event'        => 'event',
-        'organization' => 'corporate_body',
-    ];
+    // The legacy entity namespace => vocabulary map now lives in sys/Islandora2/Functions.php as
+    // ISLANDORA2_LEGACY_ENTITY_NAMESPACE_VOCAB_MAP, reached through
+    // getVocabularyForLegacyEntityPid(). It is shared with the D-5399 user list migration, which
+    // needs the same rule and should not have to load a controller to get it.
 
     private Logger $logger;
 
@@ -111,8 +104,7 @@ class Archive_LegacyRedirect extends Action
      */
     private function resolveTarget(string $pid): ?array
     {
-        $namespace = strtolower(explode(':', $pid, 2)[0]);
-        $vocab     = self::ENTITY_PID_NAMESPACE_VOCAB_MAP[$namespace] ?? null;
+        $vocab = getVocabularyForLegacyEntityPid($pid);
 
         // Entities: taxonomy terms keyed by field_pid.
         if ($vocab !== null) {

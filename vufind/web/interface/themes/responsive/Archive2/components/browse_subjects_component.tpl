@@ -1,14 +1,14 @@
 {strip}
-<div class="archiveComponentContainer nopadding col-md-12 col-lg-6">
+<div class="archiveComponentContainer nopadding browseButtonBox">
 	<div class="archiveComponent browseFilterContainer">
-		<div class="row archiveComponentBody">
+		<div class="archiveComponentBody">
 			<div class="archiveComponentBox">
 				<a href="#" data-bs-toggle="modal" data-bs-target="#browseSubjectsModal{$browseSubjectsId}">
-					<div class="col-4 col-sm-3 col-lg-4 archiveComponentIconContainer">
-						<img src="{$browseSubjectsImage}" width="100" height="100" alt="{$browseSubjectsTitle|escape}" class="archiveComponentImage">
+					<div class="archiveComponentIconContainer">
+						<img src="{$browseSubjectsImage}" width="100" height="100" alt=""{* "Alternative text of images should not be repeated as text" *} class="archiveComponentImage">
 					</div>
-					<div class="col-8 col-sm-9 col-lg-8 archiveComponentControls">
-						<div class="archiveComponentHeader">{$browseSubjectsTitle}</div>
+					<div class="archiveComponentControls">
+						<div class="archiveComponentHeader">{$browseSubjectsTitle|regex_replace:"/\bby\b/i":"by<br>"}</div>
 					</div>
 				</a>
 			</div>

@@ -65,6 +65,7 @@ const ICON_MAP = {
 	'minus-sign': 'dash-circle-fill',
 	'plus-sign': 'plus-circle-fill',
 	'warning-sign': 'exclamation-triangle-fill',
+	'refresh': 'arrow-clockwise',
 };
 
 // Visibility utilities at the shifted tiers. Old ranges (customized BS3 grid):

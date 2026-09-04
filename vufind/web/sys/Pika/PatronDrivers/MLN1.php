@@ -112,7 +112,6 @@ class MLN1 extends Sierra {
 					unset($field['simplePhoneUS']); // Allow international phone numbers with spaces. See D-5442
 					}
 			}
-			unset($field);
 	}
 
 		return $fields;

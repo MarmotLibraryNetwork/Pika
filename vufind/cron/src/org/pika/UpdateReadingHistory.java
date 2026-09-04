@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.ConnectException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +42,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private CronProcessLogEntry processLog;
 	private String              pikaUrl;
 	private Logger              logger;
+	private String              userAgent;
 	private PreparedStatement   insertReadingHistoryStmt;
 	private PreparedStatement   updatedReadingHistoryTimeStmt;
 	private String              userApiToken                     = "";
@@ -63,6 +65,12 @@ public class UpdateReadingHistory implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			return;
+		}
+
+		userAgent = PikaConfigIni.getIniValue("Site", "internalUserAgent");
+		if (userAgent == null || userAgent.isEmpty()) {
+			logger.warn("No internal user agent set in config.ini. Proxy may interfere with these calls.  Using default user agent.");
+			userAgent = "Pika";
 		}
 
 		userApiToken = PikaConfigIni.getIniValue("System", "userApiToken");
@@ -208,10 +216,12 @@ public class UpdateReadingHistory implements IProcessHandler {
 						// Call the patron API to get their checked out items
 						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&userId=" + userId + "&token=" + token
 								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
-						URL patronApiUrl = new URL(loadReadingHistoryUrl);
+						URL               patronApiUrl = new URL(loadReadingHistoryUrl);
+						HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
+						conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
 						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
 						// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
-						Object patronDataRaw = patronApiUrl.getContent();
+						Object patronDataRaw = conn.getContent();
 						if (patronDataRaw instanceof InputStream) {
 							String patronDataJson = "";
 							try {
@@ -399,8 +409,10 @@ public class UpdateReadingHistory implements IProcessHandler {
 		do {
 			try {
 				// Call the patron API to get their checked out items
-				URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
-				Object patronDataRaw = patronApiUrl.getContent();
+				URL               patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
+				HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
+				conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+				Object patronDataRaw = conn.getContent();
 				if (patronDataRaw instanceof InputStream) {
 					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
 					if (logger.isDebugEnabled()) {

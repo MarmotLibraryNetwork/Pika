@@ -18,6 +18,7 @@
 Pika.Browse = (function(){
 	return {
 		curPage: 1,
+		loadingMoreResults: false, // whether a batch of browse results is in flight; see getMoreResults()
 		curCategory: '',
 		curSubCategory : '',
 		browseMode: 'covers',
@@ -169,6 +170,8 @@ Pika.Browse = (function(){
 					} else {
 						$('.selected-browse-label-search-text').html(data.label); // update label
 						Pika.Browse.curPage = 1;
+						$('#more-browse-results').show(); // a previous category may have hidden it on its last page
+						$('#more-results-status').text('');
 						Pika.Browse.curCategory = data.textId;
 						Pika.Browse.curSubCategory = data.subCategoryTextId || '';
 						$('#home-page-browse-results div.row') // should be the first div only
@@ -229,6 +232,8 @@ Pika.Browse = (function(){
 					else $('.selected-browse-sub-category-label-search-text').fadeOut(); // Hide if no sub-category
 
 					Pika.Browse.curPage = 1;
+					$('#more-browse-results').show(); // a previous category may have hidden it on its last page
+					$('#more-results-status').text('');
 					if (data.textId) Pika.Browse.curCategory = data.textId;
 					if (data.subCategoryTextId) Pika.Browse.curSubCategory = data.subCategoryTextId || '';
 
@@ -275,29 +280,55 @@ Pika.Browse = (function(){
 		},
 
 		getMoreResults: function(){
-			//Increment the current page in case the button is clicked rapidly
-			this.curPage += 1;
+			// A batch takes long enough to fetch that the button can be clicked again before the
+			// first one lands.  This guard replaces incrementing curPage up front, which stopped
+			// rapid clicks re-requesting a page but left the count advanced past a batch that
+			// never arrived when a request failed; the page now moves on only once one lands.
+			if (this.loadingMoreResults){
+				return false;
+			}
 			var url = '/Browse/AJAX',
 					params = {
 						method : 'getMoreBrowseResults'
 						,textId :  this.curSubCategory || this.curCategory
 						  // if sub-category is currently selected fetch that, otherwise fetch the main category
-						,pageToLoad : this.curPage
+						,pageToLoad : this.curPage + 1
 						,browseMode : this.browseMode
 					},
+					status   = $('#more-results-status'),
+					loading  = $('#more-results-loading'),
+					button   = $('#more-browse-results'),
 					divClass = this.browseModeClasses[this.browseMode]; //|| this.browseModeClasses[Object.keys(this.browseModeClasses)[0]]; // if browseMode isn't set grab the first class
+
+			this.loadingMoreResults = true;
+			button.prop('disabled', true);
+			loading.removeClass('d-none');
+			status.text('Loading more results.');
+
 			$.getJSON(url, params, function(data){
 				if (data.success == false){
+					status.text('');
 					Pika.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
 					var newDiv = $('<div class="'+divClass+' row" />').hide().append(data.records);
 					$('.'+divClass).filter(':last').after(newDiv).after('<hr>');
 					newDiv.fadeIn('slow');
 					if (data.lastPage){
-						$('#more-browse-results').hide(); // hide the load more results TODO: implement server side
+						button.hide(); // getBrowseCategoryResults() sets lastPage; selecting another category shows it again
+						status.text('Loaded the last of the results.');
+					}else{
+						Pika.Browse.curPage++;
+						status.text('More results loaded.');
 					}
 				}
-			}).fail(Pika.ajaxFail);
+			}).fail(function(){
+				status.text('');
+				Pika.ajaxFail.apply(this, arguments);
+			}).always(function(){
+				Pika.Browse.loadingMoreResults = false;
+				loading.addClass('d-none');
+				button.prop('disabled', false); // harmless on the last batch, where the button is hidden
+			});
 			return false;
 		}
 

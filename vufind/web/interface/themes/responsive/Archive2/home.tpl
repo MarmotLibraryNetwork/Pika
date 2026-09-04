@@ -22,7 +22,7 @@
 										<li id="relatedTitleLibrary{$n}" class="relatedTitle">
 											<a href="{$project.link}" >
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
+													<img src="{$project.image}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
@@ -50,7 +50,7 @@
 										<li id="relatedTitleOther{$i}" class="relatedTitle">
 											<a href="{$project.link}" title="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
 												<figure class="thumbnail">
-													<img src="{$project.image}" alt="Collection: {$project.title|removeTrailingPunctuation|truncate:40}">
+													<img src="{$project.image}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 													<figcaption>{$project.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 												</figure>
 											</a>
@@ -77,7 +77,7 @@
 									<li id="relatedTitleTypes{$x}" class="relatedTitle">
 										<a href="{$contentType.link}">
 											<figure class="thumbnail">
-												<img src="{$contentType.image}" alt="{$contentType.title|removeTrailingPunctuation|truncate:40}">
+												<img src="{$contentType.image}" alt=""{* "Alternative text of images should not be repeated as text" *}>
 												<figcaption>{$contentType.title|removeTrailingPunctuation|truncate:80:"..."}</figcaption>
 											</figure>
 										</a>

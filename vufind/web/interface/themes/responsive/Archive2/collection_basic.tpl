@@ -2,7 +2,7 @@
 {strip}
 	<div class="col-sm-12">
 		{* Search Navigation *}
-		{include file="Archive/search-results-navigation.tpl"}
+		{include file="Archive2/search-results-navigation.tpl"}
 		<h1 role="heading" aria-level="1" class="h2">{$title}</h1>
 
 		{if $can_view == false}
@@ -39,7 +39,7 @@
 			{include file="Archive2/partials/collection-item.tpl"}
 			{/foreach}
 		</div>
-		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+		{include file="Archive2/components/collection-pager.tpl"}
 		{/if}
 
 		{/if}

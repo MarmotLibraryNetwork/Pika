@@ -181,12 +181,13 @@ class UInterface extends Smarty {
 		$this->url = $url;
 		$this->assign('url', $url);
 
-		if (isset($configArray['Islandora']['repositoryUrl'])){
-			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
-			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-		}
-		if (!empty($configArray['Islandora']['debugViewer'])){
-			$this->assign('debugViewer', true);
+		if (!empty($configArray['Islandora']['enabled'])){
+			if (isset($configArray['Islandora']['repositoryUrl'])){
+				$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
+			}
+			if (!empty($configArray['Islandora']['debugViewer'])){
+				$this->assign('debugViewer', true);
+			}
 		}
 
 		if (isset($configArray['Site']['libraryName'])){

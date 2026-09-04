@@ -36,6 +36,7 @@ class ListAPI extends AJAXHandler {
 		'clearListTitles',
 		'getAvailableListsFromNYT',
 		'createUserListFromNYT',
+		'updateAllUserListsFromNYT',
 	];
 
 	protected $methodsThatRespondWithJSONUnstructured = [
@@ -1005,8 +1006,19 @@ class ListAPI extends AJAXHandler {
 		}
 
 		// Get the raw response from the API with a list of all the names
-		$nyt_api = new ExternalEnrichment\NYTApi($api_key);
-		return $nyt_api->getList($listName);
+		$nyt_api     = new ExternalEnrichment\NYTApi($api_key);
+		$nytResponse = $nyt_api->getList($listName);
+
+		// A fault response carries no lists, so report the problem rather than returning a response the caller
+		// cannot read.  (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($nytResponse);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+		return $nytResponse;
 	}
 
 	/**
@@ -1015,7 +1027,7 @@ class ListAPI extends AJAXHandler {
 	 * @param string|null $selectedList machine-readable name of the new york times list
 	 * @return array
 	 */
-	public function createUserListFromNYT(string $selectedList = null){
+	public function createUserListFromNYT(?string $selectedList = null){
 		global $configArray;
 
 		if ($selectedList == null){
@@ -1055,16 +1067,20 @@ class ListAPI extends AJAXHandler {
 		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
 		$availableLists = $nyt_api->getLists();
 
-		//Get the human-readable title for our selected list
-		$selectedListTitle       = null;
-		$selectedListTitleShort  = null;
-		$selectedListDescription = null;
-		//Get the title and description for the selected list
+		// (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($availableLists);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+
+		//Confirm the New York Times is still publishing the list that was asked for
+		$selectedListTitleShort = null;
 		foreach ($availableLists->results->lists as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
-				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
-				$selectedListTitleShort  = $listInformation->display_name;
-				$selectedListDescription = 'New York Times - ' . $selectedListTitleShort . ' - Published on ' . $listInformation->newest_published_date;
+				$selectedListTitleShort = $listInformation->display_name;
 				break;
 			}
 		}
@@ -1077,8 +1093,170 @@ class ListAPI extends AJAXHandler {
 			];
 		}
 
+		//Get a list of titles from NYT API
+		$availableLists = $nyt_api->getList($selectedList);
+
+		// (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($availableLists);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+
+		// Include Search Engine Class
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
+		/** @var SearchObject_Solr $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+
+		// A call for a single list reports its own published_date, but the overview call does not carry one for each of
+		// the lists it returns, only the bestsellers_date that all of them share.  Both responses report the same
+		// bestsellers_date, so use it here too, and a list built on its own reads the same as one built by
+		// updateAllUserListsFromNYT along with all the others.
+		return $this->updateUserListFromNYTData($availableLists->results, $availableLists->results->bestsellers_date ?? '', $pikaUser, $searchObject);
+	}
+
+	/**
+	 * Creates or updates a Pika user list for every bestseller list The New York Times is currently publishing, from a
+	 * single call to their API.
+	 *
+	 * The overview call returns every current list with the whole of its books array, so this costs one New York Times
+	 * request for all of the lists rather than one request each.  That keeps the whole update well inside their rate
+	 * limit.  Any list that fails here can be retried on its own with createUserListFromNYT.
+	 *
+	 * @return array success and message for the run as a whole, plus a lists array holding an entry for each list with
+	 *               its listName, success and message, and its listId and titlesAdded when the list was built.  A
+	 *               success of true means the call to The New York Times worked and the lists were attempted; the
+	 *               caller still has to read the lists array to see which of them were updated.
+	 */
+	public function updateAllUserListsFromNYT(){
+		global $configArray;
+
+		if (empty($configArray['NYT_API']['books_API_key'])){
+			return [
+				'success' => false,
+				'message' => 'API Key missing',
+			];
+		}
+		$api_key      = $configArray['NYT_API']['books_API_key'];
+		$pikaUsername = $configArray['NYT_API']['pika_username'];
+		$pikaPassword = $configArray['NYT_API']['pika_password'];
+
+		if (empty($pikaUsername) || empty($pikaPassword)){
+			$error = 'Pika NY Times user not set';
+			$this->logger->error($error);
+			return [
+				'success' => false,
+				'message' => $error,
+			];
+		}
+
+		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
+		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)){
+			$error = 'Invalid Pika NY Times user';
+			$this->logger->error($error);
+			return [
+				'success' => false,
+				'message' => $error,
+			];
+		}
+
+		//Get every current list, with all of its books, in one call
+		$nyt_api        = new ExternalEnrichment\NYTApi($api_key);
+		$availableLists = $nyt_api->getLists();
+
+		// (The fault itself is logged by NYTApi.)
+		$faultMessage = ExternalEnrichment\NYTApi::getFaultMessage($availableLists);
+		if ($faultMessage !== null){
+			return [
+				'success' => false,
+				'message' => $faultMessage,
+			];
+		}
+		if (empty($availableLists->results->lists)){
+			$error = 'The New York Times API did not return any lists';
+			$this->logger->error($error);
+			return [
+				'success' => false,
+				'message' => $error,
+			];
+		}
+
+		// Include Search Engine Class
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
+		/** @var SearchObject_Solr $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+
+		// The overview does not carry a published_date for each of the lists it returns, the way a call for a single
+		// list does, only the bestsellers_date that all of them share.  createUserListFromNYT uses that same date for
+		// the one list it builds, so a list retried on its own reads the same as the ones built here.
+		$bestsellersDate = $availableLists->results->bestsellers_date ?? '';
+
+		$listResults = [];
+		$numUpdated  = 0;
+		$numFailed   = 0;
+		foreach ($availableLists->results->lists as $nytListData){
+			$listName = $nytListData->list_name_encoded ?? '';
+			if (empty($listName) || empty($nytListData->display_name)){
+				$error = 'The New York Times sent a list without a name';
+				$this->logger->error($error);
+				$listResults[] = [
+					'listName' => $listName,
+					'success'  => false,
+					'message'  => $error,
+				];
+				$numFailed++;
+				continue;
+			}
+
+			$listResult             = $this->updateUserListFromNYTData($nytListData, $bestsellersDate, $pikaUser, $searchObject);
+			$listResult['listName'] = $listName;
+			$listResults[]          = $listResult;
+			if ($listResult['success']){
+				$numUpdated++;
+			}else{
+				$numFailed++;
+			}
+		}
+
+		$message = "Updated $numUpdated of " . count($listResults) . ' New York Times lists';
+		if ($numFailed > 0){
+			$message .= ", $numFailed could not be updated";
+		}
+		$this->logger->notice($message);
+
+		return [
+			'success' => true,
+			'message' => $message,
+			'lists'   => $listResults,
+		];
+	}
+
+	/**
+	 * Creates or updates the Pika user list for one New York Times bestseller list, and fills it with the titles Pika
+	 * can match to the books The New York Times sent with it.
+	 *
+	 * The list data can come either from a call for that single list or from one of the lists in the overview call,
+	 * since The New York Times sends the same list and book information in both.
+	 *
+	 * @param object            $nytListData     one list from The New York Times, holding display_name and books
+	 * @param string            $bestsellersDate the date to show in the list description and in each entry note.  Both
+	 *                                            callers pass the bestsellers_date because it is the only date the
+	 *                                            overview call and a call for a single list report the same way.
+	 * @param User              $pikaUser        the Pika user that owns the New York Times lists
+	 * @param SearchObject_Solr $searchObject    used to match each book to a grouped work by ISBN
+	 * @return array success and message, plus listId and titlesAdded when the list was built
+	 */
+	private function updateUserListFromNYTData($nytListData, string $bestsellersDate, $pikaUser, $searchObject): array{
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
+
+		$selectedListName        = $nytListData->list_name_encoded ?? $nytListData->display_name;
+		$selectedListTitleShort  = $nytListData->display_name;
+		$selectedListTitle       = 'NYT - ' . $selectedListTitleShort;
+		$selectedListDescription = 'New York Times - ' . $selectedListTitleShort . ' - Published on ' . $bestsellersDate;
+
 		// Look for selected List
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		$nytList          = new UserList();
 		$nytList->user_id = $pikaUser->id;
 		$nytList->title   = $selectedListTitle;
@@ -1095,51 +1273,36 @@ class ListAPI extends AJAXHandler {
 			$success              = $nytList->insert();
 			$nytList->find(true);
 
-			if ($success){
-				$listID  = $nytList->id;
-				$results = [
-					'success' => true,
-					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
-				];
-			}else{
-				$error = 'Could not create NYTimes list';
+			if (!$success){
+				$error = 'Could not create NYTimes list ' . $selectedListTitle;
 				$this->logger->error($error);
 				return [
 					'success' => false,
 					'message' => $error,
 				];
 			}
-
+			$listID  = $nytList->id;
+			$results = [
+				'success' => true,
+				'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
+			];
 		}else{
 			$listID  = $nytList->id;
 			$results = [
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
 			];
-			//We already have a list, clear the contents, so we don't have titles from last time
+			//We already have a list, clear the contents, so we don't have titles from last time.  The replacement
+			//titles arrived with the list data, so there is nothing left to fail before they are added.
 			$nytList->removeAllListEntries();
 		}
 
-		// We need to add titles to the list //
-
-		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-
-		// Include UserListEntry Class
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-
-		//Get a list of titles from NYT API
-		$availableLists = $nyt_api->getList($selectedList);
 		$numTitlesAdded = 0;
-		$titleResults   = $availableLists->results;
-		$this->logger->notice("Populating user list $listID for NYTimes bestseller list $selectedList");
-		foreach ($availableLists->results->books as $bookDetails){
+		$this->logger->notice("Populating user list $listID for NYTimes bestseller list $selectedListName");
+		foreach ($nytListData->books as $bookDetails){
 			$pikaID = null;
 			// go through each list item
 
-			require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 			// Try fetching the primary ISBN first
 			if (!empty($bookDetails)){
 				$ISBNs = [];
@@ -1159,7 +1322,7 @@ class ListAPI extends AJAXHandler {
 			if ($pikaID == null){
 				$ISBNs = [];
 				if (!empty($bookDetails->isbns)){
-					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
+					//Note: each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
 					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
 					foreach ($bookDetails->isbns as $isbnEntry){
 						if (!empty($isbnEntry->isbn13) && ISBN::isValidISBN13($isbnEntry->isbn13)){
@@ -1179,7 +1342,7 @@ class ListAPI extends AJAXHandler {
 			}
 
 			if ($pikaID != null){
-				$note = "#{$bookDetails->rank} on the {$titleResults->display_name} list for {$titleResults->published_date}.";
+				$note = "#{$bookDetails->rank} on the {$selectedListTitleShort} list for {$bestsellersDate}.";
 				if ($bookDetails->rank_last_week != 0){
 					$note .= '  Last week it was ranked ' . $bookDetails->rank_last_week . '.';
 				}
@@ -1211,11 +1374,11 @@ class ListAPI extends AJAXHandler {
 			}
 		}
 
-		if ($results['success']){
-			$results['message'] .= "<br> Added $numTitlesAdded Titles to the list";
-			if ($listExistsInPika){
-				$nytList->update(); // set a new update time on the main list when it already exists
-			}
+		$results['message']     .= "<br> Added $numTitlesAdded Titles to the list";
+		$results['listId']      = $listID;
+		$results['titlesAdded'] = $numTitlesAdded;
+		if ($listExistsInPika){
+			$nytList->update(); // set a new update time on the main list when it already exists
 		}
 		$this->logger->notice($results['message']);
 
@@ -1228,7 +1391,7 @@ class ListAPI extends AJAXHandler {
 	 * @param string|null $selectedYear the selected year of NPR listing to update
 	 * @return array
 	 */
-	public function createUserListFromNPRBestBooks(string $selectedYear = null){
+	public function createUserListFromNPRBestBooks(?string $selectedYear = null){
 		global $configArray;
 
 		if ($selectedYear == null){

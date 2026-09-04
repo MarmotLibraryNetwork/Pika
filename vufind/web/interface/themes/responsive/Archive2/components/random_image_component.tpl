@@ -1,25 +1,14 @@
 {strip}
-{*<div class="archiveComponentContainer nopadding col-md-12 col-lg-6">
-	<div class="archiveComponent horizontalComponent">
-		<div class="archiveComponentBody">
-			<div class="archiveComponentBox">
-				<div class="archiveComponentHeader">Random Image</div>
-				<div class="archiveComponentRandomImage row">*}
-					{if $randomObject}
-					<figure class="random-image-figure">
-						<a href="{$randomObject.url}">
-							{if $randomObject.thumbnail}
-							<img src="{$randomObject.thumbnail}" alt="{$randomObject.title|escape}" class="img-fluid thumbnail collection-thumbnail-fit">
-							{/if}
-							<figcaption class="explore-more-category-title">
-								<strong>{$randomObject.title|truncate:120}</strong>
-							</figcaption>
-						</a>
-					</figure>
-					{/if}
-				{*</div>
-			</div>
+	<div class="random-image-component">
+		{* aria-live announces the new title once the reload swaps this in; the placeholder
+		   only ever holds one small figure, so (unlike the "load more results" status region)
+		   there's no need to keep a separate visually-hidden announcement apart from the visible markup. *}
+		<div id="randomImagePlaceholder_{$id}" aria-live="polite">
+			{include file="Archive2/components/random_image_figure.tpl"}
 		</div>
+		<button type="button" class="btn btn-outline-secondary btn-xs random-image-reload" id="randomImageReload_{$id}" onclick="return Pika.Archive2.nextRandomImage('{$id}', '{$sourceNids}');" title="Show a different random image">
+			<span class="bi bi-arrow-clockwise" aria-hidden="true"></span> New Random Image
+		</button>
 	</div>
-</div>*}
+	<br class="clearFix">
 {/strip}

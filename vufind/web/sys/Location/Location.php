@@ -910,7 +910,7 @@ class Location extends DB_DataObject {
 					if ($matchedLocation->find(true)){
 						//Only use the physical location regardless of where we are
 						$this->ipLocation = clone $matchedLocation;
-						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
+						$this->ipLocation->setOpacStatus((bool)$subnet->isOpac);
 
 						$this->ipId = $subnet->id;
 					}else{
@@ -1683,7 +1683,7 @@ class Location extends DB_DataObject {
 					}
 				}
 			}elseif (isset($_COOKIE['opac'])){
-				$this->opacStatus = (boolean)$_COOKIE['opac'];
+				$this->opacStatus = (bool)$_COOKIE['opac'];
 			}else{
 				if ($this->getIPLocation()){
 					$this->opacStatus = $this->getIPLocation()->opacStatus;

@@ -233,6 +233,17 @@ function getIslandoraUpdates(): array{
 				"DELETE FROM `library_archive_explore_more_bar` WHERE `section` = 'tableOfContents'",
 			]
 		],
+
+		'D-5399_convert_legacy_entities_to_taxonomy_terms' => [
+			'release'         => '2026.03.0',
+			'releaseStep'     => 3,
+			'title'           => 'Convert legacy Marmot Entity list entries to taxonomy terms; RUN THIS STEP BY ITSELF',
+			'description'     => 'Maps the hidden legacy person/place/organization/event PIDs left in user_list_entry by Islandora2_convert_list_pid_to_nid onto their Islandora 2 taxonomy terms, and unhides them. Run that step first.',
+			'continueOnError' => true,
+			'sql'             => [
+				'convertListLegacyEntityPidToTaxonomyTerm'
+			]
+		],
 	]; // End of main array
 }
 
@@ -660,4 +671,172 @@ function convertListPidToNid():bool {
 		}
 	}
 	return $success;
+}
+
+/**
+ * D-5399: convert the legacy Marmot Entity entries left in user_list_entry into Islandora 2
+ * taxonomy term entries.
+ *
+ * convertListPidToNid() converted the archive object PIDs on patron lists to node ids. The
+ * entity PIDs — person:12345, place:2455, event:…, organization:… — had no node to convert to,
+ * because entities became taxonomy terms rather than nodes, so that update logged "The object
+ * may be a taxonomy" and hid the entry. This resolves those PIDs against the
+ * ss_legacy_entity_pid field on the term documents and rewrites them as tax_{vocabulary}:{tid},
+ * the form UserList and the record drivers understand.
+ *
+ * Entries that do not resolve are deliberately left hidden and untouched, and named in the log
+ * for manual follow-up. Nothing is destroyed, so once a missing term appears in Islandora this
+ * update can simply be run again.
+ *
+ * Re-runnable: converted rows stop matching "hidden = 1", so a second pass is a no-op.
+ *
+ * @return bool
+ */
+function convertListLegacyEntityPidToTaxonomyTerm(): bool {
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+	require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+
+	global $pikaLogger;
+	$logger = $pikaLogger->withName('DBMaintenance');
+
+	/** @var SearchObject_Islandora2 $islandora2Search */
+	$islandora2Search = SearchObjectFactory::initSearchObject('Islandora2');
+	if ($islandora2Search === false || !$islandora2Search->pingServer(false)){
+		$logger->error('Islandora2 Solr ping failed; skipping the legacy entity conversion.');
+		return false;
+	}
+
+	// The table holds every list entry ever saved and each row carries a notes blob, and PEAR's
+	// mysqli driver buffers a whole result set before the first row can be read. Walk it in
+	// batches, reading only the columns needed.
+	//
+	// Each batch continues from the last id rather than from an offset: converted rows drop out
+	// of the search below, so counting past a fixed number of them would step over the ones
+	// left behind.
+	$batchSize = 500;
+	$lastId    = 0;
+
+	$converted = $unmatched = $mismatched = $failed = 0;
+	$listIdsToRefresh = [];
+
+	do {
+		set_time_limit(500);
+
+		// A DataObject cannot run a second query, so each batch needs its own.
+		$listEntry = new UserListEntry();
+		// UserListEntry declares $hidden with a default of false, which DB_DataObject turns
+		// into an implicit "hidden = 0" on every find(). This update is looking for exactly the
+		// rows that predicate excludes, so the property has to be cleared before the condition
+		// below can take effect.
+		unset($listEntry->hidden);
+		$listEntry->selectAdd();
+		$listEntry->selectAdd('id');
+		$listEntry->selectAdd('listId');
+		$listEntry->selectAdd('groupedWorkPermanentId');
+		$listEntry->whereAdd('hidden = 1');
+		$listEntry->whereAdd("groupedWorkPermanentId LIKE '%:%'");
+		$listEntry->whereAdd('id > ' . $lastId);
+		$listEntry->orderBy('id');
+		$listEntry->limit(0, $batchSize);
+		$rowsInBatch = $listEntry->find();
+		if ($rowsInBatch === false){
+			$logger->error('Failed to read the next batch of hidden list entries while converting legacy entities');
+			return false;
+		}
+		$logger->notice("Processing batch of $rowsInBatch legacy entity entries (last id $lastId)");
+
+		// Collect the batch before resolving, so the PIDs go to Solr in one query rather than
+		// one query per row.
+		$rows = [];
+		while ($listEntry->fetch()){
+			$lastId = (int)$listEntry->id;
+			$rows[] = [
+				'id'     => $lastId,
+				'listId' => (int)$listEntry->listId,
+				'pid'    => $listEntry->groupedWorkPermanentId,
+			];
+		}
+		$listEntry->free();
+		unset($listEntry);
+
+		if (empty($rows)){
+			break;
+		}
+
+		$pids          = array_values(array_unique(array_column($rows, 'pid')));
+		$duplicatePids = [];
+		$termsByPid    = $islandora2Search->getLegacyEntityTermsByPid($pids, $duplicatePids);
+		foreach ($duplicatePids as $duplicatePid){
+			$logger->warning("Multiple taxonomy terms match legacy entity PID $duplicatePid; using the first.");
+		}
+
+		foreach ($rows as $row){
+			$pid = $row['pid'];
+			if (!isset($termsByPid[$pid])){
+				// Either a Marmot Entity with no term in Islandora 2, or one of the archive
+				// object PIDs the earlier update hid because it found no node. Both stay hidden.
+				$logger->warning("Legacy PID $pid has no Islandora 2 taxonomy term; list entry {$row['id']} left hidden, requires manual investigation.");
+				$unmatched++;
+				continue;
+			}
+
+			$term       = $termsByPid[$pid];
+			$vocabulary = $term['vocabulary'];
+
+			// Guard against matching the wrong term: the legacy namespace says which vocabulary
+			// the term should be in, so disagreement means the Solr hit is suspect.
+			$expectedVocabulary = getVocabularyForLegacyEntityPid($pid);
+			if ($expectedVocabulary !== null && $vocabulary !== null && $vocabulary !== $expectedVocabulary){
+				$logger->warning("Legacy PID $pid resolved to a '$vocabulary' term but its namespace expects '$expectedVocabulary'; list entry {$row['id']} left hidden, requires manual investigation.");
+				$mismatched++;
+				continue;
+			}
+			if ($vocabulary === null && $expectedVocabulary !== null){
+				// The term carries no vocabulary in Solr; trust the namespace rather than
+				// falling back to the generic /Archive2/Term route.
+				$vocabulary = $expectedVocabulary;
+			}
+
+			$entryId = buildTaxonomyUserListEntryId($term['tid'], $vocabulary);
+			if ($entryId === ''){
+				$logger->error("Legacy PID $pid resolved to an invalid term id; list entry {$row['id']} left hidden.");
+				$failed++;
+				continue;
+			}
+
+			// Update through a second object holding only the primary key and the two columns
+			// being changed, so the UPDATE does not rewrite the notes blob back over itself.
+			// update(false, false) skips the parent list's dateUpdated touch and its Solr
+			// re-index, which would otherwise run once per row; the affected lists are
+			// refreshed together at the end instead.
+			$entryToUpdate                         = new UserListEntry();
+			$entryToUpdate->id                     = $row['id'];
+			$entryToUpdate->groupedWorkPermanentId = $entryId;
+			$entryToUpdate->hidden                 = false;
+			if ($entryToUpdate->update(false, false) === false){
+				$logger->error("Failed to convert list entry {$row['id']} from $pid to $entryId");
+				$failed++;
+			}else{
+				$listIdsToRefresh[$row['listId']] = $row['listId'];
+				$converted++;
+			}
+		}
+	} while ($rowsInBatch == $batchSize);
+
+	// Touch each affected list once so its dateUpdated moves, its browse category cache is
+	// cleared, and it is re-indexed in Solr with the converted entries.
+	foreach ($listIdsToRefresh as $listId){
+		$list     = new UserList();
+		$list->id = $listId;
+		if ($list->find(true)){
+			$list->update();
+		}
+	}
+
+	$refreshedLists = count($listIdsToRefresh);
+	$logger->notice("Converted $converted legacy entity list entries to taxonomy terms across $refreshedLists lists; $unmatched unmatched, $mismatched vocabulary mismatches, $failed failed");
+
+	return $failed === 0;
 }

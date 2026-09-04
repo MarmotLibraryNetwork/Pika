@@ -88,13 +88,37 @@ class UserList extends DB_DataObject {
 
 		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'((user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))
-       OR
-            (user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%"))'
-		);
+		$listEntry->whereAdd(self::validListEntrySqlCondition());
 
 		return $listEntry->count();
+	}
+
+	/**
+	 * SQL condition matching the entries that can actually be displayed in a list.
+	 *
+	 * Shared by numValidListItems() and getListEntries() so the count and the contents cannot
+	 * disagree — they were separate copies of the same clause and had already drifted.
+	 *
+	 * Three shapes qualify: a grouped work id that still exists, an Islandora 2 node id, and
+	 * an Islandora 2 taxonomy term id. Everything else holding a colon is an Islandora 1 PID
+	 * the D-5399 migration could not resolve, and stays out of patron lists.
+	 *
+	 * Hidden entries are excluded here explicitly rather than left to UserListEntry::$hidden.
+	 * That property is declared with a default of false, which DB_DataObject turns into an
+	 * implicit "hidden = 0" on every find(); relying on that silently is how the per-row
+	 * !$listEntry->hidden checks in getListEntries() became dead code.
+	 *
+	 * @return string
+	 */
+	private static function validListEntrySqlCondition(){
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		return 'user_list_entry.hidden = 0 AND ('
+			. '(user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))'
+			. ' OR '
+			. '(user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%")'
+			. ' OR '
+			. taxonomyUserListEntrySqlCondition()
+			. ')';
 	}
 
 //	function numValidListItems() {
@@ -177,23 +201,19 @@ class UserList extends DB_DataObject {
 			}
 			// These conditions retrieve list items with a valid groupedWork ID or archive ID.
 			// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-			$listEntry->whereAdd(
-				'(' .
-				'(user_list_entry.groupedWorkPermanentId NOT LIKE "%-%" AND user_list_entry.groupedWorkPermanentId NOT LIKE "%:%")' .
-				' OR ' .
-				'(user_list_entry.groupedWorkPermanentId LIKE "%-%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work))' .
-				')'
-			);
+			$listEntry->whereAdd(self::validListEntrySqlCondition());
 			if($listEntry->find()){
+				require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 				while ($listEntry->fetch()){
-					if (!str_contains($listEntry->groupedWorkPermanentId, '-') && ctype_digit($listEntry->groupedWorkPermanentId)){
-						if (!$listEntry->hidden){
-							$archiveIDs[] = $listEntry->groupedWorkPermanentId;
-						}
+					// Taxonomy terms travel with the archive objects rather than in a bucket of
+					// their own: both are answered by the same Islandora 2 search object, and
+					// FavoriteHandler interleaves a mixed list by position across just two sets.
+					// SearchObject_Islandora2::setQueryIDs() splits them apart again by shape.
+					$entryType = parseUserListEntryId((string)$listEntry->groupedWorkPermanentId)['type'];
+					if ($entryType === USER_LIST_ENTRY_ARCHIVE_OBJECT || $entryType === USER_LIST_ENTRY_TAXONOMY_TERM){
+						$archiveIDs[] = $listEntry->groupedWorkPermanentId;
 					}else{
-						if (!$listEntry->hidden){
-							$catalogIDs[] = $listEntry->groupedWorkPermanentId;
-						}
+						$catalogIDs[] = $listEntry->groupedWorkPermanentId;
 					}
 					$listEntries[] = $listEntry->groupedWorkPermanentId;
 				}
@@ -284,13 +304,18 @@ class UserList extends DB_DataObject {
 	}
 
 	/**
-	 * @param String $workToRemove
+	 * Remove one entry from this list.
+	 *
+	 * Callers pass either a loaded UserListEntry (removeAllListEntries()) or the stored entry
+	 * id as a string (the delete links on the list page). They are responsible for normalizing
+	 * a DOM id with userListEntryIdFromDomId() before calling; this used to try to do it here,
+	 * but it read ->groupedWorkPermanentId before checking the argument was an object, which
+	 * warned on every string caller and would have been a TypeError on the object path.
+	 *
+	 * @param UserListEntry|string $workToRemove
 	 */
 	function removeListEntry($workToRemove){
 		// Remove the Saved List Entry
-		if(str_contains($workToRemove->groupedWorkPermanentId, 'islandora2-')){
-			$workToRemove = str_replace('islandora2-', '', $workToRemove);
-		}
 		if ($workToRemove instanceof UserListEntry){
 			$workToRemove->delete();
 		}else{

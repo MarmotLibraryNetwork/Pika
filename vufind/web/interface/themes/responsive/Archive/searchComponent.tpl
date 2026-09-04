@@ -4,7 +4,7 @@
 			<div class="row archiveComponentBody">
 				<div class="archiveComponentBox">
 					<div class="d-none d-lg-block col-lg-4 archiveComponentIconContainer">
-					<img src="{$searchComponentImage}" width="100" height="100" alt="Search" class="archiveComponentImage">
+					<img src="{$searchComponentImage}" width="100" height="100" alt=""{* "Alternative text of images should not be repeated as text" *} class="archiveComponentImage">
 					</div>
 					<div class="col-12 col-lg-8 archiveComponentSearchControls">
 						<div id="archiveCollectionSearchLabel" class="archiveComponentHeader">Search This Collection</div>

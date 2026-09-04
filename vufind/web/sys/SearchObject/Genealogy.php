@@ -265,7 +265,10 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		$html = [];
 		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
 			$current = &$this->indexResult['response']['docs'][$x];
-			$interface->assign('resultIndex', $x + 1);
+			// The position within the whole result set, not just within this page: PersonRecord sends this
+			// on to the person page as recordIndex, and getNextPrevLinks() below converts it back into a
+			// page plus an offset within that page to find the neighboring people.
+			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)){
 				$interface->assign('recordDriver', $record);
@@ -965,93 +968,157 @@ class SearchObject_Genealogy extends SearchObject_Base {
 	 */
 	protected function getSearchParams(){
 		$params = parent::getSearchParams();
-		$params[] = 'genealogyType=' . ($_REQUEST['genealogyType'] ?? 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
+		// Take the genealogy search type from the search object itself, falling back to the request only
+		// when the object cannot supply a valid one (an advanced search, or a search with no terms).  A
+		// person page carries no genealogyType, so reading the request first would rewrite every search
+		// restored there as a keyword search. //TODO: can this be replaced with general $_REQUEST['type']
+		$genealogyType = $this->getSearchIndex();
+		if (empty($genealogyType) || !array_key_exists($genealogyType, $this->basicTypes)){
+			$genealogyType = $_REQUEST['genealogyType'] ?? $this->defaultIndex;
+		}
+		$params[] = 'genealogyType=' . urlencode($genealogyType);
+		// Genealogy results are rendered through Union/Search, which picks the index to search from
+		// searchSource alone.  Without it here the url only works for a patron whose session still
+		// remembers genealogy - not for one who has since searched the catalog, and not at all for a
+		// link that is shared or bookmarked; both of those land on catalog results instead.
+		$params[] = 'searchSource=' . urlencode($this->searchSource);
 		return $params;
 	}
 
+	/**
+	 * Assign the previous & next result links shown on genealogy person pages.
+	 *
+	 * Follows the catalog implementation in SearchObject_Solr::getNextPrevLinks() and the archive one
+	 * in SearchObject_Islandora2::getNextPrevLinks().  The link a patron follows out of the search
+	 * results carries the id of the saved search plus the position of that person within it, so the
+	 * saved search is re-run here and the people on either side are read back out of the result set.
+	 * When the person sits at the start or the end of a page, the adjacent page is searched as well
+	 * to find the neighbor.
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function getNextPrevLinks(){
 		global $interface;
+		global $timer;
+
 		//Setup next and previous links based on the search results.
-		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
-			//rerun the search
-			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$s     = new SearchEntry();
-			$s->id = $_REQUEST['searchId'];
-			if ($s->find(true)){
-				$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				$interface->assign('searchId', $_REQUEST['searchId']);
-				$interface->assign('page', $currentPage);
+		if (empty($_REQUEST['searchId']) || empty($_REQUEST['recordIndex'])
+			|| !ctype_digit((string)$_REQUEST['searchId']) || !ctype_digit((string)$_REQUEST['recordIndex'])){
+			return;
+		}
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
+		$s     = new SearchEntry();
+		$s->id = $_REQUEST['searchId'];
+		if (!$s->find(true)){
+			return;
+		}
 
-				/** @var SearchObject_Solr $searchObject */
-				$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
-				if ($searchObject === false){
-					return;
-				}
-				$searchObject->setPage($currentPage);
-				//Run the search
-				$result = $searchObject->processSearch(true);
+		$currentPage = !empty($_REQUEST['page']) && ctype_digit((string)$_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+		$interface->assign('searchId', $_REQUEST['searchId']);
+		$interface->assign('page', $currentPage);
 
-				//Check to see if we need to run a search for the next or previous page
-				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
-				$recordsPerPage      = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+		$searchObject = SearchObjectFactory::deminifySerialized($s->search_object);
+		if (!($searchObject instanceof SearchObject_Genealogy)){
+			// The saved search was made against another index (catalog, archive).  It holds no people to
+			// navigate, and its terms do not belong in the genealogy search box either.
+			return;
+		}
+		$searchObject->setPage($currentPage);
 
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
-					//Need to run a search for the previous page
-					$interface->assign('previousPage', $currentPage - 1);
-					$previousSearchObject = clone $searchObject;
-					$previousSearchObject->setPage($currentPage - 1);
-					$previousSearchObject->processSearch(true, false, false);
-					$previousResults = $previousSearchObject->getResultRecordSet();
-				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
-					//Need to run a search for the next page
-					$nextSearchObject = clone $searchObject;
-					$interface->assign('nextPage', $currentPage + 1);
-					$nextSearchObject->setPage($currentPage + 1);
-					$nextSearchObject->processSearch(true, false, false);
-					$nextResults = $nextSearchObject->getResultRecordSet();
-				}
+		// Render the link back to the results out of the saved search itself rather than leaving it to
+		// $_SESSION['lastSearchURL'], which holds only the last search made anywhere in the session,
+		// whatever index it was made against: it is empty for a person reached from a shared or
+		// bookmarked link, and stale once the patron has searched again in another tab.  The saved
+		// search always describes the results this person came from, down to the page.
+		$interface->assign('searchResultsUrl', $searchObject->renderSearchUrl());
 
-				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
-					$recordSet = $searchObject->getResultRecordSet();
-					//Record set is 0 based, but we are passed a 1 based index
-					if ($currentResultIndex > 0){
-						if (isset($previousResults)){
-							$previousRecord = $previousResults[count($previousResults) - 1];
-						}else{
-							$previousId = $adjustedResultIndex - 1;
-							if (isset($recordSet[$previousId])){
-								$previousRecord = $recordSet[$previousId];
-							}
-						}
+		// Repopulate the search box from the search this person was reached through, so the patron can
+		// amend it rather than retype it.  setUpSearchDisplayOptions() in index.php has already filled
+		// these in, but it runs before the controller does and works from loadLastSearch(), which knows
+		// only the most recent search of the whole session; and it reads the genealogy type out of
+		// $_REQUEST['genealogyType'], which a person url does not carry, so the type select fell back to
+		// the default every time.
+		//
+		// displayQuery() reads searchTerms[0] without checking it is there, and a search can be facets
+		// only, so fall back to an empty phrase rather than leave another search sitting in the box.
+		$lookfor = empty($searchObject->getSearchTerms()) ? '' : $searchObject->displayQuery();
+		$interface->assign('lookfor', $lookfor);
+		$interface->assign('searchType', $searchObject->getSearchType());
+		$interface->assign('genealogySearchIndex', $searchObject->getSearchIndex());
+		$interface->assign('filterList', $searchObject->getFilterList());
+		// The source belongs in the search box with the rest of it, and search-results-navigation.tpl
+		// appends it to the Prev/Next hrefs so the next person page keeps the genealogy scope.
+		$interface->assign('searchSource', $searchObject->getSearchSource());
 
-						//Convert back to 1 based index
-						if (isset($previousRecord)){
-							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-							$interface->assign('previousTitle', $previousRecord['title']);
-							$interface->assign('previousType', 'Person');
-							$interface->assign('previousId', str_replace('person', '', $previousRecord['id']));
-						}
-					}
-					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
-						if (isset($nextResults)){
-							$nextRecord = $nextResults[0];
-						}else{
-							$nextRecordIndex = $adjustedResultIndex + 1;
-							if (isset($recordSet[$nextRecordIndex])){
-								$nextRecord = $recordSet[$nextRecordIndex];
-							}
-						}
-						//Convert back to 1 based index
-						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-						if (isset($nextRecord)){
-							$interface->assign('nextTitle', $nextRecord['title']);
-							$interface->assign('nextType', 'Person');
-							$interface->assign('nextId', str_replace('person', '', $nextRecord['id']));
-						}
-					}
-				}
+		//Run the search
+		$result = $searchObject->processSearch(true);
+		if (PEAR_Singleton::isError($result) || $searchObject->getResultTotal() <= 0){
+			return;
+		}
+
+		//Check to see if we need to run a search for the next or previous page
+		$currentResultIndex  = (int)$_REQUEST['recordIndex'] - 1;
+		$recordsPerPage      = $searchObject->getLimit();
+		$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
+
+		if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+			//Need to run a search for the previous page
+			$interface->assign('previousPage', $currentPage - 1);
+			$previousSearchObject = clone $searchObject;
+			$previousSearchObject->setPage($currentPage - 1);
+			$previousSearchObject->processSearch(true);
+			$previousResults = $previousSearchObject->getResultRecordSet();
+		}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+			//Need to run a search for the next page
+			$interface->assign('nextPage', $currentPage + 1);
+			$nextSearchObject = clone $searchObject;
+			$nextSearchObject->setPage($currentPage + 1);
+			$nextSearchObject->processSearch(true);
+			$nextResults = $nextSearchObject->getResultRecordSet();
+		}
+
+		$recordSet = $searchObject->getResultRecordSet();
+		//Record set is 0 based, but we are passed a 1 based index
+		if ($currentResultIndex > 0){
+			if (isset($previousResults)){
+				$previousRecord = $previousResults[count($previousResults) - 1] ?? null;
+			}else{
+				$previousRecord = $recordSet[$adjustedResultIndex - 1] ?? null;
+			}
+			if (!empty($previousRecord['id'])){
+				//Convert back to 1 based index
+				$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+				$interface->assign('previousTitle', $previousRecord['title'] ?? '');
+				$interface->assign('previousType', 'Person');
+				$interface->assign('previousId', $this->getPersonId($previousRecord['id']));
 			}
 		}
+		if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+			if (isset($nextResults)){
+				$nextRecord = $nextResults[0] ?? null;
+			}else{
+				$nextRecord = $recordSet[$adjustedResultIndex + 1] ?? null;
+			}
+			if (!empty($nextRecord['id'])){
+				//Convert back to 1 based index
+				$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+				$interface->assign('nextTitle', $nextRecord['title'] ?? '');
+				$interface->assign('nextType', 'Person');
+				$interface->assign('nextId', $this->getPersonId($nextRecord['id']));
+			}
+		}
+		$timer->logTime('Got next/previous links');
+	}
+
+	/**
+	 * The person id a /Person/ url is built from, taken off the front of the prefixed Solr document id.
+	 *
+	 * @access private
+	 * @param string $solrId The Solr document id, e.g. person1234
+	 * @return string        The person id, e.g. 1234
+	 */
+	private function getPersonId($solrId){
+		return substr($solrId, strlen('person'));
 	}
 }

@@ -22,6 +22,31 @@ class SearchSources {
 	}
 
 	/**
+	 * Is this one of the search sources offered in the current context?
+	 *
+	 * The sources on offer depend on the library and location the request is being served for, so a
+	 * source stored with a saved search (or carried on a link) can name a scope that no longer
+	 * exists, or that never existed for this library.  bootstrap.php validates the source in the url
+	 * this way; anything restoring a source from elsewhere should do the same before scoping a
+	 * search with it.
+	 *
+	 * @param string|null $searchSource
+	 * @return bool
+	 */
+	static function isValidSearchSource($searchSource): bool{
+		if (empty($searchSource) || !is_string($searchSource)){
+			return false;
+		}
+		// Building the list walks the library & location configuration, and a single request can
+		// check many saved searches, so remember what it came to.
+		static $validSearchSources = null;
+		if ($validSearchSources === null){
+			$validSearchSources = self::getSearchSources();
+		}
+		return array_key_exists($searchSource, $validSearchSources);
+	}
+
+	/**
 	 * Handle breaking a string setting into an array of options where the options are delimited by a pipe.
 	 *
 	 * @param String $setting  String of option(s) separated by the pipe | character
@@ -53,6 +78,7 @@ class SearchSources {
 		$searchGenealogy                   = true;
 		$repeatCourseReserves              = false;
 		$searchArchive                     = false;
+		$searchArchive2                    = false;
 		$searchEbsco                       = false;
 
 		/** @var $locationSingleton Location */
@@ -205,8 +231,8 @@ class SearchSources {
 
 		if ($searchArchive){
 			$searchOptions['islandora'] = [
-				'name'        => 'Local Digital Archive',
-				'description' => 'Local Digital Archive in Colorado',
+				'name'        => 'Legacy Digital Archive',
+				'description' => 'Legacy Marmot Digital Archive',
 				'catalogType' => 'islandora'
 			];
 		}
@@ -400,7 +426,7 @@ class SearchSources {
 			case 'prospector':
 				$prospectorSearchType = self::getProspectorSearchType($type);
 				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
-				// Handle special exception: ? character in the search must be encoded specially
+				// Handle special exception: '?' character in the search must be encoded specially
 				$lookFor = str_replace('%3F', 'Pw%3D%3D', $lookFor);
 				if ($prospectorSearchType != ' '){
 					$lookFor = "$prospectorSearchType:(" . $lookFor . ")";

@@ -1558,12 +1558,27 @@ class MyAccount_AJAX extends AJAXHandler {
 			if ($list->find(true) && $user->canEditList($list)){ // list exists & user can edit
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 				$success = true; // assume success now
+				require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				foreach ($updates as $update){
-					$update['id']          = str_replace('_', ':', $update['id']); // Rebuilt Islandora PIDs
+					// The row ids come from the DOM (list.tpl strips the groupedRecord/archive
+					// prefix), so they are in each record driver's jQuery-safe form.
+					if (str_starts_with((string)$update['id'], 'islandora2-')){
+						// Islandora 2, object or taxonomy term. Note the underscore rebuild below
+						// must not run on these: it would turn islandora2-term-geo_location-88
+						// into islandora2-term-geo:location-88.
+						$update['id'] = userListEntryIdFromDomId((string)$update['id']);
+					}else{
+						$update['id'] = str_replace('_', ':', $update['id']); // Rebuilt Islandora 1 PIDs
+					}
 					$userListEntry         = new UserListEntry();
 					$userListEntry->listId = $listId;
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9]+$/i", $update['id'])){
-						// Is not a valid grouped work Id or archive PID
+					$entryType             = parseUserListEntryId((string)$update['id'])['type'];
+					$isValidId             = $entryType === USER_LIST_ENTRY_ARCHIVE_OBJECT
+						|| $entryType === USER_LIST_ENTRY_TAXONOMY_TERM
+						|| ($entryType === USER_LIST_ENTRY_CATALOG && GroupedWork::validGroupedWorkId($update['id']));
+					if (!$isValidId){
+						// Is not a valid grouped work Id, archive node id, or taxonomy term id
 						$success = false;
 					}else{
 						$userListEntry->groupedWorkPermanentId = $update['id'];
@@ -1739,7 +1754,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			}
 
 			$list          = new UserList();
-			$list->title   = strip_tags($title) . " (copy)";
+			$list->title   = strip_tags($title) . ' (copy)';
 			$list->user_id = $user->id;
 
 			//Check to see if there is already a list with this id
@@ -1752,9 +1767,20 @@ class MyAccount_AJAX extends AJAXHandler {
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 				//Check to see if the user has already added the title to the list.
 				foreach ($recordsToAdd as $item){
+					// An archive document's Solr id is its uniqueKey (entity:node/1234:en) rather
+					// than the id the list stores, so getResultRecordSet() supplies listEntryId --
+					// the node id for an object, tax_{vocabulary}:{tid} for a taxonomy term. It is
+					// an empty string for a document that is neither, so it cannot be tested with
+					// ??. A catalog work's own Solr id is already the id the list stores.
+					//TODO: With lists converted to the new Islandora, PID will soon be obsolete
+					$entryId = !empty($item['listEntryId']) ? $item['listEntryId'] : ($item['id'] ?? $item['PID'] ?? '');
+					if ($entryId === ''){
+						$this->logger->warn("Failed to get an entryId for User List $copyFromId during copy operation", $item);
+						continue; // nothing usable to store; skip rather than insert a blank entry
+					}
 					$userListEntry                         = new UserListEntry();
 					$userListEntry->listId                 = $list->id;
-					$userListEntry->groupedWorkPermanentId = $item['id'] ?? $item['PID'];
+					$userListEntry->groupedWorkPermanentId = $entryId;
 					$newUserListEntry                      = clone $userListEntry;
 					if (!$newUserListEntry->find(true)){
 						$newUserListEntry->dateAdded = time();

@@ -731,7 +731,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		global $library;
-		$exploreMoreSettings = $library->exploreMoreBar;
+		$exploreMoreSettings = $library->exploreMoreSideBar;
 		if (empty($exploreMoreSettings)){
 			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}

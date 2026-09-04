@@ -41,7 +41,11 @@ class MyAccount_MyLists extends MyAccount{
 				'created'     => 'Created',
 				'dateUpdated' => 'Last Updated',
 			];
-			$sortOption = $_REQUEST['sort'] ?? 'title';
+			// listsSort, not sort: this orders the lists themselves, while FavoriteHandler reads a
+			// "sort" parameter to order the entries within one list. Both vocabularies accept
+			// "title", so while they shared a name this page's value silently re-sorted an
+			// exported spreadsheet by title instead of the list's own sort. See D-5480.
+			$sortOption = $_REQUEST['listsSort'] ?? 'title';
 			switch ($sortOption){
 				case 'created' :
 					$listsSortOption = 'created ASC';

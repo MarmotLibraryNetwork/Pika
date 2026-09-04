@@ -14,5 +14,5 @@
 	{include file="Archive2/partials/collection-item.tpl"}
 	{/foreach}
 </div>
-{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+{include file="Archive2/components/collection-pager.tpl"}
 {/if}

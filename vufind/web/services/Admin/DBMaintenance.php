@@ -190,6 +190,7 @@ class DBMaintenance extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/DBMaintenance/list_widget_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
 		require_once ROOT_DIR . '/sys/DBMaintenance/book_club_kit_updates.php';
+		require_once ROOT_DIR . '/sys/DBMaintenance/search_updates.php';
 
 		$updates = array_merge(
 			getLibraryLocationUpdates(),
@@ -202,6 +203,7 @@ class DBMaintenance extends Admin_Admin {
 			getListWidgetUpdates(),
 			getIslandoraUpdates(),
 			getBookClubKitUpdates(),
+			getSearchUpdates(),
 
 			// Uncategorized updates
 			[

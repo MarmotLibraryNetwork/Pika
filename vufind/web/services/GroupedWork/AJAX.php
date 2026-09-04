@@ -1704,7 +1704,8 @@ function getSaveSeriesToListForm(){
 	private function sendReloadCoverURl(GroupedWorkDriver $recordDriver, string $size): bool{
 		global $configArray;
 		$reloadCoverURL = $recordDriver->getBookcoverUrl($size, true) . '&reload';
-		$options        = ['http' => ['user_agent' => $configArray['Islandora2']['userAgent'] ]];
+		$userAgent      = empty($configArray['Site']['internalUserAgent']) ? 'Pika' : $configArray['Site']['internalUserAgent'];
+		$options        = ['http' => ['user_agent' => $userAgent]];
 		$context        = stream_context_create($options);
 		$response       = file_get_contents($reloadCoverURL, false, $context);
 		if ($response === false){

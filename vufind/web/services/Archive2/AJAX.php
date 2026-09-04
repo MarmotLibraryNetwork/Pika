@@ -32,11 +32,13 @@ require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';
 require_once ROOT_DIR . '/sys/Archive2/CollectionTimelineData.php';
 require_once ROOT_DIR . '/services/Archive2/ArchiveObject.php';
+require_once ROOT_DIR . '/services/Archive2/Collection.php';
 
 use Islandora2\I2ObjectFactory;
 use Archive2\ExploreMore;
 use Archive2\CollectionTimelineData;
 use Archive2\ArchiveObject;
+use Archive2\Collection;
 
 class Archive2_AJAX extends AJAXHandler {
 
@@ -49,8 +51,10 @@ class Archive2_AJAX extends AJAXHandler {
 		'getRelatedObjectsForEvent',
 		'getRelatedObjectsForPlace',
 		'getCollectionTimelineObjects',
+		'getRandomImageComponent',
 		'showSaveToListForm',
 		'saveToList',
+		'getMoreSearchResults',
 	];
 
 	/** Methods that return a structured JSON result wrapper {result, message, ...}. */
@@ -223,7 +227,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$response   = curl_exec($ch);
 		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$curlError  = curl_error($ch);
-		curl_close($ch);
+		// curl_close($ch); - deprecated in PHP 8.5, the CurlHandle frees itself
 
 		if ($response === false || $statusCode !== 200) {
 			$this->logger->error('proxyCurl failed.', [
@@ -265,7 +269,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$interface->assign('exploreMoreSections', $sections);
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		global $library;
-		$exploreMoreSettings = $library->exploreMoreBar;
+		$exploreMoreSettings = $library->exploreMoreSideBar;
 		if (empty($exploreMoreSettings)) {
 			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}
@@ -307,7 +311,7 @@ class Archive2_AJAX extends AJAXHandler {
 
 		$interface->assign('exploreMoreSections', $sections);
 		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
-		$exploreMoreSettings = $library->exploreMoreBar;
+		$exploreMoreSettings = $library->exploreMoreSideBar;
 		if (empty($exploreMoreSettings)) {
 			$exploreMoreSettings = \ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}
@@ -318,6 +322,63 @@ class Archive2_AJAX extends AJAXHandler {
 			'success'     => true,
 			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
 		];
+	}
+
+	/**
+	 * Serve the next batch of archive search results for the covers view of the results page.
+	 *
+	 * Covers view gets no pager - Archive2/Results.php only builds one for the list view - so
+	 * the results page appends batches to the grid instead, driven by the load-more button in
+	 * Archive2/list.tpl and Pika.Archive2.getMoreResults().  The results page sends its whole
+	 * query string back with the page number advanced, so re-initializing a search object from
+	 * it reproduces the patron's search, facets, and sort exactly.
+	 *
+	 * Follows Search_AJAX::getMoreSearchResults(), which does the same job for the catalog.
+	 *
+	 * Called via: /Archive2/AJAX?method=getMoreSearchResults&<the results page query string>
+	 *
+	 * @return array{success: bool, records?: string, lastPage?: bool}
+	 */
+	function getMoreSearchResults(): array {
+		global $interface;
+
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
+		// The button exists only in covers view, so pin the view rather than trusting the
+		// parameter to have survived the round trip.  It decides both which template each
+		// record driver returns and, through initResultsPageSize(), the page size - and the
+		// page size has to match the one the results page used, because getNextPrevLinks()
+		// turns a record's position in the whole result set into a page plus an offset within
+		// it, so a different size here would send every appended tile to the wrong neighbor.
+		$_REQUEST['view'] = 'covers';
+
+		/** @var SearchObject_Islandora2 $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('Islandora2');
+		$searchObject->init();
+		$searchObject->initResultsPageSize();
+
+		$result = $searchObject->processSearch(true, true);
+		if (PEAR_Singleton::isError($result)){
+			$this->logger->error('Failed to load a further batch of archive search results.', ['error' => $result->getMessage()]);
+			return ['success' => false];
+		}
+		$searchObject->close();
+
+		// Assign before building the record HTML: getLinkUrl() reads searchId and page off the
+		// interface to put the search navigation parameters on each tile's link, and close() is
+		// what settles the searchId.
+		$interface->assign('searchId', $searchObject->getSearchId());
+		$interface->assign('page', $searchObject->getPage());
+		$interface->assign('recordSet', $searchObject->getResultRecordHTML());
+
+		$response = [
+			'success' => true,
+			'records' => $interface->fetch('Archive/covers-list.tpl'),
+		];
+		// Let the front end know when to stop offering more.
+		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
+			$response['lastPage'] = true;
+		}
+		return $response;
 	}
 
 	/**
@@ -467,6 +528,35 @@ class Archive2_AJAX extends AJAXHandler {
 	}
 
 	/**
+	 * Picks a new random child image for a custom collection's "random image"
+	 * component (the reload button) and returns the rendered figure HTML.
+	 *
+	 * Called via: /Archive2/AJAX?method=getRandomImageComponent&nids={comma-separated
+	 * source collection node ids}
+	 */
+	function getRandomImageComponent(): array {
+		$nids = array_values(array_filter(
+			array_map('intval', explode(',', (string)($_REQUEST['nids'] ?? ''))),
+			fn($n) => $n > 0
+		));
+		if (empty($nids)) {
+			return ['success' => false, 'message' => 'A valid source collection node id is required.'];
+		}
+
+		$randomObject = Collection::pickRandomChildImage($nids);
+		if ($randomObject === null) {
+			return ['success' => false, 'message' => 'No image is available right now.'];
+		}
+
+		global $interface;
+		$interface->assign('randomObject', $randomObject);
+		return [
+			'success' => true,
+			'html'    => $interface->fetch('Archive2/components/random_image_figure.tpl'),
+		];
+	}
+
+	/**
 	 * @return array
 	 */
 	function showSaveToListForm(){
@@ -476,11 +566,17 @@ class Archive2_AJAX extends AJAXHandler {
 			return ['success' => false, 'message' => 'Lists are not available for this interface.'];
 		}
 
-		$nid = (int)($_REQUEST['id'] ?? 0);
-		if ($nid <= 0) {
-			return ['success' => false, 'message' => 'A valid node id is required.'];
+		require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
+		// The id arrives in the form a record driver put in the DOM: islandora2-{nid} for an
+		// archive object, islandora2-term-{vocabulary}-{tid} for a taxonomy term. Normalizing
+		// first gives the id as user_list_entry stores it, which is what both the containment
+		// check below and the save itself need.
+		$entryId = userListEntryIdFromDomId((string)($_REQUEST['id'] ?? ''));
+		$parsed  = parseUserListEntryId($entryId);
+		if ($parsed['type'] !== USER_LIST_ENTRY_ARCHIVE_OBJECT && $parsed['type'] !== USER_LIST_ENTRY_TAXONOMY_TERM){
+			return ['success' => false, 'message' => 'A valid archive object or taxonomy term id is required.'];
 		}
-		$interface->assign('id', $nid);
+		$interface->assign('id', $entryId);
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
@@ -510,7 +606,7 @@ class Archive2_AJAX extends AJAXHandler {
 			//Check to see if the user has already added the title to the list.
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
-			$userListEntry->groupedWorkPermanentId = $nid;
+			$userListEntry->groupedWorkPermanentId = $entryId;
 			if ($userListEntry->find(true)){
 				$containingLists[] = [
 					'id'    => $userLists->id,
@@ -531,7 +627,7 @@ class Archive2_AJAX extends AJAXHandler {
 		$results = [
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch('GroupedWork/save.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive2.saveToList(\"{$nid}\"); return false;'>Save To List</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.Archive2.saveToList(\"" . htmlspecialchars($entryId, ENT_QUOTES) . "\"); return false;'>Save To List</button>",
 		];
 		return $results;
 	}
@@ -550,10 +646,18 @@ class Archive2_AJAX extends AJAXHandler {
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/Islandora2/Functions.php';
 			$result['success'] = true;
-			$id                = urldecode($_REQUEST['id']);
-			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[0-9-]+$/i", $id)){
-				// Is not a valid grouped work Id or archive PID
+			// Normalize the DOM id to the stored form before validating, so a taxonomy term
+			// arrives here as tax_{vocabulary}:{tid} rather than islandora2-term-{vocab}-{tid}.
+			$id         = userListEntryIdFromDomId(urldecode((string)($_REQUEST['id'] ?? '')));
+			$parsedType = parseUserListEntryId($id)['type'];
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$isValidId = $parsedType === USER_LIST_ENTRY_ARCHIVE_OBJECT
+				|| $parsedType === USER_LIST_ENTRY_TAXONOMY_TERM
+				|| ($parsedType === USER_LIST_ENTRY_CATALOG && GroupedWork::validGroupedWorkId($id));
+			if (!$isValidId){
+				// Is not a valid grouped work id, archive node id, or taxonomy term id
 				$result['success'] = false;
 				$result['message'] = 'That is not a valid title to add to the list.';
 			}else{

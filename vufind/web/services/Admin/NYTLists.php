@@ -49,6 +49,18 @@ class NYTLists extends Admin_Admin {
 
 			$interface->assign('availableLists', $availableLists);
 
+			if (isset($_REQUEST['updateAllLists'])){
+				//Build or update a Pika list for every list The New York Times is currently publishing
+				require_once ROOT_DIR . '/services/API/ListAPI.php';
+				$listApi = new ListAPI();
+				$results = $listApi->updateAllUserListsFromNYT();
+				if (!$results['success']){
+					$interface->assign('error', $results['message']);
+				}else{
+					$interface->assign('successMessage', $this->getUpdateAllListsMessage($results));
+				}
+			}
+
 			$isListSelected = !empty($_REQUEST['selectedList']);
 			$selectedList   = null;
 			if ($isListSelected){
@@ -87,6 +99,34 @@ class NYTLists extends Admin_Admin {
 		}
 
 		$this->display('nytLists.tpl', 'Lists from New York Times');
+	}
+
+	/**
+	 * Turns the results of ListAPI::updateAllUserListsFromNYT() into a message that can be shown to the user, with a
+	 * line for each list saying whether it was built and how many titles were added to it.
+	 *
+	 * @param array $results the response from ListAPI::updateAllUserListsFromNYT()
+	 * @return string the message to display
+	 */
+	private function getUpdateAllListsMessage(array $results): string{
+		$message = htmlspecialchars($results['message']);
+		if (empty($results['lists'])){
+			return $message;
+		}
+		$message .= '<ul class="list-unstyled">';
+		foreach ($results['lists'] as $listResult){
+			if (!empty($listResult['success'])){
+				//The message the List API builds for a list holds a link to that list, so it is displayed as it is; the
+				//line break it uses to separate the count is not needed when each list is a line of its own.
+				$listMessage = str_replace('<br> ', ' - ', $listResult['message']);
+			}else{
+				$listName    = empty($listResult['listName']) ? 'Unnamed list' : $listResult['listName'];
+				$listMessage = 'Failed: ' . htmlspecialchars($listName) . ' - ' . htmlspecialchars($listResult['message']);
+			}
+			$message .= '<li>' . $listMessage . '</li>';
+		}
+		$message .= '</ul>';
+		return $message;
 	}
 
 	function getAllowableRoles(){

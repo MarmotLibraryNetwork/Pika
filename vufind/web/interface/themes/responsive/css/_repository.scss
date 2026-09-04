@@ -109,7 +109,7 @@
     font-weight: bold;
     text-transform: uppercase;
     white-space: nowrap; // multiple word labels need to stay on the same line
-    @media (max-width: $screen-tn-max) {
+    @media (max-width: $screen-md-max) {
       white-space: normal;
     }
   }
@@ -478,6 +478,75 @@
   text-transform: uppercase;
 }
 
+// Compact "Browse by X" popup-trigger buttons (subject / related filters):
+// lay them out horizontally, wrapping as needed, instead of stacking full-width.
+.browseButtonsRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.archiveComponentContainer.browseButtonBox {
+  flex: 0 0 auto;
+
+  .archiveComponent {
+    width: 160px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+
+    .archiveComponentHeader {
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .archiveComponentBody {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+
+      .archiveComponentBox {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+        width: 100%;
+
+        a {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          text-decoration: none;
+        }
+
+        .archiveComponentIconContainer {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 0;
+          padding: 8px 0 0;
+        }
+
+        .archiveComponentImage {
+          width: 64px;
+          height: 64px;
+          max-width: 64px;
+          max-height: 64px;
+        }
+
+        .archiveComponentControls {
+          flex: 0 0 auto;
+          min-height: 0;
+          display: block;
+          padding: 8px 4px;
+        }
+      }
+    }
+  }
+}
+
 #pdfContainer {
   border: 1px solid lightgrey;
   margin: 10px;
@@ -587,18 +656,6 @@
   margin: 0;
 }
 
-// taxonomy_wrapper.tpl uses a float-based layout with a wider max-width
-.taxonomy-wrapper-thumbnail-col .taxonomy-thumbnail {
-  max-width: 390px;
-  float: left;
-}
-
-// Related-objects thumbnails on taxonomy pages
-.taxonomy-related-thumb {
-  max-height: 120px;
-  margin: 0 auto 8px;
-}
-
 // Map embed iframe on the Geographic Location taxonomy page
 .taxonomy-map-embed {
   border: 0;
@@ -644,6 +701,18 @@
 .timeline-year-heading {
   border-bottom: 2px solid #ccc;
   padding-bottom: 0.25em;
+}
+
+// Archive2 — Larger, easier-to-click pagination buttons shared by every paginated collection/search grid (components/timeline_objects_grid.tpl, components/collection-pager.tpl)
+.collection-pager > li > a,
+.collection-pager > li > span {
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 40px;
+  line-height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 15px;
 }
 
 // Archive2 — Small spacing above a row separating map sections (collection_map.tpl, components/map_component.tpl)
@@ -722,6 +791,27 @@
 // Archive2 — Center the caption under the random image thumbnail (components/random_image_component.tpl)
 .random-image-figure .explore-more-category-title {
   text-align: center;
+}
+
+// Archive2 — Center the reload button below the random image (components/random_image_component.tpl)
+.random-image-component {
+  text-align: center;
+
+  .random-image-reload {
+    margin-top: 5px;
+
+    // Spins the refresh icon while a reload request is in flight (nextRandomImage()
+    // toggles this class), so the button gives feedback on a slow Islandora round trip
+    // instead of looking unresponsive.
+    &.loading .bi-arrow-clockwise {
+      animation: pika-spin-refresh 1s linear infinite;
+    }
+  }
+}
+
+@keyframes pika-spin-refresh {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 // Archive2 — Audio poster wrapper, centers the poster image (audio.tpl)
@@ -939,4 +1029,20 @@
   display: -webkit-box;
   -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
+}
+
+#moreDetailsPanel:focus-within{
+  outline: $focus-ring-color solid 2px;
+}
+
+#explore-more-menu .panel-group .panel a:focus div, .panel-group .panel a:focus .panel-heading{
+  border: $focus-ring-color solid 2px;
+}
+
+#explore-more-menu .panel-body .section a:focus figure img{
+  outline: $focus-ring-color solid 2px;
+}
+
+#link-accordion.panel-group .panel a:focus div {
+  border: $focus-ring-color solid 2px;
 }

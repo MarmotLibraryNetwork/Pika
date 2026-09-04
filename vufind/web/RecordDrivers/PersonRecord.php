@@ -88,6 +88,18 @@ class PersonRecord extends IndexRecord {
 		return 'RecordDrivers/Person/result.tpl';
 	}
 
+	/**
+	 * SearchObject_Genealogy::getNextPrevLinks() works from a person's position in the whole result
+	 * set, so that is what getLinkUrl() has to send it as recordIndex.  The base class default,
+	 * 'recordIndex', is the position within the current page, and the genealogy search object does not
+	 * assign it at all - so the parameter went out empty and no navigation was ever built (D-5471).
+	 *
+	 * @return string
+	 */
+	protected function getSearchPositionVariable(){
+		return 'resultIndex';
+	}
+
 	function getBreadcrumb(){
 		return $this->getName();
 	}
