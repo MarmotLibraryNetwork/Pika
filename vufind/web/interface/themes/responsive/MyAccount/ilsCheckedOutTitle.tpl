@@ -163,7 +163,7 @@
 							<div class="result-value col-8 col-xl-9">
 								{$record.renewCount} times
 								{if $record.renewMessage}{* TODO: used anymore? *}
-									<div class="alert {if $record.renewResult == true}alert-success{else}alert-error{/if}">
+									<div class="alert {if $record.renewResult == true}alert-success{else}alert-danger{/if}">
 										{$record.renewMessage|escape}
 									</div>
 								{/if}
