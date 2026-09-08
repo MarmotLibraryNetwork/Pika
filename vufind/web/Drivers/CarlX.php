@@ -318,6 +318,91 @@ class CarlX extends SIP2Driver{
 	}
 
 	/**
+	 * Extract the response statuses from a raw CarlX SOAP response.
+	 *
+	 * CarlX answers most write operations with a GenericResponse envelope carrying one
+	 * or more ResponseStatus elements. The SOAP client returns null for those, so the
+	 * raw envelope has to be fetched back with __getLastResponse() and parsed by hand.
+	 *
+	 * TODO: This has not been exercised against a live CarlX system; it needs to be tested
+	 * against one before it can be relied on.
+	 *
+	 * @param string $soapResponse  Raw XML from SoapClient::__getLastResponse()
+	 * @return array|false  A list of array('shortMessage' => string, 'longMessage' => string),
+	 *                      or false when the response held no statuses to read.
+	 */
+	private function getSoapResponseStatuses($soapResponse) {
+		$useInternalErrors = libxml_use_internal_errors(true);
+		$xml               = simplexml_load_string($soapResponse);
+		libxml_clear_errors();
+		libxml_use_internal_errors($useInternalErrors);
+		if ($xml === false) {
+			return false;
+		}
+
+		// Match on local names so the parsing does not depend on which namespace prefixes
+		// CarlX happens to emit.
+		$statuses = $xml->xpath('//*[local-name()="ResponseStatuses"]/*[local-name()="ResponseStatus"]');
+		if (empty($statuses)) {
+			return false;
+		}
+
+		$responseStatuses = array();
+		foreach ($statuses as $status) {
+			$shortMessage       = $status->xpath('*[local-name()="ShortMessage"]');
+			$longMessage        = $status->xpath('*[local-name()="LongMessage"]');
+			$responseStatuses[] = array(
+				'shortMessage' => empty($shortMessage) ? '' : (string)$shortMessage[0],
+				'longMessage'  => empty($longMessage) ? '' : (string)$longMessage[0],
+			);
+		}
+		return $responseStatuses;
+	}
+
+	/**
+	 * Whether a set of CarlX response statuses reports the operation succeeded.
+	 *
+	 * Every status has to report success; CarlX reports a failure as one or more
+	 * statuses that say something else.
+	 *
+	 * TODO: This has not been exercised against a live CarlX system; it needs to be tested
+	 * against one before it can be relied on.
+	 *
+	 * @param array $responseStatuses  From getSoapResponseStatuses()
+	 * @return bool
+	 */
+	private function soapResponseIsSuccess($responseStatuses) {
+		if (empty($responseStatuses)) {
+			return false;
+		}
+		foreach ($responseStatuses as $responseStatus) {
+			if (stripos($responseStatus['shortMessage'], 'Success') === false) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Combine the long messages of a set of CarlX response statuses into one message.
+	 *
+	 * TODO: This has not been exercised against a live CarlX system; it needs to be tested
+	 * against one before it can be relied on.
+	 *
+	 * @param array $responseStatuses  From getSoapResponseStatuses()
+	 * @return string
+	 */
+	private function getSoapResponseErrorMessage($responseStatuses) {
+		$errorMessages = array();
+		foreach ($responseStatuses as $responseStatus) {
+			if (!empty($responseStatus['longMessage'])) {
+				$errorMessages[] = $responseStatus['longMessage'];
+			}
+		}
+		return implode('; ', $errorMessages);
+	}
+
+	/**
 	 * Renew a single title currently checked out to the user
 	 *
 	 * @param $patron     User
@@ -656,15 +741,13 @@ class CarlX extends SIP2Driver{
 		if (is_null($result)) {
 			$result = $this->soapClient->__getLastResponse();
 			if ($result) {
-				$unxml   = new XML_Unserializer();
-				$unxml->unserialize($result);
-				$response = $unxml->getUnserializedData();
+				$responseStatuses = $this->getSoapResponseStatuses($result);
 
-				if ($response) {
-					$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+				if ($responseStatuses) {
+					$success = $this->soapResponseIsSuccess($responseStatuses);
 					if (!$success) {
 						// TODO: might not want to include sending message back to user
-						$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
+						$errorMessage = $this->getSoapResponseErrorMessage($responseStatuses);
 						return 'Failed to update your ' . translate('pin') . ($errorMessage ? ' : ' .$errorMessage : '');
 					} else {
 						$user->setPassword($newPin);
@@ -752,14 +835,12 @@ class CarlX extends SIP2Driver{
 			if (is_null($result)) {
 				$result = $this->soapClient->__getLastResponse();
 				if ($result) {
-					$unxml   = new XML_Unserializer();
-					$unxml->unserialize($result);
-					$response = $unxml->getUnserializedData();
+					$responseStatuses = $this->getSoapResponseStatuses($result);
 
-					if ($response) {
-						$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+					if ($responseStatuses) {
+						$success = $this->soapResponseIsSuccess($responseStatuses);
 						if (!$success) {
-							$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
+							$errorMessage = $this->getSoapResponseErrorMessage($responseStatuses);
 							$updateErrors[] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
 						}
 
@@ -937,22 +1018,12 @@ class CarlX extends SIP2Driver{
 					$result = $this->soapClient->__getLastResponse();
 
 					if ($result) {
-						$unxml = new XML_Unserializer();
-						$unxml->unserialize($result);
-						$response = $unxml->getUnserializedData();
+						$responseStatuses = $this->getSoapResponseStatuses($result);
 
-						if ($response) {
-							$success = isset($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'])
-								&& stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+						if ($responseStatuses) {
+							$success = $this->soapResponseIsSuccess($responseStatuses);
 							if (!$success) {
-								$errorMessage = array();
-								if (is_array($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus'])) {
-									foreach($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus'] as $errorResponse) {
-										$errorMessage[] = $errorResponse['ns2:LongMessage'];
-									}
-								} else {
-									$errorMessage[] = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-								}
+								$errorMessage = array_column($responseStatuses, 'longMessage');
 								if (in_array('A patron with that id already exists', $errorMessage)) {
 
 									$this->logger->error('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter');
@@ -985,12 +1056,10 @@ class CarlX extends SIP2Driver{
 									if (is_null($result)) {
 										$result = $this->soapClient->__getLastResponse();
 										if ($result) {
-											$unxml = new XML_Unserializer();
-											$unxml->unserialize($result);
-											$response = $unxml->getUnserializedData();
+											$responseStatuses = $this->getSoapResponseStatuses($result);
 
-											if ($response) {
-												$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+											if ($responseStatuses) {
+												$success = $this->soapResponseIsSuccess($responseStatuses);
 												if (!$success) {
 													global $pikaLogger;
 													$pikaLogger->log('Unable to set pin for Self-Registered user on update call after initial creation call.');
@@ -1019,11 +1088,9 @@ class CarlX extends SIP2Driver{
 								if (is_null($result)) {
 									$result = $this->soapClient->__getLastResponse();
 									if ($result) {
-										$unxml = new XML_Unserializer();
-										$unxml->unserialize($result);
-										$response = $unxml->getUnserializedData();
-											if ($response) {
-											$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+										$responseStatuses = $this->getSoapResponseStatuses($result);
+											if ($responseStatuses) {
+											$success = $this->soapResponseIsSuccess($responseStatuses);
 											if (!$success) {
 
 												$this->logger->error('Unable to write IP address in Patron Note.');
@@ -1190,14 +1257,12 @@ class CarlX extends SIP2Driver{
 				if (is_null($result)) {
 					$result = $this->soapClient->__getLastResponse();
 					if ($result) {
-						$unxml   = new XML_Unserializer();
-						$unxml->unserialize($result);
-						$response = $unxml->getUnserializedData();
+						$responseStatuses = $this->getSoapResponseStatuses($result);
 
-						if ($response) {
-							$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
+						if ($responseStatuses) {
+							$success = $this->soapResponseIsSuccess($responseStatuses);
 							if (!$success) {
-								$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
+								$errorMessage = $this->getSoapResponseErrorMessage($responseStatuses);
 //								$updateErrors[] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
 							}
 
