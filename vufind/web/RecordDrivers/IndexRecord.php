@@ -142,60 +142,6 @@ class IndexRecord extends RecordInterface {
 		return [];
 	}
 
-	/**
-	 * Get an array of search results for other editions of the title
-	 * represented by this record (empty if unavailable).  In most cases,
-	 * this will use the XISSN/XISBN logic to find matches.
-	 *
-	 * @access  public
-	 * @return  mixed               Editions in index engine result format.
-	 *                              (or null if no hits, or PEAR_Error object).
-	 */
-//	public function getEditions()
-//	{
-//		require_once ROOT_DIR . '/sys/WorldCatUtils.php';
-//		$wc = new WorldCatUtils();
-//
-//		// Try to build an array of ISBN or ISSN-based sub-queries:
-//		$parts = array();
-//		$isbn = $this->getCleanISBN();
-//		if (!empty($isbn)) {
-//			$isbnList = $wc->getXISBN($isbn);
-//			foreach($isbnList as $current) {
-//				$parts[] = 'isbn:' . $current;
-//			}
-//		} else {
-//			$issn = $this->getCleanISSN();
-//			if (!empty($issn)) {
-//				$issnList = $wc->getXISSN($issn);
-//				foreach($issnList as $current) {
-//					$parts[] = 'issn:' . $current;
-//				}
-//			}
-//		}
-//
-//		// If we have query parts, we should try to find related records:
-//		if (!empty($parts)) {
-//			// Assemble the query parts and filter out current record:
-//			$query = '(' . implode(' OR ', $parts) . ') NOT id:' .
-//			$this->getUniqueID();
-//
-//			// Perform the search and return either results or an error:
-//			$index = $this->getIndexEngine();
-//			$result = $index->search($query, null, null, 0, 5);
-//			if (PEAR_Singleton::isError($result)) {
-//				return $result;
-//			}
-//			if (isset($result['response']['docs']) &&
-//			!empty($result['response']['docs'])) {
-//				return $result['response']['docs'];
-//			}
-//		}
-//
-//		// If we got this far, we were unable to find any results:
-//		return null;
-//	}
-
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
