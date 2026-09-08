@@ -1546,17 +1546,22 @@ abstract class SearchObject_Base {
 				continue;
 			}
 			// See if the classes and urls match
-			if (get_class($dupSearch) && get_class($this) &&
+			if (get_class($dupSearch) == get_class($this) &&
 			$dupSearch->renderSearchUrl() == $this->renderSearchUrl()) {
 				// Is the older search saved?
 				if ($oldSearch->saved) {
-					// Flag for later
-					$dupSaved = true;
-					// Record the details
-					$this->searchId    = $oldSearch->id;
-					$this->savedSearch = true;
+					if (UserAccount::isLoggedIn() && $oldSearch->user_id == UserAccount::getActiveUserId()) {
+						// Only claim a saved search when the user is logged in.
+						// (Not just a session Id match.)
+
+						// Flag for later
+						$dupSaved = true;
+						// Record the details
+						$this->searchId    = $oldSearch->id;
+						$this->savedSearch = true;
+					}
 				} else {
-					// Delete this search
+					// The old search is a duplicate of the current search, so delete the old search
 					$oldSearch->delete();
 				}
 			}
