@@ -3541,6 +3541,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Musical Score':
 			case 'Newspaper':
 			case 'Playaway':
+			case 'Readalong': // LION format
 			case 'Read-Along Book':
 			case 'Serial':
 			case 'Yoto Story Card':
@@ -3548,6 +3549,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 			case 'eComic':
 			case 'Graphic Novel':
+			case 'Manga': // LION format
 				return 'ComicStory';
 
 			case 'eMusic':
@@ -3596,6 +3598,7 @@ class GroupedWorkDriver extends RecordInterface {
 			default:
 				$this->logger->info("No schema.org format set for $pikaFormat");
 			case 'Kit':
+			case 'Media Player': // LION format
 			case 'Microfilm':
 			case 'Physical Object':
 			case 'Slide':
