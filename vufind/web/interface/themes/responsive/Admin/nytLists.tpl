@@ -48,8 +48,8 @@
 					<td>
 						<a href="/MyAccount/MyList/{$pikaList->id}">{$pikaList->title} ({$pikaList->numValidListItems()})</a>
 					</td>
-					<td>{
-						$pikaList->dateUpdated|date_format}
+					<td>
+						{$pikaList->dateUpdated|date_format}
 						{*<button class="btn btn-primary btn-xs pull-right" onclick="$('#existingListId').val({$pikaList->id});$('#buildList').submit()">Update</button>*}
 					</td>
 				</tr>
