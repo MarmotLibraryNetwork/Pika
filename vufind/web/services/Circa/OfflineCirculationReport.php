@@ -160,7 +160,7 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 			$interface->assign([
 				'sierraCircs'         => $sierraCircs,
 				'dueDateNotice'       => "<strong>Due Date:</strong> $dueDate ($this->daysDueFromNow days from now)",
-				'sierraCircsFilename' => 'SierraOfflineCircExport_' . date('Y-m-d') . '.txt',
+				'sierraCircsFilename' => 'SierraOfflineCircExport_' . date('Y-m-d') . '.dat',
 			]);
 		}
 
