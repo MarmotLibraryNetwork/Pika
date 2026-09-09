@@ -3526,6 +3526,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Book with DVD':
 			case 'Book with DVD-ROM':
 			case 'Braille':
+			case 'Cassette Audiobook': // LION format
 			case 'CD':
 			case 'CD Audiobook':
 			case 'Easy Reader':
@@ -3536,10 +3537,12 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Illustrated Edition':
 			case 'Journal':
 			case 'Large Print':
+			case 'Magazine': // LION format
 			case 'Manuscript':
 			case 'MP3 Audio CD':
 			case 'Musical Score':
 			case 'Newspaper':
+			case 'Printed Music': // LION format
 			case 'Playaway':
 			case 'Readalong': // LION format
 			case 'Read-Along Book':
@@ -3553,6 +3556,8 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'ComicStory';
 
 			case 'eMusic':
+			case 'MP3': // LION format
+			case 'Musical Sound Recording': // LION format
 			case 'Music Cassette':
 			case 'Music CD':
 			case 'Music CD With Blu-Ray':
@@ -3563,6 +3568,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'MusicRecording';
 
 			case 'Blu-ray':
+			case 'Blu-Ray': // LION format
 			case 'Blu-Ray/4K Ultra HD Blu-Ray Combo Pack':
 			case 'DVD':
 			case 'DVD Blu-ray Combo Pack':
@@ -3583,6 +3589,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'PlayStation':
 			case 'PlayStation 3':
 			case 'PlayStation 4':
+			case 'PlayStation 5':
 			case 'Windows Game':
 			case 'Xbox 360':
 			case 'Xbox 360 Kinect':
@@ -3590,17 +3597,26 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Xbox Series X':
 				return 'Game';
 
-			case 'Web Content':
-			case 'Online Materials':
 			case 'Digital Newspaper':
+			case 'eResource': // LION format
+			case 'Online Materials':
+			case 'Web Content':
 				return 'WebPage';
 
 			default:
 				$this->logger->info("No schema.org format set for $pikaFormat");
+			case '2-D Graphic': // LION format
+			case '3-D Object':  // LION format
+			case 'Archival Materials': // LION format
+			case 'BingePass': // Hoopla format
+			case 'CD-ROM':      // LION format
+			case 'Computer File': // LION format
 			case 'Kit':
 			case 'Media Player': // LION format
 			case 'Microfilm':
+			case 'Mixed Material': // LION format
 			case 'Physical Object':
+			case 'Photo':
 			case 'Slide':
 			case 'Resource Kit':
 				return 'CreativeWork';
