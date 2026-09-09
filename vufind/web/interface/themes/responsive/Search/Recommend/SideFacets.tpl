@@ -10,7 +10,7 @@
 		{if $filterList}
 			<div id="remove-search-label" class="results-sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Applied Filters'}</div>
 			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
-			{foreach from=$filterList item=filters key=field }
+			{foreach from=$filterList item=filters key=field}
 				{foreach from=$filters item=filter}
 					<div class="facetValue">{translate text=$field}: {$filter.display|translate|escape} <a href="{$filter.removalUrl|escape}" aria-label="Remove this applied filter"><span class="bi bi-x-circle" title="Remove this applied filter" aria-hidden="true"></span></a></div>
 				{/foreach}
