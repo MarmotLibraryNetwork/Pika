@@ -107,7 +107,7 @@
 					<button type="button" class="btn btn-outline-secondary" onclick="Pika.copyText('sierraCircsExport')"><span class="bi bi-copy" aria-hidden="true"></span>&nbsp;&nbsp;Copy to Clipboard</button>
 					<button type="button" class="btn btn-outline-secondary" onclick="downloadSierraCircsExport()"><span class="bi bi-download" aria-hidden="true"></span>&nbsp;&nbsp;Download as File</button>
 				</div>
-				<pre id="sierraCircsExport">
+				<pre id="sierraCircsExport" class="border p-3">
 					{foreach from=$sierraCircs item=circ}
 						{$circ}
 					{/foreach}
