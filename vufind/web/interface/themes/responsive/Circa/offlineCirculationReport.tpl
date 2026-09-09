@@ -103,11 +103,30 @@
 			{if !empty($sierraCircs)}
 				<h1 role="heading" aria-level="1" class="h2">Offline Circulation Export</h1>
 				<p>{$dueDateNotice}</p>
-				<pre>
+				<div class="btn-group" role="group">
+					<button type="button" class="btn btn-default" onclick="Pika.copyText('sierraCircsExport')"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>&nbsp;&nbsp;Copy to Clipboard</button>
+					<button type="button" class="btn btn-default" onclick="downloadSierraCircsExport()"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>&nbsp;&nbsp;Download as File</button>
+				</div>
+				<pre id="sierraCircsExport">
 					{foreach from=$sierraCircs item=circ}
 						{$circ}
 					{/foreach}
 				</pre>
+				<script>
+					{literal}
+					function downloadSierraCircsExport(){
+						var element = document.getElementById('sierraCircsExport');
+						var blob = new Blob([element.textContent], {type: 'text/plain'});
+						var link = document.createElement('a');
+						link.href = URL.createObjectURL(blob);
+						link.download = '{/literal}{$sierraCircsFilename}{literal}';
+						document.body.appendChild(link);
+						link.click();
+						document.body.removeChild(link);
+						URL.revokeObjectURL(link.href);
+					}
+					{/literal}
+				</script>
 			{elseif count($offlineCirculation) > 0}
 				<h1 role="heading" aria-level="1" class="h2">Offline Circulation</h1>
 				<table class="table stripe" id="offlineCirculationReport">
