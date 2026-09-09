@@ -3527,6 +3527,7 @@ class GroupedWorkDriver extends RecordInterface {
 			case 'Book with DVD-ROM':
 			case 'Braille':
 			case 'CD':
+			case 'CD Audiobook':
 			case 'Easy Reader':
 			case 'Easy Reader eBook':
 			case 'eAudiobook':
