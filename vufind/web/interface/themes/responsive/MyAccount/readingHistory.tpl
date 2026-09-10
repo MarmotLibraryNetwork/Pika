@@ -253,7 +253,20 @@
 															<div class="row">
 																<div class="result-label col-3">Rating&nbsp;</div>
 																<div class="result-value col-9">
-																	{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
+																	{* title-rating.tpl draws the old jquery rater: a star sprite sized in pixels, with no text
+																	   and no keyboard handling, so it is invisible to a screen reader and unusable without a
+																	   mouse. Show the same numbers as plain text until an accessible star display replaces it. *}
+																	{*{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}*}
+																	{if $record.ratingData.user}Your rating: {$record.ratingData.user} of 5{/if}
+																	{* Skip the average when the patron is the only person who has rated it; it would just
+																	   repeat their own rating back at them. *}
+																	{if $record.ratingData.count > 1 || ($record.ratingData.count == 1 && !$record.ratingData.user)}
+																		{if $record.ratingData.user}&mdash;{/if}
+																		Average: {math equation="round(average_rating,1)" average_rating=$record.ratingData.average} of 5
+																		({$record.ratingData.count} rating{if $record.ratingData.count != 1}s{/if})
+																	{elseif !$record.ratingData.count}
+																		Not yet rated
+																	{/if}
 																</div>
 															</div>
 														{/if}
