@@ -21141,9 +21141,7 @@ table.dataTable > tbody > tr > th.sorting_3::before {
   color: #d6430a;
 }
 
-.star_rating input.star0:checked + label {
-  color: transparent;
-  border-bottom-color: transparent;
+.star_rating input.star0:disabled + label {
   display: none;
 }
 
