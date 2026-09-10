@@ -23,7 +23,11 @@
 						<th style="min-width: 80px;">{translate text='Date'}</th>
 						<th>{translate text='Title'}</th>
 						<th>{translate text='Author'}</th>
-						<th style="min-width: 130px; white-space: nowrap;">{translate text='Star Rating'}</th>
+						{* 140px holds all six star labels on one line. Each label is 22px -- an 18px svg
+						   plus a 2px transparent focus border on each side -- and the "remove rating" X is
+						   a sixth label, so six of them need 132px. The old 130px was sized for five and
+						   wrapped the fifth star onto a second line whenever the X was showing. *}
+						<th style="min-width: 140px; white-space: nowrap;">{translate text='Star Rating'}</th>
 						<th>&nbsp;</th>
 					</tr>
 					</thead>
@@ -53,7 +57,7 @@
 								>
 									{include file='MyAccount/star-rating.tpl' id=$rating.groupedWorkId ratingData=$rating.ratingData ratingTitle=$rating.title}
 								</div>
-								<p style="white-space: normal">{$rating.review}</p>
+								{if !empty($rating.review)}<p style="white-space: normal">{$rating.review}</p>{/if}
 							</td>
 							<td>
 								<button type="button" class="btn btn-xs btn-warning" onclick="return Pika.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">Delete</button>
