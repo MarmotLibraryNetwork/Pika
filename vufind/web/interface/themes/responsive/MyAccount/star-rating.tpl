@@ -4,9 +4,12 @@
     <fieldset>
         <legend class="visuallyhidden">Star rating for {$ratingTitle}</legend>
 
-        <input value="0" id="{$id}-star0" checked="" type="radio" name="rating" class="visuallyhidden star0">
+        {* Removing a rating only makes sense once one exists. With no rating star0 stays checked so
+           css hides the X, and disabled so tab and the arrow keys skip it instead of landing on it. *}
+        <input value="0" id="{$id}-star0" type="radio" name="rating" class="visuallyhidden star0"
+               {if !$ratingData.user}checked="" disabled=""{/if}>
         <label for="{$id}-star0">
-            <span class="visuallyhidden">Press enter to rate {$ratingTitle} 0 stars</span>
+            <span class="visuallyhidden">Press enter to remove your rating for {$ratingTitle}</span>
             <svg role="img" viewBox="0 0 512 512">
                 <title>Remove rating</title>
                 <g stroke-width="70" stroke-linecap="square">

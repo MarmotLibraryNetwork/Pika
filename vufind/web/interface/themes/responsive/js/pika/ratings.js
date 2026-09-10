@@ -151,12 +151,44 @@ function initStarRatings() {
 	document.querySelectorAll('.star_rating').forEach(function(form) {
 		var radios = form.querySelectorAll('input[type=radio]');
 		var output = form.querySelector('output');
+		var star0 = form.querySelector('input.star0');
+		var first_star = form.querySelector('input[value="1"]');
 		// Make sure we have a number for comparison
 		var do_review = parseInt(form.closest("div.title-rating").getAttribute('data-show_review'));
+
+		// The X only means anything once there is a rating to remove. While it is hidden by css it is
+		// also disabled, and that is what keeps it out of the tab order and out of the radio group's
+		// arrow-key cycle. The template renders the starting state; this keeps it in step afterwards.
+		var set_remove_rating_available = function(available){
+			if (!star0){
+				return;
+			}
+			if (!available){
+				// Focus would be dropped on the floor if it were still sitting on the X being disabled.
+				if (document.activeElement === star0 && first_star){
+					first_star.focus();
+				}
+				star0.checked = true;
+			}
+			star0.disabled = !available;
+		};
+
+		var rating_title_for = function(el){
+			return el.closest('div.title-rating').getAttribute('data-rating_title');
+		};
+
+		var rating_text_for = function(star_rating, rating_title){
+			let stars = parseInt(star_rating);
+			if (stars === 0){
+				return `Rating removed for ${rating_title}`;
+			}
+			return `${rating_title} rated ${stars} star` + (stars === 1 ? '' : 's');
+		};
 
 		var submit_rating = function(star_rating, rating_text){
 			Pika.Account.ajaxLogin(function (){
 				let grouped_work_id = form.querySelector('[name="grouped-work-id"]').value;
+				let clearing_rating = parseInt(star_rating) === 0;
 				// testing error
 				// star_rating += "trigger-error";
 				// Create a new FormData object for form data
@@ -171,7 +203,7 @@ function initStarRatings() {
 				// Build the XHR url
 				let protocol = window.location.protocol;
 				let hostname = window.location.hostname;
-				if(parseInt(star_rating) === 0) {
+				if(clearing_rating) {
 					//clear rating
 					var xhr_url = `${protocol}//${hostname}/GroupedWork/${encodeURIComponent(grouped_work_id)}/AJAX?` +
 					`method=clearUserRating`;
@@ -194,8 +226,12 @@ function initStarRatings() {
 							if (response.error){
 								alert('Error submitting rating.');
 							}else{
-								alert('Rating submitted successfully.');
-								if (do_review === 1){
+								// A cleared rating leaves nothing to remove, so the X goes back to hidden and
+								// disabled. Any other rating makes it available again.
+								set_remove_rating_available(!clearing_rating);
+								alert(clearing_rating ? 'Rating removed.' : 'Rating submitted successfully.');
+								// Removing a rating is not something to prompt for a review about.
+								if (do_review === 1 && !clearing_rating){
 									Pika.Ratings.doRatingReview(grouped_work_id);
 								}
 							}
@@ -218,30 +254,32 @@ function initStarRatings() {
 		}
 
 		Array.prototype.forEach.call(radios, function(el) {
-			var label = el.nextSibling.nextSibling;
+			var label = el.nextElementSibling;
 
 			label.addEventListener("click", function() {
-				let star_rating = el.value;
-				let rating_title = el.closest('div').getAttribute('data-rating_title');
-				let rating_text = `${rating_title} rated ${star_rating} star`;
-				if (star_rating !== 1) {
-					rating_text += "s";
+				// A label still fires click even when the input it labels is disabled.
+				if (el.disabled){
+					return;
 				}
-
-				submit_rating(star_rating, rating_text);
+				submit_rating(el.value, rating_text_for(el.value, rating_title_for(el)));
 			});
 		});
 
 		form.addEventListener('submit', function(event) {
-			let star_rating = form.querySelector(':checked').value;
-			let rating_title = form.closest("div").getAttribute('data-rating_title');
-			let rating_text = `${rating_title} rated ${star_rating} star`;
-			if (star_rating != 1) {
-				rating_text += "s";
-			}
-			submit_rating(star_rating, rating_text);
 			event.preventDefault();
 			event.stopImmediatePropagation();
+			// Every star's label tells the patron to press enter, so honor the star that actually has
+			// focus. Arrow keys check as they move, but tabbing to a star does not, and :checked alone
+			// would submit whatever was checked when the page rendered.
+			let focused = document.activeElement;
+			let selected = (focused && focused.type === 'radio' && form.contains(focused))
+					? focused
+					: form.querySelector('input[type=radio]:checked');
+			if (!selected || selected.disabled){
+				return;
+			}
+			selected.checked = true;
+			submit_rating(selected.value, rating_text_for(selected.value, rating_title_for(selected)));
 		});
 	});
 }
