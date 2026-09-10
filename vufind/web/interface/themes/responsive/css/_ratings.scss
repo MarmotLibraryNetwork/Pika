@@ -114,11 +114,13 @@
   color: #d6430a;
 }
 
-.star_rating input.star0:checked+label {
-  //color: #d6430a;
-  color: transparent;
-  border-bottom-color: transparent;
-  display: none; 
+// Hide the "remove rating" X exactly when it is disabled, which the template and ratings.js
+// keep true whenever there is no rating to remove. This has to key off :disabled rather than
+// :checked, because arrowing onto the X checks it and arrowing off it unchecks it: a :checked
+// rule made the X vanish under the keyboard focus on a rated title, and flash into view --
+// still unreachable, because it stays disabled -- on an unrated one.
+.star_rating input.star0:disabled+label {
+  display: none;
 }
 
 .star_rating [type="submit"] {
