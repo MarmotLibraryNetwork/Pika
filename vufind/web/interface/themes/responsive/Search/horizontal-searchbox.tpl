@@ -111,7 +111,8 @@
 		<div id="horizontal-search-button-container" class="col-md-3 col-sm-12">
 			<div class="row">
 				<div class="col-3 col-sm-3 col-md-4 col-lg-4">
-					<button class="btn btn-outline-secondary" type="submit">
+					<button class="btn btn-light btn-outline-dark" type="submit">
+						{* btn-light ensures a light background for sufficient contrast *}
 						<span class="bi bi-search" aria-hidden="true"></span>
 						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
 					</button>

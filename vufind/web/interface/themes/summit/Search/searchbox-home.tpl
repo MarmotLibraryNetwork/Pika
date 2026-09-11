@@ -41,8 +41,9 @@
 								{if $searchType != 'advanced'}{$lookfor|escape:"html"}{/if}
 								</textarea>
 
-							<button class="btn btn-outline-secondary" type="submit" id="search-actions">GO</button>
-							<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
+							{* btn-light ensures a light background for sufficient contrast *}
+							<button class="btn btn-light btn-outline-dark" type="submit" id="search-actions">GO</button>
+							<button class="btn btn-light btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-label="Select type of search">
 							</button>
 
 							<ul id="searchType" class="dropdown-menu dropdown-menu-end text-start" role="list"> {* Axe accessibility plugin says the role should be list (rather than menu) *}
