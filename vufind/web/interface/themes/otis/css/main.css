@@ -20801,6 +20801,24 @@ body > .container {
   text-decoration: none;
 }
 
+.modal-dialog {
+  max-width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 1199px) {
+  .modal-dialog {
+    width: 80%;
+    max-width: 80%;
+  }
+}
+@media (max-width: 767px) {
+  .modal-dialog {
+    width: 98%;
+    max-width: 98%;
+  }
+}
+
 .modal-buttons {
   margin-left: 3px;
   margin-right: 3px;
