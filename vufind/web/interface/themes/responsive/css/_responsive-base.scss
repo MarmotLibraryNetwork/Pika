@@ -230,6 +230,24 @@ body {
 @include accordion-headers-and-titles;
 
 // Modals
+// (Bootstrap 3 positioned the .modal element itself with left/negative margin; in
+//  Bootstrap 5 the .modal is the full-viewport overlay and sizing belongs on .modal-dialog.)
+.modal-dialog {
+  //width: 60%;
+  max-width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media(max-width: $screen-md-max) {
+    width: 80%;
+    max-width: 80%;
+  }
+  @media(max-width: $screen-xs-max) {
+    width: 98%;
+    max-width: 98%;
+  }
+}
+
 .modal-buttons {
   margin-left: 3px;
   margin-right: 3px;
