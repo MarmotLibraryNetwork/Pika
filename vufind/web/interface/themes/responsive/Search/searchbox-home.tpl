@@ -177,8 +177,8 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-6{else}col-12{/if} text-center d-none d-sm-block d-md-none">
-						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-6{else}col-12{/if} text-center d-md-none">
+						<a class="btn btn-light btn-outline-dark" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 

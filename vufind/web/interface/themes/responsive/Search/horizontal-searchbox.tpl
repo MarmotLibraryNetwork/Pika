@@ -1,6 +1,7 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="/Union/Search" id="searchForm" class="row" onsubmit="Pika.Searches.processSearchForm();">
+	<form method="get" action="/Union/Search" id="searchForm" onsubmit="Pika.Searches.processSearchForm();">
+		<div class="row">
 
 		{* Hidden Inputs *}
 
@@ -143,8 +144,8 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
-					<div class="col-3 col-sm-3 d-none d-sm-block d-md-none">
-						<a class="btn btn-outline-secondary" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<div class="col-3 col-sm-3 d-md-none">
+						<a class="btn btn-light btn-outline-dark" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 			</div>
@@ -160,7 +161,7 @@
 				{/foreach}
 			</div>
 		{/if}
-
+		</div>
 	</form>
 </div>
 {/strip}
