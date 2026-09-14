@@ -68,6 +68,19 @@ class ListWidget extends DB_DataObject {
 		return ['id'];
 	}
 
+	/**
+	 * The URL parameter an embedded list widget adds to every request it makes back to the catalog,
+	 * so the forward proxy can tell widget traffic from bot traffic. Built here and nowhere else.
+	 *
+	 * @return string 'listWidgetToken=<value>' ready to append to a query string, or an empty string
+	 *                when no token is configured, in which case callers should add nothing.
+	 */
+	static function proxyTokenParam(){
+		global $configArray;
+		$token = $configArray['Site']['listWidgetToken'] ?? '';
+		return $token === '' ? '' : 'listWidgetToken=' . urlencode($token);
+	}
+
 	static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$libraryList = array();

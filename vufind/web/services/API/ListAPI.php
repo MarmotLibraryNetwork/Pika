@@ -547,6 +547,12 @@ class ListAPI extends AJAXHandler {
 		global $library;
 		$cacheName .= '_' . $library->subdomain;
 		$cacheName .= '_' . $numTitlesToShow;
+		// The cover URLs in the cached data carry the proxy token, so a changed token must miss the cache
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+		$proxyTokenParam = ListWidget::proxyTokenParam();
+		if ($proxyTokenParam){
+			$cacheName .= '_' . md5($proxyTokenParam);
+		}
 
 		$listData = $memCache->get($cacheName);
 		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
@@ -573,6 +579,9 @@ class ListAPI extends AJAXHandler {
 						$imageUrl = $rawData['small_image'];
 						if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
 							$imageUrl = $rawData['image'];
+						}
+						if ($proxyTokenParam){
+							$imageUrl .= (strpos($imageUrl, '?') === false ? '?' : '&') . $proxyTokenParam;
 						}
 
 						$interface->assign('title', $titleShort);

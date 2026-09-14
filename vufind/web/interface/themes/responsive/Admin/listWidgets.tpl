@@ -18,7 +18,7 @@
 					<div class="btn-group-vertical btn-group-sm">
 						<a class="btn btn-sm btn-default" href="/Admin/ListWidgets?objectAction=view&id={$widget->id}" role="button">View</a>
 						<a class="btn btn-sm btn-default" href="/Admin/ListWidgets?objectAction=edit&id={$widget->id}" role="button">Edit</a>
-						<a class="btn btn-sm btn-default" href="/API/SearchAPI?method=getListWidget&id={$widget->id}" role="button">Preview</a>
+						<a class="btn btn-sm btn-default" href="/API/SearchAPI?method=getListWidget&id={$widget->id}{if $proxyTokenParam}&{$proxyTokenParam}{/if}" role="button">Preview</a>
 						{if $canDelete}
 							<a class="btn btn-sm btn-danger" href="/Admin/ListWidgets?objectAction=delete&id={$widget->id}" role="button" onclick="return confirm('Are you sure you want to delete {$widget->name}?');">Delete</a>
 						{/if}
