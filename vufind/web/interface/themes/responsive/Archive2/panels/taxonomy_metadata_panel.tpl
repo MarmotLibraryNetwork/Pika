@@ -22,6 +22,12 @@
 							<div class="result-value col-sm-8"><a href="{$islandora_taxonomy_pika_json_url}" target="_blank">{$islandora_taxonomy_pika_json_url}</a></div>
 						</div>
 					{/if}
+					{if $cache_reload_url}
+						<div class="row archive-field-row">
+							<div class="result-label col-sm-4">Reload Cache:</div>
+							<div class="result-value col-sm-8"><a href="{$cache_reload_url}">{$cache_reload_url}</a></div>
+						</div>
+					{/if}
 					{include file="Archive2/partials/fieldRow.tpl" label="Term ID"         value=$tid}
 					{include file="Archive2/partials/fieldRow.tpl" label="Vocabulary"      value=$vocabulary_name}
 					{include file="Archive2/partials/fieldRow.tpl" label="Owner ID"           value=$owner_id}
