@@ -1287,6 +1287,11 @@ class User extends DB_DataObject {
 					$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
 					foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation){
 						foreach ($locations as $mainSortingKey => $mainPickupLocation){
+							if (!$mainPickupLocation instanceof Location){
+								// getPickupBranches() adds a 'Please Select a Location' placeholder string when the
+								// user's home branch is not a pickup location; it has nothing to dedupe against.
+								continue;
+							}
 							// Check For Duplicated Pickup Locations
 							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId){
 								// Merge Linked Users that all have this pick-up location
