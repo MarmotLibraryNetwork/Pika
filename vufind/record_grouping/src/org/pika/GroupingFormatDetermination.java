@@ -1282,7 +1282,17 @@ public class GroupingFormatDetermination {
 					}
 					break;
 				case 'V':
+					// https://www.loc.gov/marc/bibliographic/bd007.html
 					switch (specificMaterial) {
+						case 'V':
+							result.add("DVD");
+							break;
+						case 'S':
+							result.add("Blu-ray");
+							break;
+						case 'T':
+							result.add("4KUltraBlu-Ray");
+							break;
 						case 'C':
 							result.add("VideoCartridge");
 							break;
@@ -1292,9 +1302,9 @@ public class GroupingFormatDetermination {
 						case 'F':
 							result.add("VideoCassette");
 							break;
-						case 'R':
-							result.add("VideoReel");
-							break;
+//						case 'R':
+//							result.add("VideoReel");
+//							break;
 						default:
 							result.add("Video");
 							break;
