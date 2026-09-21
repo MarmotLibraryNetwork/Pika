@@ -26,8 +26,9 @@
 						{* 140px holds all six star labels on one line. Each label is 22px -- an 18px svg
 						   plus a 2px transparent focus border on each side -- and the "remove rating" X is
 						   a sixth label, so six of them need 132px. The old 130px was sized for five and
-						   wrapped the fifth star onto a second line whenever the X was showing. *}
-						<th style="min-width: 140px; white-space: nowrap;">{translate text='Star Rating'}</th>
+						   wrapped the fifth star onto a second line whenever the X was showing.
+						    140px was sufficient for Mozzilla Firefox. 149px is needed for Google Chrome *}
+						<th style="min-width: 149px; white-space: nowrap;">{translate text='Star Rating'}</th>
 						<th>&nbsp;</th>
 					</tr>
 					</thead>
