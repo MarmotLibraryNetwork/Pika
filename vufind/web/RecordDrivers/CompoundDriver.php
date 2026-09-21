@@ -78,7 +78,7 @@ EOQ;
 			];
 			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
-			$pikaLogger->debug("No result section details for this object " . $this->getUniqueID(), $sectionDetails);
+			$pikaLogger->debug('No result section details for this object ' . $this->getUniqueID(), $sectionDetails);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;
 		}else{
@@ -100,9 +100,9 @@ EOQ;
 			uasort($queryResults, $sort);
 
 			foreach ($queryResults as $result){
-				$pikaLogger->debug("for loop");
+				$pikaLogger->debug('for loop');
 				if(!empty($result)){
-					$pikaLogger->debug(implode(",", $result['object']));
+					//$pikaLogger->debug(implode(',', $result['object']));
 				}
 				$objectPid = $result['object']['value'];
 				//TODO: check access
@@ -172,7 +172,7 @@ EOQ;
 
 		$results = $fedoraUtils->doSparqlQuery($query);
 		global $pikaLogger;
-		$pikaLogger->debug("Pages for section with object id : " .$sectionObject->id, $results);
+		$pikaLogger->debug('Pages for section with object id : ' . $sectionObject->id/*, $results*/);
 
 		// Get rid of the "extra" info...
 

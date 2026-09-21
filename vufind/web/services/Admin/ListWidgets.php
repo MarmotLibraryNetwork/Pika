@@ -42,6 +42,15 @@ class Admin_ListWidgets extends ObjectEditor {
 		return 'List Widgets';
 	}
 
+	function launch(){
+		// Every widget URL the admin pages show (embed instructions, previews) carries the proxy token.
+		// Deliberately not named listWidgetToken: that name makes cssAndJsIncludes.tpl tokenize the
+		// page's own assets, which is only wanted on the embedded widget page itself.
+		global $interface;
+		$interface->assign('proxyTokenParam', ListWidget::proxyTokenParam());
+		parent::launch();
+	}
+
 	function getAllObjects($orderBy = null){
 		$list   = [];
 		$user   = UserAccount::getLoggedInUser();
@@ -88,9 +97,10 @@ class Admin_ListWidgets extends ObjectEditor {
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = [];
 		if ($existingObject != null){
+			$proxyTokenParam = ListWidget::proxyTokenParam();
 			$objectActions[] = [
 				'text' => 'Preview Widget as Page',
-				'url'  => '/API/SearchAPI?method=getListWidget&id=' . $existingObject->id,
+				'url'  => '/API/SearchAPI?method=getListWidget&id=' . $existingObject->id . ($proxyTokenParam ? '&' . $proxyTokenParam : ''),
 			];
 		}
 		return $objectActions;

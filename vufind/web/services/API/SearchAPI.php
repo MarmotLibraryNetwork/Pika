@@ -621,6 +621,9 @@ class SearchAPI extends AJAXHandler {
 			$interface->assign('reload', false);
 		}
 
+		// Only the widget page assigns this; cssAndJsIncludes.tpl and the css plugin append it to
+		// every asset URL when it is set so the forward proxy can recognize widget traffic.
+		$interface->assign('listWidgetToken', ListWidget::proxyTokenParam());
 
 		$widget->id = $id;
 		if ($widget->find(true)){

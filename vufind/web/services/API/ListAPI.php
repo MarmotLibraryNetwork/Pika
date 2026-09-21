@@ -158,8 +158,8 @@ class ListAPI extends AJAXHandler {
 
 			if ($titleCount > 0){
 
-				$listTitle = $titleData["listTitle"];
-				$listDesc  = $titleData["listDescription"];
+				$listTitle = $titleData['listTitle'];
+				$listDesc  = $titleData['listDescription'];
 
 				$rssFeed .= '<title>' . $listTitle . '</title>';
 				$rssFeed .= '<language>en-us</language>';
@@ -168,20 +168,20 @@ class ListAPI extends AJAXHandler {
 				$rssFeed .= '<pubDate>' . $curDate . '</pubDate>';
 				$rssFeed .= '<link>' . htmlspecialchars($configArray['Site']['url'] . '/API/ListAPI?method=getRSSFeed&id=' . $listId) . '</link>';
 
-				foreach ($titleData["titles"] as $title){
-					$titleId     = $title["id"];
-					$image       = $title["image"];
-					$bookTitle   = $title["title"];
+				foreach ($titleData['titles'] as $title){
+					$titleId     = $title['id'];
+					$image       = $title['image'];
+					$bookTitle   = $title['title'];
 					$bookTitle   = rtrim($bookTitle, " /");
-					$author      = $title["author"];
-					$description = $title["description"];
-					$length      = $title["length"];
-					$publisher   = $title["publisher"];
+					$author      = $title['author'];
+					$description = $title['description'];
+					$length      = $title['length'];
+					$publisher   = $title['publisher'];
 
-					if (isset($title["dateSaved"])){
-						$pubDate = $title["dateSaved"];
+					if (isset($title['dateSaved'])){
+						$pubDate = $title['dateSaved'];
 					}else{
-						$pubDate = "No Date Available";
+						$pubDate = 'No Date Available';
 					}
 
 
@@ -547,6 +547,12 @@ class ListAPI extends AJAXHandler {
 		global $library;
 		$cacheName .= '_' . $library->subdomain;
 		$cacheName .= '_' . $numTitlesToShow;
+		// The cover URLs in the cached data carry the proxy token, so a changed token must miss the cache
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+		$proxyTokenParam = ListWidget::proxyTokenParam();
+		if ($proxyTokenParam){
+			$cacheName .= '_' . md5($proxyTokenParam);
+		}
 
 		$listData = $memCache->get($cacheName);
 		if (!$listData || isset($_REQUEST['reload']) || empty($listData['titles'])){
@@ -573,6 +579,9 @@ class ListAPI extends AJAXHandler {
 						$imageUrl = $rawData['small_image'];
 						if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
 							$imageUrl = $rawData['image'];
+						}
+						if ($proxyTokenParam){
+							$imageUrl .= (strpos($imageUrl, '?') === false ? '?' : '&') . $proxyTokenParam;
 						}
 
 						$interface->assign('title', $titleShort);

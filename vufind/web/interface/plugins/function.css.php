@@ -60,5 +60,11 @@ function smarty_function_css($params, \Smarty\Template $template)
 
 	// We found the file -- build the link tag:
 	$media = isset($params['media']) ? " media=\"{$params['media']}\"" : '';
-	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getTemplateVariable('gitBranch')) . "\">";
+	$query = 'v=' . urlencode($interface->getTemplateVariable('gitBranch'));
+	// Only the embedded list widget page assigns this; it lets the forward proxy recognize widget traffic
+	$listWidgetToken = $interface->getTemplateVariable('listWidgetToken');
+	if (!empty($listWidgetToken)){
+		$query .= '&' . $listWidgetToken;
+	}
+	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?{$query}\">";
 }

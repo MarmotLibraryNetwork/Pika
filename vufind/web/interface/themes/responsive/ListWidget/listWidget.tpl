@@ -5,11 +5,11 @@
 	<title>{$widget->name}</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-	{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false}
+	{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false isListWidget=true}
 	{*TODO a smaller suite of javascript for List Widgets*}
 
 	{if $resizeIframe}
-	<script src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
+	<script src="/js/iframeResizer/iframeResizer.contentWindow.min.js{if $listWidgetToken}?{$listWidgetToken}{/if}"></script>
 	{/if}
 
   {if $widget->customCss}

@@ -47,7 +47,6 @@
 							          name="lookfor"
 {*							          value=""*}
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-							          onkeyup="return Pika.Searches.resetSearchType()"
 							          onfocus="$(this).trigger('select')" {* Select/highlight inputted text *}
 							          autocomplete="off"
 							          rows="1"
@@ -95,7 +94,6 @@
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource} selected="selected"{/if}
-											{if $searchKey == $searchSource} id="default_search_type"{/if}
 											   {*leading space for clean parsing*} title="{$searchOption.description}">
 										{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
 									</option>

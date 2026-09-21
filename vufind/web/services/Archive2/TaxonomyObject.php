@@ -121,7 +121,7 @@ class TaxonomyObject extends \Action
         $interface->assign('maps_key',               $mapsKey);
         // Shared fields
         $interface->assign('geolocation',            $this->taxonomyObject->getGeolocation());
-        // person, corperate_body, event related fileds
+        // person, corporate_body, & event related fields
         if($this->taxonomyObject->termWithoutFieldPrefix['vocabulary'] != "geo_location") {
             $interface->assign('related_place',          $this->taxonomyObject->getRelatedPlace());
             $interface->assign('related_organization',   $this->taxonomyObject->getRelatedOrganization());
@@ -158,6 +158,9 @@ class TaxonomyObject extends \Action
         $islandoraBaseUrl = rtrim($configArray['Islandora2']['url'] ?? '', '/');
         $interface->assign('islandora_taxonomy_url',          $islandoraBaseUrl . '/taxonomy/term/' . $this->tid);
         $interface->assign('islandora_taxonomy_pika_json_url', $islandoraBaseUrl . '/pika-json/taxonomy/' . $this->tid);
+
+        $cacheReloadUrl = getTaxonomyAbsoluteUrl($this->taxonomyObject) . '?reload=true';
+        $interface->assign('cache_reload_url', $cacheReloadUrl);
 
     }
 
