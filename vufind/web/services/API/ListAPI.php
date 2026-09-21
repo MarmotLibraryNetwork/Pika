@@ -158,8 +158,8 @@ class ListAPI extends AJAXHandler {
 
 			if ($titleCount > 0){
 
-				$listTitle = $titleData["listTitle"];
-				$listDesc  = $titleData["listDescription"];
+				$listTitle = $titleData['listTitle'];
+				$listDesc  = $titleData['listDescription'];
 
 				$rssFeed .= '<title>' . $listTitle . '</title>';
 				$rssFeed .= '<language>en-us</language>';
@@ -168,20 +168,20 @@ class ListAPI extends AJAXHandler {
 				$rssFeed .= '<pubDate>' . $curDate . '</pubDate>';
 				$rssFeed .= '<link>' . htmlspecialchars($configArray['Site']['url'] . '/API/ListAPI?method=getRSSFeed&id=' . $listId) . '</link>';
 
-				foreach ($titleData["titles"] as $title){
-					$titleId     = $title["id"];
-					$image       = $title["image"];
-					$bookTitle   = $title["title"];
+				foreach ($titleData['titles'] as $title){
+					$titleId     = $title['id'];
+					$image       = $title['image'];
+					$bookTitle   = $title['title'];
 					$bookTitle   = rtrim($bookTitle, " /");
-					$author      = $title["author"];
-					$description = $title["description"];
-					$length      = $title["length"];
-					$publisher   = $title["publisher"];
+					$author      = $title['author'];
+					$description = $title['description'];
+					$length      = $title['length'];
+					$publisher   = $title['publisher'];
 
-					if (isset($title["dateSaved"])){
-						$pubDate = $title["dateSaved"];
+					if (isset($title['dateSaved'])){
+						$pubDate = $title['dateSaved'];
 					}else{
-						$pubDate = "No Date Available";
+						$pubDate = 'No Date Available';
 					}
 
 
