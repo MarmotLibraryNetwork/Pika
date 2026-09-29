@@ -139,6 +139,32 @@ abstract class I2Object implements MediaObjectInterface
     }
 
     /**
+     * Resolve the lower-cased name of a taxonomy term reference field on the raw node.
+     *
+     * The field may be absent, null, a single term array, or a list of term arrays
+     * (to-many reference); only the first term of a list is considered.
+     *
+     * @param array  $node
+     * @param string $field Raw field name, e.g. "field_model".
+     * @return string|null Lower-cased term name or null when unavailable.
+     */
+    protected static function getTermNameFromNode(array $node, string $field): ?string
+    {
+        $term = $node[$field] ?? null;
+        if (!is_array($term)) {
+            return null;
+        }
+        if (!array_key_exists('tid', $term)) {
+            // to-many reference: unwrap the first term
+            $term = $term[0] ?? null;
+            if (!is_array($term) || !array_key_exists('tid', $term)) {
+                return null;
+            }
+        }
+        return isset($term['name']) ? strtolower($term['name']) : null;
+    }
+
+    /**
      * Resolve the Islandora media type from the raw node.
      *
      * @param array $node
@@ -146,16 +172,7 @@ abstract class I2Object implements MediaObjectInterface
      */
     protected static function getObjectModelFromNode(array $node): ?string
     {
-        $fieldModel = $node['field_model'] ?? null;
-        if (!is_array($fieldModel)) {
-            return null;
-        }
-        if (array_key_exists('tid', $fieldModel)) {
-            return isset($fieldModel['name']) ? strtolower($fieldModel['name']) : null;
-        } elseif (isset($fieldModel[0]) && is_array($fieldModel[0]) && array_key_exists('tid', $fieldModel[0])) {
-            return isset($fieldModel[0]['name']) ? strtolower($fieldModel[0]['name']) : null;
-        }
-        return null;
+        return static::getTermNameFromNode($node, 'field_model');
     }
 
     /**
@@ -188,12 +205,14 @@ abstract class I2Object implements MediaObjectInterface
      */
     public function getDisplayModel(): ?string
     {
-        $displayModel = array_key_exists($this->legacy_resource_type['name'], ISLANDORA2_DISPLAY_MODEL_URL_MAP) ? $this->legacy_resource_type['name'] : null;
-        
-        if ($displayModel === null) {
-            $displayModel = $this->getObjectModel();
+        // Prefer the Islandora 1 content model name when it maps to a known display,
+        // otherwise fall back to the Islandora 2 model. Born-digital objects have no
+        // legacy resource type at all, so the lookup must tolerate a missing field.
+        $legacyType = static::getTermNameFromNode($this->rawNode, 'field_legacy_resource_type');
+        if ($legacyType !== null && array_key_exists($legacyType, ISLANDORA2_DISPLAY_MODEL_URL_MAP)) {
+            return $legacyType;
         }
-        return $displayModel;
+        return $this->getObjectModel();
     }
 
     /**

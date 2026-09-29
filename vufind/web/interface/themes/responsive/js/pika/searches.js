@@ -339,13 +339,6 @@ Pika.Searches = (function(){
 			}
 		},
 
-		resetSearchType: function(){
-			if ($("#lookfor").val() == ""){
-				$("#searchSource").val($("#default_search_type").val());
-			}
-			return true;
-		},
-
 		updateSearchTypes: function(catalogType, searchType, searchFormId){
 			if (catalogType == 'catalog') {
 				$("#basicType").val(searchType);

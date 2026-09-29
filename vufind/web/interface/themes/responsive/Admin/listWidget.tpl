@@ -4,9 +4,9 @@
 	<div class="card">
 		<div class="card-body">
 		<p>To integrate this widget into another site, insert an iFrame into your site with a source of :</p>
-		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}</blockquote>
+		<blockquote class="alert-info bold">{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}{if $proxyTokenParam}&amp;{$proxyTokenParam}{/if}</blockquote>
 		<p>
-			<code style="white-space: normal">&lt;iframe src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}&quot;&nbsp;&nbsp;
+			<code style="white-space: normal">&lt;iframe src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}{if $proxyTokenParam}&amp;{$proxyTokenParam}{/if}&quot;&nbsp;&nbsp;
 				title=&quot;[Useful description of the embedded widget for text-only viewers]&quot;&nbsp;&nbsp;
 				width=&quot;{$width}&quot; height=&quot;{$height}&quot;&nbsp;&nbsp;
 				scrolling=&quot;{if $selectedStyle == "text-list"}yes{else}no{/if}&quot;&gt;&lt;/iframe&gt;
@@ -27,7 +27,7 @@
 
 <h3 class="h4">Live Preview</h3>
 
-<iframe src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&reload=true" title="{$object->name}" width="{$width}" height="{$height}" scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}" >
+<iframe src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&reload=true{if $proxyTokenParam}&{$proxyTokenParam}{/if}" title="{$object->name}" width="{$width}" height="{$height}" scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}" >
 	<p>Your browser does not support iframes. :( </p>
 </iframe>
 <hr>
@@ -38,7 +38,7 @@
 		To have a list widget which adjusts its height based on the html content within the list widget use the source url :
 	</p>
 	<blockquote class="alert-info">
-	{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}<span class="bold">&resizeIframe=on</span>
+	{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}{if $proxyTokenParam}&amp;{$proxyTokenParam}{/if}<span class="bold">&resizeIframe=on</span>
 	</blockquote>
 	<p>
 		Include the iframe tag and javascript tags in the site :
@@ -46,7 +46,7 @@
 	<p>
 {/strip}
 <code style="white-space: normal">
-	&lt;iframe id=&quot;listWidget{$object->id}&quot;  onload=&quot;setWidgetSizing(this, 30)&quot;  src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}&amp;resizeIframe=on&quot;&nbsp;&nbsp;
+	&lt;iframe id=&quot;listWidget{$object->id}&quot;  onload=&quot;setWidgetSizing(this, 30)&quot;  src=&quot;{$url}/API/SearchAPI?method=getListWidget&amp;id={$object->id}&amp;resizeIframe=on{if $proxyTokenParam}&amp;{$proxyTokenParam}{/if}&quot;&nbsp;&nbsp;
 	title=&quot;[Useful description of the embedded widget for text-only viewers]&quot;&nbsp;&nbsp;
 	width=&quot;{$width}&quot;  scrolling=&quot;{if $selectedStyle == "text-list"}yes{else}no{/if}&quot;&gt;&lt;/iframe&gt;
 </code>
@@ -103,7 +103,7 @@
 </div>
 </div>
 <h3 class="h4">Live Preview</h3>
-<iframe id="listWidget{$object->id}" title="{$object->name}" onload="setWidgetSizing(this, 30)" src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&resizeIframe=on&reload=true" width="{$width}" {*height="{$height}"*} scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}">
+<iframe id="listWidget{$object->id}" title="{$object->name}" onload="setWidgetSizing(this, 30)" src="{$url}/API/SearchAPI?method=getListWidget&id={$object->id}&resizeIframe=on&reload=true{if $proxyTokenParam}&{$proxyTokenParam}{/if}" width="{$width}" {*height="{$height}"*} scrolling="{if $selectedStyle == "text-list"}yes{else}no{/if}">
 	<p>Your browser does not support iframes. :( </p>
 </iframe>
 

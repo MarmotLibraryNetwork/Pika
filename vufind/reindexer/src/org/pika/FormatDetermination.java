@@ -1703,13 +1703,6 @@ public class FormatDetermination {
 			if (formatField.getData() == null || formatField.getData().length() < 2) {
 				return;
 			}
-			// Check for blu-ray (s in position 4)
-			// This logic does not appear correct.
-			/*
-			 * if (formatField.getData() != null && formatField.getData().length()
-			 * >= 4){ if (formatField.getData().toUpperCase().charAt(4) == 'S'){
-			 * result.add("Blu-ray"); break; } }
-			 */
 			// check the 007 - this is a repeating field
 			char formatCode       = formatField.getData().toUpperCase().charAt(0);
 			char specificMaterial = formatField.getData().toUpperCase().charAt(1);
@@ -1868,7 +1861,17 @@ public class FormatDetermination {
 					}
 					break;
 				case 'V':
+					// https://www.loc.gov/marc/bibliographic/bd007.html
 					switch (specificMaterial) {
+						case 'V':
+							result.add("DVD");
+							break;
+						case 'S':
+							result.add("Blu-ray");
+							break;
+						case 'T':
+							result.add("4KUltraBlu-Ray");
+							break;
 						case 'C':
 							result.add("VideoCartridge");
 							break;
@@ -1878,9 +1881,9 @@ public class FormatDetermination {
 						case 'F':
 							result.add("VideoCassette");
 							break;
-						case 'R':
-							result.add("VideoReel");
-							break;
+						//case 'R':
+						//	result.add("VideoReel");
+						//	break;
 						default:
 							result.add("Video");
 							break;

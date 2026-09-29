@@ -350,7 +350,8 @@ class AJAX extends AJAXHandler {
 		}
 
 		// Archive options: use the appropriate ExploreMore class based on which archive is enabled
-		if ($section != 'archive'){
+		global $library;
+		if ($section != 'archive' && !empty($library->enableArchive)){
 			global $configArray;
 			if (!empty($configArray['Islandora2']['enabled'])){
 				require_once ROOT_DIR . '/sys/Archive2/ExploreMore.php';

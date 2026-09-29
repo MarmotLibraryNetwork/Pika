@@ -29,7 +29,7 @@
  *
  */
 
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class EmailResetPin extends Action {
@@ -49,10 +49,10 @@ class EmailResetPin extends Action {
 	function launch($msg = null){
 		global $interface;
 		global $user;
-        global $offlineMode;
-        
+		global $offlineMode;
+
 		if (!empty($user) && $user->pinUpdateRequired){
-			// Because we are forcing a Pin update we can not display the convince buttons at the top of page and sidebars
+			// Because we are forcing a Pin update, we cannot display the convenience buttons at the top of page and sidebars
 			$interface->assign('isUpdatePinPage', true);
 			$interface->assign('displaySidebarMenu', false);
 			$sidebarTemplate = '';
@@ -60,15 +60,15 @@ class EmailResetPin extends Action {
 			$sidebarTemplate = 'Search/home-sidebar.tpl';
 		}
 
-        if($offlineMode) {
-            $offlineMessage = [
-                'error' => 'The circulation system is currently offline. Please try again later.',
-            ];
-            $interface->assign('emailResult', $offlineMessage);
-            $this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
-            return false;
-        }
-        
+		if ($offlineMode){
+			$offlineMessage = [
+				'error' => 'The circulation system is currently offline. Please try again later.',
+			];
+			$interface->assign('emailResult', $offlineMessage);
+			$this->display('emailResetPinResults.tpl', translate('Email to Reset Pin'), $sidebarTemplate);
+			return false;
+		}
+
 		if (isset($_REQUEST['submit'])){
 			$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 			$driver  = $catalog->driver;

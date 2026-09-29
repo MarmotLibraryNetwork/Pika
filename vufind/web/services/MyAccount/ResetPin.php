@@ -45,9 +45,9 @@ class ResetPin extends Action{
 		if (!empty($_REQUEST['uid'])) {
 			$interface->assign('userID', $_REQUEST['uid']);
 		}
-        if (!empty($_REQUEST['bc'])) {
-            $interface->assign('bc', $_REQUEST['bc']);
-        }
+		if (!empty($_REQUEST['bc'])){
+			$interface->assign('bc', $_REQUEST['bc']);
+		}
 
 		global $configArray;
 		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];

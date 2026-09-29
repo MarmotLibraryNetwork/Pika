@@ -1229,8 +1229,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 //			}
 //		}elseif (empty($patron->email)){
 
-		// If the email is empty at this point we don't have a good address for the patron.
+		// If the email is empty at this point, we don't have a good address for the patron.
 		if (empty($patron->email)){
+			$this->logger->warning('Password reset aborted due to patron '. $patron->id . ' email is empty');
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your ' . translate('pin') . '.'];
 			// Sierra might have an email for the user that Pika doesn't have
 //			if ($patronId = $this->getPatronId($barcode)){
@@ -1284,7 +1285,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface {
 	}
 
 	/**
-	 * If library uses username field
+	 * If the library uses the username field
 	 *
 	 * @return bool
 	 */
