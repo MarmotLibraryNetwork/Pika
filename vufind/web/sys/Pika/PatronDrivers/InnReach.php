@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Pika Discovery Layer
  * Copyright (C) 2023  Marmot Library Network
@@ -28,27 +29,32 @@
  * Date      7/30/19
  *
  */
+
 namespace Pika\PatronDrivers;
 
-//use function pg_connect;
+use Pika\Logger;
 
-class InnReach {
+class InnReach
+{
+    private $connectionString;
+    private $configArray;
+    private $logger;
 
-	private $connectionString;
-	private $configArray;
+    public function __construct()
+    {
+        global $configArray;
+        $this->configArray = $configArray;
+        $this->connectionString = $configArray['Catalog']['sierra_conn_php'];
+        $this->logger = new Logger(__CLASS__);
+    }
 
-	public function __construct() {
-		global $configArray;
-		$this->configArray = $configArray;
-		$this->connectionString = $configArray['Catalog']['sierra_conn_php'];
-	}
-
-	/**
-	 * @param  integer $holdId
-	 * @return array   Array(title=>{title}, author=>{author}
-	 */
-	public function getHoldTitleAuthor($holdId) {
-		$sql = <<<EOT
+    /**
+     * @param  integer $holdId
+     * @return array   Array(title=>{title}, author=>{author}
+     */
+    public function getHoldTitleAuthor($holdId)
+    {
+        $sql = <<<EOT
 SELECT 
   bib_record_property.best_title as title,
   bib_record_property.best_author as author,
@@ -64,16 +70,13 @@ WHERE
   AND hold.record_id = bib_record_item_record_link.item_record_id
   AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id
 EOT;
-		$con = $this->_connect();
-		$res = pg_query_params($con, $sql, array($holdId));
-		$titleAndAuthor = pg_fetch_array($res, 0);
-		pg_close($con);
-		return $titleAndAuthor;
+        return $this->_fetchFirstRow($sql, array($holdId));
 
-	}
+    }
 
-	public function getCheckoutTitleAuthor($checkoutId) {
-		$sql = <<<EOT
+    public function getCheckoutTitleAuthor($checkoutId)
+    {
+        $sql = <<<EOT
 SELECT 
   bib_record_property.best_title as title,
   bib_record_property.best_author as author,
@@ -87,38 +90,65 @@ WHERE
   AND checkout.item_record_id = bib_record_item_record_link.item_record_id
   AND bib_record_item_record_link.bib_record_id = bib_record_property.bib_record_id
 EOT;
-		$con = $this->_connect();
-		$res = pg_query_params($con, $sql, array($checkoutId));
-		$titleAndAuthor = pg_fetch_array($res, 0);
-		pg_close($con);
-		return $titleAndAuthor;
+        return $this->_fetchFirstRow($sql, array($checkoutId));
 
-	}
+    }
 
-	private function _connect() {
-		return \pg_connect($this->connectionString);
-	}
+    /**
+     * Run a query against Sierra DNA and return the first row.
+     *
+     * @param  string $sql
+     * @param  array  $params
+     * @return array|false First row, or false if the connection or query fails or there are no rows
+     */
+    private function _fetchFirstRow($sql, $params)
+    {
+        $con = $this->_connect();
+        if (!$con) {
+            $this->logger->error('Unable to connect to Sierra DNA for INN-Reach lookup.');
+            return false;
+        }
+        $res = pg_query_params($con, $sql, $params);
+        if (!$res) {
+            $this->logger->error('INN-Reach Sierra DNA query failed: ' . pg_last_error($con));
+            pg_close($con);
+            return false;
+        }
+        $row = pg_fetch_array($res);
+        pg_close($con);
+        return $row;
+    }
 
-	public function getInnReachCover() {
-		global $library;
-		$coverUrl = '';
-		// grab the theme for Inn reach cover
-		// start with the base theme and work up to local theme checking for image
-		if (!empty($library)){
-			$themeParts = explode(',', $library->themeName);
-		} else {
-			$themeParts = explode(',', $this->configArray['Site']['theme']);
-		}
-		$themeParts = array_reverse($themeParts);
-		$path = $this->configArray['Site']['local'];
-		foreach ($themeParts as $themePart) {
-			$themePart = trim($themePart);
-			$imagePath = $path . '/interface/themes/' . $themePart . '/images/InnReachCover.png';
-			if (file_exists($imagePath)) {
-				$coverUrl = '/interface/themes/' . $themePart . '/images/InnReachCover.png';
-			}
-		}
-		return $coverUrl;
-	}
+    private function _connect()
+    {
+        if (empty($this->connectionString)) {
+            return false;
+        }
+        // Suppress the connection warning; failure is handled and logged by the caller.
+        return @\pg_connect($this->connectionString);
+    }
+
+    public function getInnReachCover()
+    {
+        global $library;
+        $coverUrl = '';
+        // grab the theme for Inn reach cover
+        // start with the base theme and work up to local theme checking for image
+        if (!empty($library)) {
+            $themeParts = explode(',', $library->themeName);
+        } else {
+            $themeParts = explode(',', $this->configArray['Site']['theme']);
+        }
+        $themeParts = array_reverse($themeParts);
+        $path = $this->configArray['Site']['local'];
+        foreach ($themeParts as $themePart) {
+            $themePart = trim($themePart);
+            $imagePath = $path . '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            if (file_exists($imagePath)) {
+                $coverUrl = '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+            }
+        }
+        return $coverUrl;
+    }
 
 }
