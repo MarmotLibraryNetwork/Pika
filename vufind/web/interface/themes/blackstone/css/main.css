@@ -20753,12 +20753,12 @@ body > .container {
   background-color: #82C1B5;
 }
 .active .panel-title {
-  color: #333;
-  text-shadow: 1px 1px #fff;
+  color: #000;
+  text-shadow: 1px 1px transparent;
 }
 .active > a:hover {
-  -webkit-text-decoration: underline #333;
-          text-decoration: underline #333;
+  -webkit-text-decoration: underline #000;
+          text-decoration: underline #000;
 }
 .active > a:focus {
   text-decoration: none;
