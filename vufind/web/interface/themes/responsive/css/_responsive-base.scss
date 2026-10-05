@@ -436,9 +436,7 @@ table.dataTable {
       right: 0;
       bottom: 0;
       left: 0;
-      border: 0 solid $dt-sorted-rail-color;
-      border-left-width: $dt-sorted-rail-width;
-      border-right-width: $dt-sorted-rail-width;
+      background: rgba(0,0,0,0.05);
       pointer-events: none;
     }
   }

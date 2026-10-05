@@ -145,12 +145,17 @@
 
 #home-page-library-section {
   padding: 15px 0;
-  > a { // TODO: in template, put a tags within the current child div tags
+  > a {
+        // TODO: in template, put a tags within the current child div tags
+        padding: 0;
     &, &:visited, &:hover {
       color: #fff;
     }
   }
+}
 
+#home-library-links{
+  padding: 0;
 }
 
 .sidebar-button {

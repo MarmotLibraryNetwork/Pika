@@ -20383,6 +20383,7 @@ textarea.form-control-lg {
 
 .panel-group {
   margin-bottom: 20px;
+  padding: 0;
 }
 .panel-group .panel {
   margin-bottom: 0;
@@ -20941,9 +20942,7 @@ table.dataTable > tbody > tr > th.sorting_3::before {
   right: 0;
   bottom: 0;
   left: 0;
-  border: 0 solid #0A75E3;
-  border-left-width: 1px;
-  border-right-width: 1px;
+  background: rgba(0, 0, 0, 0.05);
   pointer-events: none;
 }
 table.dataTable > thead > tr > th.dt-ordering-asc::before,
@@ -22049,8 +22048,15 @@ a .header-button:visited {
 #home-page-library-section {
   padding: 15px 0;
 }
+#home-page-library-section > a {
+  padding: 0;
+}
 #home-page-library-section > a, #home-page-library-section > a:visited, #home-page-library-section > a:hover {
   color: #fff;
+}
+
+#home-library-links {
+  padding: 0;
 }
 
 .sidebar-button {
@@ -23408,6 +23414,10 @@ img.x-twit {
     padding-right: 0;
   }
 }
+#searchFilterContainer {
+  padding: 0;
+}
+
 .search-results-navigation {
   display: flex;
   flex-direction: row;

@@ -6,8 +6,8 @@
 	</div>
 </div>
 <div class="row">
-	<div id="header_library">
-		<div class="col-4 col-sm-4 col-md-3 col-lg-8 col-xl-8">
+	<div id="header_library" class="row">
+		<div class="col-4 col-sm-4 col-md-3 col-lg-7 col-xl-7">
 			<a class="nielsenlibrarytxt" href="https://www.aims.edu/kieferlibrary/">KIEFER LIBRARY</a>
 		</div>
 
