@@ -341,8 +341,11 @@ function loadSearchInformation(){
 			$_SESSION['searchSource'] = $searchSource; //Update the session, so we can remember what the user was doing last.
 		} else {
 			unset( $_GET['searchSource']);
-			global $pikaLogger;
-			$pikaLogger->notice('Invalid search source in url', [$_SERVER['REQUEST_URI']]);
+			global $pikaLogger, $library;
+			$pikaLogger->notice('Invalid search source in url', [
+				'url'     => $_SERVER['REQUEST_URI'],
+				'library' => $library->subdomain ?? 'unknown',
+			]);
 		}
 	}elseif (isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
 		$searchSource = $_SESSION['searchSource'];
