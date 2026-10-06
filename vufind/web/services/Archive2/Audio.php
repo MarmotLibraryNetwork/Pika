@@ -45,9 +45,9 @@ class Audio extends ArchiveObject
         $thumb = $this->mediaObject->getThumbnail();
         if ($thumb === null) {
             $this->logger->warning('Thumbnail not found for audio node.', ['nid' => $this->mediaObject->getNodeId()]);
-            $interface->assign('videoThumbnailUrl', null);
+            $interface->assign('audioThumbnailUrl', null);
         } else {
-            $interface->assign('videoThumbnailUrl', $thumb->fileUrl);
+            $interface->assign('audioThumbnailUrl', $thumb->fileUrl);
         }
 
         $captions = $this->mediaObject->getCaptions();

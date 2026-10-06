@@ -1,7 +1,7 @@
 {if $videoThumbnailUrl}
     <div class="archive-audio-poster-wrapper">
     <div>
-        <img src={$videoThumbnailUrl} class="archive-audio-poster-image" alt="Audio poster image for {$title}">
+        <img src={$audioThumbnailUrl} class="archive-audio-poster-image" alt="Audio poster image for {$title}">
     </div>
     </div>
 {/if}
