@@ -80,9 +80,7 @@ class ArchiveObject extends \Action
 
     ];
     /** MARC three-letter relator codes for non-production roles — populate to switch filter from role names. */
-    private const NON_PRODUCTION_RELATOR_CODES = [
-
-    ];
+    private const NON_PRODUCTION_RELATOR_CODES = [ ];
 
     /** Loads the media object from the `id` query parameter. */
     public function __construct()
