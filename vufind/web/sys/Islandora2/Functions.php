@@ -32,6 +32,7 @@ use Islandora2\TaxonomyObjectInterface;
  */
 const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     'audio'            => 'Audio',
+    'audio + pdf'      => 'AudioPDF',
     'voice recordings' => 'Audio',
     'voice recording'  => 'Audio',
     'mp4'              => 'Audio',
