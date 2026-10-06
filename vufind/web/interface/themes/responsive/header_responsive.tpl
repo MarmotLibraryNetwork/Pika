@@ -10,7 +10,7 @@
 	</div>
 
 	{* Heading Info Div *}
-	<div id="headingInfo" class="d-none d-lg-block col-lg-4 col-xl-4">
+	<div id="headingInfo" class="d-none d-md-block col-md-3 col-lg-4 col-xl-4">
 		{if $showDisplayNameInHeader && $librarySystemName}
 			<p id="library-name-header">{$librarySystemName}</p>
 		{/if}
