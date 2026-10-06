@@ -50,14 +50,15 @@ class ArchiveObject extends \Action
         'video'            => 'video',
     ];
 
+    /** Values accepted for defaultArchiveCollectionBrowseMode and the archive2CollectionDisplayMode cookie. */
+    public const COLLECTION_DISPLAY_MODES = ['covers', 'list'];
+
     /** Roles that identify subjects/participants rather than production staff. */
     private const NON_PRODUCTION_TEAM_ROLES = [
         'attendee', 'artist', 'child', 'correspondence recipient', 'employee',
         'interviewee', 'member', 'parade marshal', 'parent', 'participant',
         'performer', 'president', 'rodeo royalty', 'described', 'author', 'sibling',
-        'spouse', 'pictured', 'student',
-
-        'photographer', // on postcards, this related person would end up in acknowledgments section
+        'spouse', 'pictured', 'student', 'photographer', // on postcards, this related person would end up in acknowledgments section
         // linked agents will display in Details section.
 
     ]; //TODO replace use with one the arrays below
@@ -115,9 +116,6 @@ class ArchiveObject extends \Action
 
         parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
     }
-
-    /** Values accepted for defaultArchiveCollectionBrowseMode and the archive2CollectionDisplayMode cookie. */
-    public const COLLECTION_DISPLAY_MODES = ['covers', 'list'];
 
     /**
      * Resolves how collection child-object grids should be displayed: the user's
