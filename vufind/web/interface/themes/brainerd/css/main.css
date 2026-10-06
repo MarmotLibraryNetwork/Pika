@@ -24651,6 +24651,10 @@ a .header-button:hover {
   border-radius: 0;
 }
 
+.system-message-header a {
+  color: #b41f40;
+}
+
 #browse-label {
   background-color: #fff;
   border-bottom: 1px solid #130840;
