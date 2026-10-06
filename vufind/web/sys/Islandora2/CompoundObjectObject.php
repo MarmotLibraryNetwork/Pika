@@ -19,11 +19,17 @@
 
 namespace Islandora2;
 
+use CaptionAndTranscriptTraits;
+
 require_once ROOT_DIR . '/sys/Islandora2/I2ObjectFactory.php';
 require_once ROOT_DIR . '/sys/Islandora2/I2Object.php';
+require_once ROOT_DIR . '/sys/Islandora2/CaptionAndTranscriptTraits.php';
 
 class CompoundObjectObject extends I2Object
 {
+    // Audio + PDF compounds carry their own audio captions/transcripts on the parent node.
+    use CaptionAndTranscriptTraits;
+
     public static function supports(array $node): bool
     {
         if (self::mediaTypeIn($node, ['compound object'])) {
