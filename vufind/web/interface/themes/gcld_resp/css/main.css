@@ -24643,6 +24643,12 @@ a .header-button {
   font-size: x-large;
 }
 
+@media (max-width: 991px) {
+  a .header-button {
+    line-height: 1.2em;
+    height: 3.5em;
+  }
+}
 a .header-button:hover {
   border: 2px solid #003A68;
 }
