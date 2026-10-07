@@ -370,7 +370,9 @@ a:focus > .header-button {
 #browse-category-picker .jcarousel-control-prev:focus, #browse-category-picker .jcarousel-control-next:focus {
   outline: 2px solid $focus-ring-color !important;
 }
-
+.radio input[type=radio], .radio input[type=checkbox], .checkbox input[type=radio], .checkbox input[type=checkbox]{
+  margin-top: 5px;
+}
 input[type="checkbox"]:focus {
   outline: 2px solid $focus-ring-color !important;
 }

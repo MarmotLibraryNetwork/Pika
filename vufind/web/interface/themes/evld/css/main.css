@@ -20901,6 +20901,10 @@ a:focus > .header-button {
   outline: 2px solid #E15F15 !important;
 }
 
+.radio input[type=radio], .radio input[type=checkbox], .checkbox input[type=radio], .checkbox input[type=checkbox] {
+  margin-top: 5px;
+}
+
 input[type=checkbox]:focus {
   outline: 2px solid #E15F15 !important;
 }
@@ -21342,18 +21346,18 @@ table.dataTable > tbody > tr > th.sorting_3::before {
 .datepicker table tr td.active, .datepicker table tr td.active.highlighted {
   --bs-btn-color: #ccc;
   --bs-btn-bg: #000;
-  --bs-btn-border-color: #EFF9EE;
+  --bs-btn-border-color: #0788ff;
   --bs-btn-hover-color: #fff;
   --bs-btn-hover-bg: rgb(38.25, 38.25, 38.25);
-  --bs-btn-hover-border-color: rgb(240.6, 249.6, 239.7);
-  --bs-btn-focus-shadow-rgb: 234, 242, 233;
+  --bs-btn-hover-border-color: rgb(31.8, 147.9, 255);
+  --bs-btn-focus-shadow-rgb: 37, 146, 247;
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: #333333;
-  --bs-btn-active-border-color: rgb(240.6, 249.6, 239.7);
+  --bs-btn-active-border-color: rgb(31.8, 147.9, 255);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #fff;
   --bs-btn-disabled-bg: #000;
-  --bs-btn-disabled-border-color: #EFF9EE;
+  --bs-btn-disabled-border-color: #0788ff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span {
@@ -21377,18 +21381,18 @@ table.dataTable > tbody > tr > th.sorting_3::before {
 .datepicker table tr td span.active, .datepicker table tr td span.active:hover, .datepicker table tr td span.active.disabled, .datepicker table tr td span.active.disabled:hover {
   --bs-btn-color: #ccc;
   --bs-btn-bg: #000;
-  --bs-btn-border-color: #EFF9EE;
+  --bs-btn-border-color: #0788ff;
   --bs-btn-hover-color: #fff;
   --bs-btn-hover-bg: rgb(38.25, 38.25, 38.25);
-  --bs-btn-hover-border-color: rgb(240.6, 249.6, 239.7);
-  --bs-btn-focus-shadow-rgb: 234, 242, 233;
+  --bs-btn-hover-border-color: rgb(31.8, 147.9, 255);
+  --bs-btn-focus-shadow-rgb: 37, 146, 247;
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: #333333;
-  --bs-btn-active-border-color: rgb(240.6, 249.6, 239.7);
+  --bs-btn-active-border-color: rgb(31.8, 147.9, 255);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #fff;
   --bs-btn-disabled-bg: #000;
-  --bs-btn-disabled-border-color: #EFF9EE;
+  --bs-btn-disabled-border-color: #0788ff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.old, .datepicker table tr td span.new {
@@ -21538,7 +21542,7 @@ table.dataTable > tbody > tr > th.sorting_3::before {
   height: 0;
 }
 .switch input:checked + .slider {
-  background-color: #EFF9EE;
+  background-color: #0788ff;
 }
 .switch input:checked + .slider:before {
   transform: translateX(19px);
@@ -21991,7 +21995,7 @@ a .header-button:visited {
   margin-top: 4px;
 }
 #horizontal-search-box #searchForm #horizontal-search-button-container {
-  margin-top: 4px;
+  margin-top: 7px;
   padding-left: 0;
 }
 #horizontal-search-box #searchForm #horizontal-search-button-container > div.row {
@@ -22728,7 +22732,7 @@ hr.menu {
 }
 
 #contactUpdateForm .btn-group .btn-default:has(input[type=radio]:checked), #overdrive-lending-options .btn-group .btn-default:has(input[type=radio]:checked) {
-  background-color: #EFF9EE;
+  background-color: #0788ff;
   color: #000;
 }
 #contactUpdateForm .btn-group .btn-default:focus-within, #overdrive-lending-options .btn-group .btn-default:focus-within {
