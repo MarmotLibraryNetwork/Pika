@@ -17,7 +17,7 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "cssnano": "^7.0.6",
-    "postcss": "^8.4.47",
+    "postcss": "^8.5.29",
     "sass": "^1.79.4",
     "uglify-js": "^3.19.3"
   }
