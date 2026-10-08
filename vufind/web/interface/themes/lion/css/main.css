@@ -22225,7 +22225,7 @@ hr.menu {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #EBC676;
+  color: #756E62;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -24684,7 +24684,7 @@ a .header-button:hover {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #EBC676;
+  color: #756E62;
 }
 #browse-category-picker .jcarousel-control-prev:active, #browse-category-picker .jcarousel-control-prev:hover, #browse-category-picker .jcarousel-control-next:active, #browse-category-picker .jcarousel-control-next:hover {
   color: #EBC676;
@@ -24701,7 +24701,7 @@ a .header-button:hover {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #EBC676;
+  background: #756E62;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a, #browse-category-picker .jcarousel-pagination a:hover, #browse-category-picker .jcarousel-pagination a:active, #browse-category-picker .jcarousel-pagination a:visited {
