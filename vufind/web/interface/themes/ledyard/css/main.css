@@ -20889,7 +20889,7 @@ div.striped > div:nth-child(odd) {
 }
 
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #54A3B7 !important;
+  border: 2px solid #2a6e7c !important;
   outline: 2px solid white;
 }
 
@@ -21729,7 +21729,7 @@ a .header-button:visited {
 
 .menu-bar {
   color: #FFF;
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
 }
 
 #horizontal-menu-bar-container .menu-icon {
@@ -21746,7 +21746,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #3B90A5;
+  background-color: #245a69;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -21776,7 +21776,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -21789,7 +21789,7 @@ a .header-button:visited {
   border-top: 3px solid #fff;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #3B90A5;
+  background-color: #245a69;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -21935,8 +21935,8 @@ a .header-button:visited {
 }
 
 .home-page-search {
-  background-color: #54A3B7;
-  background: linear-gradient(to bottom, #54A3B7, #54A3B7);
+  background-color: #2a6e7c;
+  background: linear-gradient(to bottom, #2a6e7c, #2a6e7c);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -21965,7 +21965,7 @@ a .header-button:visited {
 .searchTypeHome, .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   border: none;
   width: 90% !important;
 }
@@ -21982,8 +21982,8 @@ a .header-button:visited {
 }
 
 #horizontal-search-box {
-  background-color: #54A3B7;
-  background: linear-gradient(to bottom, #54A3B7, #54A3B7);
+  background-color: #2a6e7c;
+  background: linear-gradient(to bottom, #2a6e7c, #2a6e7c);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -22225,7 +22225,7 @@ hr.menu {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #ffffff;
-  color: #b2e2ef;
+  color: #2a6e7c;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -22667,7 +22667,7 @@ hr.menu {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #3B90A5;
+  background-color: #245a69;
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -23456,7 +23456,7 @@ img.x-twit {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #54A3B7;
+  border-top: 5px solid #2a6e7c;
   margin-top: 15px;
 }
 
@@ -23470,8 +23470,8 @@ img.x-twit {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #54A3B7;
-  border-color: #54A3B7;
+  background-color: #2a6e7c;
+  border-color: #2a6e7c;
 }
 
 #bookshelfContainer {
@@ -23694,8 +23694,8 @@ img.x-twit {
 }
 
 #explore-more-sidebar {
-  background-color: #54A3B7;
-  background: linear-gradient(to bottom, #54A3B7, #54A3B7);
+  background-color: #2a6e7c;
+  background: linear-gradient(to bottom, #2a6e7c, #2a6e7c);
 }
 
 #explore-more-header {
@@ -23703,7 +23703,7 @@ img.x-twit {
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: rgb(71.5555555556, 150.0679012346, 169.9444444444);
+  background-color: rgb(35.5481927711, 93.1024096386, 104.9518072289);
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -23722,7 +23722,7 @@ img.x-twit {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #54A3B7;
+  border-bottom: 2px solid #2a6e7c;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -23766,12 +23766,12 @@ img.x-twit {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #54A3B7;
+  border: solid 1px #2a6e7c;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -23788,7 +23788,7 @@ img.x-twit {
   color: #FFF;
 }
 .exploreMoreBar .label-left, .exploreMoreBar .label-left img {
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -23807,7 +23807,7 @@ img.x-twit {
   width: 100%;
 }
 .exploreMoreBar .label-top, .exploreMoreBar .label-top img {
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -23859,10 +23859,10 @@ img.x-twit {
 #explore-more-body .jcarousel-control-prev, #explore-more-body .jcarousel-control-next, #relatedProjectsLibraryScroller .jcarousel-control-prev, #relatedProjectsLibraryScroller .jcarousel-control-next, #relatedProjectScroller .jcarousel-control-prev, #relatedProjectScroller .jcarousel-control-next, #relatedTitlesLibraryContainer .jcarousel-control-prev, #relatedTitlesLibraryContainer .jcarousel-control-next, #relatedProjectOtherScroller .jcarousel-control-prev, #relatedProjectOtherScroller .jcarousel-control-next, #relatedContentTypesContainer .jcarousel-control-prev, #relatedContentTypesContainer .jcarousel-control-next, .exploreMoreBar .jcarousel-control-prev, .exploreMoreBar .jcarousel-control-next, #book-sections .jcarousel-control-prev, #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #54A3B7;
+  color: #2a6e7c;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #54A3B7;
+  border: 1px solid #2a6e7c;
 }
 #explore-more-body .jcarousel-control-prev, #relatedProjectsLibraryScroller .jcarousel-control-prev, #relatedProjectScroller .jcarousel-control-prev, #relatedTitlesLibraryContainer .jcarousel-control-prev, #relatedProjectOtherScroller .jcarousel-control-prev, #relatedContentTypesContainer .jcarousel-control-prev, .exploreMoreBar .jcarousel-control-prev, #book-sections .jcarousel-control-prev {
   left: 2px;
@@ -23995,7 +23995,7 @@ img.x-twit {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls, .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -24004,7 +24004,7 @@ img.x-twit {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid rgb(64, 134.2222222222, 152);
+  border: 1px solid rgb(29.0963855422, 76.2048192771, 85.9036144578);
   padding: 3px;
   margin-left: 5px;
 }
@@ -24033,7 +24033,7 @@ img.x-twit {
 }
 
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #54A3B7;
+  background-color: #2a6e7c;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -24676,24 +24676,24 @@ a.btn-primary {
 }
 #browse-category-carousel .browse-category.selected {
   border: none;
-  background-color: #3B90A5;
-  background: #3B90A5;
-  background: linear-gradient(to bottom, #3B90A5 0%, #3B90A5 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+  background-color: #245a69;
+  background: #245a69;
+  background: linear-gradient(to bottom, #245a69 0%, #245a69 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 #browse-category-carousel .browse-category.selected button {
   color: #FFF;
 }
 
 #browse-sub-category-menu button.selected {
-  background-color: #3B90A5;
+  background-color: #245a69;
 }
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #b2e2ef;
+  color: #2a6e7c;
 }
 #browse-category-picker .jcarousel-control-prev:active, #browse-category-picker .jcarousel-control-prev:hover, #browse-category-picker .jcarousel-control-next:active, #browse-category-picker .jcarousel-control-next:hover {
-  color: #3B90A5;
+  color: #245a69;
   text-decoration: none;
 }
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
@@ -24707,7 +24707,7 @@ a.btn-primary {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #b2e2ef;
+  background: #2a6e7c;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a, #browse-category-picker .jcarousel-pagination a:hover, #browse-category-picker .jcarousel-pagination a:active, #browse-category-picker .jcarousel-pagination a:visited {
