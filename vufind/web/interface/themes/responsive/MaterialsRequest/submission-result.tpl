@@ -1,4 +1,4 @@
-<div id="page-content" class="content">
+<div id="page-content">
 	<div id="main-content">
 		<h1 role="heading" aria-level="1" class="h2">{translate text='Materials_Request_alt'} Result</h1>
 		{if $success == 0}

@@ -1,5 +1,5 @@
 {strip}
-<div id="page-content" class="content">
+<div id="page-content">
 
 	{foreach from=$maxHolds item="maxHold"}
 		<blockquote class="alert-warning">{$maxHold}</blockquote>

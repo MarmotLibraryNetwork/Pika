@@ -1,5 +1,5 @@
 {strip}
-<div id="page-content" class="content">
+<div id="page-content">
 	{if $currentListURL}
 		<a href="{$currentListURL|escape:"html"}" class="btn btn-outline-secondary btn-sm">{translate text='Return to List'}</a>
 	{/if}

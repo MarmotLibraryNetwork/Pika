@@ -73,7 +73,7 @@
 	}
 {/literal}
 </style>
-<div id="page-content" class="content">
+<div id="page-content">
 	<div id="main-content" class="advSearchContent">
 
 		<div class="dropdown float-end">

@@ -1,5 +1,5 @@
 {strip}
-	<div id="page-content" class="content">
+	<div id="page-content">
 		{if $error}<p class="error">{$error}</p>{/if}
 		<div id="sidebar">
 			{* Report filters *}

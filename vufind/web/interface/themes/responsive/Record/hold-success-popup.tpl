@@ -1,6 +1,6 @@
 {strip}
 	{* $profile is set in AJAX.php as the account the hold was placed with. *}
-	<div class="content">
+	<div>
 		{if $success}
 			<p class="alert alert-success">{$message}</p>
 			{if $showDetailedHoldNoticeInformation}

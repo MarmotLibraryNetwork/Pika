@@ -1,4 +1,4 @@
-<div id="page-content" class="content">
+<div id="page-content">
 	<div class="resulthead">
 		{if $pageTitle}<h1 role="heading" aria-level="1" class="h2">{$pageTitle}</h1>{/if}
 	</div>
