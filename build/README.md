@@ -54,6 +54,22 @@ the same compiler if you prefer save-triggered builds:
   you're working on with `--theme=<name>` hardcoded, or just use `npm run watch`)*
 - Working directory: `$PROJECT_DIR$`
 
+### UglifyJS
+
+`uglify-js` is a devDependency, so the JS minifier watcher uses the project
+copy instead of a global `npm install -g uglify-js`:
+
+- File type: JavaScript, scope: non-minified `*.js` (exclude `*.min.js`)
+- Program: `node`
+- Arguments: `$PROJECT_DIR$/node_modules/uglify-js/bin/uglifyjs $FileName$ -o $FileNameWithoutExtension$.min.js`
+- Output paths to refresh: `$FileNameWithoutExtension$.min.js`
+- Working directory: `$FileDir$`
+
+No `-c` / `-m`: run with no compressor or mangler, it reproduces the committed
+`.min.js` files byte for byte. Pair it with the "Merge Pika Javascript
+Libraries" watcher (`php merge_javascript.php` in `responsive/js`), which
+rebuilds `pika.min.js` from the regenerated `pika/*.min.js` files.
+
 The old lessc / PostCSS Autofixer / CleanCSS watchers should be disabled for
 `.scss` work; they only apply to `.less` files and will be removed with the
 LESS sources at the end of the Bootstrap 5 migration.
