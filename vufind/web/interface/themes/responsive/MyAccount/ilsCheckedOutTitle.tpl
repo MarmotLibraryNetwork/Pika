@@ -29,7 +29,7 @@
 		{*<div class="col-sm-4">*}
 		<div class="col-sm-3 col-md-4 col-lg-3">
 			<div class="row">
-				<div class="selectTitle col-sm-12 col-md-1">
+				<div class="col-sm-12 col-md-1">
 					{if !isset($record.canrenew) || $record.canrenew == true}
 					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemid}" aria-label="Select title to renew">
 					{/if}

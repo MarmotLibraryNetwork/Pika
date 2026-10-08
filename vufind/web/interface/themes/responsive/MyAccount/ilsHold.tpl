@@ -31,7 +31,7 @@
 		<div class="col-sm-4 col-md-3">
 			<div class="row">
 
-				<div class="selectTitle col-sm-12 col-md-1">
+				<div class="col-sm-12 col-md-1">
 					{if $record.cancelable}
 						{if $section == 'available'}
 							<input type="checkbox" name="availableholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect" aria-label="select title to {translate text='freeze'} or cancel">&nbsp;

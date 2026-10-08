@@ -4,7 +4,7 @@
 	{if $debug}<script>console.log('Index record template served for {$summShortId}')</script>{/if}
 	<div class="imageColumn col-lg-3">
 		<div class="row">
-			<div class="selectTitle col-lg-4">
+			<div class="col-lg-4">
 				<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
 					<input type="checkbox" class="titleSelect" name="selected[{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}]" id="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}">&nbsp;
 				</label>

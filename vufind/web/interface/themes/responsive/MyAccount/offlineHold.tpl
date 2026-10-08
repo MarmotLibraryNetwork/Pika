@@ -31,7 +31,7 @@
 		<div class="col-sm-4 col-md-3">
 			{*<div class="row">*}
 				{*
-				<div class="selectTitle col-sm-2">
+				<div class="col-sm-2">
 					{if $record.cancelable}
 						{if $section == 'available'}
 							<input type="checkbox" name="availableholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect">&nbsp;
