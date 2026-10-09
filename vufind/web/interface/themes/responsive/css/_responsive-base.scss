@@ -22,6 +22,7 @@ $horizontalComponentOffsetNarrow: 80px !default;
 @import "bootstrap-icons/font/bootstrap-icons";
 @import "bs3-compat";
 @import "pika-utilities";
+@import "functions";
 
 //
 //  Basic Style overrides
@@ -91,6 +92,22 @@ a:hover {
       top: 20em;
     }
   }
+}
+
+// Hover/active flip the button: background takes the text color and vice versa
+.btn-primary{
+  $btn-fg: btn-foreground($btn-primary-bg, $btn-primary-color);
+  $btn-hover-fg: btn-foreground($btn-fg, $btn-primary-bg);
+  $btn-border: shade-color($btn-primary-bg, 20%);
+  --bs-btn-bg: #{$btn-primary-bg};
+  --bs-btn-color: #{$btn-fg};
+  --bs-btn-border-color: #{$btn-border};
+  --bs-btn-hover-bg: #{$btn-fg};
+  --bs-btn-hover-color: #{$btn-hover-fg};
+  --bs-btn-hover-border-color: #{$btn-border};
+  --bs-btn-active-bg: #{$btn-fg};
+  --bs-btn-active-color: #{$btn-hover-fg};
+  --bs-btn-active-border-color: #{$btn-border};
 }
 
 #more-details-accordion .panel-body, .related-manifestation table {

@@ -20653,6 +20653,18 @@ a:hover {
   top: 20em;
 }
 
+.btn-primary {
+  --bs-btn-bg: #97c03d;
+  --bs-btn-color: #12100e;
+  --bs-btn-border-color: rgb(120.8, 153.6, 48.8);
+  --bs-btn-hover-bg: #12100e;
+  --bs-btn-hover-color: #97c03d;
+  --bs-btn-hover-border-color: rgb(120.8, 153.6, 48.8);
+  --bs-btn-active-bg: #12100e;
+  --bs-btn-active-color: #97c03d;
+  --bs-btn-active-border-color: rgb(120.8, 153.6, 48.8);
+}
+
 #more-details-accordion .panel-body a:not(.btn), .related-manifestation table a:not(.btn) {
   color: rgb(58.9285714286, 102.6785714286, 153.5714285714);
   -webkit-text-decoration: underline dotted;
@@ -21346,18 +21358,18 @@ table.dataTable > tbody > tr > th.sorting_3::before {
 .datepicker table tr td.active, .datepicker table tr td.active.highlighted {
   --bs-btn-color: #97c03d;
   --bs-btn-bg: #12100e;
-  --bs-btn-border-color: #0788ff;
+  --bs-btn-border-color: #97c03d;
   --bs-btn-hover-color: #fff;
   --bs-btn-hover-bg: rgb(53.55, 51.85, 50.15);
-  --bs-btn-hover-border-color: rgb(31.8, 147.9, 255);
-  --bs-btn-focus-shadow-rgb: 29, 144, 226;
+  --bs-btn-hover-border-color: rgb(161.4, 198.3, 80.4);
+  --bs-btn-focus-shadow-rgb: 151, 192, 61;
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: rgb(65.4, 63.8, 62.2);
-  --bs-btn-active-border-color: rgb(31.8, 147.9, 255);
+  --bs-btn-active-border-color: rgb(161.4, 198.3, 80.4);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #fff;
   --bs-btn-disabled-bg: #12100e;
-  --bs-btn-disabled-border-color: #0788ff;
+  --bs-btn-disabled-border-color: #97c03d;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span {
@@ -21381,18 +21393,18 @@ table.dataTable > tbody > tr > th.sorting_3::before {
 .datepicker table tr td span.active, .datepicker table tr td span.active:hover, .datepicker table tr td span.active.disabled, .datepicker table tr td span.active.disabled:hover {
   --bs-btn-color: #97c03d;
   --bs-btn-bg: #12100e;
-  --bs-btn-border-color: #0788ff;
+  --bs-btn-border-color: #97c03d;
   --bs-btn-hover-color: #fff;
   --bs-btn-hover-bg: rgb(53.55, 51.85, 50.15);
-  --bs-btn-hover-border-color: rgb(31.8, 147.9, 255);
-  --bs-btn-focus-shadow-rgb: 29, 144, 226;
+  --bs-btn-hover-border-color: rgb(161.4, 198.3, 80.4);
+  --bs-btn-focus-shadow-rgb: 151, 192, 61;
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: rgb(65.4, 63.8, 62.2);
-  --bs-btn-active-border-color: rgb(31.8, 147.9, 255);
+  --bs-btn-active-border-color: rgb(161.4, 198.3, 80.4);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #fff;
   --bs-btn-disabled-bg: #12100e;
-  --bs-btn-disabled-border-color: #0788ff;
+  --bs-btn-disabled-border-color: #97c03d;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.old, .datepicker table tr td span.new {
@@ -21542,7 +21554,7 @@ table.dataTable > tbody > tr > th.sorting_3::before {
   height: 0;
 }
 .switch input:checked + .slider {
-  background-color: #0788ff;
+  background-color: #97c03d;
 }
 .switch input:checked + .slider:before {
   transform: translateX(19px);
@@ -22732,7 +22744,7 @@ hr.menu {
 }
 
 #contactUpdateForm .btn-group .btn-default:has(input[type=radio]:checked), #overdrive-lending-options .btn-group .btn-default:has(input[type=radio]:checked) {
-  background-color: #0788ff;
+  background-color: #97c03d;
   color: #12100e;
 }
 #contactUpdateForm .btn-group .btn-default:focus-within, #overdrive-lending-options .btn-group .btn-default:focus-within {
