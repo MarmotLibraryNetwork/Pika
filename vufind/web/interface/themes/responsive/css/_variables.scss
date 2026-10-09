@@ -171,8 +171,7 @@ $danger: $accessible-red !default;
 $brand-danger: $danger !default; // legacy BS3 name
 
 // Legacy BS3 primary-button variables (referenced by partials)
-//$btn-primary-bg: $primary !default;
-$btn-primary-bg: #0788ff;
+$btn-primary-bg: $primary !default;
 $btn-primary-border: darken($btn-primary-bg, 5%) !default;
 
 // Make default badge contrast accessible
