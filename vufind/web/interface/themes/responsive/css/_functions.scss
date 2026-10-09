@@ -1,0 +1,90 @@
+@use "sass:math";
+
+// Relative luminance per WCAG 2.x, 0 (black) through 1 (white)
+// https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html#dfn-relative-luminance
+@function luminance($color){
+  $rgba: red($color), green($color), blue($color);
+  $rgba2: ();
+  @for $i from 1 through 3 {
+    $rgb: math.div(nth($rgba, $i), 255);
+    @if $rgb <= .04045{
+      $rgb: math.div($rgb, 12.92);
+    } @else {
+      $rgb: math.pow(math.div($rgb + .055, 1.055), 2.4);
+    }
+    $rgba2: append($rgba2, $rgb);
+  }
+  @return .2126 * nth($rgba2, 1) + .7152 * nth($rgba2, 2) + .0722 * nth($rgba2, 3);
+}
+
+// Contrast ratio, 1 through 21; order of arguments doesn't matter
+@function contrast-ratio($fg, $bg){
+  $luminance1: luminance($fg) + .05;
+  $luminance2: luminance($bg) + .05;
+  $ratio: math.div(math.max($luminance1, $luminance2), math.min($luminance1, $luminance2));
+  @return math.div(math.round($ratio * 100), 100);
+}
+
+@function light-or-dark($color) {
+  $light-contrast: contrast-ratio($color, white);
+  $dark-contrast: contrast-ratio($color, black);
+
+  @if $light-contrast > $dark-contrast {
+    // More contrast against light so this is a dark color
+    @return "dark";
+  } @else {
+    @return "light";
+  }
+}
+
+// @function btn-foreground($bg, $fg, $contrast: 4.5)
+// Goal: Return a color that passes for the selected contrast ratio against $bg,
+// lightening or darkening $fg until it does. If $fg can't be adjusted far enough,
+// falls back to whichever of black or white has more contrast and emits a warning.
+// Usage:
+// .sample {
+//   background-color: #000;
+//   color: btn-foreground(#000, #c0c, 5);
+// }
+//
+@function btn-foreground($bg: $btn-primary-bg, $fg: $btn-primary-color, $contrast: 4.5) {
+  $original-contrast: contrast-ratio($bg, $fg);
+  @if $original-contrast >= $contrast{
+    @return $fg;
+  } @else {
+    // did not pass
+    $fg-lod: light-or-dark($fg);
+    $bg-lod: light-or-dark($bg);
+    $step: 1%;
+
+    @if $fg-lod == 'light' and $bg-lod == 'light'{
+      // Both are light colors, darken the text
+      $step: -$step;
+    } @else if $fg-lod == 'dark' and $bg-lod ==  'light'{
+      // doesn't pass so darken anyway
+      $step: -$step;
+    }
+    // Fixed 1% lightness steps reach black or white within 100 iterations
+    $x: 0;
+    @while contrast-ratio($fg, $bg) < $contrast and $x < 100 {
+      $sat-step: 0%;
+      @if saturation($fg) > 10{
+        $sat-step: $step;
+      }
+      // clamp: dart-sass no longer stops adjust-color at 0%/100% lightness
+      $fg: change-color($fg, $lightness: math.clamp(0%, lightness($fg) + $step, 100%));
+      $fg: scale-color($fg, $saturation: $sat-step);
+      $x: $x + 1;
+    }
+    @if contrast-ratio($fg, $bg) < $contrast {
+      $fallback: white;
+      @if contrast-ratio(black, $bg) > contrast-ratio(white, $bg) {
+        $fallback: black;
+      }
+      @warn "btn-foreground: no shade of #{$fg} reaches #{$contrast}:1 on #{$bg}; using #{$fallback} (#{contrast-ratio($fallback, $bg)}:1)";
+      @return $fallback;
+    }
+    // round channels so compiled CSS gets a hex value instead of rgb(25.5, 25.5, 25.5)
+    @return rgb(math.round(red($fg)), math.round(green($fg)), math.round(blue($fg)));
+  }
+}
