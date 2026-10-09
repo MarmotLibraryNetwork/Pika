@@ -919,6 +919,9 @@ public class FormatDetermination {
 			}
 		}
 
+		if (printFormats.contains("EasyReader") && printFormats.contains("AdultLiteracyBook")){
+			printFormats.remove("EasyReader");
+		}
 		if (printFormats.contains("Serial") && printFormats.contains("GraphicNovel")){
 			printFormats.remove("Serial");
 		}
