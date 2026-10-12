@@ -119,7 +119,10 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 		// For Masquerade Follow up, start directly instead of a redirect
 		if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount'){
 
-			$this->logger->error('Processing Masquerade after logging in');
+			global $pikaLogger;
+			if ($pikaLogger){
+				$pikaLogger->info('Processing Masquerade after logging in');
+			}
 			require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 			$masquerade = new MyAccount_Masquerade();
 			$masquerade->launch();
