@@ -30,8 +30,9 @@ $home-search-bottom-color: $newlondon-darkbrown;
 
 
 //$sidebar-link-color: $lion-light-blue;
-$menu-bar-background-color: #BFA896;
-$menu-bar-selected-background-color: #797979;
+$menu-bar-background-color: $newlondon-off-brown;
+$menu-bar-color: $newlondon-darkbrown;
+$menu-bar-selected-background-color: $newlondon-darkbrown;
 
 $header-bg-color: #fff;
 
@@ -63,3 +64,11 @@ $browse-category-font-size: 30px;
 
 // set opened accordions color
 $accordion-active-header-bg-color: $newlondon-brown;
+
+#vertical-menu-bar .menu-bar-option .menu-icon img {
+  filter: invert(65%);
+}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-icon img {
+  filter: invert(0);
+}

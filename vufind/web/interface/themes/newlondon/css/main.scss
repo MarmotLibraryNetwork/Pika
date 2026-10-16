@@ -4,7 +4,7 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive-base";
 
-@include header-login-button-mixin($header-buttons-background-color, $newlondon-text-brown);
+@include header-login-button-mixin($header-buttons-background-color, $newlondon-darkbrown);
 
 #header-logo {
   padding-top: 0;
