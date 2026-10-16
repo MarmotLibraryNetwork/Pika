@@ -87,13 +87,17 @@ search#horizontal-search-wrapper {
   }
 
 }
+#horizontal-search-box #horizontal-search-label {
+  color: $summit-brand;
+  margin-left: -10px;
+}
 @media only screen and (max-width:991px){
   #header-logo{
     width: 120px;
     top: 0;
   }
   #horizontal-search-box #horizontal-search-label {
-    color: $summit-brand;
+    margin-left:0;
   }
   search#horizontal-search-wrapper{
     padding: 0;

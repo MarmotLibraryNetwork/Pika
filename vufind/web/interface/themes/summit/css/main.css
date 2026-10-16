@@ -24728,13 +24728,18 @@ search#horizontal-search-wrapper #advancedSearchLink {
     padding-left: 50px;
   }
 }
+#horizontal-search-box #horizontal-search-label {
+  color: #0A5D66;
+  margin-left: -10px;
+}
+
 @media only screen and (max-width: 991px) {
   #header-logo {
     width: 120px;
     top: 0;
   }
   #horizontal-search-box #horizontal-search-label {
-    color: #0A5D66;
+    margin-left: 0;
   }
   search#horizontal-search-wrapper {
     padding: 0;
