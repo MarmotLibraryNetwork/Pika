@@ -22238,7 +22238,7 @@ hr.menu {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #fff;
-  color: #9dc893;
+  color: #BC5919;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -24734,7 +24734,7 @@ a .header-button:hover {
   transition: all 0.3s ease-in-out;
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #9dc893;
+  background: #BC5919;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a, #browse-category-picker .jcarousel-pagination a:hover, #browse-category-picker .jcarousel-pagination a:active, #browse-category-picker .jcarousel-pagination a:visited {
