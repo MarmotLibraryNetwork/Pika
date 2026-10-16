@@ -22253,7 +22253,7 @@ hr.menu {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #000;
-  color: #d8e1e6;
+  color: #024d75;
   font-size: 50px;
   border: none;
   padding-inline: 0;
@@ -24707,7 +24707,7 @@ a .header-button:hover {
 
 #browse-category-picker .jcarousel-control-prev, #browse-category-picker .jcarousel-control-next {
   background-color: #f5f5f6;
-  color: #d8e1e6;
+  color: #024d75;
 }
 #browse-category-picker .jcarousel-control-prev:active, #browse-category-picker .jcarousel-control-prev:hover, #browse-category-picker .jcarousel-control-next:active, #browse-category-picker .jcarousel-control-next:hover {
   color: #a17f6c;
@@ -24724,7 +24724,7 @@ a .header-button:hover {
   content: "◀";
 }
 #browse-category-picker .jcarousel-pagination a.active {
-  background: #d8e1e6;
+  background: #024d75;
   box-shadow: 0 0 2px #4E443C;
 }
 #browse-category-picker .jcarousel-pagination a, #browse-category-picker .jcarousel-pagination a:hover, #browse-category-picker .jcarousel-pagination a:active, #browse-category-picker .jcarousel-pagination a:visited {
@@ -24781,7 +24781,7 @@ a .header-button:hover {
 }
 
 #keepFiltersSwitchLabel, #advancedSearchLink {
-  color: #212529;
+  color: #000;
 }
 
 .formatCategoryLabel {
@@ -24799,4 +24799,12 @@ a .header-button:hover {
 
 #horizontal-search-box #horizontal-search-label {
   color: #000;
+}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-icon img {
+  filter: invert(100%);
+}
+
+.btn-outline-secondary, .btn-default {
+  --bs-btn-color: #000;
 }
