@@ -24750,3 +24750,23 @@ a .header-button:hover {
   column-break-inside: avoid;
   display: table;
 }
+
+#horizontal-search-box #horizontal-search-label {
+  color: #000;
+}
+
+#horizontal-search-box #advancedSearchLink {
+  color: #000;
+}
+
+#vertical-menu-bar .menu-bar-option .menu-icon img {
+  filter: invert(100%);
+}
+
+#vertical-menu-bar .menu-icon .menu-bar-label {
+  color: #000;
+}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-icon img {
+  filter: invert(0);
+}
