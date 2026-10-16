@@ -22289,7 +22289,7 @@ hr.menu {
   text-decoration: underline;
 }
 #browse-category-carousel .browse-category.selected {
-  border: 2px solid #0a9abc;
+  border: 2px solid rgb(4.8484848485, 74.6666666667, 91.1515151515);
   font-size: 23px;
 }
 #browse-category-carousel .browse-category.selected:focus-within {
@@ -22679,7 +22679,7 @@ hr.menu {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #0a9abc;
+  background-color: rgb(4.8484848485, 74.6666666667, 91.1515151515);
 }
 #browse-sub-category-menu button:focus {
   outline: #E15F15 solid 2px;
@@ -24660,7 +24660,7 @@ a .header-button {
 }
 
 #browse-category-carousel .browse-category.selected {
-  background: #0a9abc;
+  background: rgb(7.4242424242, 114.3333333333, 139.5757575758);
 }
 
 .btn.btn-primary {

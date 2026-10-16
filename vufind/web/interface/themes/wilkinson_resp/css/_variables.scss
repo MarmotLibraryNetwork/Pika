@@ -31,8 +31,8 @@ $category1MainColor: $wilkinson-dark-blue;
 //$category9MainColor: $wilkinson-dark-blue;
 $categoryLineColor: $wilkinson-dark-blue;
 $categoryLineShadow: $wilkinson-dark-blue;
-$selectedCategoryBorderColor: $wilkinson-light-blue;
-$selectedSubCategoryBackgroundColor: $wilkinson-light-blue;
+$selectedCategoryBorderColor: darken($wilkinson-light-blue,20%);
+$selectedSubCategoryBackgroundColor: darken($wilkinson-light-blue,20%);
 $selectedSubCategoryFontColor: #fff;
 
 // Accordions
