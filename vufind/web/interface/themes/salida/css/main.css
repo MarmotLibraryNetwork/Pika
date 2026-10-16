@@ -24727,3 +24727,7 @@ body {
   padding: 4px;
   border-radius: 4px;
 }
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-icon img {
+  filter: invert(100%);
+}
