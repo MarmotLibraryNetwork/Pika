@@ -24766,3 +24766,7 @@ a .header-button:hover {
 #ReportAccessibilityIssue a {
   color: #130840;
 }
+
+.btn-outline-secondary, .btn-default {
+  --bs-btn-color: #000;
+}
