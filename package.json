@@ -10,12 +10,15 @@
     "build": "node build/css/build.mjs",
     "build:core": "node build/css/build.mjs --theme=responsive",
     "watch": "node build/css/build.mjs --watch",
+    "watch:sass": "node .vscode/watch-sass.js",
+    "watch:js": "node .vscode/watch-uglifyjs.js",
     "vendor": "node build/vendor.mjs"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "chokidar": "^5.0.0",
     "cssnano": "^7.0.6",
     "postcss": "^8.5.29",
     "sass": "^1.79.4",
