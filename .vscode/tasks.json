@@ -1,22 +1,25 @@
 {
   "version": "2.0.0",
   "tasks": [
-    // ─── SASS (Pika build) ────────────────────────────────────────────────────
-    // Mirrors the PhpStorm "SCSS (Pika build)" file watcher. Replaces the old
-    // Less → PostCSS → CleanCSS chain: dart-sass writes main.css and main.min.css
-    // in one pass, so there is nothing to autoprefix or minify afterwards.
+    // All tasks run the scripts in the root package.json (Terminal → Run Task…).
+    // Prerequisite: npm install
+    //
+    // The watchers are started manually; they do not run on folder open.
+
+    // ─── SASS watcher (npm run watch:sass) ────────────────────────────────────
+    // Mirrors the PhpStorm "SCSS (Pika build)" file watcher. dart-sass writes
+    // main.css and main.min.css in one pass, so there is nothing to autoprefix or
+    // minify afterwards.
     // Scope: any *.scss under vufind/web/interface/themes.
     // Per-file command (run at the repository root):
     //   node build/css/build.mjs --file=<path>
     //
     // Rebuilds only the theme that owns the saved file. A change to a shared
     // responsive partial still needs a full `npm run build` before committing.
-    //
-    // Prerequisite: npm install
     {
       "label": "Watch SASS (theme scss → main.css + main.min.css)",
-      "type": "shell",
-      "command": "node .vscode/watch-sass.js",
+      "type": "npm",
+      "script": "watch:sass",
       "isBackground": true,
       "presentation": {
         "reveal": "silent",
@@ -38,24 +41,19 @@
           "beginsPattern": "\\[sass\\] Watching",
           "endsPattern": "\\[sass\\]  (→|✗)"
         }
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
       }
-    }
+    },
 
-    ,
-    // ─── UglifyJS Minifier ────────────────────────────────────────────────────
+    // ─── UglifyJS watcher (npm run watch:js) ──────────────────────────────────
     // Scope: any *.js file directly in vufind/web/interface/themes/responsive/js/pika,
     //        excluding files already ending in .min.js.
     // Per-file command (run in file's own directory):
     //   uglifyjs <file>.js -o <file>.min.js
-    //
-    // Prerequisites: npm install --save-dev uglify-js chokidar
+    // then re-runs merge_javascript.php to rebuild pika.min.js.
     {
       "label": "Watch UglifyJS Minifier (pika js → min.js)",
-      "type": "shell",
-      "command": "node .vscode/watch-uglifyjs.js",
+      "type": "npm",
+      "script": "watch:js",
       "isBackground": true,
       "presentation": {
         "reveal": "silent",
@@ -75,10 +73,39 @@
           "beginsPattern": "\\[uglifyjs\\] Watching",
           "endsPattern": "\\[uglifyjs\\]  (→|✗)"
         }
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
       }
+    },
+
+    // Starts both watchers together.
+    {
+      "label": "Watch All",
+      "dependsOn": [
+        "Watch SASS (theme scss → main.css + main.min.css)",
+        "Watch UglifyJS Minifier (pika js → min.js)"
+      ],
+      "problemMatcher": []
+    },
+
+    // ─── One-shot builds ──────────────────────────────────────────────────────
+    {
+      "label": "Build all theme CSS",
+      "type": "npm",
+      "script": "build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build core theme CSS (responsive)",
+      "type": "npm",
+      "script": "build:core",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Vendor frontend assets",
+      "type": "npm",
+      "script": "vendor",
+      "problemMatcher": []
     }
   ]
 }

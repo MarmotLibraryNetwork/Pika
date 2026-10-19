@@ -10,8 +10,13 @@ This directory contains workspace settings for Visual Studio Code. These files l
 
 ## `tasks.json`
 
-Background file watchers, started on folder open. They mirror the PhpStorm file watchers so the
-two editors produce the same build output.
+Tasks that run the scripts in the root `package.json` (Terminal → Run Task…). The background file
+watchers mirror the PhpStorm file watchers so the two editors produce the same build output. They
+are started manually, either individually or together with **Watch All**; they do not run on
+folder open. Each can also be run from a terminal with `npm run watch:sass` / `npm run watch:js`.
+
+One-shot tasks: **Build all theme CSS** (`npm run build`, the default build task, Ctrl+Shift+B),
+**Build core theme CSS** (`npm run build:core`) and **Vendor frontend assets** (`npm run vendor`).
 
 - **Watch SASS** (`watch-sass.js`) — recompiles a theme's `main.css` and `main.min.css` when any
   `.scss` under `vufind/web/interface/themes` is saved, by calling `node build/css/build.mjs
