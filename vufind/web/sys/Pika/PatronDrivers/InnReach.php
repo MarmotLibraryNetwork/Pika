@@ -39,6 +39,7 @@ class InnReach
     private $connectionString;
     private $configArray;
     private $logger;
+    private $connectionError = false;
 
     public function __construct()
     {
@@ -105,6 +106,7 @@ EOT;
     {
         $con = $this->_connect();
         if (!$con) {
+            $this->connectionError = true;
             $this->logger->error('Unable to connect to Sierra DNA for INN-Reach lookup.');
             return false;
         }
@@ -117,6 +119,16 @@ EOT;
         $row = pg_fetch_array($res);
         pg_close($con);
         return $row;
+    }
+
+    /**
+     * Triggers message on Holds page.
+     * 
+     * @return bool True if a lookup failed because Sierra DNA could not be reached
+     */
+    public function hasConnectionError()
+    {
+        return $this->connectionError;
     }
 
     private function _connect()

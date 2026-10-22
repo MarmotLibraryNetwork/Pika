@@ -116,6 +116,16 @@ class MyAccount_Holds extends MyAccount{
 				$allHolds = $user->getMyHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption);
 				$interface->assign('recordList', $allHolds);
 
+				// Flag when INN-Reach title lookups failed because Sierra DNA couldn't be reached
+				foreach ($allHolds as $sectionHolds) {
+					foreach ($sectionHolds as $hold) {
+						if (!empty($hold['illConnectionError'])) {
+							$interface->assign('illHoldConnectionError', true);
+							break 2;
+						}
+					}
+				}
+
 				//make call to export function
 				if ((isset($_GET['exportToExcelAvailable'])) || (isset($_GET['exportToExcelUnavailable']))) {
 					if (isset($_GET['exportToExcelAvailable'])) {
