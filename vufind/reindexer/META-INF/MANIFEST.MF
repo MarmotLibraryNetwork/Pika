@@ -15,8 +15,8 @@ Class-Path: lib/solr-solrj-8.7.0.jar
   solrj-lib/httpmime-4.5.12.jar
   solrj-lib/jcl-over-slf4j-1.7.24.jar
   solrj-lib/jetty-alpn-client-9.4.27.v20200227.jar
-  solrj-lib/jetty-alpn-java-client-9.4.27.v20200227..jar
-  solrj-lib/solrj-lib/jetty-client-9.4.27.v20200227.jar
+  solrj-lib/jetty-alpn-java-client-9.4.27.v20200227.jar
+  solrj-lib/jetty-client-9.4.27.v20200227.jar
   solrj-lib/jetty-http-9.4.27.v20200227.jar
   solrj-lib/jetty-io-9.4.27.v20200227.jar
   solrj-lib/jetty-util-9.4.27.v20200227.jar
