@@ -65,7 +65,7 @@ class Location extends DB_DataObject {
 	public $includeOverDriveKids;
 
 	public $showHoldButton;
-	public $selfRegHomeSuppress; //bool
+	public $validSelfRegHomeBranch; //bool
 	public $showStandardReviews;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
@@ -233,7 +233,7 @@ class Location extends DB_DataObject {
 					['property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1],
 					['property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => ['1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'], 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1],
 					['property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true],
-					['property' => 'selfRegHomeSuppress', 'type' => 'checkbox', 'label' => 'Suppress Home Selection in Self Registration form', 'description' => 'For Libraries with Self Registration, suppress the use of this library as a home location', 'hideInLists' =>true, 'default' => false],
+					['property' => 'validSelfRegHomeBranch', 'type' => 'checkbox', 'label' => 'Valid Home for Self Registration', 'description' => 'For Libraries with Self Registration, display this branch as a valid home location', 'hideInLists' =>true, 'default' => true],
 				],
 			],
 

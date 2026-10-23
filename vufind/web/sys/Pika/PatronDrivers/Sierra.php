@@ -3641,7 +3641,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         $l                        = new Location();
         $l->libraryId             = $library->libraryId;
         $l->validHoldPickupBranch = true;
-				$l->selfRegHomeSuppress = false;
+				$l->validSelfRegHomeBranch = true;
         $l->orderBy('displayName');
         if ($l->find()) {
             $homeLocations = $l->fetchAll('code', 'displayName');
