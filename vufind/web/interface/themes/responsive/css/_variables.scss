@@ -155,7 +155,7 @@ $gray-light: $accessible-gray-light !default;
 // Make single-title manifestation box contrast accessible
 $label-default-bg: $accessible-gray-light !default;
 
-$primary: $accessible-blue !default; // make primary blue color an accessible contrast with #fff
+$primary: #024d75 !default; // make primary blue color an accessible contrast with #fff
 $brand-primary: $primary !default;   // legacy BS3 name, still referenced by partials/themes
 
 // Make multiple-title manifestation box contrast accessible
@@ -220,16 +220,16 @@ $footer-top-border-color: #088ec6 !default;
 
 //Search Box color
 //$home-search-top-color: #00a4e3; //Top color for background gradient in header
-$home-search-top-color: #057DBC !default; //Top color for background gradient in header (https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC)
-$home-search-bottom-color: #147ce2 !default; //Bottom color for background gradient in header
+$home-search-top-color: $primary !default; //Top color for background gradient in header (https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC)
+$home-search-bottom-color: lighten($primary, 5%) !default; //Bottom color for background gradient in header
 $home-search-label-color: #fff !default;
 $horizontal-search-label-color: $home-search-label-color !default;
 
 //Menu Bar Variables
-$menu-bar-background-color: #057DBC !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC
+$menu-bar-background-color: $primary !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=057DBC
 $menu-bar-color: #FFF !default;
 $vertical-menu-bar-width: 40px !default;
-$menu-bar-selected-background-color: #0175E4 !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0175E4
+$menu-bar-selected-background-color: lighten($primary, 15%) !default; // https://webaim.org/resources/contrastchecker/?fcolor=FFFFFF&bcolor=0175E4
 $menu-bar-selected-color: #FFF !default;
 $menu-bar-z-index: 101 !default;
 

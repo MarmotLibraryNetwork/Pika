@@ -415,6 +415,13 @@ a .header-button {
   }
 }
 
+.panel a{
+  text-decoration: none;
+  &:hover{
+    text-decoration: underline;
+  }
+}
+
 //JCarousel styling
 .jcarousel ul > li {
   text-align: center;
