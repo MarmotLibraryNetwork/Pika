@@ -30,7 +30,7 @@
   --bs-gray-700: #495057;
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
-  --bs-primary: #0A75E3;
+  --bs-primary: #024d75;
   --bs-secondary: #6c757d;
   --bs-success: #128A0B;
   --bs-info: #097FAF;
@@ -38,7 +38,7 @@
   --bs-danger: #D32522;
   --bs-light: #f8f9fa;
   --bs-dark: #212529;
-  --bs-primary-rgb: 10, 117, 227;
+  --bs-primary-rgb: 2, 77, 117;
   --bs-secondary-rgb: 108, 117, 125;
   --bs-success-rgb: 18, 138, 11;
   --bs-info-rgb: 9, 127, 175;
@@ -46,7 +46,7 @@
   --bs-danger-rgb: 211, 37, 34;
   --bs-light-rgb: 248, 249, 250;
   --bs-dark-rgb: 33, 37, 41;
-  --bs-primary-text-emphasis: rgb(4, 46.8, 90.8);
+  --bs-primary-text-emphasis: rgb(0.8, 30.8, 46.8);
   --bs-secondary-text-emphasis: rgb(43.2, 46.8, 50);
   --bs-success-text-emphasis: rgb(7.2, 55.2, 4.4);
   --bs-info-text-emphasis: rgb(3.6, 50.8, 70);
@@ -54,7 +54,7 @@
   --bs-danger-text-emphasis: rgb(84.4, 14.8, 13.6);
   --bs-light-text-emphasis: #495057;
   --bs-dark-text-emphasis: #495057;
-  --bs-primary-bg-subtle: rgb(206, 227.4, 249.4);
+  --bs-primary-bg-subtle: rgb(204.4, 219.4, 227.4);
   --bs-secondary-bg-subtle: rgb(225.6, 227.4, 229);
   --bs-success-bg-subtle: rgb(207.6, 231.6, 206.2);
   --bs-info-bg-subtle: rgb(205.8, 229.4, 239);
@@ -62,7 +62,7 @@
   --bs-danger-bg-subtle: rgb(246.2, 211.4, 210.8);
   --bs-light-bg-subtle: rgb(251.5, 252, 252.5);
   --bs-dark-bg-subtle: #ced4da;
-  --bs-primary-border-subtle: rgb(157, 199.8, 243.8);
+  --bs-primary-border-subtle: rgb(153.8, 183.8, 199.8);
   --bs-secondary-border-subtle: rgb(196.2, 199.8, 203);
   --bs-success-border-subtle: rgb(160.2, 208.2, 157.4);
   --bs-info-border-subtle: rgb(156.6, 203.8, 223);
@@ -142,7 +142,7 @@
   --bs-tertiary-color-rgb: 222, 226, 230;
   --bs-tertiary-bg: rgb(42.5, 47.5, 52.5);
   --bs-tertiary-bg-rgb: 43, 48, 53;
-  --bs-primary-text-emphasis: rgb(108, 172.2, 238.2);
+  --bs-primary-text-emphasis: rgb(103.2, 148.2, 172.2);
   --bs-secondary-text-emphasis: rgb(166.8, 172.2, 177);
   --bs-success-text-emphasis: rgb(112.8, 184.8, 108.6);
   --bs-info-text-emphasis: rgb(107.4, 178.2, 207);
@@ -150,7 +150,7 @@
   --bs-danger-text-emphasis: rgb(228.6, 124.2, 122.4);
   --bs-light-text-emphasis: #f8f9fa;
   --bs-dark-text-emphasis: #dee2e6;
-  --bs-primary-bg-subtle: rgb(2, 23.4, 45.4);
+  --bs-primary-bg-subtle: rgb(0.4, 15.4, 23.4);
   --bs-secondary-bg-subtle: rgb(21.6, 23.4, 25);
   --bs-success-bg-subtle: rgb(3.6, 27.6, 2.2);
   --bs-info-bg-subtle: rgb(1.8, 25.4, 35);
@@ -158,7 +158,7 @@
   --bs-danger-bg-subtle: rgb(42.2, 7.4, 6.8);
   --bs-light-bg-subtle: #343a40;
   --bs-dark-bg-subtle: #1a1d20;
-  --bs-primary-border-subtle: rgb(6, 70.2, 136.2);
+  --bs-primary-border-subtle: rgb(1.2, 46.2, 70.2);
   --bs-secondary-border-subtle: rgb(64.8, 70.2, 75);
   --bs-success-border-subtle: rgb(10.8, 82.8, 6.6);
   --bs-info-border-subtle: rgb(5.4, 76.2, 105);
@@ -167,10 +167,10 @@
   --bs-light-border-subtle: #495057;
   --bs-dark-border-subtle: #343a40;
   --bs-heading-color: inherit;
-  --bs-link-color: rgb(108, 172.2, 238.2);
-  --bs-link-hover-color: rgb(137.4, 188.76, 241.56);
-  --bs-link-color-rgb: 108, 172, 238;
-  --bs-link-hover-color-rgb: 137, 189, 242;
+  --bs-link-color: rgb(103.2, 148.2, 172.2);
+  --bs-link-hover-color: rgb(133.56, 169.56, 188.76);
+  --bs-link-color-rgb: 103, 148, 172;
+  --bs-link-hover-color-rgb: 134, 170, 189;
   --bs-code-color: rgb(230.4, 132.6, 181.2);
   --bs-highlight-color: #dee2e6;
   --bs-highlight-bg: rgb(102, 77.2, 2.8);
@@ -1925,13 +1925,13 @@ progress {
 
 .table-primary {
   --bs-table-color: #000;
-  --bs-table-bg: rgb(206, 227.4, 249.4);
-  --bs-table-border-color: rgb(164.8, 181.92, 199.52);
-  --bs-table-striped-bg: rgb(195.7, 216.03, 236.93);
+  --bs-table-bg: rgb(204.4, 219.4, 227.4);
+  --bs-table-border-color: rgb(163.52, 175.52, 181.92);
+  --bs-table-striped-bg: rgb(194.18, 208.43, 216.03);
   --bs-table-striped-color: #000;
-  --bs-table-active-bg: rgb(185.4, 204.66, 224.46);
+  --bs-table-active-bg: rgb(183.96, 197.46, 204.66);
   --bs-table-active-color: #000;
-  --bs-table-hover-bg: rgb(190.55, 210.345, 230.695);
+  --bs-table-hover-bg: rgb(189.07, 202.945, 210.345);
   --bs-table-hover-color: #000;
   color: var(--bs-table-color);
   border-color: var(--bs-table-border-color);
@@ -2131,7 +2131,7 @@ progress {
 .form-control:focus {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
-  border-color: rgb(132.5, 186, 241);
+  border-color: rgb(128.5, 166, 186);
   outline: 0;
   box-shadow: 0 0 0 0.25rem #E15F15;
 }
@@ -2282,7 +2282,7 @@ textarea.form-control-lg {
   }
 }
 .form-select:focus {
-  border-color: rgb(132.5, 186, 241);
+  border-color: rgb(128.5, 166, 186);
   outline: 0;
   box-shadow: 0 0 0 0.25rem #E15F15;
 }
@@ -2369,13 +2369,13 @@ textarea.form-control-lg {
   filter: brightness(90%);
 }
 .form-check-input:focus {
-  border-color: rgb(132.5, 186, 241);
+  border-color: rgb(128.5, 166, 186);
   outline: 0;
   box-shadow: 0 0 0 0.25rem #E15F15;
 }
 .form-check-input:checked {
-  background-color: #0A75E3;
-  border-color: #0A75E3;
+  background-color: #024d75;
+  border-color: #024d75;
 }
 .form-check-input:checked[type=checkbox] {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
@@ -2384,8 +2384,8 @@ textarea.form-control-lg {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
 }
 .form-check-input[type=checkbox]:indeterminate {
-  background-color: #0A75E3;
-  border-color: #0A75E3;
+  background-color: #024d75;
+  border-color: #024d75;
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e");
 }
 .form-check-input:disabled {
@@ -2416,7 +2416,7 @@ textarea.form-control-lg {
   }
 }
 .form-switch .form-check-input:focus {
-  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgb%28132.5, 186, 241%29'/%3e%3c/svg%3e");
+  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgb%28128.5, 166, 186%29'/%3e%3c/svg%3e");
 }
 .form-switch .form-check-input:checked {
   background-position: right center;
@@ -2478,7 +2478,7 @@ textarea.form-control-lg {
   margin-top: -0.25rem;
   -webkit-appearance: none;
           appearance: none;
-  background-color: #0A75E3;
+  background-color: #024d75;
   border: 0;
   border-radius: 1rem;
   -webkit-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -2491,7 +2491,7 @@ textarea.form-control-lg {
   }
 }
 .form-range::-webkit-slider-thumb:active {
-  background-color: rgb(181.5, 213.6, 246.6);
+  background-color: rgb(179.1, 201.6, 213.6);
 }
 .form-range::-webkit-slider-runnable-track {
   width: 100%;
@@ -2507,7 +2507,7 @@ textarea.form-control-lg {
   height: 1rem;
   -moz-appearance: none;
        appearance: none;
-  background-color: #0A75E3;
+  background-color: #024d75;
   border: 0;
   border-radius: 1rem;
   -moz-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -2520,7 +2520,7 @@ textarea.form-control-lg {
   }
 }
 .form-range::-moz-range-thumb:active {
-  background-color: rgb(181.5, 213.6, 246.6);
+  background-color: rgb(179.1, 201.6, 213.6);
 }
 .form-range::-moz-range-track {
   width: 100%;
@@ -3002,20 +3002,20 @@ textarea.form-control-lg {
 }
 
 .btn-primary {
-  --bs-btn-color: #000;
-  --bs-btn-bg: #0A75E3;
-  --bs-btn-border-color: #0A75E3;
-  --bs-btn-hover-color: #000;
-  --bs-btn-hover-bg: rgb(46.75, 137.7, 231.2);
-  --bs-btn-hover-border-color: rgb(34.5, 130.8, 229.8);
-  --bs-btn-focus-shadow-rgb: 9, 99, 193;
-  --bs-btn-active-color: #000;
-  --bs-btn-active-bg: rgb(59, 144.6, 232.6);
-  --bs-btn-active-border-color: rgb(34.5, 130.8, 229.8);
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #024d75;
+  --bs-btn-border-color: #024d75;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgb(1.7, 65.45, 99.45);
+  --bs-btn-hover-border-color: rgb(1.6, 61.6, 93.6);
+  --bs-btn-focus-shadow-rgb: 40, 104, 138;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: rgb(1.6, 61.6, 93.6);
+  --bs-btn-active-border-color: rgb(1.5, 57.75, 87.75);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: #000;
-  --bs-btn-disabled-bg: #0A75E3;
-  --bs-btn-disabled-border-color: #0A75E3;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #024d75;
+  --bs-btn-disabled-border-color: #024d75;
 }
 
 .btn-secondary {
@@ -3138,19 +3138,19 @@ textarea.form-control-lg {
 }
 
 .btn-outline-primary {
-  --bs-btn-color: #0A75E3;
-  --bs-btn-border-color: #0A75E3;
-  --bs-btn-hover-color: #000;
-  --bs-btn-hover-bg: #0A75E3;
-  --bs-btn-hover-border-color: #0A75E3;
-  --bs-btn-focus-shadow-rgb: 10, 117, 227;
-  --bs-btn-active-color: #000;
-  --bs-btn-active-bg: #0A75E3;
-  --bs-btn-active-border-color: #0A75E3;
+  --bs-btn-color: #024d75;
+  --bs-btn-border-color: #024d75;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #024d75;
+  --bs-btn-hover-border-color: #024d75;
+  --bs-btn-focus-shadow-rgb: 2, 77, 117;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #024d75;
+  --bs-btn-active-border-color: #024d75;
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: #0A75E3;
+  --bs-btn-disabled-color: #024d75;
   --bs-btn-disabled-bg: transparent;
-  --bs-btn-disabled-border-color: #0A75E3;
+  --bs-btn-disabled-border-color: #024d75;
   --bs-gradient: none;
 }
 
@@ -3392,7 +3392,7 @@ textarea.form-control-lg {
   --bs-dropdown-link-hover-color: var(--bs-body-color);
   --bs-dropdown-link-hover-bg: var(--bs-tertiary-bg);
   --bs-dropdown-link-active-color: #fff;
-  --bs-dropdown-link-active-bg: #0A75E3;
+  --bs-dropdown-link-active-bg: #024d75;
   --bs-dropdown-link-disabled-color: var(--bs-tertiary-color);
   --bs-dropdown-item-padding-x: 1rem;
   --bs-dropdown-item-padding-y: 0.25rem;
@@ -3658,7 +3658,7 @@ textarea.form-control-lg {
   --bs-dropdown-divider-bg: var(--bs-border-color-translucent);
   --bs-dropdown-link-hover-bg: rgba(255, 255, 255, 0.15);
   --bs-dropdown-link-active-color: #fff;
-  --bs-dropdown-link-active-bg: #0A75E3;
+  --bs-dropdown-link-active-bg: #024d75;
   --bs-dropdown-link-disabled-color: #adb5bd;
   --bs-dropdown-header-color: #adb5bd;
 }
@@ -3842,7 +3842,7 @@ textarea.form-control-lg {
 .nav-pills {
   --bs-nav-pills-border-radius: var(--bs-border-radius);
   --bs-nav-pills-link-active-color: #fff;
-  --bs-nav-pills-link-active-bg: #0A75E3;
+  --bs-nav-pills-link-active-bg: #024d75;
 }
 .nav-pills .nav-link {
   border-radius: var(--bs-nav-pills-border-radius);
@@ -4527,7 +4527,7 @@ textarea.form-control-lg {
   --bs-accordion-btn-icon-width: 1.25rem;
   --bs-accordion-btn-icon-transform: rotate(-180deg);
   --bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
-  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='rgb%284, 46.8, 90.8%29' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='rgb%280.8, 30.8, 46.8%29' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem #E15F15;
   --bs-accordion-body-padding-x: 1.25rem;
   --bs-accordion-body-padding-y: 1rem;
@@ -4644,8 +4644,8 @@ textarea.form-control-lg {
 }
 
 [data-bs-theme=dark] .accordion-button::after {
-  --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='rgb%28108, 172.2, 238.2%29'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e");
-  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='rgb%28108, 172.2, 238.2%29'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e");
+  --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='rgb%28103.2, 148.2, 172.2%29'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e");
+  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='rgb%28103.2, 148.2, 172.2%29'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708'/%3e%3c/svg%3e");
 }
 
 .breadcrumb {
@@ -4696,8 +4696,8 @@ textarea.form-control-lg {
   --bs-pagination-focus-bg: var(--bs-secondary-bg);
   --bs-pagination-focus-box-shadow: 0 0 0 0.25rem #E15F15;
   --bs-pagination-active-color: #fff;
-  --bs-pagination-active-bg: #0A75E3;
-  --bs-pagination-active-border-color: #0A75E3;
+  --bs-pagination-active-bg: #024d75;
+  --bs-pagination-active-border-color: #024d75;
   --bs-pagination-disabled-color: var(--bs-secondary-color);
   --bs-pagination-disabled-bg: var(--bs-secondary-bg);
   --bs-pagination-disabled-border-color: var(--bs-border-color);
@@ -4909,7 +4909,7 @@ textarea.form-control-lg {
   --bs-progress-border-radius: var(--bs-border-radius);
   --bs-progress-box-shadow: var(--bs-box-shadow-inset);
   --bs-progress-bar-color: #fff;
-  --bs-progress-bar-bg: #0A75E3;
+  --bs-progress-bar-bg: #024d75;
   --bs-progress-bar-transition: width 0.6s ease;
   display: flex;
   height: var(--bs-progress-height);
@@ -4974,8 +4974,8 @@ textarea.form-control-lg {
   --bs-list-group-disabled-color: var(--bs-secondary-color);
   --bs-list-group-disabled-bg: var(--bs-body-bg);
   --bs-list-group-active-color: #fff;
-  --bs-list-group-active-bg: #0A75E3;
-  --bs-list-group-active-border-color: #0A75E3;
+  --bs-list-group-active-bg: #024d75;
+  --bs-list-group-active-border-color: #024d75;
   display: flex;
   flex-direction: column;
   padding-left: 0;
@@ -6795,7 +6795,7 @@ textarea.form-control-lg {
 }
 
 .text-bg-primary {
-  color: #000 !important;
+  color: #fff !important;
   background-color: RGBA(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
 }
 
@@ -6839,8 +6839,8 @@ textarea.form-control-lg {
   text-decoration-color: RGBA(var(--bs-primary-rgb), var(--bs-link-underline-opacity, 1)) !important;
 }
 .link-primary:hover, .link-primary:focus {
-  color: RGBA(59, 145, 233, var(--bs-link-opacity, 1)) !important;
-  text-decoration-color: RGBA(59, 145, 233, var(--bs-link-underline-opacity, 1)) !important;
+  color: RGBA(2, 62, 94, var(--bs-link-opacity, 1)) !important;
+  text-decoration-color: RGBA(2, 62, 94, var(--bs-link-underline-opacity, 1)) !important;
 }
 
 .link-secondary {
@@ -20372,13 +20372,13 @@ textarea.form-control-lg {
 }
 
 .panel-primary {
-  border-color: #0A75E3;
+  border-color: #024d75;
 }
 
 .panel-primary > .panel-heading {
   color: #fff;
-  background-color: #0A75E3;
-  border-color: #0A75E3;
+  background-color: #024d75;
+  border-color: #024d75;
 }
 
 .panel-group {
@@ -20417,7 +20417,7 @@ textarea.form-control-lg {
 }
 
 .label-primary {
-  background-color: #0A75E3;
+  background-color: #024d75;
 }
 
 .label-success {
@@ -20975,11 +20975,11 @@ table.dataTable > tbody > tr:last-child > th.sorting_3::before {
 }
 table.dataTable > tbody > tr > td.sorting_2::before,
 table.dataTable > tbody > tr > th.sorting_2::before {
-  border-color: rgba(10, 117, 227, 0.55);
+  border-color: rgba(2, 77, 117, 0.55);
 }
 table.dataTable > tbody > tr > td.sorting_3::before,
 table.dataTable > tbody > tr > th.sorting_3::before {
-  border-color: rgba(10, 117, 227, 0.3);
+  border-color: rgba(2, 77, 117, 0.3);
 }
 
 .jcarousel-control-prev:focus, .jcarousel-control-next:focus {
