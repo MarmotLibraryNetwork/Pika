@@ -2129,6 +2129,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                 $innReach = new InnReach();
                 $titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
                 $coverImage = $innReach->getInnReachCover();
+                // If innreach can't connect trigger message on holds page. 
+                if ($innReach->hasConnectionError()) {
+                    $h['illConnectionError'] = true;
+                }
                 if (!$titleAndAuthor) {
                     $h['title']     = 'Unknown';
                     $h['author']    = 'Unknown';
