@@ -906,8 +906,8 @@ class BookCoverProcessor {
 		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
 		$context = stream_context_create($this->getInternalHttpContextOptions(10));
 
-		if ($this->reload){
-			unlink($this->cacheFile);
+		if ($this->reload && is_file($this->cacheFile) && !unlink($this->cacheFile)){
+			$this->logger->error('Unable to delete user list cover cache file for reload', ['cacheFile' => $this->cacheFile]);
 		}
 
 		$list = new UserList;
