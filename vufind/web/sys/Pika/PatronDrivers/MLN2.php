@@ -254,14 +254,16 @@ class MLN2 extends Sierra {
 	 * @param \Library $library
 	 * @return array
 	 */
-	protected function getSelfRegHomeLocations(\Library $library): array{
+/*  Commented out to test new setting
+
+ * 	protected function getSelfRegHomeLocations(\Library $library): array{
 		$homeLocations = parent::getSelfRegHomeLocations($library);
 		if ($library->subdomain == 'clearview' && !empty($homeLocations)){
 			// For Clearview, remove admin and bookmobile
 			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['ca', 'cb',]), ARRAY_FILTER_USE_KEY);
 		}
 		return $homeLocations;
-	}
+	}*/
 
 	function selfRegister($extraSelfRegParams = false){
 		global $library;

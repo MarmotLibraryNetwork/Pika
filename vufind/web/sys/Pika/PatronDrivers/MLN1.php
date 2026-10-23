@@ -51,6 +51,7 @@ class MLN1 extends Sierra {
 	 * @param Library $library
 	 * @return array
 	 */
+/* Commented out for new setting work
 	protected function getSelfRegHomeLocations(Library $library): array{
 		$homeLocations = parent::getSelfRegHomeLocations($library);
 		if ($library->subdomain == 'evld' && !empty($homeLocations)){
@@ -58,7 +59,7 @@ class MLN1 extends Sierra {
 			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['evall', 'evgll', 'evb']), ARRAY_FILTER_USE_KEY);
 		}
 		return $homeLocations;
-	}
+	}*/
 
 	public function getSelfRegistrationFields(){
 		/** @var Library $library */
