@@ -21904,6 +21904,13 @@ a .header-button:visited {
     display: block !important;
   }
 }
+.panel a {
+  text-decoration: none;
+}
+.panel a:hover {
+  text-decoration: underline;
+}
+
 .jcarousel ul > li {
   text-align: center;
 }
@@ -23343,6 +23350,11 @@ img.x-twit {
   font-size: 10pt;
 }
 
+.related-manifestation .btn-group.btn-group-vertical.btn-block {
+  min-width: 100%;
+  min-height: 3rem;
+}
+
 .manifestation-actions .btn-default {
   background-color: #088ec6;
   color: #fff;
@@ -23429,7 +23441,7 @@ img.x-twit {
     padding-right: 0;
   }
 }
-#searchFilterContainer {
+#searchFilterContainer, #similar-authors .panel {
   padding: 0;
 }
 

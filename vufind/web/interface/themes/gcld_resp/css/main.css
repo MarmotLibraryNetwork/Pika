@@ -20901,7 +20901,7 @@ div.striped > div:nth-child(odd) {
 }
 
 #vertical-menu-bar .menu-icon-selected:focus-within {
-  border: 2px solid #057DBC !important;
+  border: 2px solid #024d75 !important;
   outline: 2px solid white;
 }
 
@@ -21742,7 +21742,7 @@ a .header-button:visited {
 
 .menu-bar {
   color: #FFF;
-  background-color: #057DBC;
+  background-color: #024d75;
 }
 
 #horizontal-menu-bar-container .menu-icon {
@@ -21759,7 +21759,7 @@ a .header-button:visited {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #0175E4;
+  background-color: rgb(3.2857142857, 126.5, 192.2142857143);
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -21789,7 +21789,7 @@ a .header-button:visited {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #057DBC;
+  background-color: #024d75;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -21802,7 +21802,7 @@ a .header-button:visited {
   border-top: 3px solid #fff;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #0175E4;
+  background-color: rgb(3.2857142857, 126.5, 192.2142857143);
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -21904,6 +21904,13 @@ a .header-button:visited {
     display: block !important;
   }
 }
+.panel a {
+  text-decoration: none;
+}
+.panel a:hover {
+  text-decoration: underline;
+}
+
 .jcarousel ul > li {
   text-align: center;
 }
@@ -23343,6 +23350,11 @@ img.x-twit {
   font-size: 10pt;
 }
 
+.related-manifestation .btn-group.btn-group-vertical.btn-block {
+  min-width: 100%;
+  min-height: 3rem;
+}
+
 .manifestation-actions .btn-default {
   background-color: #088ec6;
   color: #fff;
@@ -23429,7 +23441,7 @@ img.x-twit {
     padding-right: 0;
   }
 }
-#searchFilterContainer {
+#searchFilterContainer, #similar-authors .panel {
   padding: 0;
 }
 
@@ -23469,7 +23481,7 @@ img.x-twit {
   width: 100%;
   display: inline-block;
   padding: 2px 2px 20px;
-  border-top: 5px solid #057DBC;
+  border-top: 5px solid #024d75;
   margin-top: 15px;
 }
 
@@ -23483,8 +23495,8 @@ img.x-twit {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #057DBC;
-  border-color: #057DBC;
+  background-color: #024d75;
+  border-color: #024d75;
 }
 
 #bookshelfContainer {
@@ -23716,7 +23728,7 @@ img.x-twit {
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: rgb(4.3393782383, 108.4844559585, 163.1606217617);
+  background-color: rgb(1.5714285714, 60.5, 91.9285714286);
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -23735,7 +23747,7 @@ img.x-twit {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #057DBC;
+  border-bottom: 2px solid #024d75;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -23779,12 +23791,12 @@ img.x-twit {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #057DBC;
+  border: solid 1px #024d75;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #057DBC;
+  background-color: #024d75;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -23801,7 +23813,7 @@ img.x-twit {
   color: #FFF;
 }
 .exploreMoreBar .label-left, .exploreMoreBar .label-left img {
-  background-color: #057DBC;
+  background-color: #024d75;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -23820,7 +23832,7 @@ img.x-twit {
   width: 100%;
 }
 .exploreMoreBar .label-top, .exploreMoreBar .label-top img {
-  background-color: #057DBC;
+  background-color: #024d75;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -23872,10 +23884,10 @@ img.x-twit {
 #explore-more-body .jcarousel-control-prev, #explore-more-body .jcarousel-control-next, #relatedProjectsLibraryScroller .jcarousel-control-prev, #relatedProjectsLibraryScroller .jcarousel-control-next, #relatedProjectScroller .jcarousel-control-prev, #relatedProjectScroller .jcarousel-control-next, #relatedTitlesLibraryContainer .jcarousel-control-prev, #relatedTitlesLibraryContainer .jcarousel-control-next, #relatedProjectOtherScroller .jcarousel-control-prev, #relatedProjectOtherScroller .jcarousel-control-next, #relatedContentTypesContainer .jcarousel-control-prev, #relatedContentTypesContainer .jcarousel-control-next, .exploreMoreBar .jcarousel-control-prev, .exploreMoreBar .jcarousel-control-next, #book-sections .jcarousel-control-prev, #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #057DBC;
+  color: #024d75;
   z-index: 2;
   box-shadow: white 0 0 0 0;
-  border: 1px solid #057DBC;
+  border: 1px solid #024d75;
 }
 #explore-more-body .jcarousel-control-prev, #relatedProjectsLibraryScroller .jcarousel-control-prev, #relatedProjectScroller .jcarousel-control-prev, #relatedTitlesLibraryContainer .jcarousel-control-prev, #relatedProjectOtherScroller .jcarousel-control-prev, #relatedContentTypesContainer .jcarousel-control-prev, .exploreMoreBar .jcarousel-control-prev, #book-sections .jcarousel-control-prev {
   left: 2px;
@@ -24008,7 +24020,7 @@ img.x-twit {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls, .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #057DBC;
+  background-color: #024d75;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -24017,7 +24029,7 @@ img.x-twit {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid rgb(3.6787564767, 91.9689119171, 138.3212435233);
+  border: 1px solid rgb(1.1428571429, 44, 66.8571428571);
   padding: 3px;
   margin-left: 5px;
 }
@@ -24046,7 +24058,7 @@ img.x-twit {
 }
 
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #057DBC;
+  background-color: #024d75;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
