@@ -81,6 +81,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
     protected $oAuthToken;
     /* @var $apiLastError false|string false if no error or last error message */
     protected $apiLastError = false;
+    /* @var $apiLastHttpStatus int HTTP status of the last API call, 0 if there was no response */
+    protected $apiLastHttpStatus = 0;
     protected $apiLastErrorForPatron = false;
     /** @var  AccountProfile $accountProfile */
     public $accountProfile;
@@ -341,7 +343,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
      * @param string  $password        The patron barcode or pin
      * @param boolean $validatedViaSSO If the patron was validated outside Pika
      *
-     * @return  User|\PEAR_Error|null User object, PEAR_Error for a locked account, or null
+     * @return  User|\PEAR_Error|null User object, PEAR_Error for a failed log in, or null
      * @access  public
      * @throws ErrorException
      */
@@ -397,9 +399,13 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
             if (stristr($this->apiLastError, 'Locked account')) {
                 return new \PEAR_Error('authentication_error_locked_account');
             }
+            // no response or a timeout, a Sierra server error, or Sierra refusing Pika's API token
+            if ($this->apiLastError && ($this->apiLastHttpStatus == 0 || $this->apiLastHttpStatus == 401 || $this->apiLastHttpStatus >= 500)) {
+                return new \PEAR_Error('authentication_error_technical');
+            }
             $msg = 'Failed to get patron id from Sierra API.';
             $this->logger->debug($msg, ['barcode' => $this->patronBarcode]);
-            return null;
+            return new \PEAR_Error('authentication_error_invalid');
         }
 
         return $this->getPatron($patronId);
@@ -3407,7 +3413,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
      */
     protected function _doRequest($operation, $params = [], $method = 'GET', $extraHeaders = null)
     {
-        $this->apiLastError = false;
+        $this->apiLastError      = false;
+        $this->apiLastHttpStatus = 0;
         // setup headers
         // These headers are common to all Sierra API except token requests.
         $userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
@@ -3439,7 +3446,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         try {
             $c = new Curl();
         } catch (Exception $e) {
-            $this->logger->error('Sierra API call exception :' . $e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
+            $this->apiLastError = 'Sierra API call exception :' . $e->getMessage();
+            $this->logger->error($this->apiLastError, ['stacktrace' => $e->getTraceAsString()]);
             return false;
         }
         $c->setHeaders($headers);
@@ -3474,6 +3482,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         // if an error does occur, set the $this->apiLastError.
         // get the info so we can check the headers for a good response.
         $cInfo = $c->getInfo();
+        $this->apiLastHttpStatus = (int)$cInfo['http_code']; // 0 when there was no response
         // first check for a curl error
         // we don't want to use $c->error because it will report HTTP errors.
         if ($c->isCurlError()) {
@@ -3495,6 +3504,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                 $this->apiLastError = $message;
                 $this->logger->debug($message);
                 return false;
+								//TODO: this needs to be a PEAR_ERROR() with 'authentication_error_denied'
             }
             if (isset($c->response->code)) {
                 //$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
