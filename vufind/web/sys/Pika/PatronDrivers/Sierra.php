@@ -2133,6 +2133,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                 $innReach = new InnReach();
                 $titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
                 $coverImage = $innReach->getInnReachCover();
+                // If innreach can't connect trigger message on holds page. 
+                if ($innReach->hasConnectionError()) {
+                    $h['illConnectionError'] = true;
+                }
                 if (!$titleAndAuthor) {
                     $h['title']     = 'Unknown';
                     $h['author']    = 'Unknown';
@@ -3640,7 +3644,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         $homeLocations = [];
         $l                        = new Location();
         $l->libraryId             = $library->libraryId;
-        $l->validHoldPickupBranch = '1';
+        $l->validHoldPickupBranch = true;
+				$l->validSelfRegHomeBranch = true;
         $l->orderBy('displayName');
         if ($l->find()) {
             $homeLocations = $l->fetchAll('code', 'displayName');

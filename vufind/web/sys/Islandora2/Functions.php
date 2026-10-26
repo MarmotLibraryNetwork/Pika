@@ -51,6 +51,7 @@ const ISLANDORA2_DISPLAY_MODEL_URL_MAP = [
     //'magazine'         => 'PagedContent',
     'postcard'         => 'Postcard',
     'video'            => 'Video',
+    'video + pdf'      => 'VideoPDF',
 ];
 
 /**

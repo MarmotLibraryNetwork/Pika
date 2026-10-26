@@ -73,6 +73,7 @@ class NorthernWaters extends Sierra {
 	protected function getSelfRegHomeLocations(\Library $libraryIgnored): array{
 		$loc                        = new Location();
 		$loc->validHoldPickupBranch = '1';
+		$loc->validSelfRegHomeBranch = '1';
 		$loc->orderBy('displayName');
 		$loc->find();
 		$homeLocations = $loc->fetchAll('code', 'displayName');

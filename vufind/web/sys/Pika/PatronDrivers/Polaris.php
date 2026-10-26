@@ -493,13 +493,15 @@ class Polaris extends PatronDriverInterface implements DriverInterface
     }
     
     /***************** SELF REGISTRATION ****************/
-    public function getSelfRegistrationFields(): array
+
+	public function getSelfRegistrationFields(): array
     {
         global $library;
         // get the valid home/pickup locations
         $l = new Location();
         $l->libraryId = $library->libraryId;
         $l->validHoldPickupBranch = '1';
+				$l->validSelfRegHomeBranch = true;
         $l->find();
         $l->orderBy('displayName');
         $homeLocations = $l->fetchAll('ilsLocationId', 'displayName');
