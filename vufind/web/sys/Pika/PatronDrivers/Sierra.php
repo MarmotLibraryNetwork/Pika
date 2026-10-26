@@ -341,7 +341,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
      * @param string  $password        The patron barcode or pin
      * @param boolean $validatedViaSSO If the patron was validated outside Pika
      *
-     * @return  User|null           User object or null
+     * @return  User|\PEAR_Error|null User object, PEAR_Error for a locked account, or null
      * @access  public
      * @throws ErrorException
      */
@@ -393,6 +393,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         }
         // can't find patron
         if (!$patronId) {
+            // Sierra locks the account after repeated failed log in attempts
+            if (stristr($this->apiLastError, 'Locked account')) {
+                return new \PEAR_Error('authentication_error_locked_account');
+            }
             $msg = 'Failed to get patron id from Sierra API.';
             $this->logger->debug($msg, ['barcode' => $this->patronBarcode]);
             return null;
