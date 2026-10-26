@@ -399,6 +399,10 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
             if (stristr($this->apiLastError, 'Locked account')) {
                 return new \PEAR_Error('authentication_error_locked_account');
             }
+            // Sierra rejected the barcode and pin (code 108, see _doRequest())
+            if (stristr($this->apiLastError, 'Authentication Error')) {
+                return new \PEAR_Error('authentication_error_denied');
+            }
             // no response or a timeout, a Sierra server error, or Sierra refusing Pika's API token
             if ($this->apiLastError && ($this->apiLastHttpStatus == 0 || $this->apiLastHttpStatus == 401 || $this->apiLastHttpStatus >= 500)) {
                 return new \PEAR_Error('authentication_error_technical');
@@ -3504,7 +3508,6 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                 $this->apiLastError = $message;
                 $this->logger->debug($message);
                 return false;
-								//TODO: this needs to be a PEAR_ERROR() with 'authentication_error_denied'
             }
             if (isset($c->response->code)) {
                 //$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
