@@ -380,20 +380,20 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                         '"op": "equals",' .
                         '"operands": [ "' . $barcode . '" ]}}';
                     $r2        = $this->_doRequest($operation, $payload, 'POST');
-                    if (!$r2) {
-                        return false;
-                    }
-                    // get the sierra ids for the patron/query
-                    foreach ($r2->entries as $entry) {
-                        $sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
-                        if ($this->_authPatronIdName($m[1], $username)) {
-                            return $this->getPatron($m[1]);
+                    // if the query fails, fall through so the checks below can report why from apiLastError
+                    if ($r2) {
+                        // get the sierra ids for the patron/query
+                        foreach ($r2->entries as $entry) {
+                            $sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
+                            if ($this->_authPatronIdName($m[1], $username)) {
+                                return $this->getPatron($m[1]);
+                            }
                         }
                     }
                 }
             }
         }
-        // can't find patron
+        // can't find patron and other authentication errors
         if (!$patronId) {
             // Sierra locks the account after repeated failed log in attempts
             if (stristr($this->apiLastError, 'Locked account')) {
