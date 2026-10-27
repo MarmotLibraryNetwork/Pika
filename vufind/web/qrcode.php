@@ -24,7 +24,15 @@ try {
 	// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to related record.
 	//$type     = $_REQUEST['type'];
 	$type = 'GroupedWork';
-	$id   = $_REQUEST['id'];
+	$id   = $_REQUEST['id'] ?? '';
+	// todo: replace with GroupedWork::validGroupedWorkId() once its regex is anchored with ^ and \z
+	if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\z/i', $id)){
+		global $pikaLogger;
+		$pikaLogger->warning('QRCode request rejected for invalid grouped work id', ['id' => $id, 'ip' => $_SERVER['REMOTE_ADDR'] ?? '']);
+		http_response_code(400);
+		exit;
+	}
+	$id = strtolower($id);
 	//$filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}
 	global $configArray;
 	$filename = $configArray['Site']['qrcodePath'] . '/'

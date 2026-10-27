@@ -429,8 +429,10 @@ class BookCoverProcessor {
 			}
 		}
 
-		$this->category = empty($_GET['category']) ? null : strtolower(trim($_GET['category']));
-		$this->format   = empty($_GET['format']) ? null : strtolower(trim($_GET['format']));
+		// format and category become part of theme image file paths in getDefaultCover(), so strip anything that
+		// isn't a word character, space or hyphen to block path traversal. (Format names such as "audio books" have spaces.)
+		$this->category = empty($_GET['category']) || !is_string($_GET['category']) ? null : preg_replace('/[^a-z0-9_ -]/', '', strtolower(trim($_GET['category'])));
+		$this->format   = empty($_GET['format']) || !is_string($_GET['format']) ? null : preg_replace('/[^a-z0-9_ -]/', '', strtolower(trim($_GET['format'])));
 
 		$this->cacheName = $this->groupedWorkId ?? $this->listId ?? $this->sourceAndId ?? $this->isn ?? $this->upc ?? $this->issn ?? false;
 		//Novelist Series carousels include covers for titles that are not in the index, so we must resort to using isn, upc, issn
@@ -904,8 +906,8 @@ class BookCoverProcessor {
 		// so cap the wait rather than letting a slow provider tie up the worker for default_socket_timeout seconds.
 		$context = stream_context_create($this->getInternalHttpContextOptions(10));
 
-		if ($this->reload){
-			unlink($this->cacheFile);
+		if ($this->reload && is_file($this->cacheFile) && !unlink($this->cacheFile)){
+			$this->logger->error('Unable to delete user list cover cache file for reload', ['cacheFile' => $this->cacheFile]);
 		}
 
 		$list = new UserList;

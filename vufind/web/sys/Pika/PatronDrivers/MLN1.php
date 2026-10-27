@@ -51,18 +51,15 @@ class MLN1 extends Sierra {
 	 * @param Library $library
 	 * @return array
 	 */
+/* Commented out for new setting work
 	protected function getSelfRegHomeLocations(Library $library): array{
 		$homeLocations = parent::getSelfRegHomeLocations($library);
 		if ($library->subdomain == 'evld' && !empty($homeLocations)){
 			// For Eagle Valley, remove lib-lockers and bookmobile
 			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['evall', 'evgll', 'evb']), ARRAY_FILTER_USE_KEY);
 		}
-		if ($library->subdomain == 'basalt' && !empty($homeLocations)){
-			// For Basalt, remove curbside location
-			$homeLocations = array_filter($homeLocations, fn($code) => $code != 'bac', ARRAY_FILTER_USE_KEY);
-		}
 		return $homeLocations;
-	}
+	}*/
 
 	public function getSelfRegistrationFields(){
 		/** @var Library $library */

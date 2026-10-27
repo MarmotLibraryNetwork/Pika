@@ -81,6 +81,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
     protected $oAuthToken;
     /* @var $apiLastError false|string false if no error or last error message */
     protected $apiLastError = false;
+    /* @var $apiLastHttpStatus int HTTP status of the last API call, 0 if there was no response */
+    protected $apiLastHttpStatus = 0;
     protected $apiLastErrorForPatron = false;
     /** @var  AccountProfile $accountProfile */
     public $accountProfile;
@@ -341,7 +343,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
      * @param string  $password        The patron barcode or pin
      * @param boolean $validatedViaSSO If the patron was validated outside Pika
      *
-     * @return  User|null           User object or null
+     * @return  User|\PEAR_Error|null User object, PEAR_Error for a failed log in, or null
      * @access  public
      * @throws ErrorException
      */
@@ -378,24 +380,36 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                         '"op": "equals",' .
                         '"operands": [ "' . $barcode . '" ]}}';
                     $r2        = $this->_doRequest($operation, $payload, 'POST');
-                    if (!$r2) {
-                        return false;
-                    }
-                    // get the sierra ids for the patron/query
-                    foreach ($r2->entries as $entry) {
-                        $sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
-                        if ($this->_authPatronIdName($m[1], $username)) {
-                            return $this->getPatron($m[1]);
+                    // if the query fails, fall through so the checks below can report why from apiLastError
+                    if ($r2) {
+                        // get the sierra ids for the patron/query
+                        foreach ($r2->entries as $entry) {
+                            $sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
+                            if ($this->_authPatronIdName($m[1], $username)) {
+                                return $this->getPatron($m[1]);
+                            }
                         }
                     }
                 }
             }
         }
-        // can't find patron
+        // can't find patron and other authentication errors
         if (!$patronId) {
+            // Sierra locks the account after repeated failed log in attempts
+            if (stristr($this->apiLastError, 'Locked account')) {
+                return new \PEAR_Error('authentication_error_locked_account');
+            }
+            // Sierra rejected the barcode and pin (code 108, see _doRequest())
+            if (stristr($this->apiLastError, 'Authentication Error')) {
+                return new \PEAR_Error('authentication_error_denied');
+            }
+            // no response or a timeout, a Sierra server error, or Sierra refusing Pika's API token
+            if ($this->apiLastError && ($this->apiLastHttpStatus == 0 || $this->apiLastHttpStatus == 401 || $this->apiLastHttpStatus >= 500)) {
+                return new \PEAR_Error('authentication_error_technical');
+            }
             $msg = 'Failed to get patron id from Sierra API.';
             $this->logger->debug($msg, ['barcode' => $this->patronBarcode]);
-            return null;
+            return new \PEAR_Error('authentication_error_invalid');
         }
 
         return $this->getPatron($patronId);
@@ -3403,7 +3417,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
      */
     protected function _doRequest($operation, $params = [], $method = 'GET', $extraHeaders = null)
     {
-        $this->apiLastError = false;
+        $this->apiLastError      = false;
+        $this->apiLastHttpStatus = 0;
         // setup headers
         // These headers are common to all Sierra API except token requests.
         $userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
@@ -3435,7 +3450,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         try {
             $c = new Curl();
         } catch (Exception $e) {
-            $this->logger->error('Sierra API call exception :' . $e->getMessage(), ['stacktrace' => $e->getTraceAsString()]);
+            $this->apiLastError = 'Sierra API call exception :' . $e->getMessage();
+            $this->logger->error($this->apiLastError, ['stacktrace' => $e->getTraceAsString()]);
             return false;
         }
         $c->setHeaders($headers);
@@ -3470,6 +3486,7 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         // if an error does occur, set the $this->apiLastError.
         // get the info so we can check the headers for a good response.
         $cInfo = $c->getInfo();
+        $this->apiLastHttpStatus = (int)$cInfo['http_code']; // 0 when there was no response
         // first check for a curl error
         // we don't want to use $c->error because it will report HTTP errors.
         if ($c->isCurlError()) {
@@ -3640,7 +3657,8 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         $homeLocations = [];
         $l                        = new Location();
         $l->libraryId             = $library->libraryId;
-        $l->validHoldPickupBranch = '1';
+        $l->validHoldPickupBranch = true;
+				$l->validSelfRegHomeBranch = true;
         $l->orderBy('displayName');
         if ($l->find()) {
             $homeLocations = $l->fetchAll('code', 'displayName');

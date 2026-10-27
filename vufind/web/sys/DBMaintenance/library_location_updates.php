@@ -140,5 +140,14 @@ function getLibraryLocationUpdates(): array{
 				"ALTER TABLE `library` CHANGE COLUMN `externalSelfRegistrationUrl` `externalSelfRegistrationUrl` VARCHAR(255) NULL DEFAULT NULL;"
 			]
 		],
+		'2026.04.0_add_self_reg_home_display_option' =>[
+				'release'         => '2026.04.0',
+				'title'           => 'Add column to show location in self-reg home list',
+				'description'     => 'Add column to show location in self-reg home list. Used for bookmobile and vending locations',
+				'continueOnError' => true,
+				'sql'             => [
+					"ALTER TABLE `location` ADD COLUMN `validSelfRegHomeBranch`  BOOL DEFAULT TRUE after `showHoldButton`;"
+				]
+		],
 	];
 }

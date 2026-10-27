@@ -58,8 +58,10 @@ class Lion extends Sierra {
 		// get library code
 		$location            = new Location();
 		$location->libraryId = $library->libraryId;
+		$location->validHoldPickupBranch = true;
+		$location->validSelfRegHomeBranch = true;
 		$location->find(true);
-		//if (!$location){
+				//if (!$location){
 			//return ['success'=>false, 'barcode'=>''];
 		//}
 		$homeLibraryCode = $location->code;
