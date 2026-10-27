@@ -384,8 +384,10 @@ class JsonApiClient extends AbstractApiClient
 
 	/**
 	 * Build the Archive2 detail URL for a node, mirroring getObjRelativeUrl():
-	 * prefer the legacy-resource-type term name, fall back to the model term name,
-	 * then map it through ISLANDORA2_DISPLAY_MODEL_URL_MAP.
+	 * prefer the legacy-resource-type term name when it is a key in
+	 * ISLANDORA2_DISPLAY_MODEL_URL_MAP, otherwise fall back to the model term name,
+	 * then map it through ISLANDORA2_DISPLAY_MODEL_URL_MAP. The legacy field also carries
+	 * plain genre terms (e.g. "Art") that must not drive routing.
 	 *
 	 * @param int   $nid           Child node ID.
 	 * @param array $relationships JSON:API relationships block for the node.
@@ -404,7 +406,10 @@ class JsonApiClient extends AbstractApiClient
 		$legacyUuid = is_array($legacy) ? ($legacy['id'] ?? ($legacy[0]['id'] ?? null)) : null;
 		$modelUuid  = is_array($model)  ? ($model['id']  ?? ($model[0]['id']  ?? null)) : null;
 
-		$displayModel = strtolower((string)($termNames[$legacyUuid] ?? $termNames[$modelUuid] ?? ''));
+		$legacyName   = strtolower((string)($termNames[$legacyUuid] ?? ''));
+		$displayModel = array_key_exists($legacyName, ISLANDORA2_DISPLAY_MODEL_URL_MAP)
+			? $legacyName
+			: strtolower((string)($termNames[$modelUuid] ?? $termNames[$legacyUuid] ?? ''));
 		$segment      = ISLANDORA2_DISPLAY_MODEL_URL_MAP[$displayModel] ?? $displayModel;
 
 		return '/Archive2/' . $segment . '/' . urlencode((string)$nid);
