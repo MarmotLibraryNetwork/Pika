@@ -456,10 +456,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 	}
 
 	private void processTitlesForUser(Long userId, String barcode, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
-		boolean attemptConnectingAgain = false;
+		boolean attemptConnectingAgain;
 		int attempts = 0;
 		String token = md5(barcode);
 		do {
+			// Only a refused connection should repeat the call. A pass that gets through must end the loop, otherwise
+			// the titles it just inserted are no longer in checkedOutTitlesAlreadyInReadingHistory and get inserted again.
+			attemptConnectingAgain = false;
 			try {
 				// Call the patron API to get their checked out items
 				URL               patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
@@ -530,18 +533,17 @@ public class UpdateReadingHistory implements IProcessHandler {
 				attempts++;
 				if (attempts >= 3){
 					// Attempted 3 times, log error and move on to next user
-					logger.error("Refused connection to User API after " + attempts + " attempts for user Id " + userId);
-					attemptConnectingAgain = false;
+					logger.error("Refused connection to User API after {} attempts for user Id {}", attempts, userId);
 					loadeHistoriesFailedToUpdate++;
 				} else {
 					attemptConnectingAgain = true;
 					if (logger.isDebugEnabled()){
 						logger.debug("Connection exception during User API call. Will attempt to connect again.");
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException interruptedException) {
-							//Ignore exception
-						}
+					}
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException interruptedException) {
+						//Ignore exception
 					}
 				}
 			} catch (MalformedURLException e) {
