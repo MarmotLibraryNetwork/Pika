@@ -181,7 +181,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 //				processLog.incUpdated(); // other calls to this seem to be counting reading history entries created
 				processLog.saveToDatabase(pikaConn, logger);
 				if (logger.isInfoEnabled() && loadedHistoriesUpdated % 1000 == 0) {
-					logger.info(loadedHistoriesUpdated + " loaded histories processed");
+					logger.info("{} loaded histories processed", loadedHistoriesUpdated);
 				}
 
 					try {
@@ -344,7 +344,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}
 					} while (additionalRoundRequired && !hadError);
 				} catch (MalformedURLException e) {
-					logger.error("Bad url for patron API " + e);
+					logger.error("Bad url for patron API", e);
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
@@ -437,7 +437,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					SimpleDateFormat checkoutDateFormat = new SimpleDateFormat("MM-dd-yyyy");
 					checkoutTime = checkoutDateFormat.parse(checkoutDate).getTime() / 1000;
 				} catch (ParseException e) {
-					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format", e);
+					logger.error("Error loading checkout date {} was not the expected format", checkoutDate, e);
 				}
 			}
 
@@ -450,7 +450,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 		} catch (SQLException e) {
-			logger.error("Error adding title for user " + userId + " " + title, e);
+			logger.error("Error adding title for user {} {}", userId, title, e);
 			processLog.incErrors();
 		}
 	}
@@ -472,7 +472,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
 					if (logger.isDebugEnabled()) {
 						logger.debug(patronApiUrl.toString());
-						logger.debug("Json for patron checked out items " + patronDataJson);
+						logger.debug("Json for patron checked out items {}", patronDataJson);
 					}
 					patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 					try {
@@ -509,22 +509,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 								processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
 								loadeHistoriesFailedToUpdate++;
 							}
-						} else if (logger.isInfoEnabled()) {
-							logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id " + userId);
+						} else {
+							logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id {}", userId);
 							loadeHistoriesFailedToUpdate++;
 						}
 					} catch (JSONException e) {
-						final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
-						logger.error(message, e);
-						logger.error("Response for error above :" + patronDataJson);
+						logger.error("Unable to load patron information for user Id {}, exception loading response ", userId, e);
+						logger.error("Response for error above :{}", patronDataJson);
 						processLog.incErrors();
-//						processLog.addNote(message + e);
+//						processLog.addNote("Unable to load patron information for user Id " + userId + ", exception loading response " + e);
 						//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
 						loadeHistoriesFailedToUpdate++;
 					}
 				} else {
-					logger.error("Unable to load patron information for user Id " + userId + ": expected to get back an input stream, received a "
-									+ patronDataRaw.getClass().getName());
+					logger.error("Unable to load patron information for user Id {}: expected to get back an input stream, received a {}", userId, patronDataRaw.getClass().getName());
 					processLog.incErrors();
 					loadeHistoriesFailedToUpdate++;
 				}
@@ -547,10 +545,10 @@ public class UpdateReadingHistory implements IProcessHandler {
 					}
 				}
 			} catch (MalformedURLException e) {
-				logger.error("Bad url for patron API " + e);
+				logger.error("Bad url for patron API", e);
 				processLog.incErrors();
 			} catch (IOException e) {
-				logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
+				logger.error("Unable to retrieve information from patron API for user Id {}", userId, e);
 				processLog.incErrors();
 			}
 		} while (attemptConnectingAgain);
@@ -581,7 +579,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					sourceId = checkedOutItem.getString("id");
 					break;
 				default:
-					logger.error("Unknown source updating reading history: '" + source + "'");
+					logger.error("Unknown source updating reading history: '{}'", source);
 			}
 
 			//Check to see if this is an existing checkout.  If it is, skip inserting
@@ -629,7 +627,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 		} catch (Exception e) {
-			logger.error("Error adding title for user " + userId + " for id " + source +":"+ sourceId + ", " + ( checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString()), e);
+			logger.error("Error adding title for user {} for id {}:{}, {}", userId, source, sourceId, checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString(), e);
 			processLog.incErrors();
 		}
 	}
@@ -675,11 +673,11 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (resultStr != null && !resultStr.isEmpty() && resultStr.charAt(0) != '{'){
 			String[] split     = resultStr.split("\\{", 2);
 			if (split.length < 2) {
-				logger.info("Response did not begin with { and did not contain { : '" + resultStr + "'");
+				logger.info("Response did not begin with { and did not contain { : '{}'", resultStr);
 			} else {
 				String phpNotice = split[0];
 				resultStr = "{" + split[1];
-				logger.info("PHP notice from API call: " + phpNotice);
+				logger.info("PHP notice from API call: {}", phpNotice);
 			}
 		}
 		return resultStr;
