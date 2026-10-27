@@ -39,8 +39,10 @@ import java.util.Date;
 import java.util.Iterator;
 
 public class UpdateReadingHistory implements IProcessHandler {
-	private static final String PROCESS_NAME      = "Update Reading History";
-	private static final long   STALE_RUN_SECONDS = 60 * 60; // A running process that hasn't updated its log in an hour is assumed dead
+	private static final String PROCESS_NAME               = "Update Reading History";
+	private static final long   STALE_RUN_SECONDS          = 60 * 60; // A running process that hasn't updated its log in an hour is assumed dead
+	private static final int    API_CONNECT_TIMEOUT_MILLIS = 10 * 1000;
+	private static final int    API_READ_TIMEOUT_MILLIS    = 5 * 60 * 1000; // Generous because the Pika API waits on the ILS and eContent vendors
 	private CronProcessLogEntry processLog;
 	private String              pikaUrl;
 	private Logger              logger;
@@ -237,6 +239,19 @@ public class UpdateReadingHistory implements IProcessHandler {
 		return false;
 	}
 
+	/**
+	 * Without timeouts a call that never answers hangs the whole run, which then blocks later runs
+	 * until its process log entry goes stale. A timeout throws a SocketTimeoutException, which the
+	 * callers' IOException handling logs before moving on to the next user.
+	 */
+	private HttpURLConnection openPikaApiConnection(URL apiUrl) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+		conn.setConnectTimeout(API_CONNECT_TIMEOUT_MILLIS);
+		conn.setReadTimeout(API_READ_TIMEOUT_MILLIS);
+		conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+		return conn;
+	}
+
 	private static boolean isNumeric(String str) {
 		return str.matches("^\\d+$");
 	}
@@ -256,8 +271,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&userId=" + userId + "&token=" + token
 								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
 						URL               patronApiUrl = new URL(loadReadingHistoryUrl);
-						HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
-						conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+						HttpURLConnection conn         = openPikaApiConnection(patronApiUrl);
 						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
 						// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
 						Object patronDataRaw = conn.getContent();
@@ -449,8 +463,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			try {
 				// Call the patron API to get their checked out items
 				URL               patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
-				HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
-				conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+				HttpURLConnection conn         = openPikaApiConnection(patronApiUrl);
 				Object patronDataRaw = conn.getContent();
 				if (patronDataRaw instanceof InputStream) {
 					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
