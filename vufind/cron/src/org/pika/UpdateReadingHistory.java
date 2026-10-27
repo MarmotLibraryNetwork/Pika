@@ -39,6 +39,8 @@ import java.util.Date;
 import java.util.Iterator;
 
 public class UpdateReadingHistory implements IProcessHandler {
+	private static final String PROCESS_NAME      = "Update Reading History";
+	private static final long   STALE_RUN_SECONDS = 60 * 60; // A running process that hasn't updated its log in an hour is assumed dead
 	private CronProcessLogEntry processLog;
 	private String              pikaUrl;
 	private Logger              logger;
@@ -52,8 +54,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private int                 loadeHistoriesFailedToUpdate     = 0;
 
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
+		// Check before saving this run's own log entry so that it isn't counted as the other run
+		boolean otherRunInProgress = isAnotherRunInProgress(pikaConn, logger);
+
+		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), PROCESS_NAME);
 		processLog.saveToDatabase(pikaConn, logger);
+
+		if (otherRunInProgress) {
+			final String note = "Another Update Reading History process is still running; ending this one early.";
+			logger.warn(note);
+			processLog.addNote(note);
+			processLog.setFinished();
+			processLog.saveToDatabase(pikaConn, logger);
+			return;
+		}
 
 		this.logger = logger;
 		logger.info("Updating Reading History");
@@ -196,6 +210,31 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
+	}
+
+	/**
+	 * A run in progress has a process log entry with no end time, and saves that entry after every user it
+	 * processes. An entry that has gone without an update for longer than STALE_RUN_SECONDS belongs to a run
+	 * that died without finishing (or is hung), so it does not block a new run.
+	 *
+	 * @return true if another Update Reading History run appears to still be running
+	 */
+	private boolean isAnotherRunInProgress(Connection pikaConn, Logger logger) {
+		final long staleCutoff = new Date().getTime() / 1000 - STALE_RUN_SECONDS;
+		try (PreparedStatement runningStmt = pikaConn.prepareStatement("SELECT id FROM cron_process_log WHERE processName = ? AND endTime IS NULL AND COALESCE(lastUpdate, startTime) > ? LIMIT 1")) {
+			runningStmt.setString(1, PROCESS_NAME);
+			runningStmt.setLong(2, staleCutoff);
+			try (ResultSet runningRS = runningStmt.executeQuery()) {
+				if (runningRS.next()) {
+					logger.info("Update Reading History process log entry {} is still running", runningRS.getLong("id"));
+					return true;
+				}
+			}
+		} catch (SQLException e) {
+			// Don't block reading history updates because the check itself failed
+			logger.error("Unable to check for a running Update Reading History process", e);
+		}
+		return false;
 	}
 
 	private static boolean isNumeric(String str) {
