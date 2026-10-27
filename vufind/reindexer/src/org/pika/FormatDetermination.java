@@ -1484,8 +1484,10 @@ public class FormatDetermination {
 			return "WiiU";
 		} else if (value.contains("nintendo wii")) {
 			return "Wii";
-		} else if (value.contains("wii")) { // make sure this check comes after checks for "wii u"
-			return "Wii";
+		} else if (value.contains("wii") && !value.contains("wwii")) {
+			// make sure this check comes after checks for "wii u"
+			// Exclude World War II initialism. Example Edition statement: "The End of WWII 60th anniversary DVD ed."
+				return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
 		} else if (value.contains("nintendo switch 2")) {
