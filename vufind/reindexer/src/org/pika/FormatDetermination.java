@@ -1115,6 +1115,14 @@ public class FormatDetermination {
 	}
 
 	/**
+	 * Matches "tonie" only at the start of a word, so names like "Antonie" (e.g. "Studies for Antonie Cohen")
+	 * are not mistaken for a Tonie.  The start of the string counts as a word boundary, so a value beginning
+	 * with "tonie" still matches.  No trailing boundary, so "toniebox" and "tonies" also match.
+	 * Use against lower-cased text, with find() rather than matches().
+	 */
+	private static final Pattern tonieWordPattern = Pattern.compile("\\btonie");
+
+	/**
 	 * Determine formats from the varying form of title (MARC 246).  Only fields with a second
 	 * indicator of 3 ("Other title") are considered, since those carry an alternate title the
 	 * item is also known by rather than a portion or variant of the 245.
@@ -1129,10 +1137,11 @@ public class FormatDetermination {
 				// Second indicator 3 is an "Other title"
 				if (field.getSubfield('a') != null) {
 					String alternateTitle = field.getSubfield('a').getData().toLowerCase();
-					if (alternateTitle.contains("toniebox") || alternateTitle.contains("tonie")){
+					if (tonieWordPattern.matcher(alternateTitle).find()){
 						// Allow for "tonie" only phrase on alternate title search, since there is a
-						// lower risk of matching on alternate title containing a name "Tonie" coincidentally
-							printFormats.add("Tonie");
+						// lower risk of matching on alternate title containing a name "Tonie" coincidentally.
+						// Word boundary match keeps out names like "Antonie" ("Studies for Antonie Cohen")
+						printFormats.add("Tonie");
 					}
 				}
 			}
@@ -1261,7 +1270,7 @@ public class FormatDetermination {
 							result.add("VoxBook");
 						}else if (physicalDescriptionData.contains("hotspot device") || physicalDescriptionData.contains("mobile hotspot") || physicalDescriptionData.contains("hot spot") || physicalDescriptionData.contains("hotspot")) {
 							result.add("PhysicalObject");
-						} else if (physicalDescriptionData.contains("toniebox") || physicalDescriptionData.contains("tonie")){
+						} else if (tonieWordPattern.matcher(physicalDescriptionData).find()){
 							result.add("Tonie");
 						} else if (hasMusicRecording && (physicalDescriptionData.contains(" cd :") || physicalDescriptionData.contains(" cds :"))) {
 							// If we know the record is Music (due to typeOfRecordLeaderChar MusicRecording determination),
@@ -1374,7 +1383,7 @@ public class FormatDetermination {
 						result.add("BoardBook");
 					} else if (noteValue.contains("mp3")){
 						result.add("MP3");
-					} else if (noteValue.contains("toniebox") || noteValue.contains("tonie")){
+					} else if (tonieWordPattern.matcher(noteValue).find()){
 						result.add("Tonie");
 					}
 				}
