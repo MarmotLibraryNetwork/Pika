@@ -39,6 +39,10 @@ import java.util.Date;
 import java.util.Iterator;
 
 public class UpdateReadingHistory implements IProcessHandler {
+	private static final String PROCESS_NAME               = "Update Reading History";
+	private static final long   STALE_RUN_SECONDS          = 60 * 60; // A running process that hasn't updated its log in an hour is assumed dead
+	private static final int    API_CONNECT_TIMEOUT_MILLIS = 10 * 1000;
+	private static final int    API_READ_TIMEOUT_MILLIS    = 5 * 60 * 1000; // Generous because the Pika API waits on the ILS and eContent vendors
 	private CronProcessLogEntry processLog;
 	private String              pikaUrl;
 	private Logger              logger;
@@ -52,8 +56,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private int                 loadeHistoriesFailedToUpdate     = 0;
 
 	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger, PikaSystemVariables systemVariables) {
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
+		// Check before saving this run's own log entry so that it isn't counted as the other run
+		boolean otherRunInProgress = isAnotherRunInProgress(pikaConn, logger);
+
+		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), PROCESS_NAME);
 		processLog.saveToDatabase(pikaConn, logger);
+
+		if (otherRunInProgress) {
+			final String note = "Another Update Reading History process is still running; ending this one early.";
+			logger.warn(note);
+			processLog.addNote(note);
+			processLog.setFinished();
+			processLog.saveToDatabase(pikaConn, logger);
+			return;
+		}
 
 		this.logger = logger;
 		logger.info("Updating Reading History");
@@ -165,7 +181,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 //				processLog.incUpdated(); // other calls to this seem to be counting reading history entries created
 				processLog.saveToDatabase(pikaConn, logger);
 				if (logger.isInfoEnabled() && loadedHistoriesUpdated % 1000 == 0) {
-					logger.info(loadedHistoriesUpdated + " loaded histories processed");
+					logger.info("{} loaded histories processed", loadedHistoriesUpdated);
 				}
 
 					try {
@@ -198,6 +214,44 @@ public class UpdateReadingHistory implements IProcessHandler {
 		processLog.saveToDatabase(pikaConn, logger);
 	}
 
+	/**
+	 * A run in progress has a process log entry with no end time, and saves that entry after every user it
+	 * processes. An entry that has gone without an update for longer than STALE_RUN_SECONDS belongs to a run
+	 * that died without finishing (or is hung), so it does not block a new run.
+	 *
+	 * @return true if another Update Reading History run appears to still be running
+	 */
+	private boolean isAnotherRunInProgress(Connection pikaConn, Logger logger) {
+		final long staleCutoff = new Date().getTime() / 1000 - STALE_RUN_SECONDS;
+		try (PreparedStatement runningStmt = pikaConn.prepareStatement("SELECT id FROM cron_process_log WHERE processName = ? AND endTime IS NULL AND COALESCE(lastUpdate, startTime) > ? LIMIT 1")) {
+			runningStmt.setString(1, PROCESS_NAME);
+			runningStmt.setLong(2, staleCutoff);
+			try (ResultSet runningRS = runningStmt.executeQuery()) {
+				if (runningRS.next()) {
+					logger.info("Update Reading History process log entry {} is still running", runningRS.getLong("id"));
+					return true;
+				}
+			}
+		} catch (SQLException e) {
+			// Don't block reading history updates because the check itself failed
+			logger.error("Unable to check for a running Update Reading History process", e);
+		}
+		return false;
+	}
+
+	/**
+	 * Without timeouts a call that never answers hangs the whole run, which then blocks later runs
+	 * until its process log entry goes stale. A timeout throws a SocketTimeoutException, which the
+	 * callers' IOException handling logs before moving on to the next user.
+	 */
+	private HttpURLConnection openPikaApiConnection(URL apiUrl) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection();
+		conn.setConnectTimeout(API_CONNECT_TIMEOUT_MILLIS);
+		conn.setReadTimeout(API_READ_TIMEOUT_MILLIS);
+		conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+		return conn;
+	}
+
 	private static boolean isNumeric(String str) {
 		return str.matches("^\\d+$");
 	}
@@ -217,8 +271,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&userId=" + userId + "&token=" + token
 								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
 						URL               patronApiUrl = new URL(loadReadingHistoryUrl);
-						HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
-						conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+						HttpURLConnection conn         = openPikaApiConnection(patronApiUrl);
 						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
 						// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
 						Object patronDataRaw = conn.getContent();
@@ -291,7 +344,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}
 					} while (additionalRoundRequired && !hadError);
 				} catch (MalformedURLException e) {
-					logger.error("Bad url for patron API " + e);
+					logger.error("Bad url for patron API", e);
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
@@ -384,7 +437,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					SimpleDateFormat checkoutDateFormat = new SimpleDateFormat("MM-dd-yyyy");
 					checkoutTime = checkoutDateFormat.parse(checkoutDate).getTime() / 1000;
 				} catch (ParseException e) {
-					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format", e);
+					logger.error("Error loading checkout date {} was not the expected format", checkoutDate, e);
 				}
 			}
 
@@ -397,27 +450,29 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 		} catch (SQLException e) {
-			logger.error("Error adding title for user " + userId + " " + title, e);
+			logger.error("Error adding title for user {} {}", userId, title, e);
 			processLog.incErrors();
 		}
 	}
 
 	private void processTitlesForUser(Long userId, String barcode, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
-		boolean attemptConnectingAgain = false;
+		boolean attemptConnectingAgain;
 		int attempts = 0;
 		String token = md5(barcode);
 		do {
+			// Only a refused connection should repeat the call. A pass that gets through must end the loop, otherwise
+			// the titles it just inserted are no longer in checkedOutTitlesAlreadyInReadingHistory and get inserted again.
+			attemptConnectingAgain = false;
 			try {
 				// Call the patron API to get their checked out items
 				URL               patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&userId=" + userId + "&token=" + token);
-				HttpURLConnection conn         = (HttpURLConnection) patronApiUrl.openConnection();
-				conn.setRequestProperty("User-Agent", userAgent); // Identify the call as coming from Pika itself so that the forward proxy does not block it
+				HttpURLConnection conn         = openPikaApiConnection(patronApiUrl);
 				Object patronDataRaw = conn.getContent();
 				if (patronDataRaw instanceof InputStream) {
 					String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
 					if (logger.isDebugEnabled()) {
 						logger.debug(patronApiUrl.toString());
-						logger.debug("Json for patron checked out items " + patronDataJson);
+						logger.debug("Json for patron checked out items {}", patronDataJson);
 					}
 					patronDataJson = stripPHPNoticeFromJSONResponse(patronDataJson);
 					try {
@@ -454,22 +509,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 								processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
 								loadeHistoriesFailedToUpdate++;
 							}
-						} else if (logger.isInfoEnabled()) {
-							logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id " + userId);
+						} else {
+							logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id {}", userId);
 							loadeHistoriesFailedToUpdate++;
 						}
 					} catch (JSONException e) {
-						final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
-						logger.error(message, e);
-						logger.error("Response for error above :" + patronDataJson);
+						logger.error("Unable to load patron information for user Id {}, exception loading response ", userId, e);
+						logger.error("Response for error above :{}", patronDataJson);
 						processLog.incErrors();
-//						processLog.addNote(message + e);
+//						processLog.addNote("Unable to load patron information for user Id " + userId + ", exception loading response " + e);
 						//TODO: I'm not sure adding this to the cron log entries is needed, especially on test where most errors are JSON errors
 						loadeHistoriesFailedToUpdate++;
 					}
 				} else {
-					logger.error("Unable to load patron information for user Id " + userId + ": expected to get back an input stream, received a "
-									+ patronDataRaw.getClass().getName());
+					logger.error("Unable to load patron information for user Id {}: expected to get back an input stream, received a {}", userId, patronDataRaw.getClass().getName());
 					processLog.incErrors();
 					loadeHistoriesFailedToUpdate++;
 				}
@@ -478,25 +531,24 @@ public class UpdateReadingHistory implements IProcessHandler {
 				attempts++;
 				if (attempts >= 3){
 					// Attempted 3 times, log error and move on to next user
-					logger.error("Refused connection to User API after " + attempts + " attempts for user Id " + userId);
-					attemptConnectingAgain = false;
+					logger.error("Refused connection to User API after {} attempts for user Id {}", attempts, userId);
 					loadeHistoriesFailedToUpdate++;
 				} else {
 					attemptConnectingAgain = true;
 					if (logger.isDebugEnabled()){
 						logger.debug("Connection exception during User API call. Will attempt to connect again.");
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException interruptedException) {
-							//Ignore exception
-						}
+					}
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException interruptedException) {
+						//Ignore exception
 					}
 				}
 			} catch (MalformedURLException e) {
-				logger.error("Bad url for patron API " + e);
+				logger.error("Bad url for patron API", e);
 				processLog.incErrors();
 			} catch (IOException e) {
-				logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
+				logger.error("Unable to retrieve information from patron API for user Id {}", userId, e);
 				processLog.incErrors();
 			}
 		} while (attemptConnectingAgain);
@@ -527,7 +579,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					sourceId = checkedOutItem.getString("id");
 					break;
 				default:
-					logger.error("Unknown source updating reading history: '" + source + "'");
+					logger.error("Unknown source updating reading history: '{}'", source);
 			}
 
 			//Check to see if this is an existing checkout.  If it is, skip inserting
@@ -575,7 +627,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 		} catch (Exception e) {
-			logger.error("Error adding title for user " + userId + " for id " + source +":"+ sourceId + ", " + ( checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString()), e);
+			logger.error("Error adding title for user {} for id {}:{}, {}", userId, source, sourceId, checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString(), e);
 			processLog.incErrors();
 		}
 	}
@@ -621,11 +673,11 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (resultStr != null && !resultStr.isEmpty() && resultStr.charAt(0) != '{'){
 			String[] split     = resultStr.split("\\{", 2);
 			if (split.length < 2) {
-				logger.info("Response did not begin with { and did not contain { : '" + resultStr + "'");
+				logger.info("Response did not begin with { and did not contain { : '{}'", resultStr);
 			} else {
 				String phpNotice = split[0];
 				resultStr = "{" + split[1];
-				logger.info("PHP notice from API call: " + phpNotice);
+				logger.info("PHP notice from API call: {}", phpNotice);
 			}
 		}
 		return resultStr;
