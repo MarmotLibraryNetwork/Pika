@@ -197,6 +197,9 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
                 $innReach = new InnReach();
                 $titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
                 $coverUrl = $innReach->getInnReachCover();
+                if ($innReach->hasConnectionError()) {
+                    $checkout['illConnectionError'] = true;
+                }
 
                 $checkout['checkoutSource'] =  $this->accountProfile->recordSource; //TODO: this might be a bad idea for ILL items for reading history
                 $checkout['id']             = $checkoutId;

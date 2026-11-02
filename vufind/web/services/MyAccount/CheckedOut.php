@@ -97,6 +97,10 @@ class MyAccount_CheckedOut extends MyAccount{
 					if ($hasOnlyEContentCheckOuts && !str_contains($i, 'OverDrive') && !str_contains($i, 'Hoopla')) {
 						$hasOnlyEContentCheckOuts = false;
 					}
+					// Flag when INN-Reach title lookups failed because Sierra DNA couldn't be reached
+					if (!empty($curTitle['illConnectionError'])) {
+						$interface->assign('illLoanConnectionError', true);
+					}
 					$sortTitle = !empty($curTitle['title_sort']) ? $curTitle['title_sort'] : (empty($curTitle['title'])? $this::SORT_LAST_ALPHA : $curTitle['title']);
 					$sortKey   = $sortTitle;
 					if ($selectedSortOption == 'title') {

@@ -19,6 +19,10 @@
 				<p class="alert alert-warning"><strong>Access to OverDrive is currently limited.</strong> We are unable to retrieve information about your checked out OverDrive titles at this time.</p>
 			{/if}
 
+			{if $illLoanConnectionError}
+				<p class="alert alert-warning">{translate text="ill_loan_connection_error"}</p>
+			{/if}
+
 			{if $transList}
 {*				<form action="/MyAccount/CheckedOut" method="get">*}
 {*				<label for="accountSort" class="form-label">{translate text='Sort by'}:&nbsp;</label>*}
