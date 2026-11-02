@@ -58,7 +58,11 @@
 {*				{/display_if_inconsistent}*}
 				<td>
 					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord viewingIndividualRecord=1}
-					{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord.itemSummary totalCopies=$relatedRecord.copies itemSummaryId=$relatedRecord.id recordViewUrl=$relatedRecord.url inEditionsTable=true}
+					{if $relatedRecord.source == 'overdrive'}
+						{include file='OverDrive/copySummary.tpl' relatedRecords=[$relatedRecord] itemSummaryId=$relatedRecord.id}
+					{else}
+						{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord.itemSummary totalCopies=$relatedRecord.copies itemSummaryId=$relatedRecord.id recordViewUrl=$relatedRecord.url inEditionsTable=true}
+					{/if}
 				</td>
 				{display_if_set array=$relatedRecords key="abridged"}
 					<td>{if $relatedRecord.abridged}Abridged{/if}</td>

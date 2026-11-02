@@ -27,7 +27,9 @@
 						<div class="col-9 col-sm-8{if !$viewingCombinedResults} col-lg-5 col-xl-6{/if}">
 							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
 
-							{if $relatedManifestation.numRelatedRecords == 1}
+							{if $relatedManifestation.relatedRecords[0].source == 'overdrive'}
+								{include file='OverDrive/copySummary.tpl' relatedRecords=$relatedManifestation.relatedRecords itemSummaryId=$id}
+							{elseif $relatedManifestation.numRelatedRecords == 1}
 								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id recordViewUrl=$relatedManifestation.url}
 							{else}
 								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id}

@@ -56,7 +56,9 @@
 				  </div>
 					<div class="row">
 						<div class="col-11 offset-1">
-							{if $relatedManifestation.numRelatedRecords == 1}
+							{if $relatedManifestation.relatedRecords[0].source == 'overdrive'}
+								{include file='OverDrive/copySummary.tpl' relatedRecords=$relatedManifestation.relatedRecords itemSummaryId=$id}
+							{elseif $relatedManifestation.numRelatedRecords == 1}
 								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id recordViewUrl=$relatedManifestation.url}
 							{else}
 								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id}

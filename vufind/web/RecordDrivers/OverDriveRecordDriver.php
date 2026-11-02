@@ -550,7 +550,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @return Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductAvailability[]
 	 */
 	function getAvailability(){
-		if ($this->availability == null){
+		if ($this->availability === null){ // An empty array is a valid result; don't repeat the lookup for it
 			$this->availability = [];
 			if (!empty($this->overDriveProduct->id)){ // Don't do the below search when there isn't an ID to look for.
 				$availability            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductAvailability();
@@ -590,6 +590,61 @@ class OverDriveRecordDriver extends RecordInterface {
 		}
 		return $this->availability;
 	}
+
+	private $copySummary = null;
+
+	/**
+	 * Copy counts for the Quick Copy View pop-up (OverDrive/copySummary.tpl), built from the same availability
+	 * as the record view's Copy Details (OverDrive/view-copies.tpl) so that the two match.
+	 *
+	 * @return array
+	 */
+	public function getCopySummary(){
+		if ($this->copySummary === null){
+			$this->copySummary = [
+				'availableCopies' => 0,
+				'totalCopies'     => 0,
+				'collections'     => [],
+			];
+			foreach ($this->getScopedAvailability()['mine'] as $availability){
+				$this->copySummary['availableCopies'] += $availability->copiesAvailable;
+				$this->copySummary['totalCopies']     += $availability->copiesOwned;
+				// Only list the collections that own copies, even if they are all checked out right now
+				if ($availability->copiesOwned > 0){
+					$this->copySummary['collections'][] = [
+						'name'            => $availability->getLibraryName(),
+						'edition'         => $this->getCopySummaryEditionLabel(),
+						'availableCopies' => $availability->copiesAvailable,
+						'totalCopies'     => $availability->copiesOwned,
+					];
+				}
+			}
+		}
+		return $this->copySummary;
+	}
+
+	/**
+	 * Describes this title for the Quick Copy View pop-up, to tell apart the OverDrive titles of the same format.
+	 * eg "BBC Audio 2007, Dramatised (OverDrive Listen)" or "HarperCollins (Kindle Book, OverDrive Read)"
+	 *
+	 * @return string
+	 */
+	private function getCopySummaryEditionLabel(){
+		$this->getOverDriveMetaData(); // getPublicationDetails() needs the metadata loaded
+		$labelParts = $this->getPublicationDetails();
+		$edition    = $this->getEdition(true);
+		if (!empty($edition)){
+			$labelParts[] = $edition;
+		}
+		$label   = implode(', ', $labelParts);
+		$formats = $this->getFormats();
+		if (!empty($formats)){
+			sort($formats);
+			$label .= ' (' . implode(', ', $formats) . ')';
+		}
+		return trim($label);
+	}
+
 	/**
 	 * @return array
 	 */

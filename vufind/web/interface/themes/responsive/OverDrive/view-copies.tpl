@@ -28,7 +28,7 @@
 			</thead>
 			<tbody>
 			{foreach from=$availabilityOther item=availabilityItem}
-				<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->availableCopies}</td></tr>
+				<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->copiesAvailable}</td></tr>
 			{/foreach}
 			</tbody>
 		</table>
