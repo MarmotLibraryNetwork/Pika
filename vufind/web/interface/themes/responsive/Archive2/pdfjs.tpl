@@ -4,4 +4,4 @@
     height="800"
     src="{$iframe_src}"
     data-src="{$pdf_url}"
-title="{$title}"></iframe>
+title="{$title|escape:'url'}"></iframe>
