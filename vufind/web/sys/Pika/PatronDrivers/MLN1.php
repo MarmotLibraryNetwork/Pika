@@ -58,7 +58,7 @@ class MLN1 extends Sierra {
 			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['evall', 'evgll', 'evb']), ARRAY_FILTER_USE_KEY);
 		}
 		if ($library->subdomain == 'basalt' && !empty($homeLocations)){
-			$homeLocations = array_filter($homeLocations, fn($code) => $code != 'bac');
+			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code,['bac']));
 		}
 		return $homeLocations;
 	}
