@@ -20954,13 +20954,18 @@ nav.breadcrumbs [aria-current=page]::before {
   outline: 1px solid #E15F15 !important;
 }
 
+.table-sm > :not(caption) > * > * {
+  padding: 0.25rem 0.75rem;
+}
+
 table.dataTable > thead > tr > th,
 table.dataTable > tbody > tr > td,
 table.dataTable > tbody > tr > th {
   position: relative;
 }
-table.dataTable > thead > tr > th.dt-ordering-asc::before,
-table.dataTable > thead > tr > th.dt-ordering-desc::before,
+table.dataTable > thead > tr {
+  border-bottom: 1px solid #555;
+}
 table.dataTable > tbody > tr > td.sorting_1::before,
 table.dataTable > tbody > tr > th.sorting_1::before,
 table.dataTable > tbody > tr > td.sorting_2::before,
@@ -20999,6 +21004,24 @@ table.dataTable > tbody > tr > th.sorting_3::before {
 
 .jcarousel-control-prev:focus, .jcarousel-control-next:focus {
   outline: 2px solid #E15F15;
+}
+
+table.table.dataTable th.dt-type-numeric div.dt-column-header,
+table.table.dataTable th.dt-type-numeric div.dt-column-footer,
+table.table.dataTable th.dt-type-date div.dt-column-header,
+table.table.dataTable th.dt-type-date div.dt-column-footer {
+  flex-direction: inherit;
+}
+
+table.table.dataTable > thead > tr > th {
+  background-color: transparent;
+}
+
+table.table.dataTable th.dt-type-numeric,
+table.table.dataTable th.dt-type-date,
+table.table.dataTable td.dt-type-numeric,
+table.table.dataTable td.dt-type-date {
+  text-align: left;
 }
 
 .ui-rater > span {

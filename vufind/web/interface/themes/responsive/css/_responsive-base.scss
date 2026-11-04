@@ -412,6 +412,9 @@ nav.breadcrumbs [aria-current="page"] {
 .categoryValue:focus-within {
   outline: 1px solid $focus-ring-color !important;
 }
+.table-sm > :not(caption) > * > *{
+  padding: 0.25rem 0.75rem;
+}
 
 // Datatable style overrides
 //
@@ -440,8 +443,11 @@ table.dataTable {
   // more edges of the same element.
   //
   // Some report tables use th rather than td for their body cells, so match both.
-  > thead > tr > th.dt-ordering-asc,
-  > thead > tr > th.dt-ordering-desc,
+
+  > thead > tr {
+    border-bottom: 1px solid $gray;
+  }
+
   > tbody > tr > td.sorting_1,
   > tbody > tr > th.sorting_1,
   > tbody > tr > td.sorting_2,
@@ -487,6 +493,23 @@ table.dataTable {
 }
 .jcarousel-control-prev:focus, .jcarousel-control-next:focus{
   outline: 2px solid $focus-ring-color;
+}
+
+table.table.dataTable th.dt-type-numeric div.dt-column-header,
+table.table.dataTable th.dt-type-numeric div.dt-column-footer,
+table.table.dataTable th.dt-type-date div.dt-column-header,
+table.table.dataTable th.dt-type-date div.dt-column-footer{
+  flex-direction: inherit;
+}
+
+table.table.dataTable > thead > tr >th{
+  background-color: transparent;
+}
+table.table.dataTable th.dt-type-numeric,
+table.table.dataTable th.dt-type-date,
+table.table.dataTable td.dt-type-numeric,
+table.table.dataTable td.dt-type-date{
+  text-align: left;
 }
 
 // Third party imports

@@ -20944,8 +20944,9 @@ table.dataTable > tbody > tr > td,
 table.dataTable > tbody > tr > th {
   position: relative;
 }
-table.dataTable > thead > tr > th.dt-ordering-asc::before,
-table.dataTable > thead > tr > th.dt-ordering-desc::before,
+table.dataTable > thead > tr > th {
+  background-color: transparent;
+}
 table.dataTable > tbody > tr > td.sorting_1::before,
 table.dataTable > tbody > tr > th.sorting_1::before,
 table.dataTable > tbody > tr > td.sorting_2::before,
