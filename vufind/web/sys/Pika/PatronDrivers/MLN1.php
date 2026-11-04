@@ -57,6 +57,9 @@ class MLN1 extends Sierra {
 			// For Eagle Valley, remove lib-lockers and bookmobile
 			$homeLocations = array_filter($homeLocations, fn($code) => !in_array($code, ['evall', 'evgll', 'evb']), ARRAY_FILTER_USE_KEY);
 		}
+		if ($library->subdomain == 'basalt' && !empty($homeLocations)){
+			$homeLocations = array_filter($homeLocations, fn($code) => $code != 'bac');
+		}
 		return $homeLocations;
 	}
 
