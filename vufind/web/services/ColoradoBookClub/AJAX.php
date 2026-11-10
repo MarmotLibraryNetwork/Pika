@@ -129,9 +129,9 @@ class ColoradoBookClub_AJAX extends Record_AJAX {
 		$subject = 'Book Club Kit Request From: ' . $request->name;
 		$body    = $interface->fetch('Record/bookClubKitRequestEmail.tpl');
 
-		require_once ROOT_DIR . '/sys/Mailer.php';
+		require_once ROOT_DIR . '/sys/PikaMailer.php';
 		global $configArray;
-		$mail          = new VuFindMailer();
+		$mail          = new PikaMailer();
 		$to            = $homeLibrary->bookClubKitContactEmail;
 		$siteEmail     = $configArray['Site']['email'] ?? null;
 		$sendingAddress = !empty($siteEmail) ? $siteEmail : $request->email;

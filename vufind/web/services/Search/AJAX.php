@@ -60,8 +60,8 @@ class AJAX extends AJAXHandler {
 				$interface->assign('msgUrl', $url);
 				$body = $interface->fetch('Emails/share-link.tpl');
 
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail        = new VuFindMailer();
+				require_once ROOT_DIR . '/sys/PikaMailer.php';
+				$mail        = new PikaMailer();
 				$emailResult = $mail->send($to, $from, $subject, $body);
 
 				if ($emailResult === true){

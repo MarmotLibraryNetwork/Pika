@@ -1307,8 +1307,8 @@ class MyAccount_AJAX extends AJAXHandler {
 						if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
 							$interface->assign('message', $message);
 							$body = $interface->fetch('Emails/my-list.tpl');
-							require_once ROOT_DIR . '/sys/Mailer.php';
-							$mail        = new VuFindMailer();
+							require_once ROOT_DIR . '/sys/PikaMailer.php';
+							$mail        = new PikaMailer();
 							$subject     = $list->title;
 							$emailResult = $mail->send($to, $from, $subject, $body, $replyTo);
 

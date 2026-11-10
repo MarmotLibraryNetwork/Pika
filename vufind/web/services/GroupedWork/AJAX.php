@@ -670,7 +670,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 	function getSMSForm(){
 		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
+		require_once ROOT_DIR . '/sys/PikaMailer.php';
 
 		$sms = new SMSMailer();
 		$interface->assign('carriers', $sms->getCarriers());
@@ -781,8 +781,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 					$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
 					$body    = $interface->fetch('Emails/grouped-work-email.tpl');
 
-					require_once ROOT_DIR . '/sys/Mailer.php';
-					$mail        = new VuFindMailer();
+					require_once ROOT_DIR . '/sys/PikaMailer.php';
+					$mail        = new PikaMailer();
 					$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
 
 					if ($emailResult === true){
@@ -851,8 +851,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$subject = translate('Library Catalog Series') . ': ' . $seriesTitle;
 				$body    = $interface->fetch('Emails/series-email.tpl');
 
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail        = new VuFindMailer();
+				require_once ROOT_DIR . '/sys/PikaMailer.php';
+				$mail        = new PikaMailer();
 				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
 
 				if ($emailResult === true){
@@ -1432,7 +1432,7 @@ function getSaveSeriesToListForm(){
 			}
 		}
 
-		require_once ROOT_DIR . '/sys/Mailer.php';
+		require_once ROOT_DIR . '/sys/PikaMailer.php';
 		$sms = new SMSMailer();
 
 		// Get Holdings
@@ -1475,8 +1475,7 @@ function getSaveSeriesToListForm(){
 		}elseif (PEAR_Singleton::isError($smsResult)){
 			$result = [
 				'result'  => false,
-				'message' => 'Your text message was count not be sent {$smsResult}.'
-				//			'message' => "Your text message count not be sent: {$smsResult->message}."
+				'message' => 'Your text message could not be sent: ' . $smsResult->getMessage()
 			];
 		}else{
 			$result = [

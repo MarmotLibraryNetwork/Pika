@@ -92,10 +92,10 @@ class Archive2_ClaimAuthorship extends Action{
 					if (!empty($owningLibrary)){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							require_once ROOT_DIR . '/sys/Mailer.php';
+							require_once ROOT_DIR . '/sys/PikaMailer.php';
 							$body        .= $claimedObject->getAbsoluteUrl();
 							$libraryArchiveEmail = !empty($owningLibrary->archiveRequestEmail) ? $owningLibrary->archiveRequestEmail: $configArray['Site']['email'];
-							$mail        = new VuFindMailer();
+							$mail        = new PikaMailer();
 							$subject     = 'New Authorship Claim for Archive Content';
 							$emailResult = $mail->send($libraryArchiveEmail, $newObject->email, $subject, $body);
 

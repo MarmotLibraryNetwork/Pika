@@ -87,8 +87,8 @@ class Archive_RequestCopy extends Action{
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
-							require_once ROOT_DIR . '/sys/Mailer.php';
-							$mail = new VuFindMailer();
+							require_once ROOT_DIR . '/sys/PikaMailer.php';
+							$mail = new PikaMailer();
 							$subject = 'New Request for Copies of Archive Content';
 							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
 
