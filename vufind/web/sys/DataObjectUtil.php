@@ -169,8 +169,14 @@ class DataObjectUtil {
 			case 'html':
 			case 'folder':
 			case 'crSeparated':
+				if (!isset($_REQUEST[$propertyName])){
+					// Not part of the submitted form; leave the stored value alone
+					break;
+				}
 				if (strlen(trim($_REQUEST[$propertyName])) == 0){
-					$object->$propertyName = null;
+					// Use an empty string, not null: DB_DataObject::update() skips null properties,
+					// so a cleared field would never be written and the old value would remain.
+					$object->$propertyName = '';
 				}else{
 					$object->$propertyName = trim($_REQUEST[$propertyName]);
 				}
