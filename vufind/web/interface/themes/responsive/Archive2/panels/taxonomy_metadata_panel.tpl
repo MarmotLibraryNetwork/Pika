@@ -36,7 +36,8 @@
 					{include file="Archive2/partials/fieldRow.tpl" label="Legacy PID"      value=$pid}
 					{include file="Archive2/partials/fieldRow.tpl" label="Last Modified"   value=$changed|date_format:'%m/%d/%Y %I:%M:%S'}
 					{include file="Archive2/partials/fieldRow.tpl" label="Pika Show In Search" value=$is_shown_in_search}
-					{include file="Archive2/partials/fieldRow.tpl" label="Pika Usage"         value=$pika_usage}
+{*					{include file="Archive2/partials/fieldRow.tpl" label="Pika Usage"         value=$pika_usage}*}
+					{* //Oct 2026 Archive Committee decision to ignore pika usage for taxonomy terms *}
 				</div>
 			</div>
 		</div>

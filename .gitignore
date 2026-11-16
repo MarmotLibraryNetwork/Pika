@@ -109,7 +109,7 @@ documentation/~*.tmp
 
 # File-watcher mishaps #
 ########################
-*.min.min.js
+#*.min.min.js
 
 # Compiled DPLA Feed #
 ######################

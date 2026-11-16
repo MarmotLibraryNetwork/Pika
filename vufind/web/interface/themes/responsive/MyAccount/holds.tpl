@@ -25,7 +25,7 @@
 		{/if}
 
 		{if $illHoldConnectionError} {** If InnReach or another future ILL system encounters a connection issue **}
-			<p class="alert alert-warning">{translate text="ill_hold_connection_error"}</p>
+			<p class="alert alert-warning">{translate text="ill_connection_error"}</p>
 		{/if}
 
 		{foreach from=$recordList item=sectionData key=sectionKey}

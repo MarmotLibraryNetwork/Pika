@@ -56,11 +56,13 @@ class Lion extends Sierra {
 	public function getSelfRegistrationFields(){
 		global $library;
 		// get library code
-		$location            = new Location();
-		$location->libraryId = $library->libraryId;
-		$location->validHoldPickupBranch = true;
+		$location                         = new Location();
+		$location->libraryId              = $library->libraryId;
+		$location->validHoldPickupBranch  = true;
 		$location->validSelfRegHomeBranch = true;
-		$location->find(true);
+		if (!$location->find(true)){
+			$this->logger->error('No valid home location found for Self Registration');
+		}
 				//if (!$location){
 			//return ['success'=>false, 'barcode'=>''];
 		//}
