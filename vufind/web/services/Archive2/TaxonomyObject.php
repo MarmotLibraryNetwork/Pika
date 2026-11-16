@@ -110,7 +110,7 @@ class TaxonomyObject extends \Action
         // into showSaveToListForm() normalize to the same stored tax_{vocabulary}:{tid}.
         $interface->assign('termListEntryDomId', 'islandora2-term-' . ($vocabularyMachineName ?: 'term') . '-' . $this->taxonomyObject->getTid());
         $interface->assign('is_shown_in_search',     $this->taxonomyObject->isShownInSearch());
-        $interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
+        //$interface->assign('pika_usage',             $this->taxonomyObject->getPikaUsage());
         $interface->assign('pid',                    $this->taxonomyObject->getPid());
         $interface->assign('thumbnail',              $this->taxonomyObject->getThumbnail());
         $interface->assign('breadcrumbText',         $this->taxonomyObject->getTitle());

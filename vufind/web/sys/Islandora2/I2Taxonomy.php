@@ -456,10 +456,10 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
      *
      * @return string|null
      */
-    public function getPikaUsage(): ?string
-    {
-        return $this->rawTerm['field_taxo_pika_usage'] ?? null;
-    }
+    //public function getPikaUsage(): ?string
+    //{
+    //    return $this->rawTerm['field_taxo_pika_usage'] ?? null;
+    //}
 
     /**
      * Return the geolocation field value (present on all vocabulary types).

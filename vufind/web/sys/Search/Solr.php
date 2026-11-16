@@ -1777,9 +1777,9 @@ class Solr implements IndexEngine {
 			$solrSearchDebug = 'Search Query: ' . $options['q'] . "\n";
 
 			if ($filter){
-				$solrSearchDebug .= "\nFilterQuery: ";
+				$solrSearchDebug .= "\nFilterQuery:\n";
 				foreach ($filter as $filterItem){
-					$solrSearchDebug .= " $filterItem";
+					$solrSearchDebug .= " $filterItem\n";
 				}
 			}
 

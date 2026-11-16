@@ -1107,8 +1107,8 @@ class CarlX extends SIP2Driver{
 								// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 								$body = $interface->fetch('Emails/self-registration.tpl');
 								$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
-								require_once ROOT_DIR . '/sys/Mailer.php';
-								$mail = new VuFindMailer();
+								require_once ROOT_DIR . '/sys/PikaMailer.php';
+								$mail = new PikaMailer();
 								$subject = 'Welcome to the Nashville Public Library';
 								$emailResult = $mail->send($email, 'no-reply@nashville.gov', $subject, $body);
 								if ($emailResult === true){

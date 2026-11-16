@@ -593,8 +593,8 @@ class OverDrive_AJAX extends AJAXHandler {
 
 		if (isset($_REQUEST['submit'])){
 			//E-mail the library with details of the support request
-			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail        = new VuFindMailer();
+			require_once ROOT_DIR . '/sys/PikaMailer.php';
+			$mail        = new PikaMailer();
 			$userLibrary = UserAccount::getUserHomeLibrary();
 			if (!empty($userLibrary->eContentSupportAddress)){
 				$to = $userLibrary->eContentSupportAddress;

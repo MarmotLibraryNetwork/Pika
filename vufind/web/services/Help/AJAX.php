@@ -42,8 +42,8 @@ class Help_AJAX extends AJAXHandler {
 						. "<p>Please try again.</p>",
 				];
 			}else{
-				require_once  ROOT_DIR . '/sys/Mailer.php';
-				$mail           = new VuFindMailer();
+				require_once  ROOT_DIR . '/sys/PikaMailer.php';
+				$mail           = new PikaMailer();
 				$currentLibrary = Library::getActiveLibrary();
 				if (!empty($currentLibrary->eContentSupportAddress)) {
 					$to = $currentLibrary->eContentSupportAddress;
@@ -136,8 +136,8 @@ class Help_AJAX extends AJAXHandler {
 						. '<p>Please try again.</p>',
 				];
 			}else{
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail           = new VuFindMailer();
+				require_once ROOT_DIR . '/sys/PikaMailer.php';
+				$mail           = new PikaMailer();
 				$currentLibrary = Library::getActiveLibrary();
 				if (!empty($currentLibrary->eContentSupportAddress)){
 					$to = $currentLibrary->eContentSupportAddress;
@@ -226,8 +226,8 @@ class Help_AJAX extends AJAXHandler {
 					'message' => "<p class='alert alert-danger'>The CAPTCHA response was incorrect.</p> <p>Please try again.</p>"
 				];
 			}else{
-				require_once ROOT_DIR . '/sys/Mailer.php';
-				$mail           = new VuFindMailer();
+				require_once ROOT_DIR . '/sys/PikaMailer.php';
+				$mail           = new PikaMailer();
 				$userLibrary    = UserAccount::getUserHomeLibrary();
 				$currentLibrary = Library::getActiveLibrary();
 				if (!empty($userLibrary->accessibilityEmail)){

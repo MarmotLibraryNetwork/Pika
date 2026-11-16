@@ -51,9 +51,7 @@ class SelfReg extends Action {
 		global $configArray;
 
 		/** @var  CatalogConnection $catalog */
-//		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$selfRegFields = $this->catalog->getSelfRegistrationFields();
-		// For Arlington, this function call causes a page redirect to an external web page. plb 1-15-2016
 
 		$pinMinimumLength = $configArray['Catalog']['pinMinimumLength'];
 		$pinMaximumLength = $configArray['Catalog']['pinMaximumLength'];
@@ -88,7 +86,7 @@ class SelfReg extends Action {
 			}
 			unset($property);
 		}
-        
+
 		$interface->assign('submitUrl', '/MyAccount/SelfReg');
 		$interface->assign('structure', $selfRegFields);
 		$interface->assign('saveButtonText', 'Register');

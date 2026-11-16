@@ -300,8 +300,8 @@ class MaterialsRequest extends DB_DataObject {
 					}
 
 					global $configArray;
-					require_once ROOT_DIR . '/sys/Mailer.php';
-					$mail  = new VuFindMailer();
+					require_once ROOT_DIR . '/sys/PikaMailer.php';
+					$mail  = new PikaMailer();
 					$error = $mail->send($this->email, $configArray['Site']['email'], "Your Materials Request Update", $body, $replyToAddress);
 					if (PEAR_Singleton::isError($error)){
 						global $pikaLogger;

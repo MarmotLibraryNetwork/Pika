@@ -457,9 +457,9 @@ abstract class Horizon extends ScreenScrapingDriver{
 //					if (strlen($email) == 0){
 //						return ['error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your ' . translate('pin') . '.'];
 //					}
-//					require_once ROOT_DIR . '/sys/Mailer.php';
+//					require_once ROOT_DIR . '/sys/PikaMailer.php';
 //
-//					$mailer  = new VuFindMailer();
+//					$mailer  = new PikaMailer();
 //					$subject = translate('pin') . ' for your Library Card';
 //					$body    = "The " . translate('pin') . " for your Library Card is $pin.  You may use this " . translate('pin') . " to log into your account.";
 //					$mailer->send($email, $configArray['Site']['email'], $subject, $body);

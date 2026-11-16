@@ -502,14 +502,23 @@ table.table.dataTable th.dt-type-date div.dt-column-footer{
   flex-direction: inherit;
 }
 
-table.table.dataTable > thead > tr >th{
+table.table.dataTable > thead > tr >th,
+table.table > thead > tr > th {
   background-color: transparent;
+  border-top: none;
+  border-left:none;
+  border-right:none;
 }
+
 table.table.dataTable th.dt-type-numeric,
 table.table.dataTable th.dt-type-date,
 table.table.dataTable td.dt-type-numeric,
 table.table.dataTable td.dt-type-date{
   text-align: left;
+}
+
+.table-responsive{
+  overflow-x: inherit;
 }
 
 // Third party imports
