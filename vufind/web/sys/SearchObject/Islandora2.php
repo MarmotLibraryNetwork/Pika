@@ -1662,15 +1662,20 @@ class SearchObject_Islandora2 extends \SearchObject_Base {
 		// Pika Usage
 		if ($configArray['Site']['isProduction']){
 			// Production: Show "yes" only
-			$filters[] = '(ss_pika_usage:yes OR ss_taxo_pika_usage:yes)';
+			//$filters[] = '(ss_pika_usage:yes OR ss_taxo_pika_usage:yes)';
+			$filters[] = '(ss_pika_usage:yes OR ss_search_api_datasource:"entity:taxonomy_term")';
+			//Oct 2026 Archive Committee decision to ignore pika usage for taxonomy terms
 		}else{
 			// Test: Show "yes" and "testonly" (by excluding "no").
-			// Kept as separate filters: Solr only supplies the implicit *:* for an all-negative
+			$filters[] = '!ss_pika_usage:no';
+
+			//$filters[] = '!ss_taxo_pika_usage:no';
+			//Oct 2026 Archive Committee decision to ignore pika usage for taxonomy terms
+
+			// (Originally) Kept as separate filters: Solr only supplies the implicit *:* for an all-negative
 			// query at the top level of an fq, so combining these inside parens matches nothing.
 			// Combining these two in a single filter within parentheses returns no results.
 			// To correctly combine, use: '(*:* -ss_pika_usage:no -ss_taxo_pika_usage:no)'
-			$filters[] = '!ss_pika_usage:no';
-			$filters[] = '!ss_taxo_pika_usage:no';
 		}
 		global /** @var \Library $library */ $library;
 		if (!isset($library)){
