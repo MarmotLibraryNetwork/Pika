@@ -70,6 +70,28 @@ class Record_AJAX extends AJAXHandler {
 			if ($hasHomePickupItems){
 				$interface->assign('hasHomePickupItems', true);
 				$locations = $user->getHomePickupLocations($sourceAndId);
+				$patronLibrary = $user->getHomeLibrary();
+				if (!empty($locations) && $patronLibrary?->inSystemPickupsOnly == 1){
+					// D-5513: Patrons of in-system-pickup-only libraries (e.g. MLN1) can only hold Home Pickup items owned by their
+					// own library, and should only see the pickup locations of their own system.
+					// (Sierra's holds form doesn't tell us this; for an ineligible patron it returns every hold shelf.)
+					$homePickupInfo   = $this->getHomePickupItemInfo($sourceAndId);
+					$owningLibraryIds = $homePickupInfo['hasRegularHoldableItem'] ? [] : $this->getOwningLibraryIds($homePickupInfo['homePickupLocationCodes']);
+					if (!empty($owningLibraryIds) && !in_array($patronLibrary->libraryId, $owningLibraryIds)){
+						// Home pickup only bib owned by another library: the patron can't place the hold;
+						// no pickup dropdown is shown (see the count($locations) == 0 check below).
+						$locations             = [];
+						$homePickupNotEligible = true;
+					}else{
+						$validPickupCodes = [];
+						foreach ($user->getValidPickupBranches($recordSource) as $validPickupBranch){
+							if ($validPickupBranch instanceof Location){ // skip any 'Please Select a Location' placeholder string
+								$validPickupCodes[] = $validPickupBranch->code;
+							}
+						}
+						$locations = array_values(array_filter($locations, fn($location) => in_array($location->code, $validPickupCodes)));
+					}
+				}
 			}
 			if (!$hasHomePickupItems || $locations === false){
 				// $locations === false is for the case when there was an error reaching out to
@@ -141,7 +163,9 @@ class Record_AJAX extends AJAXHandler {
 			if (count($locations) == 0){
 				$results = [
 					'title'        => 'Unable to place hold',
-					'modalBody'    => '<p>Sorry, no copies of this title are available to your account.</p>',
+					'modalBody'    => empty($homePickupNotEligible)
+						? '<p>Sorry, no copies of this title are available to your account.</p>'
+						: '<p>Sorry, this title only has Home Pickup items, which can only be placed on hold and picked up by patrons of the library that owns them.</p>',
 					'modalButtons' => '',
 				];
 			}else{
@@ -172,6 +196,83 @@ class Record_AJAX extends AJAXHandler {
 	 * @param string[] $autoCancels The array of notices to add to
 	 * @return string[] The array of notices
 	 */
+	/**
+	 * D-5513: Determine from the grouped work's related record data whether a bib has any holdable items that aren't
+	 * Home Pickup items, and the location codes of its Home Pickup items.
+	 *
+	 * The related record lists the Home Pickup items (homePickupLocations) by shelf location, call number and status,
+	 * so they are matched against the record's items (itemDetails) on those values.
+	 *
+	 * @param SourceAndId $sourceAndId
+	 * @return array ['hasRegularHoldableItem' => bool, 'homePickupLocationCodes' => string[]]
+	 */
+	private function getHomePickupItemInfo(SourceAndId $sourceAndId){
+		$info         = [
+			'hasRegularHoldableItem'  => false,
+			'homePickupLocationCodes' => [],
+		];
+		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
+		if (empty($recordDriver) || !$recordDriver->isValid()){
+			$info['hasRegularHoldableItem'] = true; // can't tell; don't block the patron
+			return $info;
+		}
+		$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($sourceAndId->getSourceAndId());
+
+		// Count the home pickup items by shelf location, call number and status (several items can share these)
+		$homePickupItemCounts = [];
+		foreach ($relatedRecord['homePickupLocations'] ?? [] as $homePickupItem){
+			$key                        = $homePickupItem['location'] . '|' . $homePickupItem['callnumber'] . '|' . $homePickupItem['status'];
+			$homePickupItemCounts[$key] = ($homePickupItemCounts[$key] ?? 0) + 1;
+		}
+
+		foreach ($relatedRecord['itemDetails'] ?? [] as $item){
+			if (empty($item['holdable'])){
+				continue;
+			}
+			$key = $item['shelfLocation'] . '|' . $item['callNumber'] . '|' . $item['statusFull'];
+			if (!empty($homePickupItemCounts[$key])){
+				$homePickupItemCounts[$key]--;
+				$info['homePickupLocationCodes'][] = $item['locationCode'];
+			}else{
+				$info['hasRegularHoldableItem'] = true;
+			}
+		}
+		return $info;
+	}
+
+	/**
+	 * The ids of the libraries that own items with the given location codes. An item's location code starts with its
+	 * owning location's code, so the location with the longest matching code is the owner.
+	 *
+	 * @param string[] $itemLocationCodes
+	 * @return int[]
+	 */
+	private function getOwningLibraryIds(array $itemLocationCodes){
+		$locations = [];
+		$location  = new Location();
+		if ($location->find()){
+			while ($location->fetch()){
+				if (!empty($location->code)){
+					$locations[$location->code] = $location->libraryId;
+				}
+			}
+		}
+
+		$owningLibraryIds = [];
+		foreach (array_unique($itemLocationCodes) as $itemLocationCode){
+			$ownerCode = null;
+			foreach ($locations as $code => $libraryId){
+				if (stripos($itemLocationCode, $code) === 0 && ($ownerCode === null || strlen($code) > strlen($ownerCode))){
+					$ownerCode = $code;
+				}
+			}
+			if ($ownerCode !== null){
+				$owningLibraryIds[] = $locations[$ownerCode];
+			}
+		}
+		return array_unique($owningLibraryIds);
+	}
+
 	private function getAutoCancelHoldMessages($patronLibrary, array $autoCancels = []){
 		if (!empty($patronLibrary->showHoldCancelDate)){
 			global $interface;
