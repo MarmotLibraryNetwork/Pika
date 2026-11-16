@@ -20,7 +20,7 @@
 			{/if}
 
 			{if $illLoanConnectionError}
-				<p class="alert alert-warning">{translate text="ill_loan_connection_error"}</p>
+				<p class="alert alert-warning">{translate text="ill_connection_error"}</p>
 			{/if}
 
 			{if $transList}
