@@ -1,0 +1,15 @@
+# Optional: publish Solr and MariaDB on the Docker host (127.0.0.1 only), for the Solr
+# admin UIs and database clients. Left out of docker-compose.yml because these ports
+# often clash with a local Solr or MariaDB.
+#
+# Turn it on by adding this line to .env:
+#   COMPOSE_FILE=docker-compose.yml:docker/compose.ports.yml
+# or for a single command:
+#   docker compose -f docker-compose.yml -f docker/compose.ports.yml up -d
+
+services:
+  net:
+    ports:
+      - "127.0.0.1:${SOLR_SEARCHER_HOST_PORT:-8080}:8080"
+      - "127.0.0.1:${SOLR_MASTER_HOST_PORT:-8180}:8180"
+      - "127.0.0.1:${PIKA_DB_HOST_PORT:-3306}:3306"

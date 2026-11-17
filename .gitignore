@@ -159,3 +159,8 @@ CLAUDE.md
 ###############################
 # package.json and package-lock.json are committed; they define the SASS/CSS build toolchain
 node_modules
+
+# Docker
+###############################
+# local values for docker-compose.yml (contains the database password); see docker/env.example
+.env

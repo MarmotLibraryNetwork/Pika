@@ -1,0 +1,177 @@
+# Pika in Docker - a development instance. Container version of the server built by the
+# scripts in PikaSettings bash/pika-server-setup/. See docker/README.md.
+#
+# Quick start:
+#   cp docker/env.example .env      # then set PIKA_DB_PASSWORD to match config.pwd.ini
+#   docker compose up -d --build
+#   browse to http://marmot.localhost:8088
+#
+# Networking: every service joins the network namespace of the small `net` container
+# (network_mode: "service:net"), so they all reach each other on localhost, as they do
+# on a single server. Pika needs that: config.pwd.ini points the database at localhost,
+# the default config points memcached and Solr at localhost, and the Java indexers and
+# the searcher's solrconfig.xml have http://localhost hard-coded.
+# `net` owns the hostname and all published ports. It never needs rebuilding, so web
+# and the other services can be rebuilt, restarted or recreated independently.
+
+name: pika
+
+x-solr: &solr
+  image: solr:${SOLR_VERSION:-8.8.2}
+  network_mode: "service:net"
+  # The core configuration is copied from data_dir_setup on every start (as
+  # bash/updateSolrFiles.sh does on a server), so schema changes are picked up by
+  # restarting the node. Index data lives in the named volume and is left alone.
+  command:
+    - bash
+    - -c
+    - mkdir -p /var/solr/data && cp -r /opt/pika-solr-home/. /var/solr/data/ && exec solr-foreground
+  healthcheck:
+    test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:$${SOLR_PORT}/solr/admin/info/system"]
+    interval: 15s
+    timeout: 5s
+    retries: 8
+    start_period: 45s
+
+services:
+  # Holds the shared network namespace, the hostname and the published ports.
+  net:
+    image: alpine:3
+    command: ["sleep", "infinity"]
+    init: true
+    hostname: ${PIKA_SITE:-marmot.localhost}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${PIKA_HTTP_PORT:-8088}:80"
+      # Mailpit web UI: every e-mail Pika sends ends up here
+      - "127.0.0.1:${PIKA_MAIL_UI_PORT:-8025}:8025"
+      # Solr and MariaDB are not published by default; see docker/compose.ports.yml
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
+    image: pika-web:php${PHP_VERSION:-8.5}
+    network_mode: "service:net"
+    depends_on:
+      db:
+        condition: service_healthy
+      memcached:
+        condition: service_healthy
+    environment:
+      PIKA_SITE: ${PIKA_SITE:-marmot.localhost}
+      TZ: ${TZ:-America/Denver}
+      # off | debug | debug,develop ... ; the IDE listens on the Docker host, port 9003
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+    volumes:
+      # Both repositories are mounted at the paths the code and scripts expect.
+      # sites/<site> is a symlink into the settings repository, so the settings
+      # path has to be the same inside the container as on the host.
+      - .:/usr/local/pika
+      - ${PIKA_SETTINGS_DIR:-/usr/share/php/pika/settings}:/usr/share/php/pika/settings
+      - ${PIKA_SETTINGS_DIR:-/usr/share/php/pika/settings}/${PIKA_SITE:-marmot.localhost}/${PIKA_VHOST_CONF:-httpd-marmot.locaclhost-2.4-linux.conf}:/etc/apache2/sites-enabled/pika.conf:ro
+      # Smarty compile/cache dirs must be writable by www-data; keep them off the host checkout
+      - smarty_compile:/usr/local/pika/vufind/web/interface/compile
+      - smarty_cache:/usr/local/pika/vufind/web/interface/cache
+      - pika_data:/data/pika
+      - pika_logs:/var/log/pika
+      # PHP reaches a "localhost" database through the unix socket, not TCP
+      - db_socket:/run/mysqld
+    healthcheck:
+      # Healthy means Apache is answering; an application error still counts as up
+      test: ["CMD", "curl", "-sS", "-o", "/dev/null", "http://127.0.0.1/robots.txt"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  db:
+    image: mariadb:${MARIADB_VERSION:-11.8}
+    network_mode: "service:net"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --skip-name-resolve
+    environment:
+      TZ: ${TZ:-America/Denver}
+      MARIADB_ROOT_PASSWORD: ${PIKA_DB_ROOT_PASSWORD:?set PIKA_DB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: pika
+      MARIADB_USER: pika
+      MARIADB_PASSWORD: ${PIKA_DB_PASSWORD:?set PIKA_DB_PASSWORD in .env}
+    volumes:
+      - db_data:/var/lib/mysql
+      - db_socket:/run/mysqld
+      # Runs once, when db_data is empty: creates econtent, loads the current schema
+      # from docker/db/sql, then the starter data from the settings repository
+      - ./docker/db/10-pika-init.sh:/docker-entrypoint-initdb.d/10-pika-init.sh:ro
+      - ./docker/db/sql:/pika-schema:ro
+      - ${PIKA_SETTINGS_DIR:-/usr/share/php/pika/settings}/bash/pika-server-setup/sql:/pika-sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  memcached:
+    image: memcached:1.6-alpine
+    network_mode: "service:net"
+    command: ["memcached", "-m", "${MEMCACHED_MEMORY_MB:-64}"]
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "11211"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  # Catches outgoing mail ([Mail] host = localhost, port = 25) instead of delivering it.
+  mail:
+    image: axllent/mailpit:${MAILPIT_VERSION:-latest}
+    network_mode: "service:net"
+    environment:
+      MP_SMTP_BIND_ADDR: "0.0.0.0:25"
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      TZ: ${TZ:-America/Denver}
+
+  # Indexing node: the Java reindexer writes here ([Reindex] solrPort = 8180)
+  solr_master:
+    <<: *solr
+    environment:
+      SOLR_PORT: "8180"
+      SOLR_HEAP: ${SOLR_HEAP:-1g}
+      SOLR_OPTS: "-Dlog4j2.formatMsgNoLookups=true"
+    volumes:
+      - solr_master:/var/solr
+      - ./data_dir_setup/solr_master:/opt/pika-solr-home:ro
+
+  # Search node: the PHP app reads here ([Index] url = http://localhost:8080/solr)
+  # and it replicates from solr_master.
+  solr_searcher:
+    <<: *solr
+    environment:
+      SOLR_PORT: "8080"
+      SOLR_HEAP: ${SOLR_HEAP:-1g}
+      SOLR_OPTS: >-
+        -Dsolr.masterport=8180
+        -Dsolr.disable.shardsWhitelist=true
+        -Dsolr.pollInterval=00:02:00
+        -Dlog4j2.formatMsgNoLookups=true
+    volumes:
+      - solr_searcher:/var/solr
+      - ./data_dir_setup/solr_searcher:/opt/pika-solr-home:ro
+    depends_on:
+      solr_master:
+        condition: service_healthy
+
+volumes:
+  smarty_compile:
+  smarty_cache:
+  pika_data:
+  pika_logs:
+  db_data:
+  db_socket:
+  solr_master:
+  solr_searcher:

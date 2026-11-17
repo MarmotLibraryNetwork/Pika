@@ -1,0 +1,7 @@
+# The web image only needs the composer manifest, the patched PEAR DB classes and
+# the docker/ support files; the source tree is bind-mounted at runtime.
+*
+!install/composer.json
+!install/composer.lock
+!install/PEAR
+!docker
