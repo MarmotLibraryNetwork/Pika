@@ -102,6 +102,14 @@
          content-box here keeps the real geometry matching what OpenSeadragon's
          click math expects. */
       box-sizing: content-box;
+      /* ReferenceStrip.setFocus() paints the selected panel #999 and every
+         previously selected panel #000 with inline styles, which leaves black
+         boxes behind as you page through. Neutralize those inline backgrounds
+         and mark the current panel with a class instead (see markCurrentPanel). */
+      background: transparent !important;
+    }
+    #openseadragon-strip .referencestrip > div.osd-strip-current {
+      background: #999 !important;
     }
 </style>
 {/literal}
@@ -136,7 +144,63 @@
 
           var stripRow = document.getElementById('openseadragon-strip-row');
 
+          // Highlight the current page's thumbnail. OpenSeadragon tracks it as
+          // referenceStrip.currentSelected (updated in setFocus before 'page' fires).
+          function markCurrentPanel() {
+            var rs = viewer.referenceStrip;
+            if (!rs || !rs.element) {
+              return;
+            }
+            var panels = rs.element.children;
+            for (var i = 0; i < panels.length; i++) {
+              panels[i].classList.toggle('osd-strip-current', panels[i] === rs.currentSelected);
+            }
+          }
+
+          // OpenSeadragon's reference strip maps the arrow keys to scrolling the
+          // strip, so a focused strip never changes the image. Replace its keydown
+          // handler so left/up go to the previous image and right/down to the next;
+          // setFocus() then scrolls the strip to keep the current thumbnail visible.
+          function patchStripKeys() {
+            var rs = viewer.referenceStrip;
+            // referenceStrip.tracker isn't in the official docs
+            // rs.tracker is a MouseTracker object
+            if (!rs || !rs.tracker || rs.pikaKeysPatched) {
+              return;
+            }
+            // console.log(rs.tracker);
+            rs.tracker.keyDownHandler = function (event) {
+              var delta = 0;
+              if (!event.ctrl && !event.alt && !event.meta) {
+                switch (event.keyCode) {
+                  case 37: // left
+                  case 38: // up
+                    delta = -1;
+                    break;
+                  case 39: // right
+                  case 40: // down
+                    delta = 1;
+                    break;
+                }
+              }
+              if (!delta) {
+                event.preventDefault = false;
+                return;
+              }
+              var target = viewer.currentPage() + delta;
+              if (target >= 0 && target < tileSources.length) {
+                viewer.goToPage(target);
+              }
+              event.preventDefault = true;
+            };
+            rs.pikaKeysPatched = true;
+          }
+
+          viewer.addHandler('page', markCurrentPanel);
+
           viewer.addHandler('open', function () {
+            patchStripKeys();
+            markCurrentPanel();
             var strip = viewer.referenceStrip && viewer.referenceStrip.element;
             if (strip && stripContainer && strip.parentNode !== stripContainer) {
               stripContainer.appendChild(strip);
