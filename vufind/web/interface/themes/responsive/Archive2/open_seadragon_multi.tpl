@@ -168,7 +168,7 @@
             if (!rs || !rs.tracker || rs.pikaKeysPatched) {
               return;
             }
-            // console.log(rs.tracker);
+            console.log(rs);
             rs.tracker.keyDownHandler = function (event) {
               var delta = 0;
               if (!event.ctrl && !event.alt && !event.meta) {
@@ -196,10 +196,34 @@
             rs.pikaKeysPatched = true;
           }
 
+          // Each thumbnail is its own mini OpenSeadragon viewer, created lazily as
+          // panels scroll into view, and each mini viewer's canvas gets tabIndex 0.
+          // That makes Tab step through every loaded thumbnail instead of leaving
+          // the strip. Remove those tab stops as they appear so the strip itself
+          // is the single tab stop (arrow keys then change images; see above).
+          function removeThumbnailTabStops() {
+            var rs = viewer.referenceStrip;
+            if (!rs || !rs.element || rs.pikaTabStopsObserved) {
+              return;
+            }
+            var demote = function () {
+              var canvases = rs.element.querySelectorAll('.openseadragon-canvas[tabindex]');
+              for (var i = 0; i < canvases.length; i++) {
+                if (canvases[i].tabIndex !== -1) {
+                  canvases[i].tabIndex = -1;
+                }
+              }
+            };
+            demote();
+            new MutationObserver(demote).observe(rs.element, { childList: true, subtree: true });
+            rs.pikaTabStopsObserved = true;
+          }
+
           viewer.addHandler('page', markCurrentPanel);
 
           viewer.addHandler('open', function () {
             patchStripKeys();
+            removeThumbnailTabStops();
             markCurrentPanel();
             var strip = viewer.referenceStrip && viewer.referenceStrip.element;
             if (strip && stripContainer && strip.parentNode !== stripContainer) {
