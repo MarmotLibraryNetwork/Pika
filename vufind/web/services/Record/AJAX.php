@@ -438,6 +438,17 @@ class Record_AJAX extends AJAXHandler {
 					];
 				}
 				else{
+					if ($isHomePickupHold && !$doingStaffPlacedHold && $patron->getHomeLibrary()?->inSystemPickupsOnly == 1){
+						// For in-system-pickup-only libraries (e.g. MLN1), a hold on a bib that also has regular holdable items
+						// isn't flagged as a Home Pickup hold, so that the patron can still change its pickup location on My Holds.
+						// (The pickup options there are already limited to the patron's own system.)
+						require_once ROOT_DIR . '/services/SourceAndId.php';
+						$recordSource = $_REQUEST['recordSource'] ?? $source ?? null;
+						$sourceAndId  = new SourceAndId(empty($recordSource) ? $shortId : $recordSource . ':' . $shortId);
+						if ($this->getHomePickupItemInfo($sourceAndId)['hasRegularHoldableItem']){
+							$isHomePickupHold = false;
+						}
+					}
 					if ($doingStaffPlacedHold){
 						$return = $user->staffPlacedHold($patronBarcode, $shortId, $campus, $cancelDate, $_REQUEST['selectedItem'] ?? null, $_REQUEST['volume'] ?? null, $isHomePickupHold);
 					}elseif (isset($_REQUEST['selectedItem'])){
