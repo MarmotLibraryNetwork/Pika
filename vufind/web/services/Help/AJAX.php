@@ -283,13 +283,13 @@ class Help_AJAX extends AJAXHandler {
 					// Use warning level to keep successful submissions in production logging
 					return [
 						'title'   => 'Accessibility Report Sent',
-						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+						'message' => "<p class='alert alert-success'>Your report was sent to our team. Thank you for using the catalog.</p>"
 					];
 				}else{
 					$this->logger->warn('There was an unknown error sending the accessibility e-mail');
 					return [
 						'title'   => 'Support Request Not Sent',
-						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.<br>Please try again later.</p>"
 					];
 				}
 			}
