@@ -181,18 +181,26 @@ class BrowseCategory extends DB_DataObject{
 	}
 
 	static function getObjectStructure(){
-		// Get All User Lists
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists         = new UserList();
-		$userLists->public = 1;
-		$userLists->orderBy('title asc');
-		$userLists->find();
-		$sourceLists     = [];
-		$sourceLists[-1] = 'Generate from search term and filters';
-		while ($userLists->fetch()){
-			$numItems = $userLists->numValidListItems();
-			if ($numItems > 0){
-				$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
+
+		$sourceLists = [];
+		if (!empty($_REQUEST['objectAction']) && in_array($_REQUEST['objectAction'], ['edit', 'addNew'])){
+			// Loading all lists is taxing and unnecessary for the Browse Category Listing page
+			$sourceLists[-1] = 'Generate from search term and filters';
+			//TODO: if sourceList is ever added back to listing page, the default above should be included above this if block.
+
+			// Get All User Lists
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$userLists         = new UserList();
+			$userLists->public = 1;
+			$userLists->orderBy('title asc');
+			$userLists->find();
+			while ($userLists->fetch()){
+				$numItems = $userLists->numValidListItems();
+				//TODO: this counting logic could be a source of slowness on the edit page as well
+				//TODO: sourceList is likely best populated through an AJAX method now.
+				if ($numItems > 0){
+					$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
+				}
 			}
 		}
 
@@ -268,7 +276,8 @@ class BrowseCategory extends DB_DataObject{
 			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Search Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
 			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The sort to apply to the search results', 'default' => 'relevance', 'hideInLists' => true],
 			'searchSource'       => ['property' => 'searchSource', 'type' => 'enum', 'values' => ['catalog' => 'Catalog', 'islandora2' => 'Archive (Islandora 2)'], 'label' => 'Search Source', 'description' => 'The search index this browse category queries.', 'required' => true, 'default' => 'catalog', 'hideInLists' => false],
-			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
+			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from', 'hideInLists' => true],
+			// Populating Userlists is taxing on memory for Listing page, so hide sourceListId column instead.
 		];
 
 		return $structure;
