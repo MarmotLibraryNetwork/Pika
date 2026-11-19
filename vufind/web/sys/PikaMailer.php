@@ -26,7 +26,8 @@ use PHPMailer\PHPMailer\Exception as PHPMailerException;
  * Pika Mailer Class
  *
  * Wraps PHPMailer, using the [Mail] settings from config.ini:
- *   host        - SMTP server. When empty or false, messages are only written to the log (no mail is sent).
+ *   host        - SMTP server. Required. When empty, sends fail with an error, unless [System] debug is on,
+ *                 in which case messages are only written to the log (no mail is sent).
  *   port        - SMTP port
  *   username    - SMTP username (authentication is used only when both username and password are set)
  *   password    - SMTP password
@@ -44,8 +45,9 @@ class PikaMailer {
 		$mailConfig   = $configArray['Mail'] ?? [];
 
 		$this->settings = [
-			'host' => $mailConfig['host'] ?? false,
-			'port' => $mailConfig['port'] ?? 25,
+			'host'  => $mailConfig['host'] ?? false,
+			'port'  => $mailConfig['port'] ?? 25,
+			'debug' => !empty($configArray['System']['debug']),
 		];
 		if (!empty($mailConfig['username']) && !empty($mailConfig['password'])){
 			$this->settings['auth']     = true;
@@ -91,19 +93,24 @@ class PikaMailer {
 		}
 
 		if (empty($this->settings['host'])){
-			// No mail host configured: write the message to the log instead of sending it
-			$this->logger->info('Sending e-mail (no mail host configured, message logged only)');
-			$this->logger->info("From = $fromAddress");
-			$this->logger->info("To = $to");
-			if (!empty($replyToAddress)){
-				$this->logger->info("Reply-To = $replyToAddress");
+			if ($this->settings['debug']){
+				// No mail host configured: write the message to the log instead of sending it
+				$this->logger->info('Sending e-mail (no mail host configured, message logged only)');
+				$this->logger->info("From = $fromAddress");
+				$this->logger->info("To = $to");
+				if (!empty($replyToAddress)){
+					$this->logger->info("Reply-To = $replyToAddress");
+				}
+				if (!empty($cc)){
+					$this->logger->info("CC = $cc");
+				}
+				$this->logger->info("Subject = $subject");
+				$this->logger->info($body);
+				return true;
+			} else {
+				$this->logger->error('Missing mail configuration');
+				return new PEAR_Error('No mail host configured.');
 			}
-			if (!empty($cc)){
-				$this->logger->info("CC = $cc");
-			}
-			$this->logger->info("Subject = $subject");
-			$this->logger->info($body);
-			return true;
 		}
 
 		$mail = new PHPMailer(true); // throw exceptions on error
