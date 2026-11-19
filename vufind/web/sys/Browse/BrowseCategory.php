@@ -67,7 +67,11 @@ class BrowseCategory extends DB_DataObject{
 			$this->getSubCategories();
 			return $this->subBrowseCategories;
 		}else{
-			return $this->data[$name];
+			// Keep the "?? null". The object editor's property.tpl reads every structure property from the object,
+			// including display-only ones like assignedLibraries and assignedLocations that are never set on it.
+			// Without the null fallback each of those reads logs an "Undefined array key" warning; with it, the
+			// template falls back to the structure's 'default' value as intended.
+			return $this->data[$name] ?? null;
 		}
 	}
 
@@ -248,12 +252,18 @@ class BrowseCategory extends DB_DataObject{
 			}
 		}
 
+		// Assigned libraries and locations are only looked up when editing a single category,
+		// so that the category listing page does not run these queries.
+		[$assignedLibraries, $assignedLocations] = self::getAssignedLibrariesAndLocationsForEditPage();
+
 		$structure = [
 			'id'          => ['property' => 'id',          'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
 			'label'       => ['property' => 'label',       'type' => 'text',  'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true],
 			'textId'      => ['property' => 'textId',      'type' => 'text',  'label' => 'textId', 'description' => 'A textual id to identify the category',
 			                    'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
 			'userId'      => ['property' => 'userId',      'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
+			'assignedLibraries' => ['property' => 'assignedLibraries', 'type' => 'label', 'label' => 'Assigned Libraries', 'description' => 'Libraries that display this category in their browse category carousel', 'default' => $assignedLibraries, 'hideInLists' => true],
+			'assignedLocations' => ['property' => 'assignedLocations', 'type' => 'label', 'label' => 'Assigned Locations', 'description' => 'Locations that display this category in their browse category carousel', 'default' => $assignedLocations, 'hideInLists' => true],
 			'description' => ['property' => 'description', 'type' => 'html',  'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
 
 			// Define oneToMany interface for choosing and arranging subcategories
@@ -281,6 +291,68 @@ class BrowseCategory extends DB_DataObject{
 		];
 
 		return $structure;
+	}
+
+	/**
+	 * Build the read-only Assigned Libraries and Assigned Locations values for the browse category edit page.
+	 *
+	 * Only runs when editing an existing category; everywhere else (the category listing, saves, adding a new
+	 * category) both values are null and no queries are made.
+	 *
+	 * @return array [assigned libraries, assigned locations] as HTML-escaped display names separated by <br>, or "None"
+	 */
+	private static function getAssignedLibrariesAndLocationsForEditPage(){
+		if (($_REQUEST['objectAction'] ?? null) != 'edit' || !ctype_digit($_REQUEST['id'] ?? '')){
+			return [null, null];
+		}
+		$browseCategory = new BrowseCategory();
+		if (!$browseCategory->get($_REQUEST['id'])){
+			return [null, null];
+		}
+
+		require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+		require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+
+		$libraryAssignment                       = new LibraryBrowseCategory();
+		$libraryAssignment->browseCategoryTextId = $browseCategory->textId;
+		$libraryIds                              = $libraryAssignment->fetchAll('libraryId');
+
+		$locationAssignment                       = new LocationBrowseCategory();
+		$locationAssignment->browseCategoryTextId = $browseCategory->textId;
+		$locationIds                              = $locationAssignment->fetchAll('locationId');
+
+		return [
+			self::getAssignedDisplayNames('Library', 'libraryId', $libraryIds),
+			self::getAssignedDisplayNames('Location', 'locationId', $locationIds),
+		];
+	}
+
+	/**
+	 * @param string $ownerClass  Library or Location
+	 * @param string $keyColumn   The owner table's primary key, libraryId or locationId
+	 * @param array  $ids         Ids from the browse category assignment table
+	 * @return string HTML-escaped display names separated by <br>, or "None"
+	 */
+	private static function getAssignedDisplayNames($ownerClass, $keyColumn, $ids){
+		$ids = array_unique(array_map('intval', $ids));
+		if (empty($ids)){
+			return 'None';
+		}
+		/** @var Library|Location $owner */
+		$owner = new $ownerClass();
+		$owner->whereAdd($keyColumn . ' IN (' . implode(',', $ids) . ')');
+		$owner->orderBy('displayName');
+		$displayNames = $owner->fetchAll($keyColumn, 'displayName');
+
+		$lines = [];
+		foreach ($displayNames as $displayName){
+			$lines[] = htmlspecialchars($displayName);
+		}
+		// An assignment whose library or location has been deleted is still listed, so it can be found and removed
+		foreach (array_diff($ids, array_keys($displayNames)) as $missingId){
+			$lines[] = "Deleted {$ownerClass} (id {$missingId})";
+		}
+		return implode('<br>', $lines);
 	}
 
 	/**
