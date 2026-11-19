@@ -185,9 +185,18 @@ class BrowseCategory extends DB_DataObject{
 	}
 
 	static function getObjectStructure(){
+		$sourceLists       = [];
+		$sortOptions       = [];
+		$assignedLibraries = null;
+		$assignedLocations = null;
 
-		$sourceLists = [];
-		if (!empty($_REQUEST['objectAction']) && in_array($_REQUEST['objectAction'], ['edit', 'addNew'])){
+		// Get Structure for Sub-categories
+		// Needed on every request, not just the edit page: saving reads each sub-category row through this structure
+		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
+		unset($browseSubCategoryStructure['weight']);
+		unset($browseSubCategoryStructure['browseCategoryId']);
+
+		if (in_array($_REQUEST['objectAction'] ?? '', ['edit', 'addNew'], true)){
 			// Loading all lists is taxing and unnecessary for the Browse Category Listing page
 			$sourceLists[-1] = 'Generate from search term and filters';
 			//TODO: if sourceList is ever added back to listing page, the default above should be included above this if block.
@@ -206,55 +215,50 @@ class BrowseCategory extends DB_DataObject{
 					$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
 				}
 			}
-		}
 
-		// Get Structure for Sub-categories
-		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
-		unset($browseSubCategoryStructure['weight']);
-		unset($browseSubCategoryStructure['browseCategoryId']);
+			global $configArray;
+			if (!empty($configArray['Islandora2']['enabled'])){
+				// Build combined sort options from both catalog and archive search objects,
+				// so admins can choose an appropriate sort regardless of searchSource.
+				/** @var SearchObject_Solr|SearchObject_Base $catalogSearchObject */
+				$catalogSearchObject = SearchObjectFactory::initSearchObject();
+				$catalogSortOptions  = $catalogSearchObject->getSortOptions();
 
-		global $configArray;
-		if (!empty($configArray['Islandora2']['enabled'])){
-			// Build combined sort options from both catalog and archive search objects,
-			// so admins can choose an appropriate sort regardless of searchSource.
-			/** @var SearchObject_Solr|SearchObject_Base $catalogSearchObject */
-			$catalogSearchObject = SearchObjectFactory::initSearchObject();
-			$catalogSortOptions  = $catalogSearchObject->getSortOptions();
+				$archiveSearchObject = new SearchObject_Islandora2();
+				$archiveSortOptions  = $archiveSearchObject->getSortOptions();
 
-			$archiveSearchObject = new SearchObject_Islandora2();
-			$archiveSortOptions  = $archiveSearchObject->getSortOptions();
+				// Start with relevance (shared by both sources, no prefix needed)
+				$sortOptions = [];
+				if (isset($catalogSortOptions['relevance'])){
+					$sortOptions['relevance'] = translate($catalogSortOptions['relevance']);
+				}
 
-			// Start with relevance (shared by both sources, no prefix needed)
-			$sortOptions = [];
-			if (isset($catalogSortOptions['relevance'])){
-				$sortOptions['relevance'] = translate($catalogSortOptions['relevance']);
-			}
+				// Catalog-specific sorts
+				foreach ($catalogSortOptions as $key => $value){
+					if ($key !== 'relevance'){
+						$sortOptions[$key] = 'Catalog: ' . translate($value);
+					}
+				}
 
-			// Catalog-specific sorts
-			foreach ($catalogSortOptions as $key => $value){
-				if ($key !== 'relevance'){
-					$sortOptions[$key] = 'Catalog: ' . translate($value);
+				// Archive-specific sorts
+				foreach ($archiveSortOptions as $key => $value){
+					if ($key !== 'relevance'){
+						$sortOptions[$key] = 'Archive: ' . translate($value);
+					}
+				}
+			} else {
+				/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$sortOptions  = $searchObject->getSortOptions();
+				foreach ($sortOptions as $key => &$value){
+					$value = translate($value);
 				}
 			}
 
-			// Archive-specific sorts
-			foreach ($archiveSortOptions as $key => $value){
-				if ($key !== 'relevance'){
-					$sortOptions[$key] = 'Archive: ' . translate($value);
-				}
-			}
-		} else {
-			/** @var SearchObject_Solr|SearchObject_Base $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$sortOptions  = $searchObject->getSortOptions();
-			foreach ($sortOptions as $key => &$value){
-				$value = translate($value);
-			}
+			// Assigned libraries and locations are only looked up when editing a single category,
+			// so that the category listing page does not run these queries.
+			[$assignedLibraries, $assignedLocations] = self::getAssignedLibrariesAndLocationsForEditPage();
 		}
-
-		// Assigned libraries and locations are only looked up when editing a single category,
-		// so that the category listing page does not run these queries.
-		[$assignedLibraries, $assignedLocations] = self::getAssignedLibrariesAndLocationsForEditPage();
 
 		$structure = [
 			'id'          => ['property' => 'id',          'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'],
