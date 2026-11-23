@@ -46,7 +46,7 @@ class SubBrowseCategories extends DB_DataObject {
 	}
 
 	static function listBrowseCategories(){
-		$browseCategoryList = array();
+		$browseCategoryList = [];
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 //		$browseCategories = new BrowseCategory();
 //		$browseCategories->orderBy('label');

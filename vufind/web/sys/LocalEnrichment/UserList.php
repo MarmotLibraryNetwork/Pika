@@ -83,7 +83,7 @@ class UserList extends DB_DataObject {
 
 	function numValidListItems() {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$listEntry = new UserListEntry();
+		$listEntry         = new UserListEntry();
 		$listEntry->listId = $this->id;
 
 		// These conditions retrieve list items with a valid groupedwork ID or archive ID.

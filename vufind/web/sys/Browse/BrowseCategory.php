@@ -67,7 +67,11 @@ class BrowseCategory extends DB_DataObject{
 			$this->getSubCategories();
 			return $this->subBrowseCategories;
 		}else{
-			return $this->data[$name];
+			// Keep the "?? null". The object editor's property.tpl reads every structure property from the object,
+			// including display-only ones like assignedLibraries and assignedLocations that are never set on it.
+			// Without the null fallback each of those reads logs an "Undefined array key" warning; with it, the
+			// template falls back to the structure's 'default' value as intended.
+			return $this->data[$name] ?? null;
 		}
 	}
 
@@ -181,63 +185,79 @@ class BrowseCategory extends DB_DataObject{
 	}
 
 	static function getObjectStructure(){
-		// Get All User Lists
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists         = new UserList();
-		$userLists->public = 1;
-		$userLists->orderBy('title asc');
-		$userLists->find();
-		$sourceLists     = [];
-		$sourceLists[-1] = 'Generate from search term and filters';
-		while ($userLists->fetch()){
-			$numItems = $userLists->numValidListItems();
-			if ($numItems > 0){
-				$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
-			}
-		}
+		$sourceLists       = [];
+		$sortOptions       = [];
+		$assignedLibraries = null;
+		$assignedLocations = null;
 
 		// Get Structure for Sub-categories
+		// Needed on every request, not just the edit page: saving reads each sub-category row through this structure
 		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
 
-		global $configArray;
-		if (!empty($configArray['Islandora2']['enabled'])){
-			// Build combined sort options from both catalog and archive search objects,
-			// so admins can choose an appropriate sort regardless of searchSource.
-			/** @var SearchObject_Solr|SearchObject_Base $catalogSearchObject */
-			$catalogSearchObject = SearchObjectFactory::initSearchObject();
-			$catalogSortOptions  = $catalogSearchObject->getSortOptions();
+		if (in_array($_REQUEST['objectAction'] ?? '', ['edit', 'addNew'], true)){
+			// Loading all lists is taxing and unnecessary for the Browse Category Listing page
+			$sourceLists[-1] = 'Generate from search term and filters';
+			//TODO: if sourceList is ever added back to listing page, the default above should be included above this if block.
 
-			$archiveSearchObject = new SearchObject_Islandora2();
-			$archiveSortOptions  = $archiveSearchObject->getSortOptions();
-
-			// Start with relevance (shared by both sources, no prefix needed)
-			$sortOptions = [];
-			if (isset($catalogSortOptions['relevance'])){
-				$sortOptions['relevance'] = translate($catalogSortOptions['relevance']);
-			}
-
-			// Catalog-specific sorts
-			foreach ($catalogSortOptions as $key => $value){
-				if ($key !== 'relevance'){
-					$sortOptions[$key] = 'Catalog: ' . translate($value);
+			// Get All User Lists
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$userLists         = new UserList();
+			$userLists->public = 1;
+			$userLists->orderBy('title asc');
+			$userLists->find();
+			while ($userLists->fetch()){
+				$numItems = $userLists->numValidListItems();
+				//TODO: this counting logic could be a source of slowness on the edit page as well
+				//TODO: sourceList is likely best populated through an AJAX method now.
+				if ($numItems > 0){
+					$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
 				}
 			}
 
-			// Archive-specific sorts
-			foreach ($archiveSortOptions as $key => $value){
-				if ($key !== 'relevance'){
-					$sortOptions[$key] = 'Archive: ' . translate($value);
+			global $configArray;
+			if (!empty($configArray['Islandora2']['enabled'])){
+				// Build combined sort options from both catalog and archive search objects,
+				// so admins can choose an appropriate sort regardless of searchSource.
+				/** @var SearchObject_Solr|SearchObject_Base $catalogSearchObject */
+				$catalogSearchObject = SearchObjectFactory::initSearchObject();
+				$catalogSortOptions  = $catalogSearchObject->getSortOptions();
+
+				$archiveSearchObject = new SearchObject_Islandora2();
+				$archiveSortOptions  = $archiveSearchObject->getSortOptions();
+
+				// Start with relevance (shared by both sources, no prefix needed)
+				$sortOptions = [];
+				if (isset($catalogSortOptions['relevance'])){
+					$sortOptions['relevance'] = translate($catalogSortOptions['relevance']);
+				}
+
+				// Catalog-specific sorts
+				foreach ($catalogSortOptions as $key => $value){
+					if ($key !== 'relevance'){
+						$sortOptions[$key] = 'Catalog: ' . translate($value);
+					}
+				}
+
+				// Archive-specific sorts
+				foreach ($archiveSortOptions as $key => $value){
+					if ($key !== 'relevance'){
+						$sortOptions[$key] = 'Archive: ' . translate($value);
+					}
+				}
+			} else {
+				/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$sortOptions  = $searchObject->getSortOptions();
+				foreach ($sortOptions as $key => &$value){
+					$value = translate($value);
 				}
 			}
-		} else {
-			/** @var SearchObject_Solr|SearchObject_Base $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$sortOptions  = $searchObject->getSortOptions();
-			foreach ($sortOptions as $key => &$value){
-				$value = translate($value);
-			}
+
+			// Assigned libraries and locations are only looked up when editing a single category,
+			// so that the category listing page does not run these queries.
+			[$assignedLibraries, $assignedLocations] = self::getAssignedLibrariesAndLocationsForEditPage();
 		}
 
 		$structure = [
@@ -246,6 +266,8 @@ class BrowseCategory extends DB_DataObject{
 			'textId'      => ['property' => 'textId',      'type' => 'text',  'label' => 'textId', 'description' => 'A textual id to identify the category',
 			                    'serverValidation' => 'validateTextId', 'maxLength' => 50, 'required' => true],
 			'userId'      => ['property' => 'userId',      'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()],
+			'assignedLibraries' => ['property' => 'assignedLibraries', 'type' => 'label', 'label' => 'Assigned Libraries', 'description' => 'Libraries that display this category in their browse category carousel', 'default' => $assignedLibraries, 'hideInLists' => true],
+			'assignedLocations' => ['property' => 'assignedLocations', 'type' => 'label', 'label' => 'Assigned Locations', 'description' => 'Locations that display this category in their browse category carousel', 'default' => $assignedLocations, 'hideInLists' => true],
 			'description' => ['property' => 'description', 'type' => 'html',  'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true],
 
 			// Define oneToMany interface for choosing and arranging subcategories
@@ -268,10 +290,73 @@ class BrowseCategory extends DB_DataObject{
 			'defaultFilter'      => ['property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Search Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80],
 			'defaultSort'        => ['property' => 'defaultSort', 'type' => 'enum', 'label' => 'Search Sort (does not apply to Source Lists) ', 'values' => $sortOptions, 'description' => 'The sort to apply to the search results', 'default' => 'relevance', 'hideInLists' => true],
 			'searchSource'       => ['property' => 'searchSource', 'type' => 'enum', 'values' => ['catalog' => 'Catalog', 'islandora2' => 'Archive (Islandora 2)'], 'label' => 'Search Source', 'description' => 'The search index this browse category queries.', 'required' => true, 'default' => 'catalog', 'hideInLists' => false],
-			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'],
+			'sourceListId'       => ['property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from', 'hideInLists' => true],
+			// Populating Userlists is taxing on memory for Listing page, so hide sourceListId column instead.
 		];
 
 		return $structure;
+	}
+
+	/**
+	 * Build the read-only Assigned Libraries and Assigned Locations values for the browse category edit page.
+	 *
+	 * Only runs when editing an existing category; everywhere else (the category listing, saves, adding a new
+	 * category) both values are null and no queries are made.
+	 *
+	 * @return array [assigned libraries, assigned locations] as HTML-escaped display names separated by <br>, or "None"
+	 */
+	private static function getAssignedLibrariesAndLocationsForEditPage(){
+		if (($_REQUEST['objectAction'] ?? null) != 'edit' || !ctype_digit($_REQUEST['id'] ?? '')){
+			return [null, null];
+		}
+		$browseCategory = new BrowseCategory();
+		if (!$browseCategory->get($_REQUEST['id'])){
+			return [null, null];
+		}
+
+		require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+		require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+
+		$libraryAssignment                       = new LibraryBrowseCategory();
+		$libraryAssignment->browseCategoryTextId = $browseCategory->textId;
+		$libraryIds                              = $libraryAssignment->fetchAll('libraryId');
+
+		$locationAssignment                       = new LocationBrowseCategory();
+		$locationAssignment->browseCategoryTextId = $browseCategory->textId;
+		$locationIds                              = $locationAssignment->fetchAll('locationId');
+
+		return [
+			self::getAssignedDisplayNames('Library', 'libraryId', $libraryIds),
+			self::getAssignedDisplayNames('Location', 'locationId', $locationIds),
+		];
+	}
+
+	/**
+	 * @param string $ownerClass  Library or Location
+	 * @param string $keyColumn   The owner table's primary key, libraryId or locationId
+	 * @param array  $ids         Ids from the browse category assignment table
+	 * @return string HTML-escaped display names separated by <br>, or "None"
+	 */
+	private static function getAssignedDisplayNames($ownerClass, $keyColumn, $ids){
+		$ids = array_unique(array_map('intval', $ids));
+		if (empty($ids)){
+			return 'None';
+		}
+		/** @var Library|Location $owner */
+		$owner = new $ownerClass();
+		$owner->whereAdd($keyColumn . ' IN (' . implode(',', $ids) . ')');
+		$owner->orderBy('displayName');
+		$displayNames = $owner->fetchAll($keyColumn, 'displayName');
+
+		$lines = [];
+		foreach ($displayNames as $displayName){
+			$lines[] = htmlspecialchars($displayName);
+		}
+		// An assignment whose library or location has been deleted is still listed, so it can be found and removed
+		foreach (array_diff($ids, array_keys($displayNames)) as $missingId){
+			$lines[] = "Deleted {$ownerClass} (id {$missingId})";
+		}
+		return implode('<br>', $lines);
 	}
 
 	/**

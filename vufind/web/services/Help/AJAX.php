@@ -259,8 +259,9 @@ class Help_AJAX extends AJAXHandler {
 				$cardNumber  = !empty($_REQUEST['libraryCardNumber']) ? strip_tags($_REQUEST['libraryCardNumber']) : 'Not Entered';
 				$browser     = !empty($_REQUEST['browser']) ? strip_tags($_REQUEST['browser']) : 'Not Entered';
 				$libraryName = $userLibrary->displayName ?? $currentLibrary->displayName;
+				$problemReport = strip_tags($_REQUEST['report'] ?? '');
 				$interface->assign('libraryName', $libraryName);
-				$interface->assign('report', strip_tags($_REQUEST['report']));
+				$interface->assign('report', $problemReport);
 				$interface->assign('name', $name);
 				$interface->assign('email', $patronEmail);
 				$interface->assign('browser', $browser);
@@ -268,7 +269,8 @@ class Help_AJAX extends AJAXHandler {
 				$interface->assign('subject', $subject);
 
 				$body        = $interface->fetch('Help/accessibilityReportEmail.tpl');
-				$this->logger->info("Accessibility Issue Report sent to $libraryName", [$body]);
+				$this->logger->info("Accessibility Issue Report sent to $libraryName", [$problemReport]);
+				// Only log problem report for now to help keep barcode and email out of logs
 				$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
 				if (PEAR::isError($emailResult)){
 					$this->logger->error('Accessibility Report email not sent: ' . $emailResult->getMessage());
@@ -281,13 +283,13 @@ class Help_AJAX extends AJAXHandler {
 					// Use warning level to keep successful submissions in production logging
 					return [
 						'title'   => 'Accessibility Report Sent',
-						'message' => "<p class='alert alert-success'>Your report was sent to our team.</p><p>Thank you for using the catalog.</p>"
+						'message' => "<p class='alert alert-success'>Your report was sent to our team. Thank you for using the catalog.</p>"
 					];
 				}else{
 					$this->logger->warn('There was an unknown error sending the accessibility e-mail');
 					return [
 						'title'   => 'Support Request Not Sent',
-						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+						'message' => "<p class='alert alert-danger'>We're sorry, but your request could not be submitted to our support team at this time.<br>Please try again later.</p>"
 					];
 				}
 			}

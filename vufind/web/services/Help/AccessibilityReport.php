@@ -28,6 +28,18 @@ class AccessibilityReport extends Action {
 		global $interface;
 		$captchaCode = recaptchaGetQuestion('accessibility_report');
 		$interface->assign('captcha', $captchaCode);
+
+		// Prepopulate the patron's details when logged in; the fields stay editable
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user)){
+				$name = trim($user->firstname . ' ' . $user->lastname);
+				$interface->assign('name', empty($name) ? $user->displayName : $name);
+				$interface->assign('email', $user->email);
+				$interface->assign('cardNumber', $user->getBarcode());
+			}
+		}
+
 		$this->display('accessibilityReportForm.tpl', 'Report Web Accessibility Issue');
 	}
 }
