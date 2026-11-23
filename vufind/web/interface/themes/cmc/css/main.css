@@ -22813,6 +22813,10 @@ img.x-twit {
   border-radius: 3px;
 }
 
+div.noFreeze {
+  width: 100%;
+}
+
 .wikipedia_image {
   margin: 0 10px 10px;
 }
