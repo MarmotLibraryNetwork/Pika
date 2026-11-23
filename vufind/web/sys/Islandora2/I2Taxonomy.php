@@ -179,48 +179,195 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
     }
 
     /**
+     * Local relation codes whose meaning flips when viewed from the other end of the link.
+     * Codes not listed here (other than the symmetric ones) are worded as "<Label> of".
+     */
+    private const REVERSE_RELATION_FLIPS = [
+        'chd' => 'Parent',
+        'par' => 'Child',
+        'emp' => 'Employer',
+        'epr' => 'Employee',
+    ];
+
+    /** Local relation codes that read the same from either end of the link. */
+    private const SYMMETRIC_RELATIONS = ['spo', 'sib', 'ptr', 'rel', 'aka'];
+
+    /** Memoized output of getReverseRelations(). */
+    private ?array $reverseRelations = null;
+
+    /**
+     * Normalize a Pika-JSON value that may be null, a single object, or a list into a list.
+     *
+     * @param mixed $value
+     * @return array
+     */
+    protected static function asList(mixed $value): array
+    {
+        if (!is_array($value) || $value === []) {
+            return [];
+        }
+        return array_is_list($value) ? $value : [$value];
+    }
+
+    /**
      * Return related person references, or null when none exist.
+     *
+     * Merges links entered on this term (field_related_person_paragraph) with links entered on
+     * other person terms that point at this term (field_related_person_reverse). Forward links win
+     * when the same person appears in both.
      *
      * @return array[]|null|false Term reference array, null if key exists but empty, false if key doesn't exist.
      */
     public function getRelatedPerson(): mixed
     {
-        if(!array_key_exists('related_place', $this->termWithoutFieldPrefix)) {
+        $reverse = $this->getReverseRelations()['person'];
+        if (!array_key_exists('related_person_paragraph', $this->termWithoutFieldPrefix) && empty($reverse)) {
             return false;
-        }
-        $paragraphs = $this->termWithoutFieldPrefix['related_person_paragraph'] ?? null;
-
-        if ($paragraphs === null) {
-            return null;
-        }
-
-        // Normalize single entry to a list
-        if (array_key_exists('related_person', $paragraphs)) {
-            $paragraphs = [$paragraphs];
         }
 
         $result = [];
-        foreach ($paragraphs as $p) {
-            $raw  = $p['related_person'] ?? [];
-            $tid  = $raw['tid'] ?? null;
-            $name = $raw['name'] ?? '';
-            if (empty($tid) && empty($name)) {
-                continue;
+        foreach (self::asList($this->termWithoutFieldPrefix['related_person_paragraph'] ?? null) as $p) {
+            $note = $p['related_person_note'] ?? null;
+            // A paragraph's related_person may hold one person or several.
+            foreach (self::asList($p['related_person'] ?? null) as $raw) {
+                $tid  = $raw['tid'] ?? null;
+                $name = $raw['name'] ?? '';
+                if (empty($tid) && empty($name)) {
+                    continue;
+                }
+                $vocab   = strtolower($raw['vocabulary'] ?? 'person');
+                $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Person';
+                $url     = (!empty($tid)) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#';
+                $entry   = [
+                    'tid'            => isset($tid) ? (int)$tid : null,
+                    'name'           => $name,
+                    'url'            => $url,
+                    'thumbnail'      => $raw['thumbnail']['url'] ?? null,
+                    'relation'       => $raw['relation'] ?? null,
+                    'relation_label' => $raw['relation_label'] ?? null,
+                ];
+                if (is_string($note) && $note !== '') {
+                    $entry['note'] = $note;
+                }
+                $result[] = $entry;
             }
-            $vocab   = strtolower($raw['vocabulary'] ?? 'person');
-            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Person';
-            $url     = (!empty($tid)) ? '/Archive2/' . $segment . '/' . urlencode((string)$tid) : '#';
-            $result[] = [
-                'tid'            => isset($tid) ? (int)$tid : null,
-                'name'           => $name,
-                'url'            => $url,
-                'thumbnail'      => $raw['field_thumbnail']['url'] ?? null,
-                'relation'       => $raw['relation'] ?? null,
-                'relation_label' => $raw['relation_label'] ?? null,
-            ];
         }
 
+        $result = $this->appendReverseEntries($result, $reverse);
         return $result ?: null;
+    }
+
+    /**
+     * Collect reverse related-person links (field_related_person_reverse), grouped by the host
+     * term's vocabulary: 'person', 'corporate_body', or 'event'.
+     *
+     * Each entry points at the host term (the record that owns the paragraph) and carries the
+     * relation worded from this term's side. Hosts flagged linked_forward are skipped, as are
+     * duplicate hosts and host paragraph entries that are about someone other than this term.
+     *
+     * @return array{person: array[], corporate_body: array[], event: array[]}
+     */
+    private function getReverseRelations(): array
+    {
+        if ($this->reverseRelations !== null) {
+            return $this->reverseRelations;
+        }
+
+        $buckets   = ['person' => [], 'corporate_body' => [], 'event' => []];
+        $thisTid   = (string)($this->getTid() ?? '');
+        $seenHosts = [];
+
+        foreach (self::asList($this->termWithoutFieldPrefix['related_person_reverse'] ?? null) as $r) {
+            $host    = $r['host'] ?? null;
+            $hostTid = (string)($host['tid'] ?? '');
+            if ($hostTid === '' || !empty($r['linked_forward']) || isset($seenHosts[$hostTid])) {
+                continue;
+            }
+
+            // The host's paragraph may list several people; use the entry about this term.
+            $match = null;
+            foreach (self::asList($r['related_person'] ?? null) as $person) {
+                if ((string)($person['tid'] ?? '') === $thisTid) {
+                    $match = $person;
+                    break;
+                }
+            }
+            if ($match === null) {
+                continue;
+            }
+            $seenHosts[$hostTid] = true;
+
+            $vocab   = strtolower($host['vocabulary'] ?? 'person');
+            $bucket  = isset($buckets[$vocab]) ? $vocab : 'person';
+            $segment = ISLANDORA2_VOCAB_URL_MAP[$vocab] ?? 'Person';
+            $entry   = [
+                'tid'            => (int)$hostTid,
+                'name'           => $host['name'] ?? '',
+                'url'            => '/Archive2/' . $segment . '/' . urlencode($hostTid),
+                'thumbnail'      => $host['thumbnail']['url'] ?? null,
+                'relation'       => $match['relation'] ?? null,
+                'relation_label' => self::reverseRelationLabel($match['relation'] ?? null, $match['relation_label'] ?? null),
+                'direction'      => 'reverse',
+            ];
+            $note = $r['related_person_note'] ?? null;
+            if (is_string($note) && $note !== '') {
+                $entry['note'] = $note;
+            }
+            $buckets[$bucket][] = $entry;
+        }
+
+        return $this->reverseRelations = $buckets;
+    }
+
+    /**
+     * Append reverse entries to a forward list, skipping any whose tid the forward list already has.
+     *
+     * @param array[] $forward
+     * @param array[] $reverse
+     * @return array[]
+     */
+    private function appendReverseEntries(array $forward, array $reverse): array
+    {
+        $tids = array_flip(array_filter(array_column($forward, 'tid')));
+        foreach ($reverse as $entry) {
+            if (!isset($tids[$entry['tid']])) {
+                $forward[]            = $entry;
+                $tids[$entry['tid']]  = true;
+            }
+        }
+        return $forward;
+    }
+
+    /**
+     * Word a reverse link's relation from the viewed term's side.
+     *
+     * The stored relation describes this term as seen from the host ("I am George's Child"),
+     * so known opposites are flipped, symmetric relations are kept, and anything else is
+     * phrased as "<Label> of" (e.g. "Committee member of").
+     *
+     * @param string|null $relation Relation code, e.g. "local:chd" or "relator:aut".
+     * @param string|null $label    Relation label, e.g. "Child (chd)".
+     * @return string
+     */
+    private static function reverseRelationLabel(?string $relation, ?string $label): string
+    {
+        require_once ROOT_DIR . '/interface/plugins/modifier.stripRelatorCode.php';
+        $code = strtolower((string)$relation);
+        if (($pos = strrpos($code, ':')) !== false) {
+            $code = substr($code, $pos + 1);
+        }
+        $cleanLabel = smarty_modifier_stripRelatorCode($label ?? '');
+
+        if (isset(self::REVERSE_RELATION_FLIPS[$code])) {
+            return self::REVERSE_RELATION_FLIPS[$code];
+        }
+        if ($cleanLabel === '') {
+            return 'Related to';
+        }
+        if (in_array($code, self::SYMMETRIC_RELATIONS, true)) {
+            return $cleanLabel;
+        }
+        return $cleanLabel . ' of';
     }
 
     /**
@@ -295,19 +442,11 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
      */
     public function getRelatedOrganization(): mixed
     {
-        if(!array_key_exists('related_organization', $this->termWithoutFieldPrefix)) {
+        $reverse = $this->getReverseRelations()['corporate_body'];
+        if(!array_key_exists('related_organization', $this->termWithoutFieldPrefix) && empty($reverse)) {
             return false;
         }
-        $related_orgs = $this->termWithoutFieldPrefix['related_organization'] ?? null;
-
-        if ($related_orgs === null) {
-            return null;
-        }
-
-        // Normalize single entry to a list
-        if (array_key_exists('tid', $related_orgs)) {
-            $related_orgs = [$related_orgs];
-        }
+        $related_orgs = self::asList($this->termWithoutFieldPrefix['related_organization'] ?? null);
 
         $result = [];
         foreach ($related_orgs as $raw) {
@@ -329,6 +468,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
             ];
         }
 
+        $result = $this->appendReverseEntries($result, $reverse);
         return $result ?: null;
     }
 
@@ -339,19 +479,11 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
      */
     public function getRelatedEvent(): mixed
     {
-        if(!array_key_exists('related_event', $this->termWithoutFieldPrefix)) {
+        $reverse = $this->getReverseRelations()['event'];
+        if(!array_key_exists('related_event', $this->termWithoutFieldPrefix) && empty($reverse)) {
             return false;
         }
-        $related_event = $this->termWithoutFieldPrefix['related_event'] ?? null;
-
-        if ($related_event === null) {
-            return null;
-        }
-
-        // Normalize single entry to a list
-        if (array_key_exists('tid', $related_event)) {
-            $related_event = [$related_event];
-        }
+        $related_event = self::asList($this->termWithoutFieldPrefix['related_event'] ?? null);
 
         $result = [];
         foreach ($related_event as $raw) {
@@ -373,6 +505,7 @@ abstract class I2Taxonomy implements TaxonomyObjectInterface
             ];
         }
 
+        $result = $this->appendReverseEntries($result, $reverse);
         return $result ?: null;
     }
 
