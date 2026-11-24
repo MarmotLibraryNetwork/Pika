@@ -355,6 +355,10 @@ div.striped {
   }
 }
 
+#recordTools .btn-group-vertical {
+  width: 100%;
+}
+
 .browse-thumbnail a:focus, .coversColumn a:focus{
   outline:none;
 }
@@ -378,7 +382,6 @@ div.striped {
   border: 2px solid $menu-bar-background-color !important;
   outline: 2px solid white;
 }
-
 
 a:focus > .header-button {
   outline: 1px solid $focus-ring-color !important;

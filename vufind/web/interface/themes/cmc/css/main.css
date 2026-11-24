@@ -20896,6 +20896,10 @@ div.striped > div:nth-child(odd) {
   outline: 2px solid #E15F15 !important;
 }
 
+#recordTools .btn-group-vertical {
+  width: 100%;
+}
+
 .browse-thumbnail a:focus, .coversColumn a:focus {
   outline: none;
 }
