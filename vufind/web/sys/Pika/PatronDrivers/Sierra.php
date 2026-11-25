@@ -945,28 +945,21 @@ class Sierra extends PatronDriverInterface implements \DriverInterface
         foreach ($_POST as $key => $val) {
             switch ($key) {
 	            case 'address1':
-		            // Only validate when patrons can edit their address. Otherwise the profile form posts
-		            // the stored address as a hidden field, which is empty for patrons with no address on file.
-		            if ((bool)$library->allowPatronAddressUpdates) {
 			            if (empty($val)) {
-				            $errors[] = 'Street address is required.';
+				            $address1 = ' ';
 			            } else {
 				            $address1 = $val;
-			            }
 		            }
 		            break;
                 case 'city':
                 case 'state':
                 case 'zip':
-                    // if library allows address updates
-                    if ((bool)$library->allowPatronAddressUpdates) {
-                        if (empty($val)) {
-                            $errors[] = 'City, state and ZIP are required.';
-                        } else {
-                            $cityStZip[$key] = $val;
-                        }
-                    }
-                    break;
+									if (empty($val)) {
+                     $cityStZip[$key] = ' ';
+                  } else {
+                     $cityStZip[$key] = $val;
+                  }
+                  break;
                 case 'phone': // primary phone
                     $val      = trim($val);
                     $phones[] = (object)['number' => $val, 'type' => 't'];
